@@ -1,0 +1,19 @@
+# Godot 4+
+.godot/
+/android/
+
+# Godot export/import artifacts
+*.tmp
+*.translation
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Replit/local environment
+.replit.nix
+.cache/
+.env
+.env.*
