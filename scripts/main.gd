@@ -10,7 +10,18 @@ func _ready() -> void:
 	queue_redraw()
 
 func _process(delta: float) -> void:
-	var direction := Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	var direction := Vector2.ZERO
+	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
+		direction.x -= 1.0
+	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
+		direction.x += 1.0
+	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
+		direction.y -= 1.0
+	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):
+		direction.y += 1.0
+	if direction.length_squared() > 0.0:
+		direction = direction.normalized()
+
 	player_position += direction * PLAYER_SPEED * delta
 	var viewport_size := get_viewport_rect().size
 	player_position.x = clamp(player_position.x, PLAYER_RADIUS, viewport_size.x - PLAYER_RADIUS)
