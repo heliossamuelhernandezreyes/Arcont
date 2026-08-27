@@ -29,7 +29,11 @@ static func point_has_cover(actor: CollisionObject3D, target: Node3D, point: Vec
 	return hit_pos.distance_to(finish) > 0.65
 
 static func best_cover(actor: CollisionObject3D, target: Node3D, preferred_distance: float, max_search := 28.0) -> Vector3:
-	var best := Vector3.INF
+	return best_cover_near(actor, target, actor.global_position, preferred_distance, max_search)
+
+static func best_cover_near(actor: CollisionObject3D, target: Node3D, anchor: Vector3, preferred_distance: float, max_search := 28.0) -> Vector3:
+	var best := Vector3.ZERO
+	var found := false
 	var best_score := INF
 	for node in actor.get_tree().get_nodes_in_group("tactical_cover"):
 		if not node is Node3D:
@@ -41,17 +45,18 @@ static func best_cover(actor: CollisionObject3D, target: Node3D, preferred_dista
 		if not point_has_cover(actor, target, point):
 			continue
 		var target_distance := target.global_position.distance_to(point)
-		var score := actor_distance * 0.55 + absf(target_distance - preferred_distance) * 0.8
+		var score := actor_distance * 0.32 + point.distance_to(anchor) * 0.62 + absf(target_distance - preferred_distance) * 0.55
 		for ally in actor.get_tree().get_nodes_in_group("tactical_enemy"):
 			if ally == actor or not ally is Node3D:
 				continue
 			var separation := (ally as Node3D).global_position.distance_to(point)
-			if separation < 2.3:
-				score += (2.3 - separation) * 4.0
+			if separation < 2.4:
+				score += (2.4 - separation) * 5.0
 		if score < best_score:
 			best_score = score
 			best = point
-	return best
+			found = true
+	return best if found else Vector3.INF
 
 static func flank_point(actor: Node3D, target: Node3D, side: float, radius := 12.0) -> Vector3:
 	var to_actor := actor.global_position - target.global_position
