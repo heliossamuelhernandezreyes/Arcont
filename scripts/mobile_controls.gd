@@ -1,8 +1,8 @@
 extends Control
 
 @export var force_visible:=false
-@export var joystick_radius:=92.0
-@export var button_radius:=52.0
+@export var joystick_radius:=86.0
+@export var button_radius:=46.0
 var player:Node=null
 var companion:Node=null
 var throwables:Node=null
@@ -12,16 +12,10 @@ var move_touch:=-1
 var look_touch:=-1
 var fire_touch:=-1
 var ads_touch:=-1
-var weapon_touch:=-1
 var jump_touch:=-1
 var crouch_touch:=-1
 var dodge_touch:=-1
-var sprint_touch:=-1
 var reload_touch:=-1
-var cover_touch:=-1
-var command_touch:=-1
-var throwable_touch:=-1
-var throwable_cycle_touch:=-1
 var melee_touch:=-1
 var move_origin:=Vector2.ZERO
 var move_vector:=Vector2.ZERO
@@ -30,112 +24,80 @@ var reload_feedback_text:=""
 var reload_feedback_timer:=0.0
 
 func _ready()->void:
- touch_enabled=force_visible or DisplayServer.is_touchscreen_available();visible=touch_enabled;set_process_input(touch_enabled);set_process(touch_enabled);call_deferred("_bind_player");queue_redraw()
+ touch_enabled=force_visible or DisplayServer.is_touchscreen_available();visible=touch_enabled;mouse_filter=Control.MOUSE_FILTER_IGNORE;set_process_input(touch_enabled);set_process(touch_enabled);call_deferred("_bind_player");queue_redraw()
 func _process(delta:float)->void:
- if not touch_enabled:return
- if reload_feedback_timer>0.0:
-  reload_feedback_timer=maxf(reload_feedback_timer-delta,0.0)
-  if reload_feedback_timer<=0.0:reload_feedback_text=""
- if weapon and is_instance_valid(weapon) and weapon.has_method("get_active_reload_state"):
-  var state:Dictionary=weapon.get_active_reload_state()
-  if bool(state.get("active",false)) or reload_feedback_timer>0.0:queue_redraw()
- if melee and is_instance_valid(melee) and melee.has_method("is_guarding") and melee.is_guarding():queue_redraw()
+ if reload_feedback_timer>0.0:reload_feedback_timer=maxf(0.0,reload_feedback_timer-delta);queue_redraw()
 func _bind_player()->void:
  player=get_tree().get_first_node_in_group("player");companion=get_tree().get_first_node_in_group("friendly_companion");throwables=get_tree().get_first_node_in_group("throwable_controller")
- if player==null:
-  var scene:=get_tree().current_scene
-  if scene:player=scene.get_node_or_null("Player")
- if player:
-  weapon=player.get_node_or_null("CameraRig/Camera3D/Weapon");melee=player.get_node_or_null("MeleeCombat")
+ if player==null and get_tree().current_scene:player=get_tree().current_scene.get_node_or_null("Player")
+ if player:weapon=player.get_node_or_null("CameraRig/Camera3D/Weapon");melee=player.get_node_or_null("MeleeCombat")
  _bind_weapon_feedback()
 func _bind_weapon_feedback()->void:
- if weapon==null or not is_instance_valid(weapon):return
- var callback:=Callable(self,"_on_active_reload_feedback")
- if weapon.has_signal("active_reload_feedback") and not weapon.is_connected("active_reload_feedback",callback):weapon.connect("active_reload_feedback",callback)
+ if weapon==null:return
+ var cb:=Callable(self,"_on_active_reload_feedback")
+ if weapon.has_signal("active_reload_feedback") and not weapon.is_connected("active_reload_feedback",cb):weapon.connect("active_reload_feedback",cb)
 func _on_active_reload_feedback(result:String,_stage:int)->void:reload_feedback_text=result;reload_feedback_timer=0.52;queue_redraw()
 func _input(event:InputEvent)->void:
  if not touch_enabled:return
  if player==null or not is_instance_valid(player):_bind_player();if player==null:return
- if weapon==null or not is_instance_valid(weapon):weapon=player.get_node_or_null("CameraRig/Camera3D/Weapon");_bind_weapon_feedback()
- if melee==null or not is_instance_valid(melee):melee=player.get_node_or_null("MeleeCombat")
  if event is InputEventScreenTouch:_handle_touch(event)
  elif event is InputEventScreenDrag:_handle_drag(event)
 func _handle_touch(event:InputEventScreenTouch)->void:
  if event.pressed:_assign_touch(event.index,event.position)
  else:_release_touch(event.index)
  queue_redraw()
-func _assign_touch(index:int,position:Vector2)->void:
- if position.distance_to(_fire_center())<=button_radius*1.25 and fire_touch==-1:fire_touch=index;if weapon and weapon.has_method("set_trigger"):weapon.set_trigger(true);return
- if position.distance_to(_melee_center())<=button_radius*0.82 and melee_touch==-1:
-  melee_touch=index
-  if melee and melee.has_method("begin_guard"):melee.begin_guard(position)
-  return
- if position.distance_to(_ads_center())<=button_radius*0.82 and ads_touch==-1:ads_touch=index;if weapon and weapon.has_method("set_ads"):weapon.set_ads(true);return
- if position.distance_to(_weapon_center())<=button_radius*0.72 and weapon_touch==-1:weapon_touch=index;if weapon and weapon.has_method("cycle_weapon"):weapon.cycle_weapon();return
- if position.distance_to(_jump_center())<=button_radius*1.2 and jump_touch==-1:jump_touch=index;if player.has_method("request_mobile_jump"):player.request_mobile_jump();return
- if position.distance_to(_crouch_center())<=button_radius*0.76 and crouch_touch==-1:crouch_touch=index;if player.has_method("request_crouch"):player.request_crouch();return
- if position.distance_to(_dodge_center())<=button_radius*0.78 and dodge_touch==-1:dodge_touch=index;if player.has_method("request_dodge"):player.request_dodge();return
- if position.distance_to(_reload_center())<=button_radius and reload_touch==-1:reload_touch=index;if player.has_method("request_reload"):player.request_reload();return
- if position.distance_to(_cover_center())<=button_radius and cover_touch==-1:cover_touch=index;if player.has_method("_toggle_cover"):player.call("_toggle_cover");return
- if position.distance_to(_command_center())<=button_radius and command_touch==-1:command_touch=index;if companion and companion.has_method("cycle_command"):companion.cycle_command();return
- if position.distance_to(_throw_center())<=button_radius and throwable_touch==-1:throwable_touch=index;if throwables and throwables.has_method("mobile_throw"):throwables.mobile_throw();return
- if position.distance_to(_throw_cycle_center())<=button_radius and throwable_cycle_touch==-1:throwable_cycle_touch=index;if throwables and throwables.has_method("mobile_cycle"):throwables.mobile_cycle();return
- if position.distance_to(_sprint_center())<=button_radius*1.15 and sprint_touch==-1:sprint_touch=index;if player.has_method("set_mobile_sprint"):player.set_mobile_sprint(true);return
+func _assign_touch(index:int,p:Vector2)->void:
+ # Only six permanent combat targets. Everything else on the right half is guaranteed camera space.
+ if p.distance_to(_fire_center())<=button_radius*1.25 and fire_touch<0:fire_touch=index;if weapon and weapon.has_method("set_trigger"):weapon.set_trigger(true);return
+ if p.distance_to(_ads_center())<=button_radius and ads_touch<0:ads_touch=index;if weapon and weapon.has_method("set_ads"):weapon.set_ads(true);return
+ if p.distance_to(_jump_center())<=button_radius and jump_touch<0:jump_touch=index;if player.has_method("request_mobile_jump"):player.request_mobile_jump();return
+ if p.distance_to(_crouch_center())<=button_radius and crouch_touch<0:crouch_touch=index;if player.has_method("request_crouch"):player.request_crouch();return
+ if p.distance_to(_dodge_center())<=button_radius and dodge_touch<0:dodge_touch=index;if player.has_method("request_dodge"):player.request_dodge();return
+ if p.distance_to(_melee_center())<=button_radius and melee_touch<0:melee_touch=index;if melee and melee.has_method("begin_guard"):melee.begin_guard(p);return
  var size:=get_viewport_rect().size
- if position.x<size.x*0.45 and move_touch==-1:move_touch=index;move_origin=position;move_vector=Vector2.ZERO;if player.has_method("set_mobile_move"):player.set_mobile_move(move_vector)
- elif look_touch==-1:look_touch=index
+ if p.x<size.x*0.38 and p.y>size.y*0.42 and move_touch<0:move_touch=index;move_origin=p;move_vector=Vector2.ZERO;if player.has_method("set_mobile_move"):player.set_mobile_move(move_vector);return
+ if p.x>=size.x*0.38 and look_touch<0:look_touch=index;return
+ # Left-side touches outside the movement pad are ignored rather than stealing camera ownership.
 func _handle_drag(event:InputEventScreenDrag)->void:
- if event.index==move_touch:move_vector=((event.position-move_origin)/joystick_radius).limit_length(1.0);if player.has_method("set_mobile_move"):player.set_mobile_move(move_vector);queue_redraw()
+ if event.index==move_touch:
+  move_vector=((event.position-move_origin)/joystick_radius).limit_length(1.0);if player.has_method("set_mobile_move"):player.set_mobile_move(move_vector);queue_redraw()
  elif event.index==melee_touch:
   if melee and melee.has_method("update_guard_drag"):melee.update_guard_drag(event.position)
-  queue_redraw()
  elif event.index==look_touch and player.has_method("add_mobile_look"):player.add_mobile_look(event.relative)
 func _release_touch(index:int)->void:
- if index==move_touch:move_touch=-1;move_vector=Vector2.ZERO;if player and player.has_method("set_mobile_move"):player.set_mobile_move(Vector2.ZERO)
+ if index==move_touch:move_touch=-1;move_vector=Vector2.ZERO;if player:player.set_mobile_move(Vector2.ZERO)
  elif index==look_touch:look_touch=-1
  elif index==fire_touch:fire_touch=-1;if weapon and weapon.has_method("set_trigger"):weapon.set_trigger(false)
- elif index==melee_touch:
-  melee_touch=-1
-  if melee and melee.has_method("release_attack"):melee.release_attack()
  elif index==ads_touch:ads_touch=-1;if weapon and weapon.has_method("set_ads"):weapon.set_ads(false)
- elif index==weapon_touch:weapon_touch=-1
  elif index==jump_touch:jump_touch=-1
  elif index==crouch_touch:crouch_touch=-1
  elif index==dodge_touch:dodge_touch=-1
- elif index==sprint_touch:sprint_touch=-1;if player and player.has_method("set_mobile_sprint"):player.set_mobile_sprint(false)
- elif index==reload_touch:reload_touch=-1
- elif index==cover_touch:cover_touch=-1
- elif index==command_touch:command_touch=-1
- elif index==throwable_touch:throwable_touch=-1
- elif index==throwable_cycle_touch:throwable_cycle_touch=-1
+ elif index==melee_touch:melee_touch=-1;if melee and melee.has_method("release_attack"):melee.release_attack()
 func _draw()->void:
  if not touch_enabled:return
- var size:=get_viewport_rect().size;var default_stick:=Vector2(128.0,size.y-138.0);var stick_center:=move_origin if move_touch!=-1 else default_stick;var knob:=stick_center+move_vector*joystick_radius*0.62
- draw_circle(stick_center,joystick_radius,Color(0.15,0.18,0.22,0.32));draw_circle(stick_center,joystick_radius*0.68,Color(0.55,0.62,0.72,0.10),false,4.0);draw_circle(knob,joystick_radius*0.34,Color(0.85,0.9,1.0,0.42))
- _draw_button(_fire_center(),button_radius,"FIRE");_draw_button(_melee_center(),button_radius*0.72,_melee_label());_draw_button(_ads_center(),button_radius*0.70,"ADS");_draw_button(_weapon_center(),button_radius*0.62,"WPN");_draw_button(_jump_center(),button_radius*0.86,"JUMP");_draw_button(_crouch_center(),button_radius*0.68,"CRCH");_draw_button(_dodge_center(),button_radius*0.70,"DODGE");_draw_button(_reload_center(),button_radius*0.72,"RLD");_draw_active_reload();_draw_button(_cover_center(),button_radius*0.72,"COV");_draw_button(_command_center(),button_radius*0.72,"R3");_draw_button(_throw_center(),button_radius*0.72,"THR");_draw_button(_throw_cycle_center(),button_radius*0.64,"TYPE");_draw_button(_sprint_center(),button_radius*0.78,"RUN")
-func _melee_label()->String:
- if melee and is_instance_valid(melee) and melee.has_method("is_guarding") and melee.is_guarding():return String(melee.current_guard()).to_upper()
- return "MELEE"
+ var size:=get_viewport_rect().size;var stick:=move_origin if move_touch>=0 else Vector2(120,size.y-120);var knob:=stick+move_vector*joystick_radius*0.62
+ draw_circle(stick,joystick_radius,Color(0.10,0.12,0.16,0.22));draw_arc(stick,joystick_radius,0,TAU,36,Color(0.8,0.85,0.95,0.32),2.0);draw_circle(knob,joystick_radius*0.28,Color(0.85,0.9,1,0.34))
+ _draw_button(_fire_center(),button_radius*1.05,"FIRE");_draw_button(_ads_center(),button_radius*0.82,"ADS");_draw_button(_jump_center(),button_radius*0.78,"JUMP");_draw_button(_crouch_center(),button_radius*0.72,"CRCH");_draw_button(_dodge_center(),button_radius*0.72,"DODGE");_draw_button(_melee_center(),button_radius*0.78,_melee_label());_draw_active_reload()
+func _draw_button(c:Vector2,r:float,label:String)->void:
+ draw_circle(c,r,Color(0.12,0.15,0.20,0.25));draw_arc(c,r,0,TAU,30,Color(0.86,0.91,1,0.45),2.0);var f:=ThemeDB.fallback_font;var fs:=13;var w:=f.get_string_size(label,HORIZONTAL_ALIGNMENT_LEFT,-1,fs).x;draw_string(f,c+Vector2(-w*0.5,4),label,HORIZONTAL_ALIGNMENT_LEFT,-1,fs,Color(0.96,0.98,1,0.8))
 func _draw_active_reload()->void:
- if weapon==null or not is_instance_valid(weapon) or not weapon.has_method("get_active_reload_state"):return
- var state:Dictionary=weapon.get_active_reload_state();var center:=_reload_center();var radius:=button_radius*0.91
- if bool(state.get("active",false)):
-  var progress:=clampf(float(state.get("progress",0.0)),0.0,1.0);var start:=-PI*0.5;draw_arc(center,radius,start,start+TAU*progress,40,Color(0.72,0.88,1.0,0.95),4.0);var next:=float(state.get("next",-1.0));var tolerance:=float(state.get("tolerance",0.0))
-  if next>=0.0:draw_arc(center,radius+5.0,start+TAU*clampf(next-tolerance,0.0,1.0),start+TAU*clampf(next+tolerance,0.0,1.0),18,Color(0.42,1.0,0.70,0.95),6.0)
- if reload_feedback_timer>0.0 and not reload_feedback_text.is_empty():
-  var font:=ThemeDB.fallback_font;var font_size:=16;var width:=font.get_string_size(reload_feedback_text,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size).x;draw_string(font,center+Vector2(-width*0.5,-radius-24.0),reload_feedback_text,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,Color(0.75,0.95,1.0,1.0))
-func _draw_button(center:Vector2,radius:float,label:String)->void:
- draw_circle(center,radius,Color(0.20,0.24,0.30,0.38));draw_arc(center,radius,0.0,TAU,36,Color(0.86,0.91,1.0,0.55),3.0);var font:=ThemeDB.fallback_font;var font_size:=15;var width:=font.get_string_size(label,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size).x;draw_string(font,center+Vector2(-width*0.5,5.0),label,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,Color(0.95,0.97,1.0,0.9))
-func _fire_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-98.0,size.y-132.0)
-func _melee_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-112.0,size.y-350.0)
-func _ads_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-92.0,size.y-250.0)
-func _weapon_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-170.0,size.y-270.0)
-func _jump_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-210.0,size.y-90.0)
-func _crouch_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-294.0,size.y-82.0)
-func _dodge_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-302.0,size.y-235.0)
-func _reload_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-218.0,size.y-192.0)
-func _cover_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-382.0,size.y-150.0)
-func _command_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-450.0,size.y-78.0)
-func _throw_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-454.0,size.y-190.0)
-func _throw_cycle_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-542.0,size.y-138.0)
-func _sprint_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(225.0,size.y-245.0)
+ if weapon==null or not weapon.has_method("get_active_reload_state"):return
+ var s:Dictionary=weapon.get_active_reload_state();var c:=_reload_center();var r:=button_radius*0.72
+ if bool(s.get("active",false)):
+  var p:=clampf(float(s.get("progress",0)),0,1);draw_arc(c,r,-PI*0.5,-PI*0.5+TAU*p,32,Color(0.72,0.88,1,0.9),4)
+ if reload_feedback_timer>0 and not reload_feedback_text.is_empty():draw_string(ThemeDB.fallback_font,c+Vector2(-24,-38),reload_feedback_text,HORIZONTAL_ALIGNMENT_LEFT,-1,13,Color.WHITE)
+func _melee_label()->String:
+ if melee and melee.has_method("is_guarding") and melee.is_guarding():return String(melee.current_guard()).to_upper()
+ return "MELEE"
+func _fire_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x-88,s.y-110)
+func _ads_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x-82,s.y-215)
+func _jump_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x-185,s.y-78)
+func _crouch_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x-270,s.y-76)
+func _dodge_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x-190,s.y-170)
+func _melee_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x-82,s.y-310)
+func _reload_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x-270,s.y-155)
+# Compatibility API for existing systems/tests; secondary actions move to contextual UI in the next pass.
+func _weapon_center()->Vector2:return _reload_center()
+func _command_center()->Vector2:return _reload_center()
+func _throw_center()->Vector2:return _reload_center()
+func _throw_cycle_center()->Vector2:return _reload_center()
