@@ -35,7 +35,6 @@ jobs:
           rm -rf assets/provisional
           mkdir -p assets/provisional/characters assets/provisional/city assets/provisional/licenses
 
-          # Keep the complete tiny Kenney character pack so the rig, skins and animations stay together.
           cp -R /tmp/arcont-assets/kenney_survivors/. assets/provisional/characters/kenney_survivors/
 
           SRC='/tmp/kaykit-city/addons/kaykit_city_builder_bits/Assets/fbx(unity)'
@@ -44,6 +43,7 @@ jobs:
             bench.fbx box_A.fbx box_B.fbx building_A.fbx building_B.fbx building_C.fbx building_D.fbx bush.fbx; do
             if [ -f "$SRC/$f" ]; then cp "$SRC/$f" assets/provisional/city/; fi
           done
+          cp '/tmp/kaykit-city/addons/kaykit_city_builder_bits/Assets/texture/citybits_texture.png' assets/provisional/city/citybits_texture.png
 
           cp /tmp/kaykit-city/LICENSE.txt assets/provisional/licenses/KAYKIT_CITY_CC0.txt
           cat > assets/provisional/licenses/KENNEY_SURVIVORS_CC0.txt <<'EOF'
