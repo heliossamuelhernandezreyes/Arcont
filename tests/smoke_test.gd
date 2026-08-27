@@ -1,7 +1,7 @@
 extends SceneTree
 func _init()->void:
 	var failures:Array[String]=[]
-	_check_scene("res://scenes/main.tscn",["PerformanceBudget","AwarenessDirector","NavigationGraph","CombatFeedback","UrbanDistrict","MissionDirector","ThrowableController","CompanionRobot","Player","Player/BodyVisual","Player/CoverProbe","Player/CameraRig/Camera3D/Weapon","Enemies","HUD/Objective"],failures)
+	_check_scene("res://scenes/main.tscn",["PerformanceBudget","AwarenessDirector","NavigationGraph","CombatFeedback","UrbanDistrict","MissionDirector","ThrowableController","CompanionRobot","Player","Player/BodyVisual","Player/CoverProbe","Player/CameraRig/Camera3D/Weapon","Enemies","HUD/Objective","HUD/Throwable","HUD/MobileControls"],failures)
 	_check_scene("res://scenes/enemy.tscn",["Collision","Body","Head","ArmL","ArmR"],failures)
 	_check_scene("res://scenes/companion_robot.tscn",["Collision","Body","Turret","StatusLight"],failures)
 	_check_scene("res://scenes/ranged_enemy.tscn",["Collision","Body","Weapon","EyeLight","NavigationAgent3D"],failures)
@@ -10,7 +10,7 @@ func _init()->void:
 	for method in ["try_fire","_report_weapon_sound","_fire_shotgun","_trace_pellet","request_reload","add_ammo","_player_controller"]:_check_script_method("res://scripts/weapon.gd",method,failures)
 	for method in ["report_sound","sustain_lure","_lure_infected","recent_sound_for","report_contact","shared_intel_for"]:_check_script_method("res://scripts/awareness_director.gd",method,failures)
 	for method in ["configure","_trigger","_activate_decoy","_detonate_grenade","_detonate_emp","_apply_radial_damage","_apply_cover_blast"]:_check_script_method("res://scripts/throwable.gd",method,failures)
-	for method in ["cycle_throwable","throw_selected","mobile_throw","mobile_cycle"]:_check_script_method("res://scripts/throwable_controller.gd",method,failures)
+	for method in ["cycle_throwable","throw_selected","mobile_throw","mobile_cycle","_bind_hud","_update_hud"]:_check_script_method("res://scripts/throwable_controller.gd",method,failures)
 	for method in ["_build_graph","_segment_walkable","build_route","next_waypoint"]:_check_script_method("res://scripts/navigation_graph.gd",method,failures)
 	for method in ["resistance_for","energy_resistance_for","energy_after_surface","xeno_energy_after_surface","apply_surface_damage","apply_energy_surface_damage","damage_scale"]:_check_script_method("res://scripts/ballistics.gd",method,failures)
 	for method in ["apply_ballistic_hit","apply_energy_hit","_update_visual_stage","_break_apart"]:_check_script_method("res://scripts/destructible_cover.gd",method,failures)
@@ -19,7 +19,7 @@ func _init()->void:
 	for method in ["apply_emp","_update_awareness","_choose_tactic","_movement_velocity","_velocity_to","_next_navigation_point","_begin_charge","_fire_lance","_trace_energy","_apply_energy_suppression","_spawn_lance_visual","apply_hit"]:_check_script_method("res://scripts/xeno_lancer.gd",method,failures)
 	for method in ["_build_tactical_points","_build_spawn_points"]:_check_script_method("res://scripts/urban_environment.gd",method,failures)
 	for method in ["activate_unit","set_command","cycle_command","apply_emp","_update_follow","_nearest_enemy","_fire_at","apply_damage"]:_check_script_method("res://scripts/companion_robot.gd",method,failures)
-	for method in ["_command_center","_assign_touch"]:_check_script_method("res://scripts/mobile_controls.gd",method,failures)
+	for method in ["_command_center","_throw_center","_throw_cycle_center","_assign_touch"]:_check_script_method("res://scripts/mobile_controls.gd",method,failures)
 	for method in ["_update_generator","_update_defense","_request_ranged","_request_xeno","_spawn_lancer_event","_trigger_xeno_pulse"]:_check_script_method("res://scripts/mission_director.gd",method,failures)
 	for method in ["_start_next_wave","spawn_reinforcements","spawn_ranged_enemies","spawn_xeno_lancers","spawn_brute","_spawn_position_for"]:_check_script_method("res://scripts/main.gd",method,failures)
 	if failures.is_empty():print("ARCONT CI: smoke test OK");quit(0);return
