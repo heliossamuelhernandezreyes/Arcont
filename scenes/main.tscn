@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource path="res://scripts/player.gd" type="Script" id="1_player"]
 [ext_resource path="res://scripts/main.gd" type="Script" id="2_main"]
@@ -9,6 +9,8 @@
 [ext_resource path="res://scripts/urban_environment.gd" type="Script" id="7_environment"]
 [ext_resource path="res://scripts/mission_director.gd" type="Script" id="8_mission"]
 [ext_resource path="res://scenes/companion_robot.tscn" type="PackedScene" id="9_robot"]
+[ext_resource path="res://scripts/awareness_director.gd" type="Script" id="10_awareness"]
+[ext_resource path="res://scripts/navigation_graph.gd" type="Script" id="11_navigation"]
 
 [sub_resource type="CapsuleShape3D" id="PlayerShape"]
 radius = 0.4
@@ -36,6 +38,10 @@ fog_density = 0.012
 script = ExtResource("2_main")
 [node name="PerformanceBudget" type="Node" parent="."]
 script = ExtResource("5_budget")
+[node name="AwarenessDirector" type="Node" parent="."]
+script = ExtResource("10_awareness")
+[node name="NavigationGraph" type="Node" parent="."]
+script = ExtResource("11_navigation")
 [node name="CombatFeedback" type="Node" parent="."]
 script = ExtResource("6_feedback")
 [node name="UrbanDistrict" type="Node3D" parent="."]
