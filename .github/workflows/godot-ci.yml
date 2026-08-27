@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'project.godot'
+      - 'export_presets.cfg'
       - 'assets/**'
       - 'scenes/**'
       - 'scripts/**'
@@ -12,6 +13,7 @@ on:
   pull_request:
     paths:
       - 'project.godot'
+      - 'export_presets.cfg'
       - 'assets/**'
       - 'scenes/**'
       - 'scripts/**'
@@ -22,10 +24,11 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       GODOT_VERSION: 4.7.2-stable
       GODOT_BIN: /tmp/godot/Godot_v4.7.2-stable_linux.x86_64
+      TEMPLATE_VERSION: 4.7.2.stable
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,6 +41,16 @@ jobs:
           unzip -q /tmp/godot/godot.zip -d /tmp/godot
           chmod +x "$GODOT_BIN"
           "$GODOT_BIN" --version
+      - name: Install Godot export templates
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/godot/templates
+          curl -L --fail --retry 3 -o /tmp/godot/templates.tpz "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v4.7.2-stable_export_templates.tpz"
+          unzip -q /tmp/godot/templates.tpz -d /tmp/godot/templates
+          mkdir -p "$HOME/.local/share/godot/export_templates/${TEMPLATE_VERSION}"
+          cp -a /tmp/godot/templates/templates/. "$HOME/.local/share/godot/export_templates/${TEMPLATE_VERSION}/"
+          ls -la "$HOME/.local/share/godot/export_templates/${TEMPLATE_VERSION}"
       - name: Import and parse project
         shell: bash
         run: |
@@ -78,3 +91,21 @@ jobs:
           if [ "$rc" -ne 0 ]; then exit "$rc"; fi
           if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" boot.log; then exit 1; fi
           exit 0
+      - name: Export Android debug APK
+        shell: bash
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --export-debug "Android" build/Arcont-debug.apk | tee android-export.log
+          test -s build/Arcont-debug.apk
+          ls -lh build/Arcont-debug.apk
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Arcont-Android-Debug
+          path: build/Arcont-debug.apk
+          if-no-files-found: error
+          retention-days: 14
