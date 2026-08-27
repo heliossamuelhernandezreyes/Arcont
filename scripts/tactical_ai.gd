@@ -32,13 +32,16 @@ static func best_cover(actor: CollisionObject3D, target: Node3D, preferred_dista
 	return best_cover_near(actor, target, actor.global_position, preferred_distance, max_search)
 
 static func best_cover_near(actor: CollisionObject3D, target: Node3D, anchor: Vector3, preferred_distance: float, max_search := 28.0) -> Vector3:
+	var candidates: Array[Vector3] = []
+	for node in actor.get_tree().get_nodes_in_group("tactical_cover"):
+		if node is Node3D:
+			candidates.append((node as Node3D).global_position)
+	for point in _vertical_slice_cover_points():
+		candidates.append(point)
 	var best := Vector3.ZERO
 	var found := false
 	var best_score := INF
-	for node in actor.get_tree().get_nodes_in_group("tactical_cover"):
-		if not node is Node3D:
-			continue
-		var point := (node as Node3D).global_position
+	for point in candidates:
 		var actor_distance := actor.global_position.distance_to(point)
 		if actor_distance > max_search:
 			continue
@@ -76,3 +79,11 @@ static func squad_role(actor: Node) -> String:
 		0: return "suppress"
 		1: return "flank_left"
 		_: return "flank_right"
+
+static func _vertical_slice_cover_points() -> Array[Vector3]:
+	return [
+		Vector3(-2.9,0.2,-21.2), Vector3(3.0,0.2,-20.5), Vector3(-3.2,0.2,26.2),
+		Vector3(-12.4,0.2,5.5), Vector3(12.2,0.2,3.2), Vector3(-2.4,0.2,-8.4),
+		Vector3(2.8,0.2,15.4), Vector3(-14.3,0.2,4.0), Vector3(-2.0,0.2,7.4),
+		Vector3(2.0,0.2,6.2), Vector3(-9.3,0.2,13.7), Vector3(10.0,0.2,-15.3)
+	]
