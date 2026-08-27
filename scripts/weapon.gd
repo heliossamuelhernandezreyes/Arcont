@@ -14,7 +14,7 @@ var profiles:=[
 {"name":"12G SHOTGUN","mag":8,"reserve":48,"damage":18.0,"interval":0.72,"reload":1.9,"recoil_pitch":0.055,"recoil_yaw":0.016,"pellets":8,"spread":5.2,"range":55.0,"impact":8.5,"energy":0.95,"penetrations":2,"noise":34.0,"ads_fov":58.0,"automatic":false,"active":[[0.42,0.13,0.22],[0.78,0.12,0.24]]},
 {"name":"AR-5 RIFLE","mag":30,"reserve":150,"damage":27.0,"interval":0.105,"reload":2.15,"recoil_pitch":0.020,"recoil_yaw":0.008,"pellets":1,"spread":1.15,"range":92.0,"impact":3.8,"energy":1.20,"penetrations":3,"noise":30.0,"ads_fov":48.0,"automatic":true,"active":[[0.30,0.11,0.30],[0.66,0.10,0.34],[0.88,0.09,0.26]]},
 {"name":"P9 PISTOL","mag":15,"reserve":75,"damage":34.0,"interval":0.24,"reload":1.45,"recoil_pitch":0.028,"recoil_yaw":0.010,"pellets":1,"spread":1.65,"range":72.0,"impact":3.0,"energy":0.82,"penetrations":1,"noise":24.0,"ads_fov":52.0,"automatic":false,"active":[[0.38,0.12,0.28],[0.82,0.10,0.24]]},
-{"name":"M90 BOLT SNIPER","mag":5,"reserve":30,"damage":118.0,"interval":1.35,"reload":2.0,"recoil_pitch":0.075,"recoil_yaw":0.012,"pellets":1,"spread":0.34,"range":180.0,"impact":10.5,"energy":1.85,"penetrations":4,"noise":42.0,"ads_fov":28.0,"automatic":false,"active":[[0.20,0.085,0.40],[0.50,0.080,0.50],[0.79,0.075,0.50]]}
+{"name":"M90 BOLT SNIPER","mag":5,"reserve":30,"damage":118.0,"interval":1.35,"reload":2.0,"recoil_pitch":0.075,"recoil_yaw":0.012,"pellets":1,"spread":0.34,"range":180.0,"impact":10.5,"energy":1.85,"penetrations":4,"noise":42.0,"ads_fov":28.0,"automatic":false,"active":[[0.30,0.095,0.68],[0.72,0.085,0.72]]}
 ]
 var slot:=0
 var ammo_by_slot:=[8,30,15,5]
@@ -50,12 +50,12 @@ func _unhandled_input(event:InputEvent)->void:
   elif event.pressed and event.button_index==MOUSE_BUTTON_WHEEL_DOWN:cycle_weapon()
  if event is InputEventKey and event.pressed and not event.echo:
   if event.keycode>=KEY_1 and event.keycode<=KEY_4:switch_weapon(event.keycode-KEY_1)
-  elif event.keycode==KEY_R:request_reload()
 func _process(delta:float)->void:
  fire_timer=maxf(fire_timer-delta,0.0);bolt_timer=maxf(bolt_timer-delta,0.0)
  if bolt_pending and bolt_timer<=0.0:bolt_pending=false
  if reloading:
   reload_timer-=delta;reload_elapsed+=delta
+  _advance_missed_windows()
   if reload_timer<=0.0:_finish_reload()
  if trigger_held and bool(profiles[slot]["automatic"]):try_fire()
  if camera:camera.fov=lerpf(camera.fov,float(profiles[slot]["ads_fov"]) if aiming else base_fov,minf(delta*11.0,1.0))
@@ -114,10 +114,16 @@ func active_reload_tap()->bool:
   var perfect:=distance<=half*0.42;var saving:=float(data[2])*(1.0 if perfect else 0.52);reload_timer=maxf(0.05,reload_timer-saving);active_savings+=saving;active_reload_feedback.emit("PERFECT" if perfect else "GOOD",active_stage);active_stage+=1;return true
  if reload_elapsed>center+half:active_reload_feedback.emit("MISS",active_stage);active_stage+=1
  return false
+func _advance_missed_windows()->void:
+ var windows:Array=profiles[slot].get("active",[])
+ while active_stage<windows.size():
+  var data:Array=windows[active_stage];var center:=float(data[0])*reload_total;var half:=float(data[1])*reload_total
+  if reload_elapsed<=center+half:return
+  active_reload_feedback.emit("MISS",active_stage);active_stage+=1
 func get_active_reload_state()->Dictionary:
  var windows:Array=profiles[slot].get("active",[]);var next_center:=-1.0;var tolerance:=0.0
  if active_stage<windows.size():next_center=float(windows[active_stage][0]);tolerance=float(windows[active_stage][1])
- return {"active":reloading,"stage":active_stage,"stages":windows.size(),"progress":reload_elapsed/maxf(reload_total,0.01),"next":next_center,"tolerance":tolerance,"saved":active_savings}
+ return {"active":reloading,"stage":active_stage,"stages":windows.size(),"progress":clampf(reload_elapsed/maxf(reload_total,0.01),0.0,1.0),"next":next_center,"tolerance":tolerance,"saved":active_savings,"weapon":weapon_name}
 func _finish_reload()->void:
  var moved:=mini(magazine_size-ammo_in_mag,reserve_ammo);ammo_in_mag+=moved;reserve_ammo-=moved;reloading=false;reload_timer=0.0;reload_state_changed.emit(false);ammo_changed.emit(ammo_in_mag,reserve_ammo,magazine_size)
 func cancel_reload()->void:
