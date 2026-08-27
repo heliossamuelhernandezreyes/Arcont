@@ -30,6 +30,7 @@ var reloading := false
 
 func _ready() -> void:
 	ammo_in_mag = magazine_size
+	_build_shotgun_visual()
 	ammo_changed.emit(ammo_in_mag, reserve_ammo, magazine_size)
 
 func _process(delta: float) -> void:
@@ -150,3 +151,55 @@ func add_ammo(amount: int) -> void:
 	if amount <= 0: return
 	reserve_ammo += amount
 	ammo_changed.emit(ammo_in_mag, reserve_ammo, magazine_size)
+
+func _build_shotgun_visual() -> void:
+	if camera == null: return
+	var gun := camera.get_node_or_null("Gun") as MeshInstance3D
+	if gun == null: return
+	gun.mesh = null
+	for child in gun.get_children():
+		if child.name.begins_with("Detail"):
+			child.queue_free()
+	var steel := _weapon_material(Color(0.07, 0.085, 0.095), 0.74, 0.48)
+	var dark_steel := _weapon_material(Color(0.025, 0.03, 0.034), 0.82, 0.34)
+	var polymer := _weapon_material(Color(0.10, 0.115, 0.105), 0.12, 0.82)
+	var accent := _weapon_material(Color(0.34, 0.16, 0.055), 0.18, 0.68)
+	_add_box(gun, "DetailReceiver", Vector3(0, 0, 0), Vector3(0.26, 0.19, 0.58), steel)
+	_add_box(gun, "DetailStock", Vector3(0, -0.015, 0.42), Vector3(0.24, 0.17, 0.34), polymer)
+	_add_box(gun, "DetailGrip", Vector3(0, -0.17, 0.14), Vector3(0.16, 0.28, 0.16), polymer, Vector3(-13, 0, 0))
+	_add_cylinder(gun, "DetailBarrel", Vector3(0, 0.035, -0.62), 0.055, 0.96, dark_steel)
+	_add_cylinder(gun, "DetailTube", Vector3(0, -0.075, -0.52), 0.047, 0.78, steel)
+	_add_box(gun, "DetailPump", Vector3(0, -0.075, -0.35), Vector3(0.20, 0.15, 0.31), accent)
+	_add_box(gun, "DetailRail", Vector3(0, 0.12, -0.02), Vector3(0.10, 0.045, 0.44), dark_steel)
+	_add_box(gun, "DetailSight", Vector3(0, 0.17, -0.28), Vector3(0.055, 0.075, 0.09), dark_steel)
+
+func _weapon_material(color: Color, metallic: float, roughness: float) -> StandardMaterial3D:
+	var material := StandardMaterial3D.new()
+	material.albedo_color = color
+	material.metallic = metallic
+	material.roughness = roughness
+	return material
+
+func _add_box(parent: Node3D, node_name: String, position: Vector3, size: Vector3, material: Material, rotation_deg := Vector3.ZERO) -> void:
+	var node := MeshInstance3D.new()
+	node.name = node_name
+	node.position = position
+	node.rotation_degrees = rotation_deg
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	node.mesh = mesh
+	node.material_override = material
+	parent.add_child(node)
+
+func _add_cylinder(parent: Node3D, node_name: String, position: Vector3, radius: float, length: float, material: Material) -> void:
+	var node := MeshInstance3D.new()
+	node.name = node_name
+	node.position = position
+	node.rotation_degrees = Vector3(90, 0, 0)
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = radius
+	mesh.bottom_radius = radius
+	mesh.height = length
+	node.mesh = mesh
+	node.material_override = material
+	parent.add_child(node)
