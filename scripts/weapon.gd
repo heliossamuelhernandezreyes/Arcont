@@ -30,21 +30,32 @@ var reloading := false
 func _ready() -> void:
 	ammo_in_mag = magazine_size
 	ammo_changed.emit(ammo_in_mag, reserve_ammo, magazine_size)
+
 func _process(delta: float) -> void:
-	fire_timer = maxf(fire_timer-delta,0.0)
+	fire_timer = maxf(fire_timer - delta, 0.0)
 	if reloading:
 		reload_timer -= delta
-		if reload_timer <= 0.0: _finish_reload()
+		if reload_timer <= 0.0:
+			_finish_reload()
+
 func try_fire() -> bool:
-	if reloading or fire_timer > 0.0: return false
-	if ammo_in_mag <= 0: request_reload(); return false
-	fire_timer = fire_interval; ammo_in_mag -= 1
-	ammo_changed.emit(ammo_in_mag,reserve_ammo,magazine_size)
-	shot_fired.emit(); recoil_requested.emit(recoil_pitch,randf_range(-recoil_yaw,recoil_yaw))
-	_fire_shotgun(); return true
+	if reloading or fire_timer > 0.0:
+		return false
+	if ammo_in_mag <= 0:
+		request_reload()
+		return false
+	fire_timer = fire_interval
+	ammo_in_mag -= 1
+	ammo_changed.emit(ammo_in_mag, reserve_ammo, magazine_size)
+	shot_fired.emit()
+	recoil_requested.emit(recoil_pitch, randf_range(-recoil_yaw, recoil_yaw))
+	_fire_shotgun()
+	return true
+
 func _fire_shotgun() -> void:
 	var world := camera.get_world_3d()
-	if world == null: return
+	if world == null:
+		return
 	var origin := camera.global_position
 	var forward := -camera.global_transform.basis.z
 	var right := camera.global_transform.basis.x
@@ -52,10 +63,12 @@ func _fire_shotgun() -> void:
 	var spread := tan(deg_to_rad(spread_degrees))
 	var player := camera.get_parent().get_parent().get_parent() as CollisionObject3D
 	var exclude: Array[RID] = []
-	if player: exclude.append(player.get_rid())
+	if player:
+		exclude.append(player.get_rid())
 	for _i in pellets:
-		var direction := (forward + right*randf_range(-spread,spread) + up*randf_range(-spread,spread)).normalized()
-		_trace_pellet(world.direct_space_state,origin,direction,exclude)
+		var direction := (forward + right * randf_range(-spread, spread) + up * randf_range(-spread, spread)).normalized()
+		_trace_pellet(world.direct_space_state, origin, direction, exclude)
+
 func _trace_pellet(space_state: PhysicsDirectSpaceState3D, origin: Vector3, direction: Vector3, exclude: Array[RID]) -> void:
 	var energy := penetration_energy
 	var current_origin := origin
@@ -64,37 +77,61 @@ func _trace_pellet(space_state: PhysicsDirectSpaceState3D, origin: Vector3, dire
 	var local_exclude := exclude.duplicate()
 	while energy > 0.05 and travelled < range:
 		var remaining := range - travelled
-		var query := PhysicsRayQueryParameters3D.create(current_origin,current_origin + direction*remaining)
-		query.exclude = local_exclude; query.collide_with_areas = false
+		var query := PhysicsRayQueryParameters3D.create(current_origin, current_origin + direction * remaining)
+		query.exclude = local_exclude
+		query.collide_with_areas = false
 		var result := space_state.intersect_ray(query)
-		if result.is_empty(): return
+		if result.is_empty():
+			return
 		var collider: Object = result.get("collider")
-		var hit_point: Vector3 = result.get("position",current_origin)
-		var hit_normal: Vector3 = result.get("normal",-direction)
+		var hit_point: Vector3 = result.get("position", current_origin)
+		var hit_normal: Vector3 = result.get("normal", -direction)
 		travelled += current_origin.distance_to(hit_point)
 		var organic := bool(collider != null and collider.has_method("apply_hit"))
-		impact_feedback.emit(hit_point,hit_normal,organic)
+		impact_feedback.emit(hit_point, hit_normal, organic)
 		if organic:
-			var scale := Ballistics.damage_scale(energy,penetration_energy)
-			collider.apply_hit(hit_point,direction,damage*scale,"shotgun",impact_force*scale)
+			var scale := Ballistics.damage_scale(energy, penetration_energy)
+			collider.apply_hit(hit_point, direction, damage * scale, "shotgun", impact_force * scale)
 			return
-		var new_energy := Ballistics.energy_after_surface(energy,collider)
-		if new_energy <= 0.05 or penetrations >= max_penetrations: return
-		energy = new_energy; penetrations += 1
-		if collider is CollisionObject3D: local_exclude.append((collider as CollisionObject3D).get_rid())
+		if collider != null and collider.has_method("apply_ballistic_hit"):
+			collider.apply_ballistic_hit(damage, energy, hit_point, direction)
+		var new_energy := Ballistics.energy_after_surface(energy, collider)
+		if new_energy <= 0.05 or penetrations >= max_penetrations:
+			return
+		energy = new_energy
+		penetrations += 1
+		if collider is CollisionObject3D:
+			local_exclude.append((collider as CollisionObject3D).get_rid())
 		var skip_distance := Ballistics.thickness_for(collider) + 0.08
-		current_origin = hit_point + direction*skip_distance
+		current_origin = hit_point + direction * skip_distance
 		travelled += skip_distance
+
 func request_reload() -> bool:
-	if reloading or ammo_in_mag >= magazine_size or reserve_ammo <= 0: return false
-	reloading = true; reload_timer = reload_time; reload_state_changed.emit(true); return true
+	if reloading or ammo_in_mag >= magazine_size or reserve_ammo <= 0:
+		return false
+	reloading = true
+	reload_timer = reload_time
+	reload_state_changed.emit(true)
+	return true
+
 func _finish_reload() -> void:
-	var moved := mini(magazine_size-ammo_in_mag,reserve_ammo)
-	ammo_in_mag += moved; reserve_ammo -= moved; reloading = false; reload_timer = 0.0
-	reload_state_changed.emit(false); ammo_changed.emit(ammo_in_mag,reserve_ammo,magazine_size)
+	var moved := mini(magazine_size - ammo_in_mag, reserve_ammo)
+	ammo_in_mag += moved
+	reserve_ammo -= moved
+	reloading = false
+	reload_timer = 0.0
+	reload_state_changed.emit(false)
+	ammo_changed.emit(ammo_in_mag, reserve_ammo, magazine_size)
+
 func cancel_reload() -> void:
-	if not reloading: return
-	reloading = false; reload_timer = 0.0; reload_state_changed.emit(false)
+	if not reloading:
+		return
+	reloading = false
+	reload_timer = 0.0
+	reload_state_changed.emit(false)
+
 func add_ammo(amount: int) -> void:
-	if amount <= 0: return
-	reserve_ammo += amount; ammo_changed.emit(ammo_in_mag,reserve_ammo,magazine_size)
+	if amount <= 0:
+		return
+	reserve_ammo += amount
+	ammo_changed.emit(ammo_in_mag, reserve_ammo, magazine_size)
