@@ -40,7 +40,7 @@ script = ExtResource("2_main")
 script = ExtResource("5_budget")
 [node name="AwarenessDirector" type="Node" parent="."]
 script = ExtResource("10_awareness")
-[node name="NavigationGraph" type="Node" parent="."]
+[node name="NavigationGraph" type="Node3D" parent="."]
 script = ExtResource("11_navigation")
 [node name="CombatFeedback" type="Node" parent="."]
 script = ExtResource("6_feedback")
