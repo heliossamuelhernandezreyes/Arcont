@@ -7,10 +7,10 @@ extends Node
 @export var shake_decay := 10.0
 @export var mobile_effect_scale := 0.65
 
-@onready var camera: Camera3D = $"../Player/Head/Camera3D"
-@onready var gun: MeshInstance3D = $"../Player/Head/Camera3D/Gun"
+@onready var camera: Camera3D = $"../Player/CameraRig/Camera3D"
+@onready var gun: MeshInstance3D = $"../Player/CameraRig/Camera3D/Gun"
 @onready var hitmarker: Label = $"../HUD/HitMarker"
-@onready var muzzle: OmniLight3D = $"../Player/Head/Camera3D/MuzzleFlash"
+@onready var muzzle: OmniLight3D = $"../Player/CameraRig/Camera3D/MuzzleFlash"
 
 var hitmarker_timer := 0.0
 var muzzle_timer := 0.0
@@ -52,15 +52,12 @@ func on_hit_feedback(hit_point: Vector3, hit_normal: Vector3, organic: bool) -> 
 	hitmarker_timer = hitmarker_time
 	hitmarker.visible = true
 	shake_strength = maxf(shake_strength, 0.28 * visual_scale)
-	if organic:
-		_spawn_blood(hit_point, hit_normal)
-	else:
-		_spawn_impact_decal(hit_point, hit_normal)
+	if organic: _spawn_blood(hit_point, hit_normal)
+	else: _spawn_impact_decal(hit_point, hit_normal)
 
 func _spawn_blood(hit_point: Vector3, hit_normal: Vector3) -> void:
 	var root := get_tree().current_scene
-	if root == null:
-		return
+	if root == null: return
 	var puff := MeshInstance3D.new()
 	var sphere := SphereMesh.new()
 	sphere.radius = 0.08 * visual_scale
@@ -79,8 +76,7 @@ func _spawn_blood(hit_point: Vector3, hit_normal: Vector3) -> void:
 
 func _spawn_impact_decal(hit_point: Vector3, hit_normal: Vector3) -> void:
 	var root := get_tree().current_scene
-	if root == null:
-		return
+	if root == null: return
 	var mark := MeshInstance3D.new()
 	var quad := QuadMesh.new()
 	quad.size = Vector2(0.10, 0.10) * visual_scale
@@ -91,8 +87,7 @@ func _spawn_impact_decal(hit_point: Vector3, hit_normal: Vector3) -> void:
 	mark.material_override = mat
 	root.add_child(mark)
 	mark.global_position = hit_point + hit_normal * 0.012
-	if absf(hit_normal.dot(Vector3.UP)) < 0.99:
-		mark.look_at(hit_point + hit_normal, Vector3.UP)
+	if absf(hit_normal.dot(Vector3.UP)) < 0.99: mark.look_at(hit_point + hit_normal, Vector3.UP)
 	root.get_tree().create_timer(decal_lifetime).timeout.connect(mark.queue_free)
 
 func _setup_placeholder_audio() -> void:
@@ -106,16 +101,12 @@ func _setup_placeholder_audio() -> void:
 	audio_player.play()
 
 func _play_placeholder_shot() -> void:
-	if audio_player == null or not audio_player.playing:
-		return
+	if audio_player == null or not audio_player.playing: return
 	var playback := audio_player.get_stream_playback() as AudioStreamGeneratorPlayback
-	if playback == null:
-		return
+	if playback == null: return
 	var frames := 1500
 	for i in frames:
 		var t := float(i) / audio_generator.mix_rate
 		var env := exp(-34.0 * t)
-		var low := sin(TAU * 82.0 * t) * 0.55
-		var crack := randf_range(-1.0, 1.0) * 0.45
-		var sample := clampf((low + crack) * env, -1.0, 1.0)
+		var sample := clampf((sin(TAU * 82.0 * t) * 0.55 + randf_range(-1.0, 1.0) * 0.45) * env, -1.0, 1.0)
 		playback.push_frame(Vector2(sample, sample))
