@@ -155,6 +155,12 @@ offset_top=595.0
 offset_right=1260.0
 offset_bottom=625.0
 text=""
+[node name="Throwable" type="Label" parent="HUD"]
+offset_left=960.0
+offset_top=555.0
+offset_right=1260.0
+offset_bottom=585.0
+text="ARROJABLE // GRANADA  x3"
 [node name="MobileControls" type="Control" parent="HUD"]
 layout_mode=3
 anchors_preset=15
