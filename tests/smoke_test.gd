@@ -2,7 +2,7 @@ extends SceneTree
 
 func _init() -> void:
 	var failures: Array[String] = []
-	_check_scene("res://scenes/main.tscn", ["PerformanceBudget", "CombatFeedback", "Player", "Player/Head/Camera3D/Weapon", "Player/Head/Camera3D/MuzzleFlash", "Enemies", "HUD/Wave", "HUD/Alive", "HUD/Health", "HUD/Ammo", "HUD/Reload", "HUD/HitMarker", "HUD/MobileControls"], failures)
+	_check_scene("res://scenes/main.tscn", ["PerformanceBudget", "CombatFeedback", "UrbanDistrict", "Player", "Player/Head/Camera3D/Weapon", "Player/Head/Camera3D/MuzzleFlash", "Enemies", "HUD/Wave", "HUD/Alive", "HUD/Health", "HUD/Ammo", "HUD/Reload", "HUD/HitMarker", "HUD/MobileControls"], failures)
 	_check_scene("res://scenes/enemy.tscn", ["Collision", "Body", "Head", "ArmL", "ArmR"], failures)
 	_check_script_method("res://scripts/player.gd", "_try_fire", failures)
 	_check_script_method("res://scripts/player.gd", "apply_damage", failures)
@@ -32,7 +32,12 @@ func _init() -> void:
 	_check_script_method("res://scripts/enemy.gd", "deactivate", failures)
 	_check_script_method("res://scripts/enemy.gd", "set_performance_profile", failures)
 	_check_script_method("res://scripts/performance_budget.gd", "_apply_tier", failures)
+	_check_script_method("res://scripts/urban_environment.gd", "_build_city_blocks", failures)
+	_check_script_method("res://scripts/urban_environment.gd", "_build_alien_incursion", failures)
+	_check_script_method("res://scripts/urban_environment.gd", "_build_spawn_points", failures)
 	_check_script_method("res://scripts/main.gd", "_start_next_wave", failures)
+	_check_script_method("res://scripts/main.gd", "_collect_spawn_points", failures)
+	_check_script_method("res://scripts/main.gd", "_spawn_position_for", failures)
 	_check_script_method("res://scripts/main.gd", "_on_performance_profile_changed", failures)
 
 	if failures.is_empty():
