@@ -1,7 +1,8 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource path="res://scripts/player.gd" type="Script" id="1_player"]
 [ext_resource path="res://scripts/main.gd" type="Script" id="2_main"]
+[ext_resource path="res://scripts/mobile_controls.gd" type="Script" id="3_mobile"]
 
 [sub_resource type="BoxMesh" id="BoxFloor"]
 size = Vector3(30, 0.2, 30)
@@ -78,7 +79,7 @@ shape = SubResource("ShapeWall")
 
 [node name="Enemies" type="Node3D" parent="."]
 
-[node name="Player" type="CharacterBody3D" parent="."]
+[node name="Player" type="CharacterBody3D" parent="." groups=["player"]]
 position = Vector3(0, 1.05, 7)
 script = ExtResource("1_player")
 [node name="Collision" type="CollisionShape3D" parent="Player"]
@@ -107,9 +108,9 @@ theme_override_font_sizes/font_size = 24
 [node name="Info" type="Label" parent="HUD"]
 offset_left = 20.0
 offset_top = 18.0
-offset_right = 520.0
+offset_right = 620.0
 offset_bottom = 80.0
-text = "ARCONT // HORDE PROTOTYPE\nWASD · Mouse · Shift · Space · Click"
+text = "ARCONT // MOBILE-FIRST HORDE PROTOTYPE\nTouch · Gamepad · WASD/Mouse"
 [node name="Wave" type="Label" parent="HUD"]
 offset_left = 20.0
 offset_top = 92.0
@@ -124,3 +125,13 @@ offset_right = 240.0
 offset_bottom = 150.0
 text = "HOSTILES 08"
 theme_override_font_sizes/font_size = 18
+
+[node name="MobileControls" type="Control" parent="HUD"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_mobile")
