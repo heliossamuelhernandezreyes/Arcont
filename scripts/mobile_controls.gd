@@ -24,13 +24,25 @@ var throwable_cycle_touch:=-1
 var move_origin:=Vector2.ZERO
 var move_vector:=Vector2.ZERO
 var touch_enabled:=false
+var reload_feedback_text:=""
+var reload_feedback_timer:=0.0
 
 func _ready()->void:
 	touch_enabled=force_visible or DisplayServer.is_touchscreen_available()
 	visible=touch_enabled
 	set_process_input(touch_enabled)
+	set_process(touch_enabled)
 	call_deferred("_bind_player")
 	queue_redraw()
+
+func _process(delta:float)->void:
+	if not touch_enabled:return
+	if reload_feedback_timer>0.0:
+		reload_feedback_timer=maxf(reload_feedback_timer-delta,0.0)
+		if reload_feedback_timer<=0.0:reload_feedback_text=""
+	if weapon and is_instance_valid(weapon) and weapon.has_method("get_active_reload_state"):
+		var state:Dictionary=weapon.get_active_reload_state()
+		if bool(state.get("active",false)) or reload_feedback_timer>0.0:queue_redraw()
 
 func _bind_player()->void:
 	player=get_tree().get_first_node_in_group("player")
@@ -40,6 +52,17 @@ func _bind_player()->void:
 		var scene:=get_tree().current_scene
 		if scene:player=scene.get_node_or_null("Player")
 	if player:weapon=player.get_node_or_null("CameraRig/Camera3D/Weapon")
+	_bind_weapon_feedback()
+
+func _bind_weapon_feedback()->void:
+	if weapon==null or not is_instance_valid(weapon):return
+	var callback:=Callable(self,"_on_active_reload_feedback")
+	if weapon.has_signal("active_reload_feedback") and not weapon.is_connected("active_reload_feedback",callback):weapon.connect("active_reload_feedback",callback)
+
+func _on_active_reload_feedback(result:String,_stage:int)->void:
+	reload_feedback_text=result
+	reload_feedback_timer=0.52
+	queue_redraw()
 
 func _input(event:InputEvent)->void:
 	if not touch_enabled:return
@@ -48,7 +71,9 @@ func _input(event:InputEvent)->void:
 		if player==null:return
 	if companion==null or not is_instance_valid(companion):companion=get_tree().get_first_node_in_group("friendly_companion")
 	if throwables==null or not is_instance_valid(throwables):throwables=get_tree().get_first_node_in_group("throwable_controller")
-	if weapon==null or not is_instance_valid(weapon):weapon=player.get_node_or_null("CameraRig/Camera3D/Weapon")
+	if weapon==null or not is_instance_valid(weapon):
+		weapon=player.get_node_or_null("CameraRig/Camera3D/Weapon")
+		_bind_weapon_feedback()
 	if event is InputEventScreenTouch:_handle_touch(event)
 	elif event is InputEventScreenDrag:_handle_drag(event)
 
@@ -113,21 +138,18 @@ func _assign_touch(index:int,position:Vector2)->void:
 		move_origin=position
 		move_vector=Vector2.ZERO
 		if player.has_method("set_mobile_move"):player.set_mobile_move(move_vector)
-	elif look_touch==-1:
-		look_touch=index
+	elif look_touch==-1:look_touch=index
 
 func _handle_drag(event:InputEventScreenDrag)->void:
 	if event.index==move_touch:
 		move_vector=((event.position-move_origin)/joystick_radius).limit_length(1.0)
 		if player.has_method("set_mobile_move"):player.set_mobile_move(move_vector)
 		queue_redraw()
-	elif event.index==look_touch and player.has_method("add_mobile_look"):
-		player.add_mobile_look(event.relative)
+	elif event.index==look_touch and player.has_method("add_mobile_look"):player.add_mobile_look(event.relative)
 
 func _release_touch(index:int)->void:
 	if index==move_touch:
-		move_touch=-1
-		move_vector=Vector2.ZERO
+		move_touch=-1;move_vector=Vector2.ZERO
 		if player and player.has_method("set_mobile_move"):player.set_mobile_move(Vector2.ZERO)
 	elif index==look_touch:look_touch=-1
 	elif index==fire_touch:
@@ -166,11 +188,40 @@ func _draw()->void:
 	_draw_button(_crouch_center(),button_radius*0.68,"CRCH")
 	_draw_button(_dodge_center(),button_radius*0.70,"DODGE")
 	_draw_button(_reload_center(),button_radius*0.72,"RLD")
+	_draw_active_reload()
 	_draw_button(_cover_center(),button_radius*0.72,"COV")
 	_draw_button(_command_center(),button_radius*0.72,"R3")
 	_draw_button(_throw_center(),button_radius*0.72,"THR")
 	_draw_button(_throw_cycle_center(),button_radius*0.64,"TYPE")
 	_draw_button(_sprint_center(),button_radius*0.78,"RUN")
+
+func _draw_active_reload()->void:
+	if weapon==null or not is_instance_valid(weapon) or not weapon.has_method("get_active_reload_state"):return
+	var state:Dictionary=weapon.get_active_reload_state()
+	var center:=_reload_center()
+	var radius:=button_radius*0.91
+	if bool(state.get("active",false)):
+		var progress:=clampf(float(state.get("progress",0.0)),0.0,1.0)
+		var start:=-PI*0.5
+		draw_arc(center,radius,start,start+TAU*progress,40,Color(0.72,0.88,1.0,0.95),4.0)
+		var next:=float(state.get("next",-1.0));var tolerance:=float(state.get("tolerance",0.0))
+		if next>=0.0:
+			var window_start:=start+TAU*clampf(next-tolerance,0.0,1.0)
+			var window_end:=start+TAU*clampf(next+tolerance,0.0,1.0)
+			draw_arc(center,radius+5.0,window_start,window_end,18,Color(0.42,1.0,0.70,0.95),6.0)
+		var stages:=int(state.get("stages",0));var current:=int(state.get("stage",0))
+		for i in stages:
+			var x:=(float(i)-float(stages-1)*0.5)*14.0
+			var done:=i<current
+			draw_circle(center+Vector2(x,-radius-12.0),4.0,Color(0.78,0.95,1.0,0.95) if done else Color(0.45,0.50,0.58,0.75))
+	if reload_feedback_timer>0.0 and not reload_feedback_text.is_empty():
+		var feedback_color:=Color(0.60,0.95,1.0,1.0)
+		if reload_feedback_text=="GOOD":feedback_color=Color(0.86,0.95,0.82,1.0)
+		elif reload_feedback_text=="MISS":feedback_color=Color(1.0,0.45,0.42,1.0)
+		var font:=ThemeDB.fallback_font
+		var font_size:=16
+		var width:=font.get_string_size(reload_feedback_text,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size).x
+		draw_string(font,center+Vector2(-width*0.5,-radius-24.0),reload_feedback_text,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,feedback_color)
 
 func _draw_button(center:Vector2,radius:float,label:String)->void:
 	draw_circle(center,radius,Color(0.20,0.24,0.30,0.38))
