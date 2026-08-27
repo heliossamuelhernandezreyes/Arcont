@@ -10,9 +10,23 @@ static func has_line_of_sight(actor: CollisionObject3D, target: Node3D, from_hei
 	query.exclude = [actor.get_rid()]
 	query.collide_with_areas = false
 	var result := actor.get_world_3d().direct_space_state.intersect_ray(query)
-	if result.is_empty():
-		return true
-	return result.get("collider") == target
+	var visible := result.is_empty() or result.get("collider") == target
+	if visible:
+		_report_contact_throttled(actor, target.global_position)
+	return visible
+
+static func _report_contact_throttled(actor: CollisionObject3D, position: Vector3) -> void:
+	var now := Time.get_ticks_msec()
+	var last := int(actor.get_meta("last_radio_report_ms", -100000))
+	if now - last < 1200:
+		return
+	actor.set_meta("last_radio_report_ms", now)
+	var scene := actor.get_tree().current_scene
+	if scene == null:
+		return
+	var awareness := scene.get_node_or_null("AwarenessDirector")
+	if awareness and awareness.has_method("report_contact"):
+		awareness.report_contact(position, "armed")
 
 static func point_has_cover(actor: CollisionObject3D, target: Node3D, point: Vector3) -> bool:
 	if actor == null or target == null or actor.get_world_3d() == null:
