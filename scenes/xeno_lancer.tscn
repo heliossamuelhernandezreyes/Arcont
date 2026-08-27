@@ -26,24 +26,26 @@ emission_energy_multiplier = 2.2
 
 [node name="XenoLancer" type="CharacterBody3D"]
 script = ExtResource("1")
-
 [node name="Collision" type="CollisionShape3D" parent="."]
 shape = SubResource("Shape")
-
 [node name="Body" type="MeshInstance3D" parent="."]
 position = Vector3(0,0.15,0)
 mesh = SubResource("BodyMesh")
 material_override = SubResource("BodyMat")
-
 [node name="Weapon" type="MeshInstance3D" parent="."]
 position = Vector3(0.42,0.42,-0.22)
 rotation_degrees = Vector3(-8,0,0)
 mesh = SubResource("WeaponMesh")
 material_override = SubResource("WeaponMat")
-
 [node name="CoreLight" type="OmniLight3D" parent="."]
 position = Vector3(0,0.72,0)
 light_color = Color(0.72,0.08,1,1)
 light_energy = 1.4
 omni_range = 4.2
 shadow_enabled = false
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+path_desired_distance = 0.8
+target_desired_distance = 1.0
+radius = 0.45
+height = 1.9
+avoidance_enabled = false
