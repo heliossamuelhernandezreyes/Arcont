@@ -19,7 +19,7 @@ jobs:
         id: input
         shell: bash
         run: |
-          if [ -f tools/3d-pipeline/input/arcont_survivor.jpg ]; then
+          if [ -f tools/3d-pipeline/input/arcont_survivor.b64 ]; then
             echo "present=true" >> "$GITHUB_OUTPUT"
           else
             echo "present=false" >> "$GITHUB_OUTPUT"
@@ -31,6 +31,17 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+
+      - name: Decode and validate reference
+        if: steps.input.outputs.present == 'true'
+        run: |
+          base64 -d tools/3d-pipeline/input/arcont_survivor.b64 > /tmp/arcont_survivor.jpg
+          python - <<'PY'
+          from PIL import Image
+          im = Image.open('/tmp/arcont_survivor.jpg')
+          im.verify()
+          print('Validated reference image:', im.format, im.size)
+          PY
 
       - name: Install CPU PyTorch
         if: steps.input.outputs.present == 'true'
@@ -53,7 +64,7 @@ jobs:
         run: |
           mkdir -p tools/3d-pipeline/output
           cd /tmp/TripoSR
-          python run.py "$GITHUB_WORKSPACE/tools/3d-pipeline/input/arcont_survivor.jpg" \
+          python run.py /tmp/arcont_survivor.jpg \
             --device cpu \
             --chunk-size 1024 \
             --mc-resolution 128 \
