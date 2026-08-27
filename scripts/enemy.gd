@@ -1,6 +1,7 @@
 extends CharacterBody3D
 
 signal died(enemy: Node)
+signal limb_lost(enemy: Node, limb: String)
 
 @export var max_health := 100.0
 @export var move_speed := 2.4
@@ -10,6 +11,11 @@ signal died(enemy: Node)
 @export var separation_radius := 1.15
 @export var separation_strength := 1.35
 @export var gib_lifetime := 6.0
+@export var head_health := 42.0
+@export var arm_health := 34.0
+@export var leg_health := 44.0
+@export var leg_speed_penalty := 0.32
+@export var both_legs_speed_penalty := 0.58
 
 var health := 100.0
 var target: Node3D
@@ -22,10 +28,20 @@ var ai_timer := 0.0
 var desired_direction := Vector3.ZERO
 var gore_parts_limit := 6
 
+var limb_hp := {}
+var head_missing := false
+var arm_l_missing := false
+var arm_r_missing := false
+var leg_l_disabled := false
+var leg_r_disabled := false
+
 @onready var collision: CollisionShape3D = $Collision
+@onready var head_mesh: MeshInstance3D = $Head
+@onready var arm_l_mesh: MeshInstance3D = $ArmL
+@onready var arm_r_mesh: MeshInstance3D = $ArmR
 
 func _ready() -> void:
-	health = max_health
+	_reset_anatomy()
 	target = get_tree().get_first_node_in_group("player") as Node3D
 	ai_timer = randf_range(0.0, ai_interval)
 	add_to_group("enemies_active")
@@ -42,6 +58,7 @@ func activate(at_position: Vector3, new_target: Node3D, new_ai_interval := 0.08,
 	ai_interval = maxf(new_ai_interval, 0.03)
 	gore_parts_limit = clampi(new_gore_parts, 0, 6)
 	ai_timer = randf_range(0.0, ai_interval)
+	_reset_anatomy()
 	if not is_in_group("enemies_active"):
 		add_to_group("enemies_active")
 	collision.set_deferred("disabled", false)
@@ -61,6 +78,27 @@ func set_performance_profile(new_ai_interval: float, new_gore_parts: int) -> voi
 	ai_interval = maxf(new_ai_interval, 0.03)
 	gore_parts_limit = clampi(new_gore_parts, 0, 6)
 
+func _reset_anatomy() -> void:
+	health = max_health
+	limb_hp = {
+		"head": head_health,
+		"arm_l": arm_health,
+		"arm_r": arm_health,
+		"leg_l": leg_health,
+		"leg_r": leg_health
+	}
+	head_missing = false
+	arm_l_missing = false
+	arm_r_missing = false
+	leg_l_disabled = false
+	leg_r_disabled = false
+	if is_instance_valid(head_mesh):
+		head_mesh.visible = true
+	if is_instance_valid(arm_l_mesh):
+		arm_l_mesh.visible = true
+	if is_instance_valid(arm_r_mesh):
+		arm_r_mesh.visible = true
+
 func _physics_process(delta: float) -> void:
 	if dead or not active:
 		return
@@ -71,9 +109,17 @@ func _physics_process(delta: float) -> void:
 		_update_ai_direction()
 	if not is_on_floor():
 		velocity.y -= gravity * delta
-	velocity.x = move_toward(velocity.x, desired_direction.x * move_speed, acceleration * delta)
-	velocity.z = move_toward(velocity.z, desired_direction.z * move_speed, acceleration * delta)
+	var effective_speed := _current_move_speed()
+	velocity.x = move_toward(velocity.x, desired_direction.x * effective_speed, acceleration * delta)
+	velocity.z = move_toward(velocity.z, desired_direction.z * effective_speed, acceleration * delta)
 	move_and_slide()
+
+func _current_move_speed() -> float:
+	if leg_l_disabled and leg_r_disabled:
+		return move_speed * (1.0 - both_legs_speed_penalty)
+	if leg_l_disabled or leg_r_disabled:
+		return move_speed * (1.0 - leg_speed_penalty)
+	return move_speed
 
 func _update_ai_direction() -> void:
 	if target == null or not is_instance_valid(target):
@@ -103,24 +149,138 @@ func _update_ai_direction() -> void:
 		if target.has_method("apply_damage"):
 			var push_direction := target.global_position - global_position
 			push_direction.y = 0.0
-			target.apply_damage(contact_damage, push_direction)
+			var arm_factor := 1.0
+			if arm_l_missing and arm_r_missing:
+				arm_factor = 0.45
+			elif arm_l_missing or arm_r_missing:
+				arm_factor = 0.72
+			target.apply_damage(contact_damage * arm_factor, push_direction)
 
-func apply_hit(hit_point: Vector3, shot_direction: Vector3, base_damage := 34.0) -> void:
+func apply_hit(hit_point: Vector3, shot_direction: Vector3, base_damage := 34.0, damage_type := "ballistic") -> void:
 	if dead or not active:
 		return
 	var local_hit := to_local(hit_point)
-	var multiplier := 1.0
-	var zone := "torso"
-	if local_hit.y > 0.72:
-		zone = "head"
-		multiplier = 2.4
-	elif local_hit.y < -0.45:
-		zone = "legs"
-		multiplier = 0.7
+	var zone := _zone_from_local_hit(local_hit)
+	var multiplier := _zone_multiplier(zone)
 	var damage := base_damage * multiplier
+	var limb_damage := damage
+	if damage_type == "shotgun":
+		limb_damage *= 1.35
+	elif damage_type == "heavy":
+		limb_damage *= 1.6
+
+	if zone == "head" and not head_missing:
+		_damage_limb("head", limb_damage, shot_direction)
+	elif zone == "arm_l" and not arm_l_missing:
+		_damage_limb("arm_l", limb_damage, shot_direction)
+	elif zone == "arm_r" and not arm_r_missing:
+		_damage_limb("arm_r", limb_damage, shot_direction)
+	elif zone == "leg_l" and not leg_l_disabled:
+		_damage_limb("leg_l", limb_damage, shot_direction)
+	elif zone == "leg_r" and not leg_r_disabled:
+		_damage_limb("leg_r", limb_damage, shot_direction)
+
 	health -= damage
 	if health <= 0.0:
 		_die(shot_direction, zone)
+
+func _zone_from_local_hit(local_hit: Vector3) -> String:
+	if local_hit.y > 1.38:
+		return "head"
+	if local_hit.y > 0.78:
+		if local_hit.x < -0.24:
+			return "arm_l"
+		if local_hit.x > 0.24:
+			return "arm_r"
+		return "torso"
+	if local_hit.y < 0.52:
+		return "leg_l" if local_hit.x < 0.0 else "leg_r"
+	return "torso"
+
+func _zone_multiplier(zone: String) -> float:
+	match zone:
+		"head":
+			return 2.4
+		"arm_l", "arm_r":
+			return 0.85
+		"leg_l", "leg_r":
+			return 0.75
+		_:
+			return 1.0
+
+func _damage_limb(limb: String, amount: float, shot_direction: Vector3) -> void:
+	if not limb_hp.has(limb):
+		return
+	limb_hp[limb] = float(limb_hp[limb]) - amount
+	if float(limb_hp[limb]) > 0.0:
+		return
+	_sever_limb(limb, shot_direction)
+
+func _sever_limb(limb: String, shot_direction: Vector3) -> void:
+	match limb:
+		"head":
+			if head_missing:
+				return
+			head_missing = true
+			head_mesh.visible = false
+			_spawn_single_gib(Vector3(0.0, 1.78, 0.0), Vector3(0.42, 0.42, 0.42), 1.2, shot_direction)
+			limb_lost.emit(self, limb)
+			_die(shot_direction, "head")
+		"arm_l":
+			if arm_l_missing:
+				return
+			arm_l_missing = true
+			arm_l_mesh.visible = false
+			_spawn_single_gib(Vector3(-0.48, 1.05, -0.10), Vector3(0.18, 0.72, 0.18), 1.1, shot_direction)
+			limb_lost.emit(self, limb)
+		"arm_r":
+			if arm_r_missing:
+				return
+			arm_r_missing = true
+			arm_r_mesh.visible = false
+			_spawn_single_gib(Vector3(0.48, 1.05, -0.10), Vector3(0.18, 0.72, 0.18), 1.1, shot_direction)
+			limb_lost.emit(self, limb)
+		"leg_l":
+			if leg_l_disabled:
+				return
+			leg_l_disabled = true
+			_spawn_single_gib(Vector3(-0.18, 0.30, 0.0), Vector3(0.24, 0.70, 0.26), 1.7, shot_direction)
+			limb_lost.emit(self, limb)
+		"leg_r":
+			if leg_r_disabled:
+				return
+			leg_r_disabled = true
+			_spawn_single_gib(Vector3(0.18, 0.30, 0.0), Vector3(0.24, 0.70, 0.26), 1.7, shot_direction)
+			limb_lost.emit(self, limb)
+
+func _spawn_single_gib(offset: Vector3, size: Vector3, mass_value: float, shot_direction: Vector3) -> void:
+	if gore_parts_limit <= 0:
+		return
+	var root := get_tree().current_scene
+	if root == null:
+		return
+	var body := RigidBody3D.new()
+	body.add_to_group("gib")
+	body.mass = mass_value
+	body.global_position = global_position + offset
+	body.rotation = rotation
+	var mesh_instance := MeshInstance3D.new()
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	mesh_instance.mesh = mesh
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.28, 0.45, 0.22)
+	mesh_instance.material_override = mat
+	body.add_child(mesh_instance)
+	var shape_node := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = size
+	shape_node.shape = shape
+	body.add_child(shape_node)
+	root.add_child(body)
+	body.apply_central_impulse((shot_direction.normalized() * 5.0 + Vector3.UP * 1.6) * mass_value)
+	body.apply_torque_impulse(Vector3(randf_range(-2.0, 2.0), randf_range(-2.0, 2.0), randf_range(-2.0, 2.0)))
+	root.get_tree().create_timer(gib_lifetime).timeout.connect(body.queue_free)
 
 func _die(shot_direction: Vector3, zone: String) -> void:
 	if dead:
@@ -135,14 +295,18 @@ func _spawn_physics_parts(shot_direction: Vector3, zone: String) -> void:
 	var root := get_tree().current_scene
 	if root == null:
 		return
-	var parts := [
-		{"offset": Vector3(0, 0.72, 0), "size": Vector3(0.42, 0.42, 0.42), "mass": 1.2},
-		{"offset": Vector3(0, 0.18, 0), "size": Vector3(0.62, 0.75, 0.34), "mass": 4.0},
-		{"offset": Vector3(-0.42, 0.20, 0), "size": Vector3(0.20, 0.66, 0.20), "mass": 1.2},
-		{"offset": Vector3(0.42, 0.20, 0), "size": Vector3(0.20, 0.66, 0.20), "mass": 1.2},
-		{"offset": Vector3(-0.18, -0.58, 0), "size": Vector3(0.24, 0.82, 0.26), "mass": 1.8},
-		{"offset": Vector3(0.18, -0.58, 0), "size": Vector3(0.24, 0.82, 0.26), "mass": 1.8}
-	]
+	var parts := []
+	if not head_missing:
+		parts.append({"offset": Vector3(0, 1.78, 0), "size": Vector3(0.42, 0.42, 0.42), "mass": 1.2})
+	parts.append({"offset": Vector3(0, 0.98, 0), "size": Vector3(0.62, 0.75, 0.34), "mass": 4.0})
+	if not arm_l_missing:
+		parts.append({"offset": Vector3(-0.48, 1.05, -0.10), "size": Vector3(0.18, 0.72, 0.18), "mass": 1.2})
+	if not arm_r_missing:
+		parts.append({"offset": Vector3(0.48, 1.05, -0.10), "size": Vector3(0.18, 0.72, 0.18), "mass": 1.2})
+	if not leg_l_disabled:
+		parts.append({"offset": Vector3(-0.18, 0.30, 0), "size": Vector3(0.24, 0.70, 0.26), "mass": 1.8})
+	if not leg_r_disabled:
+		parts.append({"offset": Vector3(0.18, 0.30, 0), "size": Vector3(0.24, 0.70, 0.26), "mass": 1.8})
 	var count := mini(gore_parts_limit, parts.size())
 	for i in count:
 		var data: Dictionary = parts[i]
@@ -158,7 +322,7 @@ func _spawn_physics_parts(shot_direction: Vector3, zone: String) -> void:
 		mesh.size = data.size
 		mesh_instance.mesh = mesh
 		var mat := StandardMaterial3D.new()
-		mat.albedo_color = Color(0.32, 0.48, 0.27) if i != 0 else Color(0.42, 0.58, 0.31)
+		mat.albedo_color = Color(0.32, 0.48, 0.27)
 		mesh_instance.material_override = mat
 		body.add_child(mesh_instance)
 		var shape_node := CollisionShape3D.new()
@@ -167,7 +331,7 @@ func _spawn_physics_parts(shot_direction: Vector3, zone: String) -> void:
 		shape_node.shape = shape
 		body.add_child(shape_node)
 		root.add_child(body)
-		var extra := 1.8 if zone == "head" and i == 0 else 1.0
+		var extra := 1.8 if zone == "head" else 1.0
 		body.apply_central_impulse((shot_direction.normalized() * 4.8 + Vector3.UP * 2.0) * data.mass * extra)
 		body.apply_torque_impulse(Vector3(randf_range(-2.0, 2.0), randf_range(-2.0, 2.0), randf_range(-2.0, 2.0)))
 		root.get_tree().create_timer(gib_lifetime).timeout.connect(body.queue_free)
