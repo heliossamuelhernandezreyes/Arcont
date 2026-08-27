@@ -20,6 +20,7 @@ signal impact_feedback(hit_point: Vector3, hit_normal: Vector3, organic: bool)
 @export var impact_force := 8.5
 @export var penetration_energy := 0.95
 @export var max_penetrations := 2
+@export var noise_radius := 34.0
 
 @onready var camera: Camera3D = get_parent() as Camera3D
 var ammo_in_mag := 8
@@ -46,12 +47,20 @@ func try_fire() -> bool:
 	ammo_in_mag -= 1
 	ammo_changed.emit(ammo_in_mag, reserve_ammo, magazine_size)
 	shot_fired.emit()
+	_report_weapon_sound()
 	var handling := _player_controller()
 	var recoil_mult := 1.0
 	if handling and handling.has_method("get_recoil_multiplier"): recoil_mult = float(handling.get_recoil_multiplier())
 	recoil_requested.emit(recoil_pitch * recoil_mult, randf_range(-recoil_yaw, recoil_yaw) * recoil_mult)
 	_fire_shotgun()
 	return true
+
+func _report_weapon_sound() -> void:
+	var scene := get_tree().current_scene
+	if scene == null: return
+	var awareness := scene.get_node_or_null("AwarenessDirector")
+	if awareness and awareness.has_method("report_sound"):
+		awareness.report_sound(camera.global_position, noise_radius, "shotgun")
 
 func _fire_shotgun() -> void:
 	var world := camera.get_world_3d()
