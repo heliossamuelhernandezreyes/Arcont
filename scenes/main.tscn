@@ -12,18 +12,14 @@
 [ext_resource path="res://scripts/awareness_director.gd" type="Script" id="10_awareness"]
 [ext_resource path="res://scripts/navigation_graph.gd" type="Script" id="11_navigation"]
 [ext_resource path="res://scripts/throwable_controller.gd" type="Script" id="12_throwables"]
+[ext_resource path="res://scripts/provisional_character_visual.gd" type="Script" id="13_character_visual"]
+[ext_resource path="res://assets/provisional/characters/kenney_survivors/Model/characterMedium.fbx" type="PackedScene" id="14_operator"]
 
 [sub_resource type="CapsuleShape3D" id="PlayerShape"]
-radius = 0.4
-height = 1.8
-[sub_resource type="CapsuleMesh" id="BodyMesh"]
-radius = 0.38
-height = 1.35
-[sub_resource type="SphereMesh" id="HeadMesh"]
-radius = 0.24
-height = 0.48
+radius=0.4
+height=1.8
 [sub_resource type="BoxMesh" id="GunMesh"]
-size = Vector3(0.28,0.18,0.82)
+size=Vector3(0.28,0.18,0.82)
 [sub_resource type="Environment" id="Env"]
 background_mode=1
 background_color=Color(0.018,0.025,0.038,1)
@@ -70,12 +66,10 @@ script=ExtResource("1_player")
 [node name="Collision" type="CollisionShape3D" parent="Player"]
 shape=SubResource("PlayerShape")
 [node name="BodyVisual" type="Node3D" parent="Player"]
-[node name="Torso" type="MeshInstance3D" parent="Player/BodyVisual"]
-position=Vector3(0,0.15,0)
-mesh=SubResource("BodyMesh")
-[node name="HeadMesh" type="MeshInstance3D" parent="Player/BodyVisual"]
-position=Vector3(0,1.0,0)
-mesh=SubResource("HeadMesh")
+position=Vector3(0,-0.9,0)
+script=ExtResource("13_character_visual")
+[node name="OperatorModel" parent="Player/BodyVisual" instance=ExtResource("14_operator")]
+rotation_degrees=Vector3(0,180,0)
 [node name="CoverProbe" type="RayCast3D" parent="Player"]
 position=Vector3(0,0.35,0)
 target_position=Vector3(0,0,-1.0)
