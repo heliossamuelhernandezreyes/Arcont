@@ -1,14 +1,15 @@
 extends SceneTree
 func _init() -> void:
 	var failures: Array[String] = []
-	_check_scene("res://scenes/main.tscn",["PerformanceBudget","CombatFeedback","UrbanDistrict","MissionDirector","CompanionRobot","Player","Player/BodyVisual","Player/CoverProbe","Player/CameraRig/Camera3D/Weapon","Enemies","HUD/Objective"],failures)
+	_check_scene("res://scenes/main.tscn",["PerformanceBudget","CombatFeedback","UrbanDistrict","MissionDirector","CompanionRobot","Player","Player/BodyVisual","Player/CoverProbe","Player/CameraRig/Camera3D/Weapon","Enemies","HUD/Objective","HUD/MobileControls"],failures)
 	_check_scene("res://scenes/enemy.tscn",["Collision","Body","Head","ArmL","ArmR"],failures)
 	_check_scene("res://scenes/companion_robot.tscn",["Collision","Body","Turret","StatusLight"],failures)
 	_check_scene("res://scenes/ranged_enemy.tscn",["Collision","Body","Weapon","EyeLight"],failures)
-	for method in ["_try_fire","apply_damage","_toggle_cover","_update_cover_state","_switch_shoulder","_update_camera_collision"]:_check_script_method("res://scripts/player.gd",method,failures)
+	for method in ["_try_fire","apply_damage","_toggle_cover","_enter_cover","_leave_cover","_update_cover_state","_cover_edge_peek","_update_cover_camera","_try_transition_to_adjacent_cover","_switch_shoulder","_update_camera_collision"]:_check_script_method("res://scripts/player.gd",method,failures)
 	for method in ["try_fire","_fire_shotgun","_trace_pellet","request_reload","add_ammo"]:_check_script_method("res://scripts/weapon.gd",method,failures)
-	for method in ["resistance_for","thickness_for","energy_after_surface","damage_scale"]:_check_script_method("res://scripts/ballistics.gd",method,failures)
+	for method in ["resistance_for","thickness_for","cover_height_for","is_destructible_cover","apply_surface_damage","energy_after_surface","damage_scale"]:_check_script_method("res://scripts/ballistics.gd",method,failures)
 	for method in ["_try_fire","_trace_round","_pick_hit_zone","apply_hit"]:_check_script_method("res://scripts/ranged_enemy.gd",method,failures)
+	for method in ["_handle_touch","_assign_touch","_cover_center"]:_check_script_method("res://scripts/mobile_controls.gd",method,failures)
 	for method in ["activate_unit","_nearest_enemy","_fire_at","apply_damage"]:_check_script_method("res://scripts/companion_robot.gd",method,failures)
 	for method in ["_update_generator","_update_defense","_request_ranged","_trigger_blackout","_spawn_brute_event","_trigger_xeno_pulse"]:_check_script_method("res://scripts/mission_director.gd",method,failures)
 	for method in ["_start_next_wave","spawn_reinforcements","spawn_ranged_enemies","spawn_brute","_spawn_position_for"]:_check_script_method("res://scripts/main.gd",method,failures)
