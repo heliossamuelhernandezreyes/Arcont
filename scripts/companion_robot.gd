@@ -34,6 +34,7 @@ func _ready() -> void:
 	health = max_health
 	player = get_tree().get_first_node_in_group("player") as Node3D
 	add_to_group("friendly_companion")
+	collision.set_deferred("disabled", true)
 	_set_active_visual(false)
 
 func activate_unit() -> void:
