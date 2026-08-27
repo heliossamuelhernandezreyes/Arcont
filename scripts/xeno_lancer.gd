@@ -12,9 +12,9 @@ signal died(enemy: Node)
 @export var energy_power := 1.18
 @export var suppression_radius := 2.6
 @export var accuracy_spread := 0.022
+@export var decision_interval := 1.0
 
 @onready var core_light: OmniLight3D = $CoreLight
-@onready var weapon_mesh: MeshInstance3D = $Weapon
 var health := 180.0
 var player: Node3D
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
@@ -22,12 +22,17 @@ var fire_timer := 0.8
 var charging := false
 var charge_remaining := 0.0
 var active := true
+var role := "suppress"
+var decision_timer := 0.0
+var tactical_target := Vector3.ZERO
+var has_tactical_target := false
 
 func _ready() -> void:
 	health = max_health
 	player = get_tree().get_first_node_in_group("player") as Node3D
-	add_to_group("xeno_enemy")
-	add_to_group("enemies_active")
+	add_to_group("xeno_enemy"); add_to_group("tactical_enemy"); add_to_group("enemies_active")
+	role = TacticalAI.squad_role(self)
+	decision_timer = randf_range(0.1, decision_interval)
 
 func _physics_process(delta: float) -> void:
 	if not active: return
@@ -36,35 +41,67 @@ func _physics_process(delta: float) -> void:
 		return
 	if not is_on_floor(): velocity.y -= gravity * delta
 	fire_timer = maxf(fire_timer - delta, 0.0)
+	decision_timer -= delta
+	if decision_timer <= 0.0 and not charging:
+		decision_timer = decision_interval + randf_range(-0.2,0.3)
+		_choose_tactic()
+	var desired := Vector3.ZERO if charging else _movement_velocity()
+	velocity.x = move_toward(velocity.x, desired.x, 7.0 * delta)
+	velocity.z = move_toward(velocity.z, desired.z, 7.0 * delta)
 	var flat := player.global_position - global_position
 	flat.y = 0.0
 	var distance := flat.length()
-	var desired := Vector3.ZERO
-	if not charging:
-		if distance > preferred_distance + 3.0: desired = flat.normalized() * move_speed
-		elif distance < preferred_distance - 3.0: desired = -flat.normalized() * move_speed * 0.75
-	velocity.x = move_toward(velocity.x, desired.x, 7.0 * delta)
-	velocity.z = move_toward(velocity.z, desired.z, 7.0 * delta)
 	if flat.length_squared() > 0.1: look_at(global_position + flat, Vector3.UP)
 	move_and_slide()
 	if charging:
 		charge_remaining -= delta
 		core_light.light_energy = lerpf(2.2, 7.0, 1.0 - clampf(charge_remaining / charge_time, 0.0, 1.0))
 		if charge_remaining <= 0.0: _fire_lance()
-	elif distance <= fire_range and fire_timer <= 0.0:
+	elif distance <= fire_range and fire_timer <= 0.0 and TacticalAI.has_line_of_sight(self,player,1.35,0.72):
 		_begin_charge()
+
+func _choose_tactic() -> void:
+	if player == null: return
+	role = TacticalAI.squad_role(self)
+	if role == "suppress":
+		var cover := TacticalAI.best_cover(self,player,preferred_distance,30.0)
+		if cover != Vector3.INF and not TacticalAI.has_line_of_sight(self,player):
+			tactical_target = cover; has_tactical_target = true
+		elif TacticalAI.has_line_of_sight(self,player) and global_position.distance_to(player.global_position) <= fire_range*0.9:
+			has_tactical_target = false
+		return
+	var side := -1.0 if role == "flank_left" else 1.0
+	var flank := TacticalAI.flank_point(self,player,side,preferred_distance)
+	var cover := TacticalAI.best_cover_near(self,player,flank,preferred_distance,32.0)
+	tactical_target = cover if cover != Vector3.INF else flank
+	has_tactical_target = true
+
+func _movement_velocity() -> Vector3:
+	if player == null: return Vector3.ZERO
+	if has_tactical_target:
+		var to_target := tactical_target - global_position
+		to_target.y = 0.0
+		if to_target.length() < 1.1:
+			has_tactical_target = false
+			return Vector3.ZERO
+		return to_target.normalized() * move_speed
+	var flat := player.global_position - global_position
+	flat.y = 0.0
+	var distance := flat.length()
+	if distance > preferred_distance + 3.0: return flat.normalized() * move_speed
+	if distance < preferred_distance - 3.0: return -flat.normalized() * move_speed * 0.75
+	return Vector3.ZERO
 
 func _begin_charge() -> void:
 	charging = true
 	charge_remaining = charge_time
-	velocity.x *= 0.35
-	velocity.z *= 0.35
+	velocity.x *= 0.35; velocity.z *= 0.35
 	core_light.light_color = Color(0.86, 0.12, 1.0)
 	core_light.light_energy = 2.2
 
 func _fire_lance() -> void:
 	charging = false
-	fire_timer = fire_interval
+	fire_timer = fire_interval * (0.88 if role == "suppress" else 1.0)
 	core_light.light_energy = 1.4
 	if player == null: return
 	var world := get_world_3d()
@@ -83,8 +120,7 @@ func _trace_energy(space_state: PhysicsDirectSpaceState3D, origin: Vector3, dire
 	var final_point := origin + direction * fire_range
 	for _pass in 3:
 		var query := PhysicsRayQueryParameters3D.create(current_origin, current_origin + direction * fire_range)
-		query.exclude = exclude
-		query.collide_with_areas = false
+		query.exclude = exclude; query.collide_with_areas = false
 		var result := space_state.intersect_ray(query)
 		if result.is_empty(): break
 		var collider: Object = result.get("collider")
@@ -112,26 +148,18 @@ func _apply_energy_suppression(from: Vector3, to: Vector3) -> void:
 	var t := clampf((point - from).dot(segment) / segment.length_squared(), 0.0, 1.0)
 	var distance := (from + segment * t).distance_to(point)
 	if distance <= suppression_radius:
-		player.apply_suppression(lerpf(0.30,0.82,1.0-distance/suppression_radius),0.82)
+		var amount := lerpf(0.30,0.82,1.0-distance/suppression_radius)
+		if role == "suppress": amount *= 1.15
+		player.apply_suppression(amount,0.82)
 
 func _spawn_lance_visual(from: Vector3, to: Vector3) -> void:
 	var root := get_tree().current_scene
 	if root == null: return
 	var length := from.distance_to(to)
 	if length <= 0.05: return
-	var beam := MeshInstance3D.new()
-	var mesh := BoxMesh.new()
-	mesh.size = Vector3(0.055,0.055,length)
-	beam.mesh = mesh
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.72,0.06,1.0)
-	mat.emission_enabled = true
-	mat.emission = Color(0.9,0.12,1.0)
-	mat.emission_energy_multiplier = 4.5
-	beam.material_override = mat
-	root.add_child(beam)
-	beam.global_position = (from + to) * 0.5
-	beam.look_at(to, Vector3.UP)
+	var beam := MeshInstance3D.new(); var mesh := BoxMesh.new(); mesh.size = Vector3(0.055,0.055,length); beam.mesh = mesh
+	var mat := StandardMaterial3D.new(); mat.albedo_color = Color(0.72,0.06,1.0); mat.emission_enabled = true; mat.emission = Color(0.9,0.12,1.0); mat.emission_energy_multiplier = 4.5; beam.material_override = mat
+	root.add_child(beam); beam.global_position = (from + to) * 0.5; beam.look_at(to, Vector3.UP)
 	root.get_tree().create_timer(0.09).timeout.connect(beam.queue_free)
 
 func _pick_hit_zone() -> String:
@@ -147,7 +175,4 @@ func apply_hit(_hit_point: Vector3, direction: Vector3, amount: float, _weapon_t
 	health = maxf(health - amount, 0.0)
 	velocity += direction.normalized() * impact_force * 0.08
 	if health <= 0.0:
-		active = false
-		remove_from_group("enemies_active")
-		died.emit(self)
-		queue_free()
+		active = false; remove_from_group("enemies_active"); remove_from_group("tactical_enemy"); died.emit(self); queue_free()
