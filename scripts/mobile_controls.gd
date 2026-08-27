@@ -11,6 +11,7 @@ var fire_touch := -1
 var jump_touch := -1
 var sprint_touch := -1
 var reload_touch := -1
+var cover_touch := -1
 var move_origin := Vector2.ZERO
 var move_vector := Vector2.ZERO
 var touch_enabled := false
@@ -64,6 +65,11 @@ func _assign_touch(index: int, position: Vector2) -> void:
 		if player.has_method("request_reload"):
 			player.request_reload()
 		return
+	if position.distance_to(_cover_center()) <= button_radius and cover_touch == -1:
+		cover_touch = index
+		if player.has_method("_toggle_cover"):
+			player.call("_toggle_cover")
+		return
 	if position.distance_to(_sprint_center()) <= button_radius * 1.15 and sprint_touch == -1:
 		sprint_touch = index
 		if player.has_method("set_mobile_sprint"):
@@ -109,6 +115,8 @@ func _release_touch(index: int) -> void:
 			player.set_mobile_sprint(false)
 	elif index == reload_touch:
 		reload_touch = -1
+	elif index == cover_touch:
+		cover_touch = -1
 
 func _draw() -> void:
 	if not touch_enabled:
@@ -123,6 +131,7 @@ func _draw() -> void:
 	_draw_button(_fire_center(), button_radius, "FIRE")
 	_draw_button(_jump_center(), button_radius * 0.86, "JUMP")
 	_draw_button(_reload_center(), button_radius * 0.72, "RLD")
+	_draw_button(_cover_center(), button_radius * 0.72, "COV")
 	_draw_button(_sprint_center(), button_radius * 0.78, "RUN")
 
 func _draw_button(center: Vector2, radius: float, label: String) -> void:
@@ -136,15 +145,15 @@ func _draw_button(center: Vector2, radius: float, label: String) -> void:
 func _fire_center() -> Vector2:
 	var size := get_viewport_rect().size
 	return Vector2(size.x - 98.0, size.y - 132.0)
-
 func _jump_center() -> Vector2:
 	var size := get_viewport_rect().size
 	return Vector2(size.x - 210.0, size.y - 90.0)
-
 func _reload_center() -> Vector2:
 	var size := get_viewport_rect().size
 	return Vector2(size.x - 218.0, size.y - 192.0)
-
+func _cover_center() -> Vector2:
+	var size := get_viewport_rect().size
+	return Vector2(size.x - 318.0, size.y - 156.0)
 func _sprint_center() -> Vector2:
 	var size := get_viewport_rect().size
 	return Vector2(225.0, size.y - 245.0)
