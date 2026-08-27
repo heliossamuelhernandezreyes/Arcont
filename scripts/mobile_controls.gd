@@ -13,6 +13,8 @@ var fire_touch:=-1
 var ads_touch:=-1
 var weapon_touch:=-1
 var jump_touch:=-1
+var crouch_touch:=-1
+var slide_touch:=-1
 var sprint_touch:=-1
 var reload_touch:=-1
 var cover_touch:=-1
@@ -73,6 +75,14 @@ func _assign_touch(index:int,position:Vector2)->void:
 		jump_touch=index
 		if player.has_method("request_mobile_jump"):player.request_mobile_jump()
 		return
+	if position.distance_to(_crouch_center())<=button_radius*0.72 and crouch_touch==-1:
+		crouch_touch=index
+		if player.has_method("request_crouch"):player.request_crouch()
+		return
+	if position.distance_to(_slide_center())<=button_radius*0.72 and slide_touch==-1:
+		slide_touch=index
+		if player.has_method("request_slide"):player.request_slide()
+		return
 	if position.distance_to(_reload_center())<=button_radius and reload_touch==-1:
 		reload_touch=index
 		if player.has_method("request_reload"):player.request_reload()
@@ -124,6 +134,8 @@ func _release_touch(index:int)->void:
 		if weapon and weapon.has_method("set_ads"):weapon.set_ads(false)
 	elif index==weapon_touch:weapon_touch=-1
 	elif index==jump_touch:jump_touch=-1
+	elif index==crouch_touch:crouch_touch=-1
+	elif index==slide_touch:slide_touch=-1
 	elif index==sprint_touch:
 		sprint_touch=-1
 		if player and player.has_method("set_mobile_sprint"):player.set_mobile_sprint(false)
@@ -140,7 +152,7 @@ func _draw()->void:
 	var stick_center:=move_origin if move_touch!=-1 else default_stick
 	var knob:=stick_center+move_vector*joystick_radius*0.62
 	draw_circle(stick_center,joystick_radius,Color(0.15,0.18,0.22,0.32));draw_circle(stick_center,joystick_radius*0.68,Color(0.55,0.62,0.72,0.10),false,4.0);draw_circle(knob,joystick_radius*0.34,Color(0.85,0.9,1.0,0.42))
-	_draw_button(_fire_center(),button_radius,"FIRE");_draw_button(_ads_center(),button_radius*0.70,"ADS");_draw_button(_weapon_center(),button_radius*0.62,"WPN");_draw_button(_jump_center(),button_radius*0.86,"JUMP");_draw_button(_reload_center(),button_radius*0.72,"RLD");_draw_button(_cover_center(),button_radius*0.72,"COV");_draw_button(_command_center(),button_radius*0.72,"R3");_draw_button(_throw_center(),button_radius*0.72,"THR");_draw_button(_throw_cycle_center(),button_radius*0.64,"TYPE");_draw_button(_sprint_center(),button_radius*0.78,"RUN")
+	_draw_button(_fire_center(),button_radius,"FIRE");_draw_button(_ads_center(),button_radius*0.70,"ADS");_draw_button(_weapon_center(),button_radius*0.62,"WPN");_draw_button(_jump_center(),button_radius*0.86,"JUMP");_draw_button(_crouch_center(),button_radius*0.62,"CRCH");_draw_button(_slide_center(),button_radius*0.62,"SLD");_draw_button(_reload_center(),button_radius*0.72,"RLD");_draw_button(_cover_center(),button_radius*0.72,"COV");_draw_button(_command_center(),button_radius*0.72,"R3");_draw_button(_throw_center(),button_radius*0.72,"THR");_draw_button(_throw_cycle_center(),button_radius*0.64,"TYPE");_draw_button(_sprint_center(),button_radius*0.78,"RUN")
 
 func _draw_button(center:Vector2,radius:float,label:String)->void:
 	draw_circle(center,radius,Color(0.20,0.24,0.30,0.38));draw_arc(center,radius,0.0,TAU,36,Color(0.86,0.91,1.0,0.55),3.0);var font:=ThemeDB.fallback_font;var font_size:=15;var width:=font.get_string_size(label,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size).x;draw_string(font,center+Vector2(-width*0.5,5.0),label,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,Color(0.95,0.97,1.0,0.9))
@@ -148,9 +160,11 @@ func _fire_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(s
 func _ads_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-92.0,size.y-250.0)
 func _weapon_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-170.0,size.y-270.0)
 func _jump_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-210.0,size.y-90.0)
+func _crouch_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-286.0,size.y-78.0)
+func _slide_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-300.0,size.y-245.0)
 func _reload_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-218.0,size.y-192.0)
-func _cover_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-318.0,size.y-156.0)
-func _command_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-410.0,size.y-92.0)
-func _throw_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-410.0,size.y-196.0)
-func _throw_cycle_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-505.0,size.y-150.0)
+func _cover_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-380.0,size.y-150.0)
+func _command_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-445.0,size.y-78.0)
+func _throw_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-450.0,size.y-190.0)
+func _throw_cycle_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(size.x-540.0,size.y-138.0)
 func _sprint_center()->Vector2:var size:=get_viewport_rect().size;return Vector2(225.0,size.y-245.0)
