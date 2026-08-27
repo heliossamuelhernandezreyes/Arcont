@@ -49,8 +49,8 @@ func _dump_tree(node: Node, prefix: String) -> void:
 	print(prefix, node.name, " [", node.get_class(), "]")
 	for child in node.get_children(): _dump_tree(child, prefix + "  ")
 
-func _find_by_class(root: Node, class_name: String) -> Array[Node]:
+func _find_by_class(root: Node, wanted_class: String) -> Array[Node]:
 	var out: Array[Node] = []
-	if root.get_class() == class_name: out.append(root)
-	for child in root.get_children(): out.append_array(_find_by_class(child, class_name))
+	if root.get_class() == wanted_class: out.append(root)
+	for child in root.get_children(): out.append_array(_find_by_class(child, wanted_class))
 	return out
