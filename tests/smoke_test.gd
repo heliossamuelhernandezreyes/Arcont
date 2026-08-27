@@ -9,7 +9,7 @@ func _init()->void:
 	for method in ["_try_fire","apply_damage","apply_suppression","get_weapon_spread_multiplier","get_recoil_multiplier","get_reload_time_multiplier","_toggle_cover","_cover_edge_peek","_try_transition_to_adjacent_cover","_switch_shoulder","_update_camera_collision"]:_check_script_method("res://scripts/player.gd",method,failures)
 	for method in ["try_fire","_report_weapon_sound","_fire_shotgun","_trace_pellet","request_reload","add_ammo","_player_controller"]:_check_script_method("res://scripts/weapon.gd",method,failures)
 	for method in ["report_sound","recent_sound_for"]:_check_script_method("res://scripts/awareness_director.gd",method,failures)
-	for method in ["_build_graph","_segment_walkable","get_path","next_waypoint"]:_check_script_method("res://scripts/navigation_graph.gd",method,failures)
+	for method in ["_build_graph","_segment_walkable","build_route","next_waypoint"]:_check_script_method("res://scripts/navigation_graph.gd",method,failures)
 	for method in ["resistance_for","energy_resistance_for","energy_after_surface","xeno_energy_after_surface","apply_surface_damage","apply_energy_surface_damage","damage_scale"]:_check_script_method("res://scripts/ballistics.gd",method,failures)
 	for method in ["apply_ballistic_hit","apply_energy_hit","_update_visual_stage","_break_apart"]:_check_script_method("res://scripts/destructible_cover.gd",method,failures)
 	for method in ["has_line_of_sight","point_has_cover","best_cover","best_cover_near","flank_point","squad_role"]:_check_script_method("res://scripts/tactical_ai.gd",method,failures)
