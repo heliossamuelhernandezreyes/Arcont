@@ -18,6 +18,8 @@ var shake_strength := 0.0
 var base_camera_position := Vector3.ZERO
 var base_gun_position := Vector3.ZERO
 var visual_scale := 1.0
+var audio_player: AudioStreamPlayer
+var audio_generator: AudioStreamGenerator
 
 func _ready() -> void:
 	visual_scale = mobile_effect_scale if OS.has_feature("mobile") else 1.0
@@ -25,6 +27,7 @@ func _ready() -> void:
 	base_gun_position = gun.position
 	hitmarker.visible = false
 	muzzle.visible = false
+	_setup_placeholder_audio()
 
 func _process(delta: float) -> void:
 	if hitmarker_timer > 0.0:
@@ -92,6 +95,27 @@ func _spawn_impact_decal(hit_point: Vector3, hit_normal: Vector3) -> void:
 		mark.look_at(hit_point + hit_normal, Vector3.UP)
 	root.get_tree().create_timer(decal_lifetime).timeout.connect(mark.queue_free)
 
+func _setup_placeholder_audio() -> void:
+	audio_player = AudioStreamPlayer.new()
+	audio_generator = AudioStreamGenerator.new()
+	audio_generator.mix_rate = 22050.0
+	audio_generator.buffer_length = 0.12
+	audio_player.stream = audio_generator
+	audio_player.volume_db = -8.0
+	add_child(audio_player)
+	audio_player.play()
+
 func _play_placeholder_shot() -> void:
-	# Procedural placeholder: intentionally no external audio asset yet.
-	pass
+	if audio_player == null or not audio_player.playing:
+		return
+	var playback := audio_player.get_stream_playback() as AudioStreamGeneratorPlayback
+	if playback == null:
+		return
+	var frames := 1500
+	for i in frames:
+		var t := float(i) / audio_generator.mix_rate
+		var env := exp(-34.0 * t)
+		var low := sin(TAU * 82.0 * t) * 0.55
+		var crack := randf_range(-1.0, 1.0) * 0.45
+		var sample := clampf((low + crack) * env, -1.0, 1.0)
+		playback.push_frame(Vector2(sample, sample))
