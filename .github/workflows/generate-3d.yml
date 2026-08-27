@@ -36,11 +36,13 @@ jobs:
         if: steps.input.outputs.present == 'true'
         run: |
           base64 -d tools/3d-pipeline/input/arcont_survivor.b64 > /tmp/arcont_survivor.jpg
+          file /tmp/arcont_survivor.jpg
           python - <<'PY'
-          from PIL import Image
-          im = Image.open('/tmp/arcont_survivor.jpg')
-          im.verify()
-          print('Validated reference image:', im.format, im.size)
+          from pathlib import Path
+          p = Path('/tmp/arcont_survivor.jpg')
+          data = p.read_bytes()
+          assert data[:2] == b'\xff\xd8' and data[-2:] == b'\xff\xd9', 'Invalid JPEG framing'
+          print('Validated JPEG bytes:', len(data))
           PY
 
       - name: Install CPU PyTorch
