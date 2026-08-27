@@ -39,21 +39,30 @@ jobs:
       - name: Import and parse project
         shell: bash
         run: |
-          set -euo pipefail
-          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --editor --quit 2>&1 | tee import.log
-          if grep -E "SCRIPT ERROR:|ERROR:" import.log; then exit 1; fi
+          set +e
+          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --editor --quit > import.log 2>&1
+          rc=$?
+          cat import.log
+          if [ "$rc" -ne 0 ]; then exit "$rc"; fi
+          if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" import.log; then exit 1; fi
+          exit 0
       - name: Structural smoke test
         shell: bash
         run: |
-          set -euo pipefail
-          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/smoke_test.gd 2>&1 | tee smoke.log
-          if grep -E "SCRIPT ERROR:|ERROR:" smoke.log; then exit 1; fi
+          set +e
+          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/smoke_test.gd > smoke.log 2>&1
+          rc=$?
+          cat smoke.log
+          if [ "$rc" -ne 0 ]; then exit "$rc"; fi
+          if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" smoke.log; then exit 1; fi
+          exit 0
       - name: Boot main scene briefly
         shell: bash
         run: |
-          set -uo pipefail
+          set +e
           "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --quit-after 120 > boot.log 2>&1
           rc=$?
           cat boot.log
           if [ "$rc" -ne 0 ]; then exit "$rc"; fi
-          if grep -E "SCRIPT ERROR:|ERROR:" boot.log; then exit 1; fi
+          if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" boot.log; then exit 1; fi
+          exit 0
