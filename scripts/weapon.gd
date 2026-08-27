@@ -5,18 +5,21 @@ signal reload_state_changed(active: bool)
 signal recoil_requested(pitch: float, yaw: float)
 signal shot_fired
 
-@export var damage := 34.0
-@export var fire_interval := 0.16
-@export var magazine_size := 24
-@export var reserve_ammo := 144
-@export var reload_time := 1.45
-@export var recoil_pitch := 0.018
-@export var recoil_yaw := 0.006
+@export var weapon_name := "Prototype Shotgun"
+@export var damage := 18.0
+@export var fire_interval := 0.72
+@export var magazine_size := 8
+@export var reserve_ammo := 48
+@export var reload_time := 1.9
+@export var recoil_pitch := 0.055
+@export var recoil_yaw := 0.016
+@export var pellets := 8
+@export var spread_degrees := 5.2
+@export var range := 55.0
 
 @onready var camera: Camera3D = get_parent() as Camera3D
-@onready var ray: RayCast3D = $"../RayCast3D"
 
-var ammo_in_mag := 24
+var ammo_in_mag := 8
 var fire_timer := 0.0
 var reload_timer := 0.0
 var reloading := false
@@ -26,7 +29,7 @@ func _ready() -> void:
 	ammo_changed.emit(ammo_in_mag, reserve_ammo, magazine_size)
 
 func _process(delta: float) -> void:
-	fire_timer = max(fire_timer - delta, 0.0)
+	fire_timer = maxf(fire_timer - delta, 0.0)
 	if reloading:
 		reload_timer -= delta
 		if reload_timer <= 0.0:
@@ -38,23 +41,41 @@ func try_fire() -> bool:
 	if ammo_in_mag <= 0:
 		request_reload()
 		return false
-
 	fire_timer = fire_interval
 	ammo_in_mag -= 1
 	ammo_changed.emit(ammo_in_mag, reserve_ammo, magazine_size)
 	shot_fired.emit()
 	recoil_requested.emit(recoil_pitch, randf_range(-recoil_yaw, recoil_yaw))
-
-	ray.force_raycast_update()
-	if ray.is_colliding():
-		var collider := ray.get_collider()
-		var hit_point := ray.get_collision_point()
-		var shot_direction := -camera.global_transform.basis.z
-		if collider and collider.has_method("apply_hit"):
-			collider.apply_hit(hit_point, shot_direction, damage)
-		else:
-			print("ARCONT impact: ", collider)
+	_fire_shotgun()
 	return true
+
+func _fire_shotgun() -> void:
+	var world := camera.get_world_3d()
+	if world == null:
+		return
+	var space_state := world.direct_space_state
+	var origin := camera.global_position
+	var forward := -camera.global_transform.basis.z
+	var right := camera.global_transform.basis.x
+	var up := camera.global_transform.basis.y
+	var spread := tan(deg_to_rad(spread_degrees))
+	var player := camera.get_parent().get_parent().get_parent() as CollisionObject3D
+	var exclude: Array[RID] = []
+	if player:
+		exclude.append(player.get_rid())
+	for _i in pellets:
+		var offset := right * randf_range(-spread, spread) + up * randf_range(-spread, spread)
+		var direction := (forward + offset).normalized()
+		var query := PhysicsRayQueryParameters3D.create(origin, origin + direction * range)
+		query.exclude = exclude
+		query.collide_with_areas = false
+		var result := space_state.intersect_ray(query)
+		if result.is_empty():
+			continue
+		var collider = result.get("collider")
+		var hit_point: Vector3 = result.get("position", origin)
+		if collider and collider.has_method("apply_hit"):
+			collider.apply_hit(hit_point, direction, damage)
 
 func request_reload() -> bool:
 	if reloading or ammo_in_mag >= magazine_size or reserve_ammo <= 0:
