@@ -29,6 +29,7 @@ signal suppression_changed(value: float)
 @onready var weapon: Node = $CameraRig/Camera3D/Weapon
 @onready var cover_probe: RayCast3D = $CoverProbe
 @onready var body_visual: Node3D = $BodyVisual
+@onready var mobility: Node = $TacticalMobility
 
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var pitch := -0.12
@@ -65,8 +66,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED: _apply_look(event.relative*mouse_sensitivity)
 	if event.is_action_pressed("ui_cancel"): Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if event.is_action_pressed("reload"): request_reload()
-	if event is InputEventKey and event.pressed and event.keycode == KEY_C: _toggle_cover()
-	if event is InputEventKey and event.pressed and event.keycode == KEY_Q: _switch_shoulder()
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_C: _toggle_cover()
+		elif event.keycode == KEY_Q: _switch_shoulder()
+		elif event.keycode == KEY_CTRL: request_crouch()
+		elif event.keycode == KEY_Z: request_slide()
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED and not DisplayServer.is_touchscreen_available(): Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		else: _try_fire()
@@ -76,8 +80,16 @@ func _physics_process(delta: float) -> void:
 	_update_suppression(delta)
 	_handle_gamepad_look(delta)
 	_update_cover_state()
+	if mobility and mobility.has_method("blocks_normal_movement") and mobility.blocks_normal_movement():
+		_update_camera_collision()
+		return
 	if not is_on_floor(): velocity.y -= gravity*delta
-	elif (Input.is_action_just_pressed("jump") or mobile_jump_requested or _gamepad_jump_pressed()) and not in_cover: velocity.y = jump_velocity
+	elif (Input.is_action_just_pressed("jump") or mobile_jump_requested or _gamepad_jump_pressed()) and not in_cover:
+		var vaulted := false
+		if mobility and mobility.has_method("try_vault"): vaulted = bool(mobility.try_vault())
+		if not vaulted and not (mobility and mobility.has_method("blocks_jump") and mobility.blocks_jump()):
+			var jump_penalty := clampf(1.0 - _leg_injury_load()*0.18,0.62,1.0)
+			velocity.y = jump_velocity*jump_penalty
 	mobile_jump_requested = false
 	var keyboard_move := Input.get_vector("move_left","move_right","move_forward","move_back")
 	var pad_move := _gamepad_move()
@@ -89,8 +101,9 @@ func _physics_process(delta: float) -> void:
 	cam_forward.y = 0.0; cam_right.y = 0.0
 	var direction := (cam_right.normalized()*input_vec.x + cam_forward.normalized()*-input_vec.y).normalized()
 	var sprinting := Input.is_action_pressed("sprint") or mobile_sprint or _gamepad_sprint_pressed()
-	var leg_penalty: float = clamp(1.0-(float(injuries["left_leg"])+float(injuries["right_leg"]))*0.22,0.45,1.0)
+	var leg_penalty: float = clamp(1.0-_leg_injury_load()*0.22,0.45,1.0)
 	var target_speed := (sprint_speed if sprinting else walk_speed)*leg_penalty
+	if mobility and mobility.has_method("movement_speed_multiplier"): target_speed *= float(mobility.movement_speed_multiplier())
 	if in_cover:
 		target_speed = cover_speed*leg_penalty
 		var tangent := Vector3.UP.cross(cover_normal).normalized()
@@ -106,11 +119,15 @@ func _physics_process(delta: float) -> void:
 	var accel := acceleration if is_on_floor() else air_acceleration
 	velocity.x = move_toward(velocity.x,target.x,accel*delta)
 	velocity.z = move_toward(velocity.z,target.z,accel*delta)
+	if mobility and mobility.has_method("apply_motion_override"): mobility.apply_motion_override()
 	if direction.length_squared()>0.02 and not in_cover: body_visual.look_at(body_visual.global_position+direction,Vector3.UP)
 	move_and_slide()
 	_update_camera_collision()
 	if mobile_fire or _gamepad_fire_pressed(): _try_fire()
 	if _gamepad_reload_pressed(): request_reload()
+
+func _leg_injury_load() -> float:
+	return float(injuries["left_leg"])+float(injuries["right_leg"])
 
 func apply_suppression(intensity: float, hold_time := 0.55) -> void:
 	if dead or intensity <= 0.0: return
@@ -252,6 +269,10 @@ func set_mobile_fire(active:bool)->void:
 	if mobile_fire:_try_fire()
 func request_mobile_jump()->void:mobile_jump_requested=true
 func set_mobile_sprint(active:bool)->void:mobile_sprint=active
+func request_crouch()->void:
+	if not dead and mobility and mobility.has_method("toggle_crouch"):mobility.toggle_crouch()
+func request_slide()->void:
+	if not dead and mobility and mobility.has_method("request_slide"):mobility.request_slide()
 func request_reload()->void:
 	if not dead and weapon.has_method("request_reload"):weapon.request_reload()
 func _try_fire()->void:
