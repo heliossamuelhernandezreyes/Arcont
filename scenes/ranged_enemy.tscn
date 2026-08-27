@@ -26,3 +26,9 @@ light_color = Color(0.72,0.12,1,1)
 light_energy = 1.4
 omni_range = 2.5
 shadow_enabled = false
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+path_desired_distance = 0.8
+target_desired_distance = 1.0
+radius = 0.45
+height = 1.8
+avoidance_enabled = false
