@@ -23,22 +23,23 @@ func _start_next_wave() -> void:
 	if waiting_for_next_wave:
 		return
 	wave += 1
-	var count := first_wave_size + (wave - 1) * wave_growth
+	var count: int = first_wave_size + (wave - 1) * wave_growth
 	alive = count
 	for i in count:
 		_spawn_enemy(i, count)
 	_update_hud()
 
 func _spawn_enemy(index: int, total: int) -> void:
-	var enemy = ENEMY_SCENE.instantiate()
-	var angle := TAU * float(index) / max(float(total), 1.0) + randf_range(-0.18, 0.18)
-	var radius := spawn_radius + randf_range(-1.5, 1.5)
+	var enemy := ENEMY_SCENE.instantiate()
+	var safe_total: float = maxf(float(total), 1.0)
+	var angle: float = TAU * float(index) / safe_total + randf_range(-0.18, 0.18)
+	var radius: float = spawn_radius + randf_range(-1.5, 1.5)
 	enemy.position = Vector3(cos(angle) * radius, 0.0, sin(angle) * radius)
 	enemy.died.connect(_on_enemy_died)
 	$Enemies.add_child(enemy)
 
 func _on_enemy_died(_enemy: Node) -> void:
-	alive = max(alive - 1, 0)
+	alive = maxi(alive - 1, 0)
 	_update_hud()
 	if alive == 0 and not waiting_for_next_wave:
 		waiting_for_next_wave = true
