@@ -1,0 +1,78 @@
+name: Import provisional CC0 assets
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/import-provisional-assets.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  import-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Kenney animated survivor pack (CC0)
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/arcont-assets/kenney_survivors
+          curl -L --fail --retry 3 \
+            'https://opengameart.org/sites/default/files/kenney_animated-characters-1.zip' \
+            -o /tmp/kenney_survivors.zip
+          unzip -q /tmp/kenney_survivors.zip -d /tmp/arcont-assets/kenney_survivors
+
+      - name: Download KayKit city pack (CC0)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/KayKit-Game-Assets/KayKit-City-Builder-Bits-1.0.git /tmp/kaykit-city
+
+      - name: Install selected assets
+        run: |
+          set -euo pipefail
+          rm -rf assets/provisional
+          mkdir -p assets/provisional/characters assets/provisional/city assets/provisional/licenses
+
+          # Keep the complete tiny Kenney character pack so the rig, skins and animations stay together.
+          cp -R /tmp/arcont-assets/kenney_survivors/. assets/provisional/characters/kenney_survivors/
+
+          SRC='/tmp/kaykit-city/addons/kaykit_city_builder_bits/Assets/fbx(unity)'
+          for f in \
+            car_hatchback.fbx car_police.fbx car_sedan.fbx car_stationwagon.fbx \
+            bench.fbx box_A.fbx box_B.fbx building_A.fbx building_B.fbx building_C.fbx building_D.fbx bush.fbx; do
+            if [ -f "$SRC/$f" ]; then cp "$SRC/$f" assets/provisional/city/; fi
+          done
+
+          cp /tmp/kaykit-city/LICENSE.txt assets/provisional/licenses/KAYKIT_CITY_CC0.txt
+          cat > assets/provisional/licenses/KENNEY_SURVIVORS_CC0.txt <<'EOF'
+          Kenney Animated Characters 1 / Animated Characters Survivors
+          Source: https://opengameart.org/content/animated-characters-1
+          License: CC0 1.0 Universal / Public Domain dedication.
+          Attribution is not required.
+          EOF
+
+          cat > assets/provisional/README.md <<'EOF'
+          # Provisional 3D assets
+
+          These assets are temporary art for the Arcont vertical slice.
+
+          - Kenney animated survivor character pack — CC0.
+          - KayKit City Builder Bits selected city props/vehicles/buildings — CC0.
+
+          They may be replaced by final bespoke models later. Keep license files with the project.
+          EOF
+
+      - name: Commit imported assets
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/provisional
+          if git diff --cached --quiet; then
+            echo 'No asset changes.'
+            exit 0
+          fi
+          git commit -m 'assets: add provisional CC0 3D pack'
+          git push
