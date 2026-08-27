@@ -9,19 +9,18 @@ const CLIPS := [
 
 func _init() -> void:
 	var failures: Array[String] = []
+	var model_bones: Array[String] = []
 	var packed := load(MODEL) as PackedScene
 	if packed == null:
 		failures.append("No se pudo cargar modelo riggeado")
 	else:
 		var model := packed.instantiate()
-		print("RIG MODEL TREE")
-		_dump_tree(model, "")
 		var skeletons := _find_by_class(model, "Skeleton3D")
-		var players := _find_by_class(model, "AnimationPlayer")
-		print("RIG skeletons=", skeletons.size(), " animation_players=", players.size())
 		if skeletons.is_empty(): failures.append("El modelo no contiene Skeleton3D")
-		for p in players:
-			print("MODEL ANIMS ", p.name, ": ", (p as AnimationPlayer).get_animation_list())
+		else:
+			var skeleton := skeletons[0] as Skeleton3D
+			model_bones = _bone_names(skeleton)
+			print("RIG MODEL bones=", model_bones.size(), " ", model_bones)
 		model.free()
 	for clip_path in CLIPS:
 		var clip_packed := load(clip_path) as PackedScene
@@ -29,28 +28,52 @@ func _init() -> void:
 			failures.append("No se pudo cargar clip: " + clip_path)
 			continue
 		var clip := clip_packed.instantiate()
-		print("RIG CLIP ", clip_path)
-		_dump_tree(clip, "")
+		var clip_skeletons := _find_by_class(clip, "Skeleton3D")
+		if clip_skeletons.is_empty(): failures.append("Clip sin Skeleton3D: " + clip_path)
+		else:
+			var clip_bones := _bone_names(clip_skeletons[0] as Skeleton3D)
+			if clip_bones != model_bones: failures.append("Rig incompatible con modelo: " + clip_path)
 		var clip_players := _find_by_class(clip, "AnimationPlayer")
 		if clip_players.is_empty(): failures.append("Clip sin AnimationPlayer: " + clip_path)
 		for p in clip_players:
 			var list := (p as AnimationPlayer).get_animation_list()
-			print("CLIP ANIMS ", p.name, ": ", list)
+			print("CLIP ANIMS ", clip_path, ": ", list)
 			if list.is_empty(): failures.append("Clip sin animaciones: " + clip_path)
 		clip.free()
+
+	var main_packed := load("res://scenes/main.tscn") as PackedScene
+	if main_packed == null:
+		failures.append("No se pudo cargar main para probar locomoción")
+	else:
+		var main := main_packed.instantiate()
+		root.add_child(main)
+		await process_frame
+		var locomotion := main.get_node_or_null("Player/BodyVisual/LocomotionAnimationPlayer") as AnimationPlayer
+		if locomotion == null:
+			failures.append("No se creó AnimationPlayer de locomoción en runtime")
+		else:
+			for expected in ["idle", "run", "jump"]:
+				if not locomotion.has_animation(expected): failures.append("Falta animación runtime: " + expected)
+			print("RUNTIME PLAYER ANIMS: ", locomotion.get_animation_list())
+		var operator_skeletons := _find_by_class(main.get_node("Player/BodyVisual/OperatorModel"), "Skeleton3D")
+		if operator_skeletons.is_empty(): failures.append("Operador instanciado sin Skeleton3D")
+		main.queue_free()
+		await process_frame
+
 	if failures.is_empty():
-		print("ARCONT RIG: assets OK")
+		print("ARCONT RIG: compatibility + runtime locomotion OK")
 		quit(0)
 		return
 	for failure in failures: push_error("ARCONT RIG: " + failure)
 	quit(1)
 
-func _dump_tree(node: Node, prefix: String) -> void:
-	print(prefix, node.name, " [", node.get_class(), "]")
-	for child in node.get_children(): _dump_tree(child, prefix + "  ")
+func _bone_names(skeleton: Skeleton3D) -> Array[String]:
+	var names: Array[String] = []
+	for i in skeleton.get_bone_count(): names.append(skeleton.get_bone_name(i))
+	return names
 
-func _find_by_class(root: Node, wanted_class: String) -> Array[Node]:
+func _find_by_class(root_node: Node, wanted_class: String) -> Array[Node]:
 	var out: Array[Node] = []
-	if root.get_class() == wanted_class: out.append(root)
-	for child in root.get_children(): out.append_array(_find_by_class(child, wanted_class))
+	if root_node.get_class() == wanted_class: out.append(root_node)
+	for child in root_node.get_children(): out.append_array(_find_by_class(child, wanted_class))
 	return out
