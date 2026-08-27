@@ -1,13 +1,14 @@
 extends SceneTree
 func _init()->void:
 	var failures:Array[String]=[]
-	_check_scene("res://scenes/main.tscn",["PerformanceBudget","AwarenessDirector","NavigationGraph","CombatFeedback","UrbanDistrict","MissionDirector","ThrowableController","CompanionRobot","Player","Player/BodyVisual","Player/BodyVisual/OperatorModel","Player/CoverProbe","Player/CameraRig/Camera3D/Weapon","Enemies","HUD/Objective","HUD/WeaponName","HUD/Throwable","HUD/MobileControls"],failures)
+	_check_scene("res://scenes/main.tscn",["PerformanceBudget","AwarenessDirector","NavigationGraph","CombatFeedback","UrbanDistrict","MissionDirector","ThrowableController","CompanionRobot","Player","Player/BodyVisual","Player/BodyVisual/OperatorModel","Player/CoverProbe","Player/CameraRig/Camera3D/Weapon","Player/ThirdPersonADS","Enemies","HUD/Objective","HUD/WeaponName","HUD/Throwable","HUD/MobileControls"],failures)
 	_check_scene("res://scenes/enemy.tscn",["Collision","Body","Head","ArmL","ArmR"],failures)
 	_check_scene("res://scenes/companion_robot.tscn",["Collision","Body","Turret","StatusLight"],failures)
 	_check_scene("res://scenes/ranged_enemy.tscn",["Collision","Body","Weapon","EyeLight","NavigationAgent3D"],failures)
 	_check_scene("res://scenes/xeno_lancer.tscn",["Collision","Body","Weapon","CoreLight","NavigationAgent3D"],failures)
 	for method in ["_try_fire","apply_damage","apply_suppression","get_weapon_spread_multiplier","get_recoil_multiplier","get_reload_time_multiplier","_toggle_cover","_cover_edge_peek","_try_transition_to_adjacent_cover","_switch_shoulder","_update_camera_collision"]:_check_script_method("res://scripts/player.gd",method,failures)
 	for method in ["set_trigger","set_ads","cycle_weapon","switch_weapon","try_fire","_report_weapon_sound","_fire_weapon","_trace_round","request_reload","add_ammo","_player_controller","_build_weapon_visual"]:_check_script_method("res://scripts/weapon.gd",method,failures)
+	for method in ["_camera_target","_apply_camera_collision","_update_weapon_pose","_update_operator_pose","is_aiming"]:_check_script_method("res://scripts/third_person_ads.gd",method,failures)
 	for method in ["report_sound","sustain_lure","_lure_infected","recent_sound_for","report_contact","shared_intel_for"]:_check_script_method("res://scripts/awareness_director.gd",method,failures)
 	for method in ["configure","_trigger","_activate_decoy","_detonate_grenade","_detonate_emp","_apply_radial_damage","_apply_cover_blast"]:_check_script_method("res://scripts/throwable.gd",method,failures)
 	for method in ["cycle_throwable","throw_selected","mobile_throw","mobile_cycle","_bind_hud","_update_hud"]:_check_script_method("res://scripts/throwable_controller.gd",method,failures)
