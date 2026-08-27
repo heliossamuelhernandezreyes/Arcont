@@ -1,9 +1,10 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource path="res://scripts/player.gd" type="Script" id="1_player"]
 [ext_resource path="res://scripts/main.gd" type="Script" id="2_main"]
 [ext_resource path="res://scripts/mobile_controls.gd" type="Script" id="3_mobile"]
 [ext_resource path="res://scripts/weapon.gd" type="Script" id="4_weapon"]
+[ext_resource path="res://scripts/performance_budget.gd" type="Script" id="5_budget"]
 
 [sub_resource type="BoxMesh" id="BoxFloor"]
 size = Vector3(30, 0.2, 30)
@@ -22,7 +23,7 @@ radius = 0.4
 height = 1.8
 
 [sub_resource type="BoxMesh" id="GunMesh"]
-size = Vector3(0.18, 0.16, 0.65)
+size = Vector3(0.28, 0.18, 0.82)
 
 [sub_resource type="Environment" id="Env"]
 background_mode = 1
@@ -33,6 +34,9 @@ ambient_light_energy = 0.65
 
 [node name="Main" type="Node3D"]
 script = ExtResource("2_main")
+
+[node name="PerformanceBudget" type="Node" parent="."]
+script = ExtResource("5_budget")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Env")
@@ -91,7 +95,7 @@ position = Vector3(0, 0.65, 0)
 current = true
 fov = 78.0
 [node name="Gun" type="MeshInstance3D" parent="Player/Head/Camera3D"]
-position = Vector3(0.32, -0.27, -0.58)
+position = Vector3(0.32, -0.27, -0.62)
 rotation_degrees = Vector3(0, 0, -4)
 mesh = SubResource("GunMesh")
 [node name="RayCast3D" type="RayCast3D" parent="Player/Head/Camera3D"]
@@ -113,7 +117,7 @@ offset_left = 20.0
 offset_top = 18.0
 offset_right = 620.0
 offset_bottom = 80.0
-text = "ARCONT // MOBILE-FIRST HORDE PROTOTYPE\nTouch · Gamepad · WASD/Mouse"
+text = "ARCONT // MOBILE-FIRST HORDE PROTOTYPE\nSHOTGUN · Touch · Gamepad · WASD/Mouse"
 [node name="Wave" type="Label" parent="HUD"]
 offset_left = 20.0
 offset_top = 92.0
@@ -140,7 +144,7 @@ offset_left = 1040.0
 offset_top = 630.0
 offset_right = 1260.0
 offset_bottom = 675.0
-text = "24 / 144"
+text = "08 / 048"
 theme_override_font_sizes/font_size = 26
 horizontal_alignment = 2
 [node name="Reload" type="Label" parent="HUD"]
