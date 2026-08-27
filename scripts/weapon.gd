@@ -16,6 +16,7 @@ signal shot_fired
 @export var pellets := 8
 @export var spread_degrees := 5.2
 @export var range := 55.0
+@export var impact_force := 1.45
 
 @onready var camera: Camera3D = get_parent() as Camera3D
 
@@ -75,7 +76,7 @@ func _fire_shotgun() -> void:
 		var collider = result.get("collider")
 		var hit_point: Vector3 = result.get("position", origin)
 		if collider and collider.has_method("apply_hit"):
-			collider.apply_hit(hit_point, direction, damage, "shotgun")
+			collider.apply_hit(hit_point, direction, damage, "shotgun", impact_force)
 
 func request_reload() -> bool:
 	if reloading or ammo_in_mag >= magazine_size or reserve_ammo <= 0:
