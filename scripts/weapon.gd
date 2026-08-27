@@ -93,8 +93,7 @@ func _trace_pellet(space_state: PhysicsDirectSpaceState3D, origin: Vector3, dire
 			var scale := Ballistics.damage_scale(energy, penetration_energy)
 			collider.apply_hit(hit_point, direction, damage * scale, "shotgun", impact_force * scale)
 			return
-		if collider != null and collider.has_method("apply_ballistic_hit"):
-			collider.apply_ballistic_hit(damage, energy, hit_point, direction)
+		Ballistics.apply_surface_damage(collider, damage, energy)
 		var new_energy := Ballistics.energy_after_surface(energy, collider)
 		if new_energy <= 0.05 or penetrations >= max_penetrations:
 			return
