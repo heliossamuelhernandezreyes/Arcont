@@ -10,6 +10,7 @@ var look_touch := -1
 var fire_touch := -1
 var jump_touch := -1
 var sprint_touch := -1
+var reload_touch := -1
 var move_origin := Vector2.ZERO
 var move_vector := Vector2.ZERO
 var touch_enabled := false
@@ -35,7 +36,6 @@ func _input(event: InputEvent) -> void:
 		_bind_player()
 		if player == null:
 			return
-
 	if event is InputEventScreenTouch:
 		_handle_touch(event)
 	elif event is InputEventScreenDrag:
@@ -49,21 +49,22 @@ func _handle_touch(event: InputEventScreenTouch) -> void:
 	queue_redraw()
 
 func _assign_touch(index: int, position: Vector2) -> void:
-	var fire_pos := _fire_center()
-	var jump_pos := _jump_center()
-	var sprint_pos := _sprint_center()
-
-	if position.distance_to(fire_pos) <= button_radius * 1.25 and fire_touch == -1:
+	if position.distance_to(_fire_center()) <= button_radius * 1.25 and fire_touch == -1:
 		fire_touch = index
 		if player.has_method("set_mobile_fire"):
 			player.set_mobile_fire(true)
 		return
-	if position.distance_to(jump_pos) <= button_radius * 1.2 and jump_touch == -1:
+	if position.distance_to(_jump_center()) <= button_radius * 1.2 and jump_touch == -1:
 		jump_touch = index
 		if player.has_method("request_mobile_jump"):
 			player.request_mobile_jump()
 		return
-	if position.distance_to(sprint_pos) <= button_radius * 1.15 and sprint_touch == -1:
+	if position.distance_to(_reload_center()) <= button_radius and reload_touch == -1:
+		reload_touch = index
+		if player.has_method("request_reload"):
+			player.request_reload()
+		return
+	if position.distance_to(_sprint_center()) <= button_radius * 1.15 and sprint_touch == -1:
 		sprint_touch = index
 		if player.has_method("set_mobile_sprint"):
 			player.set_mobile_sprint(true)
@@ -85,9 +86,8 @@ func _handle_drag(event: InputEventScreenDrag) -> void:
 		if player.has_method("set_mobile_move"):
 			player.set_mobile_move(move_vector)
 		queue_redraw()
-	elif event.index == look_touch:
-		if player.has_method("add_mobile_look"):
-			player.add_mobile_look(event.relative)
+	elif event.index == look_touch and player.has_method("add_mobile_look"):
+		player.add_mobile_look(event.relative)
 
 func _release_touch(index: int) -> void:
 	if index == move_touch:
@@ -107,6 +107,8 @@ func _release_touch(index: int) -> void:
 		sprint_touch = -1
 		if player and player.has_method("set_mobile_sprint"):
 			player.set_mobile_sprint(false)
+	elif index == reload_touch:
+		reload_touch = -1
 
 func _draw() -> void:
 	if not touch_enabled:
@@ -115,13 +117,12 @@ func _draw() -> void:
 	var default_stick := Vector2(128.0, size.y - 138.0)
 	var stick_center := move_origin if move_touch != -1 else default_stick
 	var knob := stick_center + move_vector * joystick_radius * 0.62
-
 	draw_circle(stick_center, joystick_radius, Color(0.15, 0.18, 0.22, 0.32))
 	draw_circle(stick_center, joystick_radius * 0.68, Color(0.55, 0.62, 0.72, 0.10), false, 4.0)
 	draw_circle(knob, joystick_radius * 0.34, Color(0.85, 0.9, 1.0, 0.42))
-
 	_draw_button(_fire_center(), button_radius, "FIRE")
 	_draw_button(_jump_center(), button_radius * 0.86, "JUMP")
+	_draw_button(_reload_center(), button_radius * 0.72, "RLD")
 	_draw_button(_sprint_center(), button_radius * 0.78, "RUN")
 
 func _draw_button(center: Vector2, radius: float, label: String) -> void:
@@ -139,6 +140,10 @@ func _fire_center() -> Vector2:
 func _jump_center() -> Vector2:
 	var size := get_viewport_rect().size
 	return Vector2(size.x - 210.0, size.y - 90.0)
+
+func _reload_center() -> Vector2:
+	var size := get_viewport_rect().size
+	return Vector2(size.x - 218.0, size.y - 192.0)
 
 func _sprint_center() -> Vector2:
 	var size := get_viewport_rect().size
