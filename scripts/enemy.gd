@@ -7,6 +7,9 @@ signal died(enemy: Node)
 @export var acceleration := 10.0
 @export var contact_damage := 8.0
 @export var attack_cooldown := 0.8
+@export var desktop_gib_parts := 6
+@export var mobile_gib_parts := 3
+@export var gib_lifetime := 6.0
 
 var health := 100.0
 var target: Node3D
@@ -27,15 +30,17 @@ func _physics_process(delta: float) -> void:
 	if target and is_instance_valid(target):
 		var to_target := target.global_position - global_position
 		to_target.y = 0.0
-		if to_target.length() > 0.05:
+		var distance := to_target.length()
+		if distance > 0.05:
 			var dir := to_target.normalized()
 			velocity.x = move_toward(velocity.x, dir.x * move_speed, acceleration * delta)
 			velocity.z = move_toward(velocity.z, dir.z * move_speed, acceleration * delta)
 			look_at(global_position + Vector3(dir.x, 0.0, dir.z), Vector3.UP)
-		if to_target.length() < 1.25 and attack_timer <= 0.0:
+		if distance < 1.25 and attack_timer <= 0.0:
 			attack_timer = attack_cooldown
-			# Placeholder de contacto. Más adelante se conectará a vida/armadura del jugador.
-			print("ARCONT zombie attack: ", contact_damage)
+			if target.has_method("apply_damage"):
+				var push_dir := (target.global_position - global_position).normalized()
+				target.apply_damage(contact_damage, push_dir)
 	move_and_slide()
 
 func apply_hit(hit_point: Vector3, shot_direction: Vector3, base_damage := 34.0) -> void:
@@ -52,7 +57,6 @@ func apply_hit(hit_point: Vector3, shot_direction: Vector3, base_damage := 34.0)
 		multiplier = 0.7
 	var damage := base_damage * multiplier
 	health -= damage
-	print("ARCONT hit zone=", zone, " damage=", snapped(damage, 0.1), " hp=", snapped(max(health, 0.0), 0.1))
 	if health <= 0.0:
 		_die(shot_direction, zone)
 
@@ -76,9 +80,12 @@ func _spawn_physics_parts(shot_direction: Vector3, zone: String) -> void:
 		{"offset": Vector3(-0.18, -0.58, 0), "size": Vector3(0.24, 0.82, 0.26), "mass": 1.8},
 		{"offset": Vector3(0.18, -0.58, 0), "size": Vector3(0.24, 0.82, 0.26), "mass": 1.8}
 	]
-	for i in parts.size():
+	var part_limit := mobile_gib_parts if OS.has_feature("mobile") else desktop_gib_parts
+	part_limit = clampi(part_limit, 0, parts.size())
+	for i in part_limit:
 		var data: Dictionary = parts[i]
 		var body := RigidBody3D.new()
+		body.add_to_group("gib")
 		body.mass = data.mass
 		body.global_position = global_position + data.offset
 		body.rotation = rotation
@@ -101,5 +108,4 @@ func _spawn_physics_parts(shot_direction: Vector3, zone: String) -> void:
 		var extra := 1.8 if zone == "head" and i == 0 else 1.0
 		body.apply_central_impulse((shot_direction.normalized() * 4.8 + Vector3.UP * 2.0) * data.mass * extra)
 		body.apply_torque_impulse(Vector3(randf_range(-2.0, 2.0), randf_range(-2.0, 2.0), randf_range(-2.0, 2.0)))
-		var timer := root.get_tree().create_timer(8.0)
-		timer.timeout.connect(body.queue_free)
+		root.get_tree().create_timer(gib_lifetime).timeout.connect(body.queue_free)
