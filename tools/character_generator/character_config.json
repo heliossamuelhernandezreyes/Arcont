@@ -1,0 +1,33 @@
+{
+  "name": "arcont_survivor_base",
+  "height_m": 1.78,
+  "target_quads": 2500,
+  "radial_segments": 16,
+  "proportions": {
+    "head_height": 0.24,
+    "head_width": 0.18,
+    "head_depth": 0.20,
+    "neck_height": 0.10,
+    "shoulder_width": 0.48,
+    "torso_height": 0.50,
+    "torso_depth": 0.24,
+    "waist_width": 0.32,
+    "pelvis_height": 0.22,
+    "upper_arm_length": 0.30,
+    "forearm_length": 0.27,
+    "arm_radius": 0.065,
+    "hand_length": 0.18,
+    "thigh_length": 0.44,
+    "shin_length": 0.43,
+    "leg_radius": 0.085,
+    "foot_length": 0.25
+  },
+  "gore": {
+    "separate_head": true,
+    "separate_upper_arms": true,
+    "separate_forearms": true,
+    "separate_thighs": true,
+    "separate_shins": true,
+    "cut_gap_m": 0.008
+  }
+}
