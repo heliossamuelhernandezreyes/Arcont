@@ -22,7 +22,10 @@ func _init()->void:
 	for method in ["_command_center","_throw_center","_throw_cycle_center","_assign_touch"]:_check_script_method("res://scripts/mobile_controls.gd",method,failures)
 	for method in ["_update_generator","_update_defense","_request_ranged","_request_xeno","_spawn_lancer_event","_trigger_xeno_pulse"]:_check_script_method("res://scripts/mission_director.gd",method,failures)
 	for method in ["_start_next_wave","spawn_reinforcements","spawn_ranged_enemies","spawn_xeno_lancers","spawn_brute","_spawn_position_for"]:_check_script_method("res://scripts/main.gd",method,failures)
-	for method in ["_apply_skin_recursive"]:_check_script_method("res://scripts/provisional_character_visual.gd",method,failures)
+	for method in ["get_animation_quality","get_animation_update_interval","_apply_tier"]:_check_script_method("res://scripts/performance_budget.gd",method,failures)
+	for method in ["_apply_skin_recursive","_update_procedural","_quality","_quality_interval"]:_check_script_method("res://scripts/provisional_character_visual.gd",method,failures)
+	for script_path in ["res://scripts/zombie_visual_animator.gd","res://scripts/robot_visual_animator.gd","res://scripts/xeno_visual_animator.gd"]:
+		for method in ["_quality","_quality_interval"]:_check_script_method(script_path,method,failures)
 	if failures.is_empty():print("ARCONT CI: smoke test OK");quit(0);return
 	for failure in failures:push_error("ARCONT CI: "+failure)
 	quit(1)
