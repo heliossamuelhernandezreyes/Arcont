@@ -1,6 +1,7 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource path="res://scripts/enemy.gd" type="Script" id="1_enemy"]
+[ext_resource path="res://scripts/zombie_visual_animator.gd" type="Script" id="2_anim"]
 
 [sub_resource type="CapsuleShape3D" id="EnemyShape"]
 radius = 0.45
@@ -58,81 +59,69 @@ emission_energy_multiplier = 0.35
 
 [node name="Enemy" type="CharacterBody3D"]
 script = ExtResource("1_enemy")
-
+[node name="VisualAnimator" type="Node" parent="."]
+script = ExtResource("2_anim")
 [node name="Collision" type="CollisionShape3D" parent="."]
 position = Vector3(0, 0.95, 0)
 shape = SubResource("EnemyShape")
-
 [node name="Body" type="MeshInstance3D" parent="."]
 position = Vector3(0, 0.98, 0)
 rotation_degrees = Vector3(0, 0, -4)
 mesh = SubResource("BodyMesh")
 material_override = SubResource("FleshMat")
-
 [node name="TornShirt" type="MeshInstance3D" parent="Body"]
 position = Vector3(0.02, 0.04, -0.03)
 rotation_degrees = Vector3(2, 0, 3)
 mesh = SubResource("ShirtMesh")
 material_override = SubResource("ClothMat")
-
 [node name="ChestWound" type="MeshInstance3D" parent="Body"]
 position = Vector3(-0.12, 0.12, -0.39)
 scale = Vector3(0.42, 0.18, 0.10)
 mesh = SubResource("EyeMesh")
 material_override = SubResource("BloodMat")
-
 [node name="Head" type="MeshInstance3D" parent="."]
 position = Vector3(-0.03, 1.78, -0.02)
 rotation_degrees = Vector3(8, -7, -5)
 mesh = SubResource("HeadMesh")
 material_override = SubResource("FleshMat")
-
 [node name="Jaw" type="MeshInstance3D" parent="Head"]
 position = Vector3(0.03, -0.20, -0.12)
 rotation_degrees = Vector3(-13, 0, 3)
 mesh = SubResource("JawMesh")
 material_override = SubResource("RotMat")
-
 [node name="EyeL" type="MeshInstance3D" parent="Head"]
 position = Vector3(-0.105, 0.045, -0.245)
 mesh = SubResource("EyeMesh")
 material_override = SubResource("EyeMat")
-
 [node name="EyeR" type="MeshInstance3D" parent="Head"]
 position = Vector3(0.105, 0.03, -0.245)
 mesh = SubResource("EyeMesh")
 material_override = SubResource("EyeMat")
-
 [node name="ArmL" type="MeshInstance3D" parent="."]
 position = Vector3(-0.48, 1.05, -0.10)
 rotation_degrees = Vector3(72, 0, -8)
 mesh = SubResource("ArmMesh")
 material_override = SubResource("FleshMat")
-
 [node name="SleeveL" type="MeshInstance3D" parent="ArmL"]
 position = Vector3(0, 0.16, 0)
 scale = Vector3(1.42, 0.46, 1.42)
 mesh = SubResource("ArmMesh")
 material_override = SubResource("ClothMat")
-
 [node name="ArmR" type="MeshInstance3D" parent="."]
 position = Vector3(0.48, 1.05, -0.10)
 rotation_degrees = Vector3(72, 0, 8)
 mesh = SubResource("ArmMesh")
 material_override = SubResource("FleshMat")
-
 [node name="SleeveR" type="MeshInstance3D" parent="ArmR"]
 position = Vector3(0, 0.20, 0)
 scale = Vector3(1.38, 0.38, 1.38)
 mesh = SubResource("ArmMesh")
 material_override = SubResource("ClothMat")
-
 [node name="LegL" type="MeshInstance3D" parent="Body"]
 position = Vector3(-0.18, -0.70, 0.02)
 rotation_degrees = Vector3(0, 0, 4)
 mesh = SubResource("LegMesh")
 material_override = SubResource("ClothMat")
-
 [node name="LegR" type="MeshInstance3D" parent="Body"]
 position = Vector3(0.18, -0.70, 0.01)
 rotation_degrees = Vector3(0, 0, -7)
