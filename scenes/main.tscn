@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource path="res://scripts/player.gd" type="Script" id="1_player"]
 [ext_resource path="res://scripts/main.gd" type="Script" id="2_main"]
@@ -17,6 +17,7 @@
 [ext_resource path="res://scripts/weapon_visual_animator.gd" type="Script" id="15_weapon_anim"]
 [ext_resource path="res://scripts/third_person_ads.gd" type="Script" id="16_ads"]
 [ext_resource path="res://scripts/tactical_mobility.gd" type="Script" id="17_mobility"]
+[ext_resource path="res://scripts/melee_combat_controller.gd" type="Script" id="18_melee"]
 
 [sub_resource type="CapsuleShape3D" id="PlayerShape"]
 radius=0.4
@@ -102,6 +103,8 @@ script=ExtResource("15_weapon_anim")
 script=ExtResource("16_ads")
 [node name="TacticalMobility" type="Node" parent="Player"]
 script=ExtResource("17_mobility")
+[node name="MeleeCombat" type="Node" parent="Player"]
+script=ExtResource("18_melee")
 [node name="HUD" type="CanvasLayer" parent="."]
 [node name="Crosshair" type="Label" parent="HUD"]
 offset_left=632.0
@@ -124,52 +127,22 @@ offset_bottom=80.0
 text="ARCONT // DISTRITO DE EVACUACION 07\nCONTENCION FALLIDA · PRESENCIA XENOLOGICA"
 [node name="Objective" type="Label" parent="HUD"]
 offset_left=20.0
-offset_top=198.0
-offset_right=790.0
-offset_bottom=236.0
-text="OBJETIVO // REACTIVA EL GENERADOR"
-[node name="Wave" type="Label" parent="HUD"]
-offset_left=20.0
-offset_top=92.0
-offset_right=240.0
-offset_bottom=122.0
-text="OLEADA 01"
-[node name="Alive" type="Label" parent="HUD"]
-offset_left=20.0
-offset_top=120.0
-offset_right=240.0
-offset_bottom=150.0
-text="HOSTILES 08"
-[node name="Health" type="Label" parent="HUD"]
-offset_left=20.0
-offset_top=154.0
-offset_right=260.0
-offset_bottom=184.0
-text="VIDA 100"
+offset_top=88.0
+offset_right=760.0
+offset_bottom=128.0
+text="OBJETIVO"
 [node name="WeaponName" type="Label" parent="HUD"]
-offset_left=1020.0
-offset_top=525.0
-offset_right=1265.0
-offset_bottom=555.0
-text="1 // 12G SHOTGUN"
-[node name="Ammo" type="Label" parent="HUD"]
-offset_left=1040.0
-offset_top=630.0
-offset_right=1260.0
-offset_bottom=675.0
-text="08 / 048"
-[node name="Reload" type="Label" parent="HUD"]
-offset_left=1020.0
-offset_top=595.0
-offset_right=1260.0
-offset_bottom=625.0
-text=""
+offset_left=20.0
+offset_top=128.0
+offset_right=520.0
+offset_bottom=162.0
+text="ARMA"
 [node name="Throwable" type="Label" parent="HUD"]
-offset_left=960.0
-offset_top=555.0
-offset_right=1260.0
-offset_bottom=585.0
-text="ARROJABLE // GRANADA  x3"
+offset_left=20.0
+offset_top=162.0
+offset_right=520.0
+offset_bottom=196.0
+text="EQUIPO"
 [node name="MobileControls" type="Control" parent="HUD"]
 layout_mode=3
 anchors_preset=15
