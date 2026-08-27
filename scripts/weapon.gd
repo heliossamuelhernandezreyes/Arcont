@@ -77,7 +77,7 @@ func _fire_shotgun() -> void:
 		var collider = result.get("collider")
 		var hit_point: Vector3 = result.get("position", origin)
 		var hit_normal: Vector3 = result.get("normal", -direction)
-		var organic := collider and collider.has_method("apply_hit")
+		var organic: bool = bool(collider != null and collider.has_method("apply_hit"))
 		impact_feedback.emit(hit_point, hit_normal, organic)
 		if organic:
 			collider.apply_hit(hit_point, direction, damage, "shotgun", impact_force)
