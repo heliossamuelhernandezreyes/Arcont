@@ -44,6 +44,7 @@ jobs:
           git clone --depth 1 https://github.com/VAST-AI-Research/TripoSR.git /tmp/TripoSR
           cd /tmp/TripoSR
           pip install -r requirements.txt
+          pip install onnxruntime
 
       - name: Generate mesh on CPU
         if: steps.input.outputs.present == 'true'
