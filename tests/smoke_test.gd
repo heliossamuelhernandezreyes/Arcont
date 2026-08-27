@@ -8,12 +8,16 @@ func _init() -> void:
 	for method in ["_try_fire","apply_damage","_toggle_cover","_update_cover_state","_switch_shoulder","_update_camera_collision"]:_check_script_method("res://scripts/player.gd",method,failures)
 	for method in ["try_fire","_fire_shotgun","_trace_pellet","request_reload","add_ammo"]:_check_script_method("res://scripts/weapon.gd",method,failures)
 	for method in ["resistance_for","thickness_for","energy_after_surface","damage_scale"]:_check_script_method("res://scripts/ballistics.gd",method,failures)
-	for method in ["_try_fire","_pick_hit_zone","apply_hit"]:_check_script_method("res://scripts/ranged_enemy.gd",method,failures)
+	for method in ["_try_fire","_trace_round","_pick_hit_zone","apply_hit"]:_check_script_method("res://scripts/ranged_enemy.gd",method,failures)
 	for method in ["activate_unit","_nearest_enemy","_fire_at","apply_damage"]:_check_script_method("res://scripts/companion_robot.gd",method,failures)
 	for method in ["_update_generator","_update_defense","_request_ranged","_trigger_blackout","_spawn_brute_event","_trigger_xeno_pulse"]:_check_script_method("res://scripts/mission_director.gd",method,failures)
 	for method in ["_start_next_wave","spawn_reinforcements","spawn_ranged_enemies","spawn_brute","_spawn_position_for"]:_check_script_method("res://scripts/main.gd",method,failures)
-	if failures.is_empty():print("ARCONT CI: smoke test OK");quit(0)
-	for failure in failures:push_error("ARCONT CI: "+failure)
+	if failures.is_empty():
+		print("ARCONT CI: smoke test OK")
+		quit(0)
+		return
+	for failure in failures:
+		push_error("ARCONT CI: "+failure)
 	quit(1)
 func _check_scene(path:String,required_nodes:Array[String],failures:Array[String])->void:
 	var packed:=load(path) as PackedScene
