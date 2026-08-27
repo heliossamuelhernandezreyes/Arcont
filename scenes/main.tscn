@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource path="res://scripts/player.gd" type="Script" id="1_player"]
 [ext_resource path="res://scripts/main.gd" type="Script" id="2_main"]
@@ -6,18 +6,7 @@
 [ext_resource path="res://scripts/weapon.gd" type="Script" id="4_weapon"]
 [ext_resource path="res://scripts/performance_budget.gd" type="Script" id="5_budget"]
 [ext_resource path="res://scripts/combat_feedback.gd" type="Script" id="6_feedback"]
-
-[sub_resource type="BoxMesh" id="BoxFloor"]
-size = Vector3(30, 0.2, 30)
-
-[sub_resource type="BoxShape3D" id="ShapeFloor"]
-size = Vector3(30, 0.2, 30)
-
-[sub_resource type="BoxMesh" id="BoxWall"]
-size = Vector3(30, 3, 0.4)
-
-[sub_resource type="BoxShape3D" id="ShapeWall"]
-size = Vector3(30, 3, 0.4)
+[ext_resource path="res://scripts/urban_environment.gd" type="Script" id="7_environment"]
 
 [sub_resource type="CapsuleShape3D" id="PlayerShape"]
 radius = 0.4
@@ -28,10 +17,16 @@ size = Vector3(0.28, 0.18, 0.82)
 
 [sub_resource type="Environment" id="Env"]
 background_mode = 1
-background_color = Color(0.035, 0.045, 0.065, 1)
+background_color = Color(0.018, 0.025, 0.038, 1)
 ambient_light_source = 3
-ambient_light_color = Color(0.55, 0.62, 0.72, 1)
-ambient_light_energy = 0.65
+ambient_light_color = Color(0.34, 0.40, 0.50, 1)
+ambient_light_energy = 0.72
+fog_enabled = true
+fog_light_color = Color(0.15, 0.18, 0.24, 1)
+fog_light_energy = 0.55
+fog_density = 0.012
+fog_height = 0.0
+fog_height_density = 0.06
 
 [node name="Main" type="Node3D"]
 script = ExtResource("2_main")
@@ -42,54 +37,30 @@ script = ExtResource("5_budget")
 [node name="CombatFeedback" type="Node" parent="."]
 script = ExtResource("6_feedback")
 
+[node name="UrbanDistrict" type="Node3D" parent="."]
+script = ExtResource("7_environment")
+
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Env")
 
-[node name="Sun" type="DirectionalLight3D" parent="."]
-rotation_degrees = Vector3(-55, -30, 0)
-light_energy = 1.2
+[node name="MoonLight" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-52, -28, 0)
+light_color = Color(0.66, 0.74, 0.88, 1)
+light_energy = 1.05
 shadow_enabled = true
+directional_shadow_max_distance = 55.0
 
-[node name="Floor" type="StaticBody3D" parent="."]
-[node name="Mesh" type="MeshInstance3D" parent="Floor"]
-mesh = SubResource("BoxFloor")
-[node name="Collision" type="CollisionShape3D" parent="Floor"]
-shape = SubResource("ShapeFloor")
-
-[node name="NorthWall" type="StaticBody3D" parent="."]
-position = Vector3(0, 1.5, -15)
-[node name="Mesh" type="MeshInstance3D" parent="NorthWall"]
-mesh = SubResource("BoxWall")
-[node name="Collision" type="CollisionShape3D" parent="NorthWall"]
-shape = SubResource("ShapeWall")
-
-[node name="SouthWall" type="StaticBody3D" parent="."]
-position = Vector3(0, 1.5, 15)
-[node name="Mesh" type="MeshInstance3D" parent="SouthWall"]
-mesh = SubResource("BoxWall")
-[node name="Collision" type="CollisionShape3D" parent="SouthWall"]
-shape = SubResource("ShapeWall")
-
-[node name="WestWall" type="StaticBody3D" parent="."]
-position = Vector3(-15, 1.5, 0)
-rotation_degrees = Vector3(0, 90, 0)
-[node name="Mesh" type="MeshInstance3D" parent="WestWall"]
-mesh = SubResource("BoxWall")
-[node name="Collision" type="CollisionShape3D" parent="WestWall"]
-shape = SubResource("ShapeWall")
-
-[node name="EastWall" type="StaticBody3D" parent="."]
-position = Vector3(15, 1.5, 0)
-rotation_degrees = Vector3(0, 90, 0)
-[node name="Mesh" type="MeshInstance3D" parent="EastWall"]
-mesh = SubResource("BoxWall")
-[node name="Collision" type="CollisionShape3D" parent="EastWall"]
-shape = SubResource("ShapeWall")
+[node name="EmergencyLight" type="OmniLight3D" parent="."]
+position = Vector3(-6.0, 3.5, 5.0)
+light_color = Color(1, 0.12, 0.07, 1)
+light_energy = 1.8
+omni_range = 10.0
+shadow_enabled = false
 
 [node name="Enemies" type="Node3D" parent="."]
 
 [node name="Player" type="CharacterBody3D" parent="." groups=["player"]]
-position = Vector3(0, 1.05, 7)
+position = Vector3(0, 1.05, 19)
 script = ExtResource("1_player")
 [node name="Collision" type="CollisionShape3D" parent="Player"]
 shape = SubResource("PlayerShape")
@@ -134,9 +105,9 @@ visible = false
 [node name="Info" type="Label" parent="HUD"]
 offset_left = 20.0
 offset_top = 18.0
-offset_right = 620.0
+offset_right = 720.0
 offset_bottom = 80.0
-text = "ARCONT // MOBILE-FIRST HORDE PROTOTYPE\nSHOTGUN · Touch · Gamepad · WASD/Mouse"
+text = "ARCONT // DISTRITO DE EVACUACION 07\nCONTENCION FALLIDA · PRESENCIA XENOLOGICA"
 [node name="Wave" type="Label" parent="HUD"]
 offset_left = 20.0
 offset_top = 92.0
