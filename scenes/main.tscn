@@ -140,6 +140,12 @@ offset_top=154.0
 offset_right=260.0
 offset_bottom=184.0
 text="VIDA 100"
+[node name="WeaponName" type="Label" parent="HUD"]
+offset_left=1020.0
+offset_top=525.0
+offset_right=1265.0
+offset_bottom=555.0
+text="1 // 12G SHOTGUN"
 [node name="Ammo" type="Label" parent="HUD"]
 offset_left=1040.0
 offset_top=630.0
