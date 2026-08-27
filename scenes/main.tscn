@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource path="res://scripts/player.gd" type="Script" id="1_player"]
 [ext_resource path="res://scripts/main.gd" type="Script" id="2_main"]
@@ -16,6 +16,7 @@
 [ext_resource path="res://assets/provisional/characters/kenney_survivors/Model/characterMedium.fbx" type="PackedScene" id="14_operator"]
 [ext_resource path="res://scripts/weapon_visual_animator.gd" type="Script" id="15_weapon_anim"]
 [ext_resource path="res://scripts/third_person_ads.gd" type="Script" id="16_ads"]
+[ext_resource path="res://scripts/tactical_mobility.gd" type="Script" id="17_mobility"]
 
 [sub_resource type="CapsuleShape3D" id="PlayerShape"]
 radius=0.4
@@ -99,6 +100,8 @@ script=ExtResource("4_weapon")
 script=ExtResource("15_weapon_anim")
 [node name="ThirdPersonADS" type="Node" parent="Player"]
 script=ExtResource("16_ads")
+[node name="TacticalMobility" type="Node" parent="Player"]
+script=ExtResource("17_mobility")
 [node name="HUD" type="CanvasLayer" parent="."]
 [node name="Crosshair" type="Label" parent="HUD"]
 offset_left=632.0
