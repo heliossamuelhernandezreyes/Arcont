@@ -1,0 +1,38 @@
+name: Generate 3D on Modal GPU
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check multiview inputs
+        run: |
+          test -f tools/3d-pipeline/input/front.png
+          test -f tools/3d-pipeline/input/left.png
+          test -f tools/3d-pipeline/input/back.png
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Modal client
+        run: pip install 'modal>=1.1,<2'
+
+      - name: Generate on GPU
+        run: modal run tools/3d-pipeline/modal_hunyuan_mv.py
+
+      - name: Upload GLB
+        uses: actions/upload-artifact@v4
+        with:
+          name: arcont-hunyuan-multiview
+          path: tools/3d-pipeline/output/arcont_survivor_hunyuan_mv.glb
+          if-no-files-found: error
+          retention-days: 7
