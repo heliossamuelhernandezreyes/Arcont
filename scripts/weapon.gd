@@ -36,9 +36,19 @@ var ammo_in_mag: int:
 	set(value): ammo_by_slot[slot]=value
 
 func _ready() -> void:
-	base_fov = camera.fov if camera else 72.0
-	_build_weapon_visual()
-	_emit_state()
+	base_fov=camera.fov if camera else 72.0
+	_build_weapon_visual();_emit_state()
+
+func _unhandled_input(event:InputEvent)->void:
+	if event is InputEventMouseButton:
+		if event.button_index==MOUSE_BUTTON_LEFT:set_trigger(event.pressed)
+		elif event.button_index==MOUSE_BUTTON_RIGHT:set_ads(event.pressed)
+		elif event.pressed and event.button_index==MOUSE_BUTTON_WHEEL_UP:switch_weapon((slot+profiles.size()-1)%profiles.size())
+		elif event.pressed and event.button_index==MOUSE_BUTTON_WHEEL_DOWN:cycle_weapon()
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode==KEY_1:switch_weapon(0)
+		elif event.keycode==KEY_2:switch_weapon(1)
+		elif event.keycode==KEY_3:switch_weapon(2)
 
 func _process(delta: float) -> void:
 	fire_timer=maxf(fire_timer-delta,0.0)
@@ -50,24 +60,21 @@ func _process(delta: float) -> void:
 		var target_fov:=float(profiles[slot]["ads_fov"]) if aiming else base_fov
 		camera.fov=lerpf(camera.fov,target_fov,minf(delta*11.0,1.0))
 
-func set_trigger(active: bool) -> void:
+func set_trigger(active:bool)->void:
+	if active and not trigger_held:try_fire()
 	trigger_held=active
-	if active:try_fire()
 
-func set_ads(active: bool) -> void:
+func set_ads(active:bool)->void:
 	if aiming==active:return
-	aiming=active
-	ads_changed.emit(aiming)
+	aiming=active;ads_changed.emit(aiming)
 
-func cycle_weapon() -> void:
-	switch_weapon((slot+1)%profiles.size())
-
-func switch_weapon(next_slot: int) -> void:
+func cycle_weapon()->void:switch_weapon((slot+1)%profiles.size())
+func switch_weapon(next_slot:int)->void:
 	var target:=clampi(next_slot,0,profiles.size()-1)
 	if target==slot:return
-	cancel_reload();slot=target;fire_timer=0.18;_build_weapon_visual();_emit_state();weapon_changed.emit(weapon_name,slot)
+	cancel_reload();slot=target;trigger_held=false;fire_timer=0.18;_build_weapon_visual();_emit_state()
 
-func try_fire() -> bool:
+func try_fire()->bool:
 	if reloading or fire_timer>0.0:return false
 	if ammo_in_mag<=0:request_reload();return false
 	var p:Dictionary=profiles[slot]
@@ -76,15 +83,14 @@ func try_fire() -> bool:
 	if handling and handling.has_method("get_recoil_multiplier"):recoil_mult=float(handling.get_recoil_multiplier())
 	var ads_recoil:=0.78 if aiming else 1.0
 	recoil_requested.emit(float(p["recoil_pitch"])*recoil_mult*ads_recoil,randf_range(-float(p["recoil_yaw"]),float(p["recoil_yaw"]))*recoil_mult*ads_recoil)
-	_fire_weapon()
-	return true
+	_fire_weapon();return true
 
-func _report_weapon_sound() -> void:
+func _report_weapon_sound()->void:
 	var scene:=get_tree().current_scene;if scene==null:return
 	var awareness:=scene.get_node_or_null("AwarenessDirector")
 	if awareness and awareness.has_method("report_sound"):awareness.report_sound(camera.global_position,float(profiles[slot]["noise"]),weapon_name.to_lower())
 
-func _fire_weapon() -> void:
+func _fire_weapon()->void:
 	var world:=camera.get_world_3d();if world==null:return
 	var p:Dictionary=profiles[slot];var origin:=camera.global_position;var forward:=-camera.global_transform.basis.z;var right:=camera.global_transform.basis.x;var up:=camera.global_transform.basis.y
 	var handling:=_player_controller();var spread_mult:=1.0
@@ -109,26 +115,21 @@ func _trace_round(space_state:PhysicsDirectSpaceState3D,origin:Vector3,direction
 		if collider is CollisionObject3D:local_exclude.append((collider as CollisionObject3D).get_rid())
 		var skip:=Ballistics.thickness_for(collider)+0.08;current_origin=hit_point+direction*skip;travelled+=skip
 
-func request_reload() -> bool:
+func request_reload()->bool:
 	if reloading or ammo_in_mag>=magazine_size or reserve_ammo<=0:return false
 	reloading=true;var mult:=1.0;var handling:=_player_controller()
 	if handling and handling.has_method("get_reload_time_multiplier"):mult=float(handling.get_reload_time_multiplier())
 	reload_timer=float(profiles[slot]["reload"])*mult;reload_state_changed.emit(true);return true
-
-func _finish_reload() -> void:
+func _finish_reload()->void:
 	var moved:=mini(magazine_size-ammo_in_mag,reserve_ammo);ammo_in_mag+=moved;reserve_ammo-=moved;reloading=false;reload_timer=0.0;reload_state_changed.emit(false);ammo_changed.emit(ammo_in_mag,reserve_ammo,magazine_size)
-
-func cancel_reload() -> void:
+func cancel_reload()->void:
 	if not reloading:return
 	reloading=false;reload_timer=0.0;reload_state_changed.emit(false)
-
 func add_ammo(amount:int)->void:
 	if amount<=0:return
 	reserve_ammo+=amount;ammo_changed.emit(ammo_in_mag,reserve_ammo,magazine_size)
-
 func _emit_state()->void:
 	ammo_changed.emit(ammo_in_mag,reserve_ammo,magazine_size);weapon_changed.emit(weapon_name,slot)
-
 func _player_controller()->Node:
 	var node:Node=camera
 	for _i in 4:
@@ -149,7 +150,6 @@ func _build_weapon_visual()->void:
 		_add_box(gun,"DetailReceiver",Vector3.ZERO,Vector3(0.23,0.18,0.50),steel);_add_box(gun,"DetailStock",Vector3(0,-0.02,0.40),Vector3(0.20,0.16,0.38),polymer);_add_box(gun,"DetailGrip",Vector3(0,-0.18,0.12),Vector3(0.14,0.28,0.14),polymer,Vector3(-15,0,0));_add_box(gun,"DetailMagazine",Vector3(0,-0.20,-0.05),Vector3(0.15,0.34,0.18),dark,Vector3(-8,0,0));_add_cylinder(gun,"DetailBarrel",Vector3(0,0.03,-0.58),0.038,0.82,dark);_add_box(gun,"DetailHandguard",Vector3(0,-0.01,-0.36),Vector3(0.19,0.16,0.40),polymer)
 	else:
 		_add_box(gun,"DetailSlide",Vector3(0,0.03,-0.12),Vector3(0.18,0.13,0.42),steel);_add_box(gun,"DetailGrip",Vector3(0,-0.16,0.08),Vector3(0.15,0.30,0.18),polymer,Vector3(-12,0,0));_add_cylinder(gun,"DetailBarrel",Vector3(0,0.03,-0.34),0.028,0.30,dark)
-
 func _mat(color:Color,metallic:float,roughness:float)->StandardMaterial3D:
 	var m:=StandardMaterial3D.new();m.albedo_color=color;m.metallic=metallic;m.roughness=roughness;return m
 func _add_box(parent:Node3D,node_name:String,position:Vector3,size:Vector3,material:Material,rotation_deg:=Vector3.ZERO)->void:
