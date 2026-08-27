@@ -1,56 +1,51 @@
-extends Node2D
+extends Node3D
 
-const PLAYER_SPEED := 320.0
-const PLAYER_RADIUS := 22.0
-const GRID_SIZE := 64.0
+const ENEMY_SCENE := preload("res://scenes/enemy.tscn")
 
-var player_position := Vector2(640, 360)
+@export var first_wave_size := 8
+@export var wave_growth := 4
+@export var spawn_radius := 11.5
+@export var time_between_waves := 2.5
+
+var wave := 0
+var alive := 0
+var waiting_for_next_wave := false
+
+@onready var player: Node3D = $Player
+@onready var wave_label: Label = $HUD/Wave
+@onready var alive_label: Label = $HUD/Alive
 
 func _ready() -> void:
-	queue_redraw()
+	player.add_to_group("player")
+	_start_next_wave()
 
-func _process(delta: float) -> void:
-	var direction := Vector2.ZERO
-	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
-		direction.x -= 1.0
-	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
-		direction.x += 1.0
-	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
-		direction.y -= 1.0
-	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):
-		direction.y += 1.0
-	if direction.length_squared() > 0.0:
-		direction = direction.normalized()
+func _start_next_wave() -> void:
+	if waiting_for_next_wave:
+		return
+	wave += 1
+	var count := first_wave_size + (wave - 1) * wave_growth
+	alive = count
+	for i in count:
+		_spawn_enemy(i, count)
+	_update_hud()
 
-	player_position += direction * PLAYER_SPEED * delta
-	var viewport_size := get_viewport_rect().size
-	player_position.x = clamp(player_position.x, PLAYER_RADIUS, viewport_size.x - PLAYER_RADIUS)
-	player_position.y = clamp(player_position.y, PLAYER_RADIUS, viewport_size.y - PLAYER_RADIUS)
-	queue_redraw()
+func _spawn_enemy(index: int, total: int) -> void:
+	var enemy = ENEMY_SCENE.instantiate()
+	var angle := TAU * float(index) / max(float(total), 1.0) + randf_range(-0.18, 0.18)
+	var radius := spawn_radius + randf_range(-1.5, 1.5)
+	enemy.position = Vector3(cos(angle) * radius, 0.0, sin(angle) * radius)
+	enemy.died.connect(_on_enemy_died)
+	$Enemies.add_child(enemy)
 
-func _draw() -> void:
-	var viewport_size := get_viewport_rect().size
-	_draw_grid(viewport_size)
-	_draw_player()
-	_draw_hud()
+func _on_enemy_died(_enemy: Node) -> void:
+	alive = max(alive - 1, 0)
+	_update_hud()
+	if alive == 0 and not waiting_for_next_wave:
+		waiting_for_next_wave = true
+		await get_tree().create_timer(time_between_waves).timeout
+		waiting_for_next_wave = false
+		_start_next_wave()
 
-func _draw_grid(size: Vector2) -> void:
-	var grid_color := Color(0.12, 0.15, 0.22, 0.45)
-	var x := 0.0
-	while x <= size.x:
-		draw_line(Vector2(x, 0), Vector2(x, size.y), grid_color, 1.0)
-		x += GRID_SIZE
-	var y := 0.0
-	while y <= size.y:
-		draw_line(Vector2(0, y), Vector2(size.x, y), grid_color, 1.0)
-		y += GRID_SIZE
-
-func _draw_player() -> void:
-	draw_circle(player_position, PLAYER_RADIUS + 6.0, Color(0.10, 0.18, 0.28, 0.9))
-	draw_circle(player_position, PLAYER_RADIUS, Color(0.35, 0.82, 1.0, 1.0))
-	draw_circle(player_position, 7.0, Color(0.92, 0.98, 1.0, 1.0))
-
-func _draw_hud() -> void:
-	var font := ThemeDB.fallback_font
-	draw_string(font, Vector2(32, 48), "ARCONT // PROTOTIPO 0.1", HORIZONTAL_ALIGNMENT_LEFT, -1, 24, Color(0.9, 0.95, 1.0))
-	draw_string(font, Vector2(32, 78), "WASD / flechas para moverte", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color(0.62, 0.7, 0.82))
+func _update_hud() -> void:
+	wave_label.text = "OLEADA %02d" % wave
+	alive_label.text = "HOSTILES %02d" % alive
