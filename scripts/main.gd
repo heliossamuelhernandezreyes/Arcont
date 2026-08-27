@@ -18,6 +18,7 @@ var enemy_pool: Array[Node] = []
 @onready var player: Node3D = $Player
 @onready var weapon: Node = $Player/Head/Camera3D/Weapon
 @onready var budget: Node = $PerformanceBudget
+@onready var feedback: Node = $CombatFeedback
 @onready var wave_label: Label = $HUD/Wave
 @onready var alive_label: Label = $HUD/Alive
 @onready var health_label: Label = $HUD/Health
@@ -31,6 +32,8 @@ func _ready() -> void:
 	player.died.connect(_on_player_died)
 	weapon.ammo_changed.connect(_on_ammo_changed)
 	weapon.reload_state_changed.connect(_on_reload_state_changed)
+	weapon.shot_fired.connect(feedback.on_shot_fired)
+	weapon.impact_feedback.connect(feedback.on_hit_feedback)
 	budget.profile_changed.connect(_on_performance_profile_changed)
 	_on_player_health_changed(player.health, player.max_health)
 	_on_ammo_changed(weapon.ammo_in_mag, weapon.reserve_ammo, weapon.magazine_size)
