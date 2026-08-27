@@ -6,6 +6,7 @@ extends CharacterBody3D
 @export var air_acceleration := 5.0
 @export var jump_velocity := 5.2
 @export var mouse_sensitivity := 0.0022
+@export var weapon_damage := 34.0
 
 @onready var head: Node3D = $Head
 @onready var camera: Camera3D = $Head/Camera3D
@@ -46,8 +47,13 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 func _fire() -> void:
-	# Placeholder hitscan. Next milestone: damage, impulse and gore zones.
 	ray.force_raycast_update()
-	if ray.is_colliding():
-		var collider := ray.get_collider()
-		print("ARCONT hit: ", collider)
+	if not ray.is_colliding():
+		return
+	var collider := ray.get_collider()
+	var hit_point := ray.get_collision_point()
+	var shot_direction := -camera.global_transform.basis.z
+	if collider and collider.has_method("apply_hit"):
+		collider.apply_hit(hit_point, shot_direction, weapon_damage)
+	else:
+		print("ARCONT impact: ", collider)
