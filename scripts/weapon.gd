@@ -32,14 +32,22 @@ var trigger_held:=false
 var bolt_pending:=false
 var bolt_timer:=0.0
 
-var weapon_name:String:get:return String(profiles[slot]["name"])
-var magazine_size:int:get:return int(profiles[slot]["mag"])
+var weapon_name:String:
+ get:
+  return String(profiles[slot]["name"])
+var magazine_size:int:
+ get:
+  return int(profiles[slot]["mag"])
 var reserve_ammo:int:
- get:return reserve_by_slot[slot]
- set(value):reserve_by_slot[slot]=value
+ get:
+  return reserve_by_slot[slot]
+ set(value):
+  reserve_by_slot[slot]=value
 var ammo_in_mag:int:
- get:return ammo_by_slot[slot]
- set(value):ammo_by_slot[slot]=value
+ get:
+  return ammo_by_slot[slot]
+ set(value):
+  ammo_by_slot[slot]=value
 
 func _ready()->void:base_fov=camera.fov if camera else 72.0;_build_weapon_visual();_emit_state()
 func _unhandled_input(event:InputEvent)->void:
