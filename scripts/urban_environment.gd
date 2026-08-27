@@ -4,6 +4,19 @@ extends Node3D
 @export var road_width := 11.0
 @export var sidewalk_height := 0.16
 
+const CAR_MODELS := [
+	"res://assets/provisional/city/car_hatchback.fbx",
+	"res://assets/provisional/city/car_police.fbx",
+	"res://assets/provisional/city/car_sedan.fbx",
+	"res://assets/provisional/city/car_stationwagon.fbx"
+]
+const PROP_MODELS := {
+	"bench": "res://assets/provisional/city/bench.fbx",
+	"box_a": "res://assets/provisional/city/box_A.fbx",
+	"box_b": "res://assets/provisional/city/box_B.fbx",
+	"bush": "res://assets/provisional/city/bush.fbx"
+}
+
 var mat_asphalt: StandardMaterial3D
 var mat_concrete: StandardMaterial3D
 var mat_building_dark: StandardMaterial3D
@@ -12,6 +25,7 @@ var mat_rubble: StandardMaterial3D
 var mat_military: StandardMaterial3D
 var mat_alien: StandardMaterial3D
 var mat_glow: StandardMaterial3D
+var vehicle_index := 0
 
 func _ready() -> void:
 	_make_materials()
@@ -20,6 +34,7 @@ func _ready() -> void:
 	_build_centerpiece()
 	_build_barricades()
 	_build_abandoned_vehicles()
+	_build_provisional_props()
 	_build_alien_incursion()
 	_build_spawn_points()
 	_build_tactical_points()
@@ -80,14 +95,45 @@ func _build_barricades() -> void:
 	_box("BarricadeE", Vector3(13.0, 0.55, 3.2), Vector3(0.55, 1.1, 4.2), mat_military, true)
 
 func _build_abandoned_vehicles() -> void:
-	_vehicle(Vector3(-2.4, 0.55, -9.5), Vector3(0, 14, 0), Color(0.20, 0.22, 0.23))
-	_vehicle(Vector3(2.8, 0.55, 16.5), Vector3(0, -20, 0), Color(0.16, 0.19, 0.15))
-	_vehicle(Vector3(-15.5, 0.55, 4.0), Vector3(0, 82, 0), Color(0.24, 0.16, 0.13))
+	_vehicle(Vector3(-2.4, 0.18, -9.5), Vector3(0, 14, 0))
+	_vehicle(Vector3(2.8, 0.18, 16.5), Vector3(0, -20, 0))
+	_vehicle(Vector3(-15.5, 0.18, 4.0), Vector3(0, 82, 0))
 
-func _vehicle(position: Vector3, rotation_deg: Vector3, color: Color) -> void:
-	var material := _mat(color, 0.72)
-	_box("CarBody", position, Vector3(1.8, 0.72, 3.6), material, true, rotation_deg)
-	_box("CarCabin", position + Vector3(0, 0.62, 0.15), Vector3(1.55, 0.62, 1.75), material, false, rotation_deg)
+func _vehicle(position: Vector3, rotation_deg: Vector3) -> void:
+	var collision_body := StaticBody3D.new()
+	collision_body.name = "CarBody"
+	collision_body.position = position + Vector3(0, 0.52, 0)
+	collision_body.rotation_degrees = rotation_deg
+	var shape_node := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(1.9, 1.05, 3.8)
+	shape_node.shape = shape
+	collision_body.add_child(shape_node)
+	add_child(collision_body)
+	var path: String = CAR_MODELS[vehicle_index % CAR_MODELS.size()]
+	vehicle_index += 1
+	_spawn_asset(path, position, rotation_deg)
+
+func _build_provisional_props() -> void:
+	_spawn_asset(PROP_MODELS["bench"], Vector3(-8.8, 0.15, -3.0), Vector3(0, 90, 0))
+	_spawn_asset(PROP_MODELS["box_a"], Vector3(5.2, 0.15, 7.6), Vector3.ZERO)
+	_spawn_asset(PROP_MODELS["box_b"], Vector3(5.9, 0.15, 7.1), Vector3(0, 24, 0))
+	_spawn_asset(PROP_MODELS["bush"], Vector3(-9.8, 0.15, 23.0), Vector3.ZERO)
+	_spawn_asset(PROP_MODELS["bush"], Vector3(9.4, 0.15, -24.0), Vector3.ZERO)
+
+func _spawn_asset(path: String, position: Vector3, rotation_deg := Vector3.ZERO, scale_value := Vector3.ONE) -> Node3D:
+	var packed := load(path) as PackedScene
+	if packed == null:
+		return null
+	var instance := packed.instantiate() as Node3D
+	if instance == null:
+		return null
+	instance.name = "Provisional3D"
+	instance.position = position
+	instance.rotation_degrees = rotation_deg
+	instance.scale = scale_value
+	add_child(instance)
+	return instance
 
 func _build_alien_incursion() -> void:
 	for data in [
@@ -109,12 +155,7 @@ func _build_spawn_points() -> void:
 		var marker := Marker3D.new(); marker.name = "EnemySpawn%02d" % i; marker.position = points[i]; marker.add_to_group("enemy_spawn"); add_child(marker)
 
 func _build_tactical_points() -> void:
-	var points := [
-		Vector3(-3.0,0.2,-20.8),Vector3(3.0,0.2,-20.0),Vector3(-3.1,0.2,25.7),
-		Vector3(-11.8,0.2,5.4),Vector3(11.7,0.2,3.2),Vector3(-1.2,0.2,6.2),Vector3(1.2,0.2,7.8),
-		Vector3(-4.0,0.2,-9.3),Vector3(-0.8,0.2,-9.7),Vector3(1.2,0.2,16.2),Vector3(4.5,0.2,16.8),
-		Vector3(-14.0,0.2,2.2),Vector3(-17.0,0.2,5.8),Vector3(8.2,0.2,-13.0),Vector3(13.5,0.2,-13.2)
-	]
+	var points := [Vector3(-3.0,0.2,-20.8),Vector3(3.0,0.2,-20.0),Vector3(-3.1,0.2,25.7),Vector3(-11.8,0.2,5.4),Vector3(11.7,0.2,3.2),Vector3(-1.2,0.2,6.2),Vector3(1.2,0.2,7.8),Vector3(-4.0,0.2,-9.3),Vector3(-0.8,0.2,-9.7),Vector3(1.2,0.2,16.2),Vector3(4.5,0.2,16.8),Vector3(-14.0,0.2,2.2),Vector3(-17.0,0.2,5.8),Vector3(8.2,0.2,-13.0),Vector3(13.5,0.2,-13.2)]
 	for i in points.size():
 		var marker := Marker3D.new(); marker.name = "TacticalCover%02d" % i; marker.position = points[i]; marker.add_to_group("tactical_cover"); add_child(marker)
 
