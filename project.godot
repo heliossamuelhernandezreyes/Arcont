@@ -25,7 +25,9 @@ fire={"deadzone":0.2,"events":[Object(InputEventMouseButton,"button_index":1)]}
 reload={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":82)]}
 
 [rendering]
+; Keep Compatibility for CI/older fallback, but Android uses the renderer Godot targets at modern mobile GPUs.
 renderer/rendering_method="gl_compatibility"
-renderer/rendering_method.mobile="gl_compatibility"
+renderer/rendering_method.mobile="mobile"
+rendering_device/driver.android="vulkan"
 textures/vram_compression/import_etc2_astc=true
-environment/defaults/default_clear_color=Color(0.025, 0.03, 0.045, 1)
+environment/defaults/default_clear_color=Color(0.055,0.065,0.085,1)
