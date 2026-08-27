@@ -10,15 +10,24 @@ extends Node3D
 var animation_player: AnimationPlayer
 var current_state := ""
 var player_body: CharacterBody3D
+var budget: Node
+var phase := 0.0
+var update_accumulator := 0.0
+var base_position := Vector3.ZERO
+var procedural_pitch := 0.0
+var procedural_roll := 0.0
 
 func _ready() -> void:
 	player_body = get_parent() as CharacterBody3D
+	base_position = position
+	var scene := get_tree().current_scene
+	if scene: budget = scene.get_node_or_null("PerformanceBudget")
 	var texture := load(skin_path) as Texture2D
 	if texture != null: _apply_skin_recursive(self, texture)
 	_setup_animation_player()
 	_play_state("idle")
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if player_body == null or animation_player == null: return
 	var horizontal_speed := Vector2(player_body.velocity.x, player_body.velocity.z).length()
 	if not player_body.is_on_floor():
@@ -29,6 +38,54 @@ func _physics_process(_delta: float) -> void:
 	else:
 		_play_state("idle")
 		animation_player.speed_scale = 1.0
+	_update_procedural(delta, horizontal_speed)
+
+func _update_procedural(delta: float, speed: float) -> void:
+	var quality := _quality()
+	var interval := _quality_interval()
+	update_accumulator += delta
+	if interval > 0.0 and update_accumulator < interval: return
+	var step := update_accumulator if interval > 0.0 else delta
+	update_accumulator = 0.0
+	phase += step * (1.7 + speed * 0.22)
+	var moving := clampf(speed / maxf(run_reference_speed, 0.1), 0.0, 1.35)
+	var breath_amp := 0.006 if quality == 0 else (0.010 if quality == 1 else 0.014)
+	var stride_bob := (0.004 if quality == 0 else 0.009) * moving
+	var target_y := base_position.y + sin(phase * 1.15) * breath_amp + absf(sin(phase * 2.2)) * stride_bob
+
+	var local_velocity := player_body.global_transform.basis.inverse() * player_body.velocity
+	var lateral := clampf(local_velocity.x / maxf(run_reference_speed, 0.1), -1.0, 1.0)
+	var forward := clampf(-local_velocity.z / maxf(run_reference_speed, 0.1), -1.0, 1.0)
+	var target_roll := -lateral * (2.2 if quality == 0 else 4.5)
+	var target_pitch := forward * (1.2 if quality == 0 else 3.2)
+
+	var injuries: Dictionary = player_body.get("injuries") if player_body.get("injuries") is Dictionary else {}
+	var left_leg := float(injuries.get("left_leg", 0.0))
+	var right_leg := float(injuries.get("right_leg", 0.0))
+	var left_arm := float(injuries.get("left_arm", 0.0))
+	var right_arm := float(injuries.get("right_arm", 0.0))
+	var leg_bias := (left_leg - right_leg) * (2.0 if quality == 0 else 5.0)
+	var arm_bias := (left_arm - right_arm) * (1.0 if quality == 0 else 2.5)
+	target_roll += leg_bias + arm_bias
+
+	var suppression := float(player_body.get("suppression")) if player_body.get("suppression") != null else 0.0
+	var tremor := 0.0
+	if quality >= 1 and suppression > 0.05:
+		tremor = sin(phase * 17.0) * suppression * (0.35 if quality == 1 else 0.7)
+
+	procedural_roll = lerpf(procedural_roll, target_roll + tremor, minf(step * 9.0, 1.0))
+	procedural_pitch = lerpf(procedural_pitch, target_pitch, minf(step * 7.0, 1.0))
+	position.y = lerpf(position.y, target_y, minf(step * 8.0, 1.0))
+	rotation_degrees.x = procedural_pitch
+	rotation_degrees.z = procedural_roll
+
+func _quality() -> int:
+	if budget and budget.has_method("get_animation_quality"): return int(budget.get_animation_quality())
+	return 1 if OS.has_feature("mobile") else 2
+
+func _quality_interval() -> float:
+	if budget and budget.has_method("get_animation_update_interval"): return float(budget.get_animation_update_interval())
+	return 1.0 / 30.0 if OS.has_feature("mobile") else 0.0
 
 func _setup_animation_player() -> void:
 	animation_player = AnimationPlayer.new()
