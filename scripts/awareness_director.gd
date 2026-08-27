@@ -5,6 +5,7 @@ class_name AwarenessDirector
 @export var radio_delay_min := 0.35
 @export var radio_delay_max := 0.85
 @export var intel_lifetime := 6.0
+@export var infected_lure_seconds := 3.6
 
 var last_sound_position := Vector3.ZERO
 var last_sound_radius := 0.0
@@ -14,6 +15,8 @@ var shared_contact_position := Vector3.ZERO
 var shared_contact_time_ms := -100000
 var shared_contact_faction := ""
 var pending_reports: Array[Dictionary] = []
+var sound_lure: Node3D
+var lure_expire_ms := -1
 
 func _process(_delta: float) -> void:
 	var now := Time.get_ticks_msec()
@@ -24,12 +27,31 @@ func _process(_delta: float) -> void:
 			shared_contact_time_ms = now
 			shared_contact_faction = String(report.get("faction", "armed"))
 			pending_reports.remove_at(i)
+	if sound_lure != null and is_instance_valid(sound_lure) and lure_expire_ms > 0 and now >= lure_expire_ms:
+		sound_lure.queue_free()
+		sound_lure = null
+		lure_expire_ms = -1
 
 func report_sound(position: Vector3, radius: float, category := "generic") -> void:
 	last_sound_position = position
 	last_sound_radius = maxf(radius, 0.0)
 	last_sound_time_ms = Time.get_ticks_msec()
 	last_sound_category = category
+	if category in ["shotgun", "gunshot", "explosion", "decoy", "robot_fire"] and radius >= 5.0:
+		_lure_infected(position, radius)
+
+func _lure_infected(position: Vector3, radius: float) -> void:
+	if sound_lure == null or not is_instance_valid(sound_lure):
+		sound_lure = Node3D.new()
+		sound_lure.name = "SoundLure"
+		get_tree().current_scene.add_child(sound_lure)
+	sound_lure.global_position = position
+	lure_expire_ms = Time.get_ticks_msec() + int(infected_lure_seconds * 1000.0)
+	for node in get_tree().get_nodes_in_group("enemies_active"):
+		if not node is Node3D or node.is_in_group("tactical_enemy"):
+			continue
+		if (node as Node3D).global_position.distance_to(position) <= radius:
+			node.set("target", sound_lure)
 
 func recent_sound_for(listener_position: Vector3, max_age := 3.5) -> Dictionary:
 	var age := float(Time.get_ticks_msec() - last_sound_time_ms) / 1000.0
