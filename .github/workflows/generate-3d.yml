@@ -1,0 +1,76 @@
+name: Generate 3D from reference
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/3d-pipeline/input/**'
+      - '.github/workflows/generate-3d.yml'
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check input
+        id: input
+        shell: bash
+        run: |
+          if [ -f tools/3d-pipeline/input/arcont_survivor.jpg ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "Reference image not present yet; workflow bootstrap only."
+          fi
+
+      - name: Set up Python
+        if: steps.input.outputs.present == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install CPU PyTorch
+        if: steps.input.outputs.present == 'true'
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install torch==2.2.2 torchvision==0.17.2 --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install TripoSR
+        if: steps.input.outputs.present == 'true'
+        run: |
+          git clone --depth 1 https://github.com/VAST-AI-Research/TripoSR.git /tmp/TripoSR
+          cd /tmp/TripoSR
+          pip install -r requirements.txt
+
+      - name: Generate mesh on CPU
+        if: steps.input.outputs.present == 'true'
+        env:
+          PYTORCH_ENABLE_MPS_FALLBACK: '1'
+        run: |
+          mkdir -p tools/3d-pipeline/output
+          cd /tmp/TripoSR
+          python run.py "$GITHUB_WORKSPACE/tools/3d-pipeline/input/arcont_survivor.jpg" \
+            --device cpu \
+            --chunk-size 1024 \
+            --mc-resolution 128 \
+            --foreground-ratio 0.88 \
+            --model-save-format glb \
+            --output-dir "$GITHUB_WORKSPACE/tools/3d-pipeline/output"
+
+      - name: Collect result
+        if: steps.input.outputs.present == 'true'
+        run: |
+          find tools/3d-pipeline/output -maxdepth 3 -type f -print
+          cp tools/3d-pipeline/output/0/mesh.glb tools/3d-pipeline/output/arcont_survivor_raw.glb
+
+      - name: Upload 3D artifact
+        if: steps.input.outputs.present == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: arcont-survivor-3d
+          path: tools/3d-pipeline/output/arcont_survivor_raw.glb
+          if-no-files-found: error
+          retention-days: 7
