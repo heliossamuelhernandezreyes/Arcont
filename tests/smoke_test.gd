@@ -1,7 +1,7 @@
 extends SceneTree
 func _init()->void:
 	var failures:Array[String]=[]
-	_check_scene("res://scenes/main.tscn",["PerformanceBudget","AwarenessDirector","NavigationGraph","CombatFeedback","UrbanDistrict","MissionDirector","ThrowableController","CompanionRobot","Player","Player/BodyVisual","Player/CoverProbe","Player/CameraRig/Camera3D/Weapon","Enemies","HUD/Objective","HUD/Throwable","HUD/MobileControls"],failures)
+	_check_scene("res://scenes/main.tscn",["PerformanceBudget","AwarenessDirector","NavigationGraph","CombatFeedback","UrbanDistrict","MissionDirector","ThrowableController","CompanionRobot","Player","Player/BodyVisual","Player/BodyVisual/OperatorModel","Player/CoverProbe","Player/CameraRig/Camera3D/Weapon","Enemies","HUD/Objective","HUD/Throwable","HUD/MobileControls"],failures)
 	_check_scene("res://scenes/enemy.tscn",["Collision","Body","Head","ArmL","ArmR"],failures)
 	_check_scene("res://scenes/companion_robot.tscn",["Collision","Body","Turret","StatusLight"],failures)
 	_check_scene("res://scenes/ranged_enemy.tscn",["Collision","Body","Weapon","EyeLight","NavigationAgent3D"],failures)
@@ -17,11 +17,12 @@ func _init()->void:
 	for method in ["has_line_of_sight","_report_contact_throttled","point_has_cover","best_cover","best_cover_near","flank_point","squad_role"]:_check_script_method("res://scripts/tactical_ai.gd",method,failures)
 	for method in ["_update_awareness","_choose_tactic","_movement_velocity","_velocity_to","_next_navigation_point","_try_fire","_trace_round","_apply_near_miss_suppression","apply_hit"]:_check_script_method("res://scripts/ranged_enemy.gd",method,failures)
 	for method in ["apply_emp","_update_awareness","_choose_tactic","_movement_velocity","_velocity_to","_next_navigation_point","_begin_charge","_fire_lance","_trace_energy","_apply_energy_suppression","_spawn_lance_visual","apply_hit"]:_check_script_method("res://scripts/xeno_lancer.gd",method,failures)
-	for method in ["_build_tactical_points","_build_spawn_points"]:_check_script_method("res://scripts/urban_environment.gd",method,failures)
+	for method in ["_build_tactical_points","_build_spawn_points","_build_provisional_props","_spawn_asset","_vehicle"]:_check_script_method("res://scripts/urban_environment.gd",method,failures)
 	for method in ["activate_unit","set_command","cycle_command","apply_emp","_update_follow","_nearest_enemy","_fire_at","apply_damage"]:_check_script_method("res://scripts/companion_robot.gd",method,failures)
 	for method in ["_command_center","_throw_center","_throw_cycle_center","_assign_touch"]:_check_script_method("res://scripts/mobile_controls.gd",method,failures)
 	for method in ["_update_generator","_update_defense","_request_ranged","_request_xeno","_spawn_lancer_event","_trigger_xeno_pulse"]:_check_script_method("res://scripts/mission_director.gd",method,failures)
 	for method in ["_start_next_wave","spawn_reinforcements","spawn_ranged_enemies","spawn_xeno_lancers","spawn_brute","_spawn_position_for"]:_check_script_method("res://scripts/main.gd",method,failures)
+	for method in ["_apply_skin_recursive"]:_check_script_method("res://scripts/provisional_character_visual.gd",method,failures)
 	if failures.is_empty():print("ARCONT CI: smoke test OK");quit(0);return
 	for failure in failures:push_error("ARCONT CI: "+failure)
 	quit(1)
