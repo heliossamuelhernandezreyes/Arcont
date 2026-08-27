@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource path="res://scripts/player.gd" type="Script" id="1_player"]
 [ext_resource path="res://scripts/main.gd" type="Script" id="2_main"]
@@ -8,6 +8,7 @@
 [ext_resource path="res://scripts/combat_feedback.gd" type="Script" id="6_feedback"]
 [ext_resource path="res://scripts/urban_environment.gd" type="Script" id="7_environment"]
 [ext_resource path="res://scripts/mission_director.gd" type="Script" id="8_mission"]
+[ext_resource path="res://scenes/companion_robot.tscn" type="PackedScene" id="9_robot"]
 
 [sub_resource type="CapsuleShape3D" id="PlayerShape"]
 radius = 0.4
@@ -62,6 +63,9 @@ omni_range = 10.0
 shadow_enabled = false
 
 [node name="Enemies" type="Node3D" parent="."]
+
+[node name="CompanionRobot" parent="." instance=ExtResource("9_robot")]
+position = Vector3(-3.4, 0.2, 17.0)
 
 [node name="Player" type="CharacterBody3D" parent="." groups=["player"]]
 position = Vector3(0, 1.05, 19)
