@@ -2,14 +2,18 @@ extends SceneTree
 
 func _init() -> void:
 	var failures: Array[String] = []
-	_check_scene("res://scenes/main.tscn", ["Player", "Enemies", "HUD/Wave", "HUD/Alive", "HUD/MobileControls"], failures)
+	_check_scene("res://scenes/main.tscn", ["Player", "Player/Head/Camera3D/Weapon", "Enemies", "HUD/Wave", "HUD/Alive", "HUD/Health", "HUD/Ammo", "HUD/Reload", "HUD/MobileControls"], failures)
 	_check_scene("res://scenes/enemy.tscn", ["Collision", "Body", "Head"], failures)
-	_check_script_method("res://scripts/player.gd", "_fire", failures)
+	_check_script_method("res://scripts/player.gd", "_try_fire", failures)
+	_check_script_method("res://scripts/player.gd", "apply_damage", failures)
+	_check_script_method("res://scripts/player.gd", "request_reload", failures)
 	_check_script_method("res://scripts/player.gd", "set_mobile_move", failures)
 	_check_script_method("res://scripts/player.gd", "add_mobile_look", failures)
 	_check_script_method("res://scripts/player.gd", "set_mobile_fire", failures)
 	_check_script_method("res://scripts/player.gd", "request_mobile_jump", failures)
 	_check_script_method("res://scripts/player.gd", "set_mobile_sprint", failures)
+	_check_script_method("res://scripts/weapon.gd", "try_fire", failures)
+	_check_script_method("res://scripts/weapon.gd", "request_reload", failures)
 	_check_script_method("res://scripts/mobile_controls.gd", "_handle_touch", failures)
 	_check_script_method("res://scripts/mobile_controls.gd", "_handle_drag", failures)
 	_check_script_method("res://scripts/enemy.gd", "apply_hit", failures)
