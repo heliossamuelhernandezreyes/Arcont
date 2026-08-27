@@ -27,33 +27,33 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Install Godot 4.7.2
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p /tmp/godot
-          curl -L --fail --retry 3 \
-            -o /tmp/godot/godot.zip \
-            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v4.7.2-stable_linux.x86_64.zip"
+          curl -L --fail --retry 3 -o /tmp/godot/godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v4.7.2-stable_linux.x86_64.zip"
           unzip -q /tmp/godot/godot.zip -d /tmp/godot
           chmod +x "$GODOT_BIN"
           "$GODOT_BIN" --version
-
       - name: Import and parse project
         shell: bash
         run: |
           set -euo pipefail
-          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --editor --quit
-
+          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --editor --quit 2>&1 | tee import.log
+          if grep -E "SCRIPT ERROR:|ERROR:" import.log; then exit 1; fi
       - name: Structural smoke test
         shell: bash
         run: |
           set -euo pipefail
-          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/smoke_test.gd
-
+          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/smoke_test.gd 2>&1 | tee smoke.log
+          if grep -E "SCRIPT ERROR:|ERROR:" smoke.log; then exit 1; fi
       - name: Boot main scene briefly
         shell: bash
         run: |
-          set -euo pipefail
-          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --quit-after 120 || exit $?
+          set -uo pipefail
+          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --quit-after 120 > boot.log 2>&1
+          rc=$?
+          cat boot.log
+          if [ "$rc" -ne 0 ]; then exit "$rc"; fi
+          if grep -E "SCRIPT ERROR:|ERROR:" boot.log; then exit 1; fi
