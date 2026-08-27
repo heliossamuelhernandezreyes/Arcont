@@ -4,6 +4,7 @@ signal ammo_changed(current: int, reserve: int, magazine_size: int)
 signal reload_state_changed(active: bool)
 signal recoil_requested(pitch: float, yaw: float)
 signal shot_fired
+signal impact_feedback(hit_point: Vector3, hit_normal: Vector3, organic: bool)
 
 @export var weapon_name := "Prototype Shotgun"
 @export var damage := 18.0
@@ -16,7 +17,7 @@ signal shot_fired
 @export var pellets := 8
 @export var spread_degrees := 5.2
 @export var range := 55.0
-@export var impact_force := 1.45
+@export var impact_force := 8.5
 
 @onready var camera: Camera3D = get_parent() as Camera3D
 
@@ -75,7 +76,10 @@ func _fire_shotgun() -> void:
 			continue
 		var collider = result.get("collider")
 		var hit_point: Vector3 = result.get("position", origin)
-		if collider and collider.has_method("apply_hit"):
+		var hit_normal: Vector3 = result.get("normal", -direction)
+		var organic := collider and collider.has_method("apply_hit")
+		impact_feedback.emit(hit_point, hit_normal, organic)
+		if organic:
 			collider.apply_hit(hit_point, direction, damage, "shotgun", impact_force)
 
 func request_reload() -> bool:
