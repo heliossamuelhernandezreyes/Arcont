@@ -8,23 +8,18 @@ extends Node
 @export var mobile_effect_scale := 0.65
 
 @onready var camera: Camera3D = $"../Player/CameraRig/Camera3D"
-@onready var gun: MeshInstance3D = $"../Player/CameraRig/Camera3D/Gun"
 @onready var hitmarker: Label = $"../HUD/HitMarker"
 @onready var muzzle: OmniLight3D = $"../Player/CameraRig/Camera3D/MuzzleFlash"
 
 var hitmarker_timer := 0.0
 var muzzle_timer := 0.0
 var shake_strength := 0.0
-var base_camera_position := Vector3.ZERO
-var base_gun_position := Vector3.ZERO
 var visual_scale := 1.0
 var audio_player: AudioStreamPlayer
 var audio_generator: AudioStreamGenerator
 
 func _ready() -> void:
 	visual_scale = mobile_effect_scale if OS.has_feature("mobile") else 1.0
-	base_camera_position = camera.position
-	base_gun_position = gun.position
 	hitmarker.visible = false
 	muzzle.visible = false
 	_setup_placeholder_audio()
@@ -37,15 +32,19 @@ func _process(delta: float) -> void:
 		muzzle_timer -= delta
 		muzzle.visible = muzzle_timer > 0.0
 	shake_strength = move_toward(shake_strength, 0.0, shake_decay * delta)
-	var jitter := Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0), 0.0) * shake_strength * 0.018
-	camera.position = base_camera_position + jitter
-	gun.position = gun.position.lerp(base_gun_position, minf(delta * 14.0, 1.0))
+	# Camera position is owned exclusively by ThirdPersonADS. Use optical offsets for feedback
+	# so recoil/shake can never fight camera collision, cover or ADS framing.
+	if camera:
+		camera.h_offset = randf_range(-1.0, 1.0) * shake_strength * 0.018
+		camera.v_offset = randf_range(-1.0, 1.0) * shake_strength * 0.012
+		if shake_strength <= 0.001:
+			camera.h_offset = 0.0
+			camera.v_offset = 0.0
 
 func on_shot_fired() -> void:
 	muzzle_timer = muzzle_time
 	muzzle.visible = true
 	shake_strength = maxf(shake_strength, 0.55 * visual_scale)
-	gun.position = base_gun_position + Vector3(0.0, -0.02, 0.09) * visual_scale
 	_play_placeholder_shot()
 
 func on_hit_feedback(hit_point: Vector3, hit_normal: Vector3, organic: bool) -> void:
