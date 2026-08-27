@@ -1,56 +1,45 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource path="res://scripts/enemy.gd" type="Script" id="1_enemy"]
 [ext_resource path="res://scripts/zombie_visual_animator.gd" type="Script" id="2_anim"]
+[ext_resource path="res://scripts/zombie_melee_attack.gd" type="Script" id="3_melee"]
 
 [sub_resource type="CapsuleShape3D" id="EnemyShape"]
 radius = 0.45
 height = 1.9
-
 [sub_resource type="CapsuleMesh" id="BodyMesh"]
 radius = 0.40
 height = 1.08
-
 [sub_resource type="SphereMesh" id="HeadMesh"]
 radius = 0.29
 height = 0.54
-
 [sub_resource type="CylinderMesh" id="ArmMesh"]
 top_radius = 0.085
 bottom_radius = 0.105
 height = 0.72
-
 [sub_resource type="CylinderMesh" id="LegMesh"]
 top_radius = 0.13
 bottom_radius = 0.105
 height = 0.76
-
 [sub_resource type="BoxMesh" id="ShirtMesh"]
 size = Vector3(0.72, 0.54, 0.38)
-
 [sub_resource type="BoxMesh" id="JawMesh"]
 size = Vector3(0.32, 0.12, 0.24)
-
 [sub_resource type="SphereMesh" id="EyeMesh"]
 radius = 0.045
 height = 0.07
-
 [sub_resource type="StandardMaterial3D" id="FleshMat"]
 albedo_color = Color(0.30, 0.39, 0.22, 1)
 roughness = 0.96
-
 [sub_resource type="StandardMaterial3D" id="RotMat"]
 albedo_color = Color(0.12, 0.16, 0.09, 1)
 roughness = 1.0
-
 [sub_resource type="StandardMaterial3D" id="ClothMat"]
 albedo_color = Color(0.11, 0.16, 0.17, 1)
 roughness = 0.94
-
 [sub_resource type="StandardMaterial3D" id="BloodMat"]
 albedo_color = Color(0.20, 0.018, 0.014, 1)
 roughness = 0.82
-
 [sub_resource type="StandardMaterial3D" id="EyeMat"]
 albedo_color = Color(0.78, 0.72, 0.48, 1)
 emission_enabled = true
@@ -61,6 +50,8 @@ emission_energy_multiplier = 0.35
 script = ExtResource("1_enemy")
 [node name="VisualAnimator" type="Node" parent="."]
 script = ExtResource("2_anim")
+[node name="MeleeAttack" type="Node" parent="."]
+script = ExtResource("3_melee")
 [node name="Collision" type="CollisionShape3D" parent="."]
 position = Vector3(0, 0.95, 0)
 shape = SubResource("EnemyShape")
