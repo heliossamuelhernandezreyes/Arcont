@@ -106,3 +106,9 @@ func cancel_reload() -> void:
 	reloading = false
 	reload_timer = 0.0
 	reload_state_changed.emit(false)
+
+func add_ammo(amount: int) -> void:
+	if amount <= 0:
+		return
+	reserve_ammo += amount
+	ammo_changed.emit(ammo_in_mag, reserve_ammo, magazine_size)
