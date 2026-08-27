@@ -10,7 +10,7 @@ static func has_line_of_sight(actor: CollisionObject3D, target: Node3D, from_hei
 	query.exclude = [actor.get_rid()]
 	query.collide_with_areas = false
 	var result := actor.get_world_3d().direct_space_state.intersect_ray(query)
-	var visible := result.is_empty() or result.get("collider") == target
+	var visible: bool = result.is_empty() or result.get("collider") == target
 	if visible:
 		_report_contact_throttled(actor, target.global_position)
 	return visible
