@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource path="res://scripts/player.gd" type="Script" id="1_player"]
 [ext_resource path="res://scripts/main.gd" type="Script" id="2_main"]
@@ -7,6 +7,7 @@
 [ext_resource path="res://scripts/performance_budget.gd" type="Script" id="5_budget"]
 [ext_resource path="res://scripts/combat_feedback.gd" type="Script" id="6_feedback"]
 [ext_resource path="res://scripts/urban_environment.gd" type="Script" id="7_environment"]
+[ext_resource path="res://scripts/mission_director.gd" type="Script" id="8_mission"]
 
 [sub_resource type="CapsuleShape3D" id="PlayerShape"]
 radius = 0.4
@@ -39,6 +40,9 @@ script = ExtResource("6_feedback")
 
 [node name="UrbanDistrict" type="Node3D" parent="."]
 script = ExtResource("7_environment")
+
+[node name="MissionDirector" type="Node" parent="."]
+script = ExtResource("8_mission")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Env")
@@ -105,9 +109,16 @@ visible = false
 [node name="Info" type="Label" parent="HUD"]
 offset_left = 20.0
 offset_top = 18.0
-offset_right = 720.0
+offset_right = 760.0
 offset_bottom = 80.0
 text = "ARCONT // DISTRITO DE EVACUACION 07\nCONTENCION FALLIDA · PRESENCIA XENOLOGICA"
+[node name="Objective" type="Label" parent="HUD"]
+offset_left = 20.0
+offset_top = 198.0
+offset_right = 790.0
+offset_bottom = 236.0
+text = "OBJETIVO // REACTIVA EL GENERADOR"
+theme_override_font_sizes/font_size = 20
 [node name="Wave" type="Label" parent="HUD"]
 offset_left = 20.0
 offset_top = 92.0
