@@ -12,6 +12,7 @@ var wave := 0
 var alive := 0
 var waiting_for_next_wave := false
 var game_over := false
+var mission_complete := false
 var enemy_pool: Array[Node] = []
 var spawn_points: Array[Node3D] = []
 
@@ -19,6 +20,7 @@ var spawn_points: Array[Node3D] = []
 @onready var weapon: Node = $Player/Head/Camera3D/Weapon
 @onready var budget: Node = $PerformanceBudget
 @onready var feedback: Node = $CombatFeedback
+@onready var mission: Node = $MissionDirector
 @onready var wave_label: Label = $HUD/Wave
 @onready var alive_label: Label = $HUD/Alive
 @onready var health_label: Label = $HUD/Health
@@ -35,6 +37,8 @@ func _ready() -> void:
 	weapon.shot_fired.connect(feedback.on_shot_fired)
 	weapon.impact_feedback.connect(feedback.on_hit_feedback)
 	budget.profile_changed.connect(_on_performance_profile_changed)
+	if mission.has_signal("mission_completed"):
+		mission.mission_completed.connect(_on_mission_completed)
 	_collect_spawn_points()
 	_on_player_health_changed(player.health, player.max_health)
 	_on_ammo_changed(weapon.ammo_in_mag, weapon.reserve_ammo, weapon.magazine_size)
@@ -46,16 +50,31 @@ func _collect_spawn_points() -> void:
 		if node is Node3D:
 			spawn_points.append(node as Node3D)
 
+func _enemy_cap() -> int:
+	return mobile_enemy_cap if OS.has_feature("mobile") else desktop_enemy_cap
+
 func _start_next_wave() -> void:
-	if waiting_for_next_wave or game_over:
+	if waiting_for_next_wave or game_over or mission_complete:
 		return
 	wave += 1
 	var requested: int = first_wave_size + (wave - 1) * wave_growth
-	var cap: int = mobile_enemy_cap if OS.has_feature("mobile") else desktop_enemy_cap
-	var count: int = mini(requested, cap)
+	var count: int = mini(requested, _enemy_cap())
 	alive = count
 	for i in count:
 		_spawn_enemy(i, count)
+	_update_hud()
+
+func spawn_reinforcements(requested_count: int) -> void:
+	if requested_count <= 0 or game_over or mission_complete:
+		return
+	var available := maxi(_enemy_cap() - alive, 0)
+	var count := mini(requested_count, available)
+	if count <= 0:
+		return
+	var start_index := alive
+	alive += count
+	for i in count:
+		_spawn_enemy(start_index + i, alive)
 	_update_hud()
 
 func _spawn_enemy(index: int, total: int) -> void:
@@ -74,12 +93,10 @@ func _spawn_enemy(index: int, total: int) -> void:
 
 func _spawn_position_for(index: int, total: int) -> Vector3:
 	if not spawn_points.is_empty():
-		# Spread a wave over multiple entrances, with a small jitter so enemies do not stack perfectly.
 		var stride := maxi(1, spawn_points.size() / maxi(mini(total, spawn_points.size()), 1))
 		var point_index := (index * stride + wave) % spawn_points.size()
 		var point := spawn_points[point_index]
 		return point.global_position + Vector3(randf_range(-1.1, 1.1), 0.0, randf_range(-1.1, 1.1))
-	# Safety fallback if the environment has not produced markers.
 	var safe_total := maxf(float(total), 1.0)
 	var angle := TAU * float(index) / safe_total
 	return Vector3(cos(angle) * 24.0, 0.2, sin(angle) * 24.0)
@@ -91,11 +108,16 @@ func _on_enemy_died(enemy: Node) -> void:
 	if not enemy_pool.has(enemy):
 		enemy_pool.append(enemy)
 	_update_hud()
-	if alive == 0 and not waiting_for_next_wave and not game_over:
+	if alive == 0 and not waiting_for_next_wave and not game_over and not mission_complete:
 		waiting_for_next_wave = true
 		await get_tree().create_timer(time_between_waves).timeout
 		waiting_for_next_wave = false
 		_start_next_wave()
+
+func _on_mission_completed() -> void:
+	mission_complete = true
+	waiting_for_next_wave = false
+	wave_label.text = "EXTRACCION"
 
 func _on_performance_profile_changed(ai_interval: float, gore_parts: int) -> void:
 	for enemy in get_tree().get_nodes_in_group("enemies_active"):
@@ -117,5 +139,6 @@ func _on_reload_state_changed(active: bool) -> void:
 	reload_label.text = "RECARGANDO..." if active else ""
 
 func _update_hud() -> void:
-	wave_label.text = "OLEADA %02d" % wave
+	if not mission_complete:
+		wave_label.text = "OLEADA %02d" % wave
 	alive_label.text = "HOSTILES %02d" % alive
