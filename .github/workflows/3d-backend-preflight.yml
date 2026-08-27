@@ -1,0 +1,128 @@
+name: 3D Backend Preflight
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/3d-backend-preflight.yml'
+      - 'tools/3d-pipeline/PREFLIGHT.md'
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        backend:
+          - sith
+          - econ
+          - hunyuan3d-mini
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: System capability snapshot
+        shell: bash
+        run: |
+          set -u
+          mkdir -p preflight
+          {
+            echo "backend=${{ matrix.backend }}"
+            echo "date=$(date -u +%FT%TZ)"
+            echo "kernel=$(uname -a)"
+            echo "cpu_count=$(nproc)"
+            echo "memory:"
+            free -h
+            echo
+            echo "disk:"
+            df -h /
+            echo
+            echo "nvidia-smi:"
+            if command -v nvidia-smi >/dev/null 2>&1; then
+              nvidia-smi
+            else
+              echo "NOT_AVAILABLE"
+            fi
+          } | tee "preflight/${{ matrix.backend }}.txt"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Probe SiTH
+        if: matrix.backend == 'sith'
+        shell: bash
+        run: |
+          set +e
+          OUT=preflight/sith.txt
+          echo "repo=SiTH-Diffusion/SiTH" | tee -a "$OUT"
+          git clone --depth 1 https://github.com/SiTH-Diffusion/SiTH.git /tmp/sith >>"$OUT" 2>&1
+          rc=$?
+          echo "clone_rc=$rc" | tee -a "$OUT"
+          if [ $rc -eq 0 ]; then
+            echo "requirements_preview:" >> "$OUT"
+            sed -n '1,160p' /tmp/sith/requirements.txt >> "$OUT" 2>&1
+            python -m venv /tmp/venv-sith
+            source /tmp/venv-sith/bin/activate
+            python -m pip install -U pip wheel setuptools >>"$OUT" 2>&1
+            timeout 600 pip install --dry-run -r /tmp/sith/requirements.txt >>"$OUT" 2>&1
+            echo "requirements_dry_run_rc=$?" | tee -a "$OUT"
+          fi
+          echo "smplx_assets_present=$(test -d /tmp/sith/data/body_models/smplx && echo yes || echo no)" | tee -a "$OUT"
+          exit 0
+
+      - name: Probe ECON
+        if: matrix.backend == 'econ'
+        shell: bash
+        run: |
+          set +e
+          OUT=preflight/econ.txt
+          echo "repo=YuliangXiu/ECON" | tee -a "$OUT"
+          git clone --depth 1 https://github.com/YuliangXiu/ECON.git /tmp/econ >>"$OUT" 2>&1
+          rc=$?
+          echo "clone_rc=$rc" | tee -a "$OUT"
+          if [ $rc -eq 0 ]; then
+            echo "environment_files:" >> "$OUT"
+            find /tmp/econ -maxdepth 2 \( -iname '*require*' -o -iname '*environment*' -o -iname '*install*' \) -type f | sort >> "$OUT"
+            echo "cuda_cupy_mentions:" >> "$OUT"
+            grep -RniE 'cupy|cuda|pytorch3d|smpl.?x' /tmp/econ/docs /tmp/econ/requirements.txt /tmp/econ/pyproject.toml /tmp/econ/setup.py 2>/dev/null | head -120 >> "$OUT"
+            if [ -f /tmp/econ/requirements.txt ]; then
+              python -m venv /tmp/venv-econ
+              source /tmp/venv-econ/bin/activate
+              python -m pip install -U pip wheel setuptools >>"$OUT" 2>&1
+              timeout 600 pip install --dry-run -r /tmp/econ/requirements.txt >>"$OUT" 2>&1
+              echo "requirements_dry_run_rc=$?" | tee -a "$OUT"
+            fi
+          fi
+          exit 0
+
+      - name: Probe Hunyuan3D mini
+        if: matrix.backend == 'hunyuan3d-mini'
+        shell: bash
+        run: |
+          set +e
+          OUT=preflight/hunyuan3d-mini.txt
+          echo "repo=Tencent-Hunyuan/Hunyuan3D-2" | tee -a "$OUT"
+          git clone --depth 1 https://github.com/Tencent-Hunyuan/Hunyuan3D-2.git /tmp/hunyuan >>"$OUT" 2>&1
+          rc=$?
+          echo "clone_rc=$rc" | tee -a "$OUT"
+          if [ $rc -eq 0 ]; then
+            echo "mini_and_vram_mentions:" >> "$OUT"
+            grep -niE '6 GB VRAM|2mini|multiview|CUDA|VRAM' /tmp/hunyuan/README.md | head -100 >> "$OUT"
+            python -m venv /tmp/venv-hunyuan
+            source /tmp/venv-hunyuan/bin/activate
+            python -m pip install -U pip wheel setuptools >>"$OUT" 2>&1
+            timeout 600 pip install --dry-run -r /tmp/hunyuan/requirements.txt >>"$OUT" 2>&1
+            echo "requirements_dry_run_rc=$?" | tee -a "$OUT"
+            echo "cuda_extension_dirs:" >> "$OUT"
+            find /tmp/hunyuan -maxdepth 3 -type f \( -name '*.cu' -o -name '*.cuh' -o -name 'setup.py' \) | head -100 >> "$OUT"
+          fi
+          exit 0
+
+      - name: Upload preflight report
+        uses: actions/upload-artifact@v4
+        with:
+          name: preflight-${{ matrix.backend }}
+          path: preflight/${{ matrix.backend }}.txt
+          retention-days: 7
