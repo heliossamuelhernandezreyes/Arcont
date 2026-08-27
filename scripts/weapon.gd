@@ -75,7 +75,7 @@ func _fire_shotgun() -> void:
 		var collider = result.get("collider")
 		var hit_point: Vector3 = result.get("position", origin)
 		if collider and collider.has_method("apply_hit"):
-			collider.apply_hit(hit_point, direction, damage)
+			collider.apply_hit(hit_point, direction, damage, "shotgun")
 
 func request_reload() -> bool:
 	if reloading or ammo_in_mag >= magazine_size or reserve_ammo <= 0:
