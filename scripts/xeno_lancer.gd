@@ -89,7 +89,10 @@ func _movement_velocity()->Vector3:
 	if player==null or awareness_state=="idle":return Vector3.ZERO
 	if has_tactical_target:
 		var waypoint:=_next_navigation_point(tactical_target);var to_target:=waypoint-global_position;to_target.y=0.0
-		if global_position.distance_to(tactical_target)<1.1:has_tactical_target=false;if not has_visual_contact:memory_remaining=minf(memory_remaining,1.5);return Vector3.ZERO
+		if global_position.distance_to(tactical_target)<1.1:
+			has_tactical_target=false
+			if not has_visual_contact:memory_remaining=minf(memory_remaining,1.5)
+			return Vector3.ZERO
 		return to_target.normalized()*move_speed if to_target.length_squared()>0.01 else Vector3.ZERO
 	if not has_visual_contact:return _velocity_to(last_known_position)
 	var flat:=player.global_position-global_position;flat.y=0.0;var distance:=flat.length()
@@ -105,30 +108,44 @@ func _begin_charge()->void:charging=true;charge_remaining=charge_time;velocity.x
 func _fire_lance()->void:
 	charging=false;fire_timer=fire_interval*(0.88 if role=="suppress" else 1.0);core_light.light_energy=1.4
 	if player==null or not has_visual_contact:return
-	var world:=get_world_3d();var origin:=global_position+Vector3.UP*1.35;var target:=player.global_position+Vector3.UP*0.72;var distance:=origin.distance_to(target);target+=Vector3(randf_range(-accuracy_spread,accuracy_spread),randf_range(-accuracy_spread,accuracy_spread),randf_range(-accuracy_spread,accuracy_spread))*distance;_trace_energy(world.direct_space_state,origin,(target-origin).normalized())
+	var world:=get_world_3d();if world==null:return
+	var origin:=global_position+Vector3.UP*1.35;var target:=player.global_position+Vector3.UP*0.72;var distance:=origin.distance_to(target);target+=Vector3(randf_range(-accuracy_spread,accuracy_spread),randf_range(-accuracy_spread,accuracy_spread),randf_range(-accuracy_spread,accuracy_spread))*distance;_trace_energy(world.direct_space_state,origin,(target-origin).normalized())
 func _trace_energy(space_state:PhysicsDirectSpaceState3D,origin:Vector3,direction:Vector3)->void:
 	var energy:=energy_power;var current_origin:=origin;var exclude:Array[RID]=[get_rid()];var final_point:=origin+direction*fire_range
 	for _pass in 3:
 		var query:=PhysicsRayQueryParameters3D.create(current_origin,current_origin+direction*fire_range);query.exclude=exclude;query.collide_with_areas=false;var result:=space_state.intersect_ray(query)
 		if result.is_empty():break
 		var collider:Object=result.get("collider");var hit_point:Vector3=result.get("position",final_point);final_point=hit_point
-		if collider==player and player.has_method("apply_damage"):var scale:=Ballistics.damage_scale(energy,energy_power);player.apply_damage(energy_damage*scale,direction,_pick_hit_zone(),1.15*scale);if player.has_method("apply_suppression"):player.apply_suppression(0.92,1.05);break
+		if collider==player and player.has_method("apply_damage"):
+			var scale:=Ballistics.damage_scale(energy,energy_power);player.apply_damage(energy_damage*scale,direction,_pick_hit_zone(),1.15*scale)
+			if player.has_method("apply_suppression"):player.apply_suppression(0.92,1.05)
+			break
 		Ballistics.apply_energy_surface_damage(collider,energy_damage,energy,hit_point,direction);var next_energy:=Ballistics.xeno_energy_after_surface(energy,collider)
 		if next_energy<=0.08:break
-		energy=next_energy;if collider is CollisionObject3D:exclude.append((collider as CollisionObject3D).get_rid());current_origin=hit_point+direction*(Ballistics.thickness_for(collider)+0.10)
+		energy=next_energy
+		if collider is CollisionObject3D:exclude.append((collider as CollisionObject3D).get_rid())
+		current_origin=hit_point+direction*(Ballistics.thickness_for(collider)+0.10)
 	_apply_energy_suppression(origin,final_point);_spawn_lance_visual(origin,final_point)
 func _apply_energy_suppression(from:Vector3,to:Vector3)->void:
 	if player==null or not player.has_method("apply_suppression"):return
 	var point:=player.global_position+Vector3.UP*0.7;var segment:=to-from
 	if segment.length_squared()<=0.001:return
 	var t:=clampf((point-from).dot(segment)/segment.length_squared(),0.0,1.0);var distance:=(from+segment*t).distance_to(point)
-	if distance<=suppression_radius:var amount:=lerpf(0.30,0.82,1.0-distance/suppression_radius);if role=="suppress":amount*=1.15;player.apply_suppression(amount,0.82)
+	if distance<=suppression_radius:
+		var amount:=lerpf(0.30,0.82,1.0-distance/suppression_radius)
+		if role=="suppress":amount*=1.15
+		player.apply_suppression(amount,0.82)
 func _spawn_lance_visual(from:Vector3,to:Vector3)->void:
 	var root:=get_tree().current_scene;if root==null:return
 	var length:=from.distance_to(to);if length<=0.05:return
 	var beam:=MeshInstance3D.new();var mesh:=BoxMesh.new();mesh.size=Vector3(0.055,0.055,length);beam.mesh=mesh;var mat:=StandardMaterial3D.new();mat.albedo_color=Color(0.72,0.06,1.0);mat.emission_enabled=true;mat.emission=Color(0.9,0.12,1.0);mat.emission_energy_multiplier=4.5;beam.material_override=mat;root.add_child(beam);beam.global_position=(from+to)*0.5;beam.look_at(to,Vector3.UP);root.get_tree().create_timer(0.09).timeout.connect(beam.queue_free)
 func _pick_hit_zone()->String:
-	var roll:=randf();if roll<0.10:return "head";if roll<0.62:return "torso";if roll<0.76:return "left_arm";if roll<0.90:return "right_arm";return "left_leg" if randf()<0.5 else "right_leg"
+	var roll:=randf()
+	if roll<0.10:return "head"
+	if roll<0.62:return "torso"
+	if roll<0.76:return "left_arm"
+	if roll<0.90:return "right_arm"
+	return "left_leg" if randf()<0.5 else "right_leg"
 func apply_hit(_hit_point:Vector3,direction:Vector3,amount:float,_weapon_type:="shotgun",impact_force:=1.0)->void:
 	if not active:return
 	health=maxf(health-amount,0.0);velocity+=direction.normalized()*impact_force*0.08;last_known_position=player.global_position if player else global_position;memory_remaining=visual_memory_seconds;awareness_state="search"
