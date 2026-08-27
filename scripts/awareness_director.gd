@@ -28,57 +28,39 @@ func _process(_delta: float) -> void:
 			shared_contact_faction = String(report.get("faction", "armed"))
 			pending_reports.remove_at(i)
 	if sound_lure != null and is_instance_valid(sound_lure) and lure_expire_ms > 0 and now >= lure_expire_ms:
-		sound_lure.queue_free()
-		sound_lure = null
-		lure_expire_ms = -1
+		sound_lure.queue_free();sound_lure=null;lure_expire_ms=-1
 
 func report_sound(position: Vector3, radius: float, category := "generic") -> void:
-	last_sound_position = position
-	last_sound_radius = maxf(radius, 0.0)
-	last_sound_time_ms = Time.get_ticks_msec()
-	last_sound_category = category
-	if category in ["shotgun", "gunshot", "explosion", "decoy", "robot_fire"] and radius >= 5.0:
-		_lure_infected(position, radius)
+	last_sound_position=position;last_sound_radius=maxf(radius,0.0);last_sound_time_ms=Time.get_ticks_msec();last_sound_category=category
+	if category in ["shotgun","gunshot","explosion","decoy","robot_fire"] and radius>=5.0:_lure_infected(position,radius,infected_lure_seconds)
 
-func _lure_infected(position: Vector3, radius: float) -> void:
-	if sound_lure == null or not is_instance_valid(sound_lure):
-		sound_lure = Node3D.new()
-		sound_lure.name = "SoundLure"
-		get_tree().current_scene.add_child(sound_lure)
-	sound_lure.global_position = position
-	lure_expire_ms = Time.get_ticks_msec() + int(infected_lure_seconds * 1000.0)
+func sustain_lure(position: Vector3, radius: float, duration: float, category := "decoy") -> void:
+	last_sound_position=position;last_sound_radius=maxf(radius,0.0);last_sound_time_ms=Time.get_ticks_msec();last_sound_category=category
+	_lure_infected(position,radius,maxf(duration,infected_lure_seconds))
+
+func _lure_infected(position: Vector3, radius: float, duration := -1.0) -> void:
+	if sound_lure==null or not is_instance_valid(sound_lure):
+		sound_lure=Node3D.new();sound_lure.name="SoundLure";get_tree().current_scene.add_child(sound_lure)
+	sound_lure.global_position=position
+	var lifetime := infected_lure_seconds if duration<0.0 else duration
+	lure_expire_ms=Time.get_ticks_msec()+int(lifetime*1000.0)
 	for node in get_tree().get_nodes_in_group("enemies_active"):
-		if not node is Node3D or node.is_in_group("tactical_enemy"):
-			continue
-		if (node as Node3D).global_position.distance_to(position) <= radius:
-			node.set("target", sound_lure)
+		if not node is Node3D or node.is_in_group("tactical_enemy"):continue
+		if (node as Node3D).global_position.distance_to(position)<=radius:node.set("target",sound_lure)
 
 func recent_sound_for(listener_position: Vector3, max_age := 3.5) -> Dictionary:
-	var age := float(Time.get_ticks_msec() - last_sound_time_ms) / 1000.0
-	if age > max_age or age < 0.0:
-		return {}
-	var distance := listener_position.distance_to(last_sound_position)
-	if distance > last_sound_radius:
-		return {}
-	return {
-		"position": last_sound_position,
-		"age": age,
-		"strength": clampf(1.0 - distance / maxf(last_sound_radius, 0.01), 0.0, 1.0),
-		"category": last_sound_category
-	}
+	var age:=float(Time.get_ticks_msec()-last_sound_time_ms)/1000.0
+	if age>max_age or age<0.0:return {}
+	var distance:=listener_position.distance_to(last_sound_position)
+	if distance>last_sound_radius:return {}
+	return {"position":last_sound_position,"age":age,"strength":clampf(1.0-distance/maxf(last_sound_radius,0.01),0.0,1.0),"category":last_sound_category}
 
 func report_contact(position: Vector3, faction := "armed") -> void:
-	pending_reports.append({
-		"position": position,
-		"faction": faction,
-		"deliver_ms": Time.get_ticks_msec() + int(randf_range(radio_delay_min, radio_delay_max) * 1000.0)
-	})
+	pending_reports.append({"position":position,"faction":faction,"deliver_ms":Time.get_ticks_msec()+int(randf_range(radio_delay_min,radio_delay_max)*1000.0)})
 
 func shared_intel_for(faction := "armed", max_age := -1.0) -> Dictionary:
-	var allowed_age := intel_lifetime if max_age < 0.0 else max_age
-	var age := float(Time.get_ticks_msec() - shared_contact_time_ms) / 1000.0
-	if age < 0.0 or age > allowed_age:
-		return {}
-	if shared_contact_faction != faction and shared_contact_faction != "all":
-		return {}
-	return {"position": shared_contact_position, "age": age, "faction": shared_contact_faction}
+	var allowed_age:=intel_lifetime if max_age<0.0 else max_age
+	var age:=float(Time.get_ticks_msec()-shared_contact_time_ms)/1000.0
+	if age<0.0 or age>allowed_age:return {}
+	if shared_contact_faction!=faction and shared_contact_faction!="all":return {}
+	return {"position":shared_contact_position,"age":age,"faction":shared_contact_faction}
