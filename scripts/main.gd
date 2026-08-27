@@ -4,7 +4,6 @@ const ENEMY_SCENE := preload("res://scenes/enemy.tscn")
 
 @export var first_wave_size := 8
 @export var wave_growth := 4
-@export var spawn_radius := 11.5
 @export var time_between_waves := 2.5
 @export var mobile_enemy_cap := 36
 @export var desktop_enemy_cap := 64
@@ -14,6 +13,7 @@ var alive := 0
 var waiting_for_next_wave := false
 var game_over := false
 var enemy_pool: Array[Node] = []
+var spawn_points: Array[Node3D] = []
 
 @onready var player: Node3D = $Player
 @onready var weapon: Node = $Player/Head/Camera3D/Weapon
@@ -35,9 +35,16 @@ func _ready() -> void:
 	weapon.shot_fired.connect(feedback.on_shot_fired)
 	weapon.impact_feedback.connect(feedback.on_hit_feedback)
 	budget.profile_changed.connect(_on_performance_profile_changed)
+	_collect_spawn_points()
 	_on_player_health_changed(player.health, player.max_health)
 	_on_ammo_changed(weapon.ammo_in_mag, weapon.reserve_ammo, weapon.magazine_size)
 	_start_next_wave()
+
+func _collect_spawn_points() -> void:
+	spawn_points.clear()
+	for node in get_tree().get_nodes_in_group("enemy_spawn"):
+		if node is Node3D:
+			spawn_points.append(node as Node3D)
 
 func _start_next_wave() -> void:
 	if waiting_for_next_wave or game_over:
@@ -59,14 +66,23 @@ func _spawn_enemy(index: int, total: int) -> void:
 		$Enemies.add_child(enemy)
 	else:
 		enemy = enemy_pool.pop_back()
-	var safe_total: float = maxf(float(total), 1.0)
-	var angle: float = TAU * float(index) / safe_total + randf_range(-0.18, 0.18)
-	var radius: float = spawn_radius + randf_range(-1.5, 1.5)
-	var spawn_position := Vector3(cos(angle) * radius, 0.0, sin(angle) * radius)
+	var spawn_position := _spawn_position_for(index, total)
 	if enemy.has_method("activate"):
 		enemy.activate(spawn_position, player, budget.ai_interval, budget.gore_parts)
 	else:
 		enemy.position = spawn_position
+
+func _spawn_position_for(index: int, total: int) -> Vector3:
+	if not spawn_points.is_empty():
+		# Spread a wave over multiple entrances, with a small jitter so enemies do not stack perfectly.
+		var stride := maxi(1, spawn_points.size() / maxi(mini(total, spawn_points.size()), 1))
+		var point_index := (index * stride + wave) % spawn_points.size()
+		var point := spawn_points[point_index]
+		return point.global_position + Vector3(randf_range(-1.1, 1.1), 0.0, randf_range(-1.1, 1.1))
+	# Safety fallback if the environment has not produced markers.
+	var safe_total := maxf(float(total), 1.0)
+	var angle := TAU * float(index) / safe_total
+	return Vector3(cos(angle) * 24.0, 0.2, sin(angle) * 24.0)
 
 func _on_enemy_died(enemy: Node) -> void:
 	alive = maxi(alive - 1, 0)
@@ -91,7 +107,7 @@ func _on_player_health_changed(current: float, maximum: float) -> void:
 
 func _on_player_died() -> void:
 	game_over = true
-	info_label.text = "ARCONT // OPERADOR CAIDO\nReinicio manual pendiente del prototipo"
+	info_label.text = "ARCONT // OPERADOR CAIDO\nDistrito de evacuación comprometido"
 	reload_label.text = ""
 
 func _on_ammo_changed(current: int, reserve: int, _magazine_size: int) -> void:
