@@ -5,11 +5,13 @@ extends Node3D
 @export var jump_clip:="res://assets/provisional/characters/kenney_survivors/Animations/jump.fbx"
 @export var animation_blend:=0.16
 @export var run_reference_speed:=6.2
+@export var weapon_bone_name:="RightHand"
 var animation_player:AnimationPlayer
 var current_state:=""
 var player_body:CharacterBody3D
 var budget:Node
 var weapon:Node
+var weapon_mount:Node3D
 var phase:=0.0
 var update_accumulator:=0.0
 var base_position:=Vector3.ZERO
@@ -18,8 +20,11 @@ var procedural_roll:=0.0
 func _ready()->void:
  player_body=get_parent() as CharacterBody3D;base_position=position
  var scene:=get_tree().current_scene;if scene:budget=scene.get_node_or_null("PerformanceBudget")
- if player_body:weapon=player_body.get_node_or_null("Weapon")
+ if player_body:
+  weapon=player_body.get_node_or_null("Weapon")
+  weapon_mount=get_node_or_null("WeaponMount") as Node3D
  var texture:=load(skin_path) as Texture2D;if texture!=null:_apply_skin_recursive(self,texture)
+ _bind_weapon_to_hand()
  _setup_animation_player();_play_state("idle")
 func _physics_process(delta:float)->void:
  if player_body==null or animation_player==null:return
@@ -28,6 +33,20 @@ func _physics_process(delta:float)->void:
  elif speed>0.25:_play_state("run");animation_player.speed_scale=clampf(speed/maxf(run_reference_speed,0.1),0.65,1.45)
  else:_play_state("idle");animation_player.speed_scale=1.0
  _update_procedural(delta,speed)
+func _bind_weapon_to_hand()->void:
+ if weapon_mount==null:return
+ var operator:=get_node_or_null("OperatorModel")
+ if operator==null:return
+ var skeleton:=_find_skeleton(operator)
+ if skeleton==null:return
+ if skeleton.find_bone(weapon_bone_name)<0:return
+ var old_global:=weapon_mount.global_transform
+ var attachment:=BoneAttachment3D.new();attachment.name="WeaponHandAttachment";attachment.bone_name=weapon_bone_name
+ skeleton.add_child(attachment)
+ weapon_mount.reparent(attachment,true)
+ weapon_mount.global_transform=old_global
+ weapon_mount.position=Vector3(0.02,-0.03,-0.08)
+ weapon_mount.rotation_degrees=Vector3(-8.0,90.0,-2.0)
 func _update_procedural(delta:float,speed:float)->void:
  var interval:=_quality_interval();update_accumulator+=delta;if interval>0.0 and update_accumulator<interval:return
  var step:=update_accumulator if interval>0.0 else delta;update_accumulator=0.0;phase+=step*(1.7+speed*0.22)
@@ -53,6 +72,12 @@ func _play_state(state:String)->void:
 func _find_animation_player(node:Node)->AnimationPlayer:
  if node is AnimationPlayer:return node as AnimationPlayer
  for child in node.get_children():var found:=_find_animation_player(child);if found!=null:return found
+ return null
+func _find_skeleton(node:Node)->Skeleton3D:
+ if node is Skeleton3D:return node as Skeleton3D
+ for child in node.get_children():
+  var found:=_find_skeleton(child)
+  if found!=null:return found
  return null
 func _apply_skin_recursive(node:Node,texture:Texture2D)->void:
  if node is MeshInstance3D:
