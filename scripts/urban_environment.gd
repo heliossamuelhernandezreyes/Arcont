@@ -40,7 +40,18 @@ func _build_boundary()->void:
 func _build_points()->void:
  var points:=[Vector3(-5,0.2,-98),Vector3(5,0.2,-92),Vector3(-5,0.2,-68),Vector3(5,0.2,68),Vector3(-5,0.2,94),Vector3(5,0.2,100),Vector3(-62,0.2,0),Vector3(62,0.2,0),Vector3(-58,0.2,58),Vector3(58,0.2,-58),Vector3(-52,0.2,-72),Vector3(52,0.2,72)]
  for i in points.size():var marker:=Marker3D.new();marker.name="EnemySpawn%02d"%i;marker.position=points[i];marker.add_to_group("enemy_spawn");add_child(marker)
- for i in range(-8,9):var marker:=Marker3D.new();marker.name="TacticalCover%02d"%(i+8);marker.position=Vector3(-5 if i%2==0 else 5,0.2,float(i)*11.0);marker.add_to_group("tactical_cover");add_child(marker)
+ var cover_points:Array[Vector3]=[]
+ for i in range(-8,9):cover_points.append(Vector3(-5 if i%2==0 else 5,0.2,float(i)*11.0))
+ cover_points.append_array([
+  Vector3(-2.8,0.2,4.0),Vector3(2.8,0.2,6.0),Vector3(-5.4,0.2,8.2),Vector3(5.4,0.2,1.8),
+  Vector3(-4.6,0.2,-72.0),Vector3(-1.4,0.2,-72.0),Vector3(2.4,0.2,-44.0),Vector3(5.7,0.2,-44.0),
+  Vector3(-4.5,0.2,-20.0),Vector3(-1.3,0.2,-20.0),Vector3(1.4,0.2,28.0),Vector3(4.8,0.2,28.0),
+  Vector3(-12.0,0.2,51.5),Vector3(-12.0,0.2,56.5),Vector3(11.0,0.2,79.5),Vector3(11.0,0.2,84.5),
+  Vector3(-13.5,0.2,-54.0),Vector3(13.5,0.2,-55.0),Vector3(-13.5,0.2,42.0),Vector3(13.5,0.2,45.0)
+ ])
+ for i in cover_points.size():_add_cover_marker(cover_points[i],i)
+func _add_cover_marker(pos:Vector3,index:int)->void:
+ var marker:=Marker3D.new();marker.name="TacticalCover%02d"%index;marker.position=pos;marker.add_to_group("tactical_cover");add_child(marker)
 func _spawn_asset(path:String,pos:Vector3,rot:=Vector3.ZERO,scale_value:=Vector3.ONE,visibility_end:=0.0,budget_class:="prop")->Node3D:
  var packed:=load(path) as PackedScene;if packed==null:return null
  var instance:=packed.instantiate() as Node3D;if instance==null:return null
