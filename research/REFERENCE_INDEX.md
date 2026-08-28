@@ -1,49 +1,76 @@
 # ARCONT Reference Lab
 
-This branch is an isolated research/audit workspace. Nothing here is a production dependency unless it is separately reviewed, reimplemented or intentionally integrated into the playable branch.
+This branch is Arcont's isolated, persistent research/audit workspace and technical memory. Nothing here is a production dependency unless separately reviewed, tested and intentionally integrated.
 
-## Rules
-- Preserve source URL, license and purpose for every external reference.
-- Prefer MIT/CC0/permissive material.
+## Start here
+- [AUDIT_PROTOCOL.md](AUDIT_PROTOCOL.md) — how the lab is maintained and consulted.
+- [DECISIONS.md](DECISIONS.md) — implemented, candidate, rejected and superseded technical decisions.
+- [KNOWLEDGE_GAPS.md](KNOWLEDGE_GAPS.md) — living gaps/watchlist.
+
+## Godot engineering
+- [godot/camera_tps.md](godot/camera_tps.md)
+- [godot/input_mobile.md](godot/input_mobile.md)
+- [godot/animation.md](godot/animation.md)
+- [godot/navigation.md](godot/navigation.md)
+- [godot/rendering_mobile.md](godot/rendering_mobile.md)
+- [godot/performance.md](godot/performance.md)
+- [godot/resources_architecture.md](godot/resources_architecture.md)
+- [godot/audio.md](godot/audio.md)
+
+## Gameplay
+- [gameplay/game_feel.md](gameplay/game_feel.md)
+- [gameplay/damage_anatomy_gore.md](gameplay/damage_anatomy_gore.md)
+
+## AI
+- [ai/architecture.md](ai/architecture.md)
+
+## Production
+- [production/asset_pipeline.md](production/asset_pipeline.md)
+- [production/testing_ci.md](production/testing_ci.md)
+- [production/level_design.md](production/level_design.md)
+
+## References and adjacent knowledge
+- [references/repos.md](references/repos.md) — repository catalog.
+- [references/beyond_games.md](references/beyond_games.md) — human factors, perception, robotics, mathematics, film, urbanism and other cross-disciplinary knowledge.
+- [references/research_backlog.md](references/research_backlog.md) — deliberately broad future research queue.
+
+## Core rules
+- Preserve source URL, license and purpose for external references.
+- Prefer official documentation and permissive sources.
+- Unknown license means reference-only until audited.
 - Do not merge this branch wholesale into production.
 - Audit patterns and architecture before copying code.
-- Production remains mobile-first and Godot 4.7 compatible.
+- Production remains mobile-first and Godot 4.7 compatible until deliberately changed.
+- Preserve failed/rejected approaches and why they failed.
+- Real-device evidence outranks assumptions.
+- Store useful adjacent knowledge even when it does not solve today's task.
 
-## Initial reference set
+## Current reference seeds
+### TPS / locomotion
+- https://github.com/gdquest-demos/godot-4-3d-third-person-controller
+- https://github.com/selgesel/godot4-third-person-controller
+- https://github.com/Jeh3no/Godot-Third-Person-Controller
+- https://github.com/fdemir/real-controller
+- https://github.com/etherealxx/Godot-Third-Person-Controller-Mobile
+- https://github.com/catprisbrey/Third-Person-Controller--SoulsLIke-Godot4
 
-### Third-person controllers / camera / locomotion
-- https://github.com/gdquest-demos/godot-4-3d-third-person-controller — TPS/shooter architecture reference.
-- https://github.com/selgesel/godot4-third-person-controller — MIT; touchscreen TPS, gestures, zoom.
-- https://github.com/Jeh3no/Godot-Third-Person-Controller — MIT; Godot 4.4–4.7, FSM, free/aim shoulder cameras, model orientation.
-- https://github.com/fdemir/real-controller — MIT; Godot 4.6, AnimationTree and 8-direction locomotion.
-- https://github.com/etherealxx/Godot-Third-Person-Controller-Mobile — MIT; Android/virtual joystick TPS reference.
-- https://github.com/catprisbrey/Third-Person-Controller--SoulsLIke-Godot4 — MIT; AnimationTree/state-machine melee reference (older; patterns only).
+### Tactical shooter / AI
+- https://github.com/AetherRadar/operation-steel-tide
 
-### Tactical shooter / AI / combat-space reference
-- https://github.com/AetherRadar/operation-steel-tide — Godot tactical/extraction shooter reference; squad AI, cover, stance, anatomical hit regions, larger combat spaces. Audit license before any code reuse.
-
-### Official Godot engineering references
+### Official Godot seeds
 - https://docs.godotengine.org/en/4.7/tutorials/3d/spring_arm.html
 - https://docs.godotengine.org/en/stable/classes/class_boneattachment3d.html
 - https://docs.godotengine.org/en/stable/tutorials/animation/animation_tree.html
 - https://docs.godotengine.org/en/stable/tutorials/performance/optimizing_3d_performance.html
-- https://github.com/godotengine/godot-docs/blob/master/tutorials/performance/optimizing_3d_performance.rst
 
-## Audit topics
-1. Touch ownership and GUI/gameplay event isolation.
-2. Camera orbit, shoulder swap, ADS and collision.
-3. Character facing independent from camera orbit.
-4. AnimationTree/state-machine locomotion and action blending.
-5. Skeleton/BoneAttachment weapon mounting and eventual hand IK.
-6. Tactical AI: cover scoring, suppression, flanking and orders.
-7. Hit regions and damage architecture.
-8. Mobile renderer constraints, visibility ranges, mesh LOD and occlusion.
-9. Large-map streaming/visibility strategy.
-10. Android performance budgets and scalable quality tiers.
+## Important findings already reflected in Arcont
+- SpringArm3D should own TPS camera collision.
+- Mobile touch needs explicit finger ownership and separation from emulated mouse input.
+- Equipment should follow the rig/world-space mount rather than a camera-attached FPS hierarchy.
+- AnimationTree/state-machine blending becomes preferable as locomotion/action complexity grows.
+- Urban mobile levels need explicit visibility/LOD/occlusion strategy.
+- AI navigation, perception and decision work should be budgeted rather than uniformly updated every frame.
+- Anatomical damage is more valuable when it changes gameplay capability rather than acting as cosmetic gore alone.
 
-## Important findings so far
-- SpringArm3D should own camera collision rather than a hand-written single ray.
-- Mobile touch needs explicit finger ownership and strict separation from emulated mouse input.
-- Weapon equipment should follow the rig through BoneAttachment3D instead of a static torso transform.
-- As locomotion complexity grows, AnimationTree/state-machine blending is preferable to manually switching isolated clips.
-- Urban levels need occlusion/LOD strategy; rendering an entire city behind foreground buildings wastes mobile GPU/CPU work.
+## Maintenance contract
+For normal Arcont work, consult the relevant topic files first. Perform focused external research only when the lab is missing or has stale evidence, then add the useful result here. Full research sweeps are reserved for major engine/platform changes and explicit audits.
