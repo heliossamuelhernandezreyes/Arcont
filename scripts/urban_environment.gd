@@ -8,11 +8,15 @@ extends Node3D
 const CAR_MODELS:=["res://assets/provisional/city/car_hatchback.fbx","res://assets/provisional/city/car_police.fbx","res://assets/provisional/city/car_sedan.fbx","res://assets/provisional/city/car_stationwagon.fbx"]
 const BUILDINGS:=["res://assets/provisional/city/building_A.fbx","res://assets/provisional/city/building_B.fbx","res://assets/provisional/city/building_C.fbx","res://assets/provisional/city/building_D.fbx"]
 const PROP_MODELS:={"bench":"res://assets/provisional/city/bench.fbx","box_a":"res://assets/provisional/city/box_A.fbx","box_b":"res://assets/provisional/city/box_B.fbx","bush":"res://assets/provisional/city/bush.fbx"}
-const METRIC_TARGETS:={"building":16.0,"vehicle":4.5,"bench":2.0,"box":1.0,"bush":1.5}
+const CC0_STREET_CLUSTER:="res://assets/cc0_staging/vendor/props_street_clutter/loafbrr_street_clutter/GLTF/LampPostTrachCanBench.gltf"
+const CC0_FACTORY_BASE:="res://assets/cc0_staging/vendor/environment_factory/kenney_factory_kit/Models/GLB format/"
+const CC0_CONE:=CC0_FACTORY_BASE+"cone.glb"
+const CC0_BOX_SMALL:=CC0_FACTORY_BASE+"box-small.glb"
+const METRIC_TARGETS:={"building":16.0,"vehicle":4.5,"bench":2.0,"box":1.0,"bush":1.5,"street_cluster":5.0,"cone":0.75,"factory_box":1.0}
 var mat_asphalt:StandardMaterial3D;var mat_concrete:StandardMaterial3D;var mat_building:StandardMaterial3D;var mat_military:StandardMaterial3D;var mat_boundary:StandardMaterial3D;var vehicle_index:=0
 var performance_budget:Node
 func _ready()->void:
- _make_materials();_build_ground();_build_city();_build_checkpoint();_build_vehicles();_build_props();_build_boundary();_build_points();_bind_performance_budget()
+ _make_materials();_build_ground();_build_city();_build_checkpoint();_build_vehicles();_build_props();_build_cc0_clutter();_build_boundary();_build_points();_bind_performance_budget()
 func _make_materials()->void:
  mat_asphalt=_mat(Color(0.12,0.135,0.155),0.92);mat_concrete=_mat(Color(0.38,0.39,0.41),0.90);mat_building=_mat(Color(0.27,0.29,0.33),0.84);mat_military=_mat(Color(0.22,0.28,0.19),0.82);mat_boundary=_mat(Color(0.20,0.25,0.31),0.86)
 func _mat(c:Color,r:float)->StandardMaterial3D:var m:=StandardMaterial3D.new();m.albedo_color=c;m.roughness=r;return m
@@ -35,6 +39,11 @@ func _vehicle(pos:Vector3,rot:Vector3)->void:
 func _build_props()->void:
  for p in [Vector3(-9,0.15,-82),Vector3(9,0.15,-58),Vector3(-9,0.15,-5),Vector3(9,0.15,18),Vector3(-9,0.15,48),Vector3(9,0.15,76)]:_spawn_asset(PROP_MODELS["bench"],p,Vector3(0,90,0),prop_visibility_range,"prop",float(METRIC_TARGETS["bench"]))
  for p in [Vector3(6,0.15,-70),Vector3(-7,0.15,-36),Vector3(6,0.15,8),Vector3(-7,0.15,31),Vector3(8,0.15,64)]:_spawn_asset(PROP_MODELS["box_a"],p,Vector3.ZERO,prop_visibility_range,"prop",float(METRIC_TARGETS["box"]))
+func _build_cc0_clutter()->void:
+ var clusters:=[Vector3(-10,0.15,-46),Vector3(10,0.15,35),Vector3(-10,0.15,70)]
+ for i in range(clusters.size()):_spawn_asset(CC0_STREET_CLUSTER,clusters[i],Vector3(0,90.0*float(i%2),0),72.0,"prop",float(METRIC_TARGETS["street_cluster"]))
+ for p in [Vector3(-5.7,0.15,3.0),Vector3(-4.9,0.15,4.2),Vector3(4.9,0.15,6.2),Vector3(5.8,0.15,7.0),Vector3(-6.2,0.15,-68.0),Vector3(5.9,0.15,29.0)]:_spawn_asset(CC0_CONE,p,Vector3.ZERO,52.0,"prop",float(METRIC_TARGETS["cone"]))
+ for p in [Vector3(-8.0,0.15,-34),Vector3(7.8,0.15,12),Vector3(-8.2,0.15,60),Vector3(7.5,0.15,86)]:_spawn_asset(CC0_BOX_SMALL,p,Vector3(0,20,0),58.0,"prop",float(METRIC_TARGETS["factory_box"]))
 func _build_boundary()->void:
  var hx:=district_size.x*0.5;var hz:=district_size.y*0.5
  _collision_box("BoundaryN",Vector3(0,1.5,-hz),Vector3(district_size.x,3.0,0.6));_collision_box("BoundaryS",Vector3(0,1.5,hz),Vector3(district_size.x,3.0,0.6));_collision_box("BoundaryW",Vector3(-hx,1.5,0),Vector3(0.6,3.0,district_size.y));_collision_box("BoundaryE",Vector3(hx,1.5,0),Vector3(0.6,3.0,district_size.y))
