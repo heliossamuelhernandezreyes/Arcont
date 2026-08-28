@@ -21,6 +21,8 @@ var mat_asphalt: StandardMaterial3D
 var mat_concrete: StandardMaterial3D
 var mat_building_dark: StandardMaterial3D
 var mat_building_mid: StandardMaterial3D
+var mat_window: StandardMaterial3D
+var mat_lane: StandardMaterial3D
 var mat_rubble: StandardMaterial3D
 var mat_military: StandardMaterial3D
 var mat_alien: StandardMaterial3D
@@ -41,13 +43,19 @@ func _ready() -> void:
 	_build_landmarks()
 
 func _make_materials() -> void:
-	mat_asphalt = _mat(Color(0.055, 0.062, 0.072), 0.95)
-	mat_concrete = _mat(Color(0.24, 0.25, 0.26), 0.90)
-	mat_building_dark = _mat(Color(0.115, 0.13, 0.15), 0.88)
-	mat_building_mid = _mat(Color(0.19, 0.205, 0.22), 0.82)
-	mat_rubble = _mat(Color(0.145, 0.13, 0.12), 1.0)
-	mat_military = _mat(Color(0.17, 0.22, 0.16), 0.82)
-	mat_alien = _mat(Color(0.085, 0.075, 0.11), 0.58)
+	# Keep dark-night mood, but avoid the near-black values that collapsed on Android.
+	mat_asphalt = _mat(Color(0.105, 0.115, 0.13), 0.96)
+	mat_concrete = _mat(Color(0.34, 0.35, 0.37), 0.90)
+	mat_building_dark = _mat(Color(0.20, 0.225, 0.26), 0.88)
+	mat_building_mid = _mat(Color(0.27, 0.29, 0.32), 0.82)
+	mat_rubble = _mat(Color(0.23, 0.20, 0.18), 1.0)
+	mat_military = _mat(Color(0.24, 0.31, 0.22), 0.82)
+	mat_alien = _mat(Color(0.14, 0.11, 0.18), 0.58)
+	mat_lane = _mat(Color(0.66, 0.62, 0.39), 0.84)
+	mat_window = _mat(Color(0.12, 0.19, 0.25), 0.42)
+	mat_window.emission_enabled = true
+	mat_window.emission = Color(0.045, 0.085, 0.12)
+	mat_window.emission_energy_multiplier = 0.7
 	mat_glow = _mat(Color(0.20, 0.04, 0.29), 0.42)
 	mat_glow.emission_enabled = true
 	mat_glow.emission = Color(0.72, 0.09, 1.0)
@@ -65,6 +73,11 @@ func _build_ground() -> void:
 	_box("SidewalkE", Vector3(road_width * 0.5 + 3.2, sidewalk_height * 0.5, 0), Vector3(6.2, sidewalk_height, district_size.y - 4.0), mat_concrete, true)
 	_box("CrossW", Vector3(-20.0, sidewalk_height * 0.5, 5.0), Vector3(17.0, sidewalk_height, 9.0), mat_asphalt, true)
 	_box("CrossE", Vector3(20.0, sidewalk_height * 0.5, 5.0), Vector3(17.0, sidewalk_height, 9.0), mat_asphalt, true)
+	# Thin markings give the player immediate orientation without expensive geometry.
+	for z in range(-30, 31, 8):
+		_box("LaneDash", Vector3(0.0, 0.015, float(z)), Vector3(0.16, 0.025, 3.2), mat_lane, false)
+	for x in [-4.35, 4.35]:
+		_box("RoadEdge", Vector3(x, 0.012, 0.0), Vector3(0.09, 0.022, district_size.y - 5.0), mat_lane, false)
 
 func _build_city_blocks() -> void:
 	_building(Vector3(-19.5, 3.5, -24.0), Vector3(12.0, 7.0, 13.0), mat_building_dark)
@@ -161,14 +174,31 @@ func _build_tactical_points() -> void:
 
 func _building(position: Vector3, size: Vector3, material: Material) -> void:
 	_box("Building", position, size, material, true)
+	# Horizontal ledges plus window strips prevent buildings reading as giant black planes.
 	for y in range(2, int(size.y), 2):
-		var strip_pos := position + Vector3(0, -size.y * 0.5 + float(y), -size.z * 0.5 - 0.015)
-		_box("FacadeStrip", strip_pos, Vector3(size.x * 0.82, 0.18, 0.04), mat_concrete, false)
+		var front := position + Vector3(0, -size.y * 0.5 + float(y), -size.z * 0.5 - 0.022)
+		var back := position + Vector3(0, -size.y * 0.5 + float(y), size.z * 0.5 + 0.022)
+		_box("FacadeStrip", front, Vector3(size.x * 0.78, 0.24, 0.045), mat_window, false)
+		_box("FacadeStrip", back, Vector3(size.x * 0.78, 0.24, 0.045), mat_window, false)
+	var roof := position + Vector3(0, size.y * 0.5 + 0.10, 0)
+	_box("RoofTrim", roof, Vector3(size.x * 1.02, 0.18, size.z * 1.02), mat_concrete, false)
 
 func _box(node_name: String, position: Vector3, size: Vector3, material: Material, collision_enabled: bool, rotation_deg := Vector3.ZERO) -> StaticBody3D:
-	var body := StaticBody3D.new(); body.name = node_name; body.position = position; body.rotation_degrees = rotation_deg
-	var mesh_instance := MeshInstance3D.new(); var mesh := BoxMesh.new(); mesh.size = size; mesh_instance.mesh = mesh; mesh_instance.material_override = material; body.add_child(mesh_instance)
+	var body := StaticBody3D.new()
+	body.name = node_name
+	body.position = position
+	body.rotation_degrees = rotation_deg
+	var mesh_instance := MeshInstance3D.new()
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	mesh_instance.mesh = mesh
+	mesh_instance.material_override = material
+	body.add_child(mesh_instance)
 	if collision_enabled:
-		var shape_node := CollisionShape3D.new(); var shape := BoxShape3D.new(); shape.size = size; shape_node.shape = shape; body.add_child(shape_node)
+		var shape_node := CollisionShape3D.new()
+		var shape := BoxShape3D.new()
+		shape.size = size
+		shape_node.shape = shape
+		body.add_child(shape_node)
 	add_child(body)
 	return body
