@@ -52,13 +52,19 @@ func _bind_performance_budget()->void:
  performance_budget=scene.get_node_or_null("PerformanceBudget")
  if performance_budget==null:return
  if performance_budget.has_signal("visual_budget_changed"):performance_budget.visual_budget_changed.connect(_on_visual_budget_changed)
- if performance_budget.has_method("get_visibility_scale"):_apply_runtime_visibility(float(performance_budget.get_visibility_scale()))
-func _on_visual_budget_changed(_tier:int,visibility_scale:float,_prop_scale:float,_enemy_detail_scale:float)->void:_apply_runtime_visibility(visibility_scale)
-func _apply_runtime_visibility(scale_value:float)->void:
+ var visibility_scale:=1.0;var prop_scale:=1.0
+ if performance_budget.has_method("get_visibility_scale"):visibility_scale=float(performance_budget.get_visibility_scale())
+ if performance_budget.has_method("get_prop_scale"):prop_scale=float(performance_budget.get_prop_scale())
+ _apply_runtime_visibility(visibility_scale,prop_scale)
+func _on_visual_budget_changed(_tier:int,visibility_scale:float,prop_scale:float,_enemy_detail_scale:float)->void:_apply_runtime_visibility(visibility_scale,prop_scale)
+func _apply_runtime_visibility(visibility_scale:float,prop_scale:=1.0)->void:
  for child in get_children():
   if not child.has_meta("base_visibility_end"):continue
   var base:=float(child.get_meta("base_visibility_end",0.0));if base<=0.0:continue
-  _apply_visibility_range(child,maxf(24.0,base*scale_value))
+  var budget_class:=String(child.get_meta("budget_class","prop"));var class_scale:=prop_scale;var minimum:=24.0
+  if budget_class=="building":class_scale=visibility_scale;minimum=80.0
+  elif budget_class=="vehicle":class_scale=lerpf(visibility_scale,prop_scale,0.5);minimum=40.0
+  _apply_visibility_range(child,maxf(minimum,base*class_scale))
 func _apply_visibility_range(node:Node,end_distance:float)->void:
  if node is GeometryInstance3D:
   var geometry:=node as GeometryInstance3D;geometry.visibility_range_end=end_distance;geometry.visibility_range_end_margin=minf(10.0,end_distance*0.10);geometry.visibility_range_fade_mode=GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
