@@ -1,5 +1,4 @@
-[gd_scene load_steps=22 format=3]
-
+[gd_scene load_steps=23 format=3]
 [ext_resource path="res://scripts/player.gd" type="Script" id="1_player"]
 [ext_resource path="res://scripts/main.gd" type="Script" id="2_main"]
 [ext_resource path="res://scripts/mobile_controls.gd" type="Script" id="3_mobile"]
@@ -18,7 +17,7 @@
 [ext_resource path="res://scripts/third_person_ads.gd" type="Script" id="16_ads"]
 [ext_resource path="res://scripts/tactical_mobility.gd" type="Script" id="17_mobility"]
 [ext_resource path="res://scripts/melee_combat_controller.gd" type="Script" id="18_melee"]
-
+[ext_resource path="res://scripts/main_menu.gd" type="Script" id="19_menu"]
 [sub_resource type="CapsuleShape3D" id="PlayerShape"]
 radius=0.4
 height=1.8
@@ -32,7 +31,6 @@ ambient_light_color=Color(0.58,0.64,0.74,1)
 ambient_light_energy=1.05
 reflected_light_source=2
 fog_enabled=false
-
 [node name="Main" type="Node3D"]
 script=ExtResource("2_main")
 [node name="PerformanceBudget" type="Node" parent="."]
@@ -47,7 +45,7 @@ script=ExtResource("6_feedback")
 script=ExtResource("7_environment")
 [node name="MissionDirector" type="Node" parent="."]
 script=ExtResource("8_mission")
-[node name="ThrowableController" type="Node" parent="."]
+[node name="ThrowableController" type="Node" parent="." groups=["throwable_controller"]]
 script=ExtResource("12_throwables")
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment=SubResource("Env")
@@ -64,7 +62,6 @@ omni_range=12.0
 [node name="Enemies" type="Node3D" parent="."]
 [node name="CompanionRobot" parent="." instance=ExtResource("9_robot")]
 position=Vector3(-3.4,0.2,17)
-
 [node name="Player" type="CharacterBody3D" parent="." groups=["player"]]
 position=Vector3(0,1.05,19)
 script=ExtResource("1_player")
@@ -76,8 +73,8 @@ script=ExtResource("13_character_visual")
 [node name="OperatorModel" parent="Player/BodyVisual" instance=ExtResource("14_operator")]
 rotation_degrees=Vector3(0,180,0)
 [node name="WeaponMount" type="Node3D" parent="Player/BodyVisual"]
-position=Vector3(0.23,1.20,-0.26)
-rotation_degrees=Vector3(-3,-2,0)
+position=Vector3(0.34,1.22,-0.34)
+rotation_degrees=Vector3(-8,-8,-4)
 [node name="Gun" type="MeshInstance3D" parent="Player/BodyVisual/WeaponMount"]
 mesh=SubResource("GunMesh")
 [node name="MuzzleFlash" type="OmniLight3D" parent="Player/BodyVisual/WeaponMount"]
@@ -92,7 +89,7 @@ enabled=true
 [node name="CameraRig" type="Node3D" parent="Player"]
 position=Vector3(0,0.92,0)
 [node name="Camera3D" type="Camera3D" parent="Player/CameraRig"]
-position=Vector3(0.78,0.82,3.85)
+position=Vector3(1.05,1.05,5.2)
 current=true
 fov=72.0
 [node name="Weapon" type="Node" parent="Player"]
@@ -105,7 +102,6 @@ script=ExtResource("16_ads")
 script=ExtResource("17_mobility")
 [node name="MeleeCombat" type="Node" parent="Player"]
 script=ExtResource("18_melee")
-
 [node name="HUD" type="CanvasLayer" parent="."]
 [node name="Crosshair" type="Label" parent="HUD"]
 offset_left=632.0
@@ -199,3 +195,6 @@ grow_horizontal=2
 grow_vertical=2
 mouse_filter=2
 script=ExtResource("3_mobile")
+[node name="MainMenu" type="CanvasLayer" parent="."]
+process_mode=3
+script=ExtResource("19_menu")
