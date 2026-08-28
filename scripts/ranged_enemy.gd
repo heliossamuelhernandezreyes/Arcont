@@ -119,7 +119,7 @@ func _choose_tactic() -> void:
 
 func _choose_anchor_tactic()->void:
 	var distance:=global_position.distance_to(player.global_position)
-	if distance>=preferred_distance-2.5 and distance<=preferred_distance+4.0 and TacticalAI.point_has_cover(global_position,player.global_position):
+	if distance>=preferred_distance-2.5 and distance<=preferred_distance+4.0 and TacticalAI.point_has_cover(self,player,global_position):
 		has_tactical_target=false
 		return
 	var anchor_cover:=TacticalAI.best_cover_near(self,player,global_position,preferred_distance,18.0)
