@@ -13,20 +13,36 @@ permissions:
 jobs:
   promote:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout integration branch
         uses: actions/checkout@v4
         with:
           ref: feat/cc0-provisional-art-pass
-      - name: Promote selected runtime assets
+
+      - name: Checkout reusable CC0 warehouse
+        uses: actions/checkout@v4
+        with:
+          ref: assets/cc0-staging
+          path: _cc0_library
+
+      - name: Promote curated runtime candidates
         shell: bash
         run: |
           set -euo pipefail
-          SRC='assets/cc0_staging/vendor'
+          SRC='_cc0_library/assets/cc0_staging/vendor'
           DST='assets/provisional/cc0_runtime'
           rm -rf "$DST"
-          mkdir -p "$DST/weapons" "$DST/zombies" "$DST/street_clutter/GLTF" "$DST/street_clutter/Textures" "$DST/factory/Textures"
+          mkdir -p \
+            "$DST/weapons" \
+            "$DST/zombies" \
+            "$DST/zombies/realistic_city_candidate" \
+            "$DST/zombies/mobile_reference" \
+            "$DST/characters/human_scale_candidate" \
+            "$DST/street_clutter/GLTF" \
+            "$DST/street_clutter/Textures" \
+            "$DST/factory/Textures" \
+            "$DST/forest"
 
           WBASE="$SRC/weapons/quaternius_ultimate_guns/Ultimate Gun Pack - July 2019/FBX"
           cp "$WBASE/Shotgun_1.fbx" "$DST/weapons/"
@@ -40,6 +56,16 @@ jobs:
           cp "$ZBASE/Zombie_Male.fbx" "$DST/zombies/"
           cp "$ZBASE/Zombie_Female.fbx" "$DST/zombies/"
 
+          if [ -d "$SRC/realistic_infected/rikindle3d_male_city_zombie" ]; then
+            cp -a "$SRC/realistic_infected/rikindle3d_male_city_zombie/." "$DST/zombies/realistic_city_candidate/"
+          fi
+          if [ -d "$SRC/mobile_infected_reference/lucian_pavel_mobile_zombie" ]; then
+            cp -a "$SRC/mobile_infected_reference/lucian_pavel_mobile_zombie/." "$DST/zombies/mobile_reference/"
+          fi
+          if [ -d "$SRC/human_scale_characters/quaternius_universal_base_candidate_mirror" ]; then
+            cp -a "$SRC/human_scale_characters/quaternius_universal_base_candidate_mirror/." "$DST/characters/human_scale_candidate/"
+          fi
+
           CBASE="$SRC/props_street_clutter/loafbrr_street_clutter"
           cp "$CBASE/GLTF/LampPostTrachCanBench.gltf" "$DST/street_clutter/GLTF/"
           cp -a "$CBASE/Textures/." "$DST/street_clutter/Textures/"
@@ -49,25 +75,63 @@ jobs:
           cp "$FBASE/box-small.glb" "$DST/factory/"
           cp "$FBASE/Textures/colormap.png" "$DST/factory/Textures/colormap.png"
 
+          # Forest runtime is deliberately curated. The complete 330+ object Nature Kit stays
+          # in the reusable staging warehouse so the APK does not absorb the entire library.
+          if [ -d "$SRC/environment_forest/kenney_nature_kit" ]; then
+            python - <<'PY'
+          from pathlib import Path
+          import shutil
+          src=Path('_cc0_library/assets/cc0_staging/vendor/environment_forest/kenney_nature_kit')
+          dst=Path('assets/provisional/cc0_runtime/forest')
+          wanted=('tree','pine','bush','rock','stone','grass','log','stump')
+          candidates=[]
+          for f in src.rglob('*'):
+              if f.is_file() and f.suffix.lower() in {'.glb','.gltf','.fbx'}:
+                  n=f.stem.lower()
+                  if any(k in n for k in wanted):
+                      candidates.append(f)
+          selected=[]
+          seen=set()
+          for f in sorted(candidates):
+              key=next((k for k in wanted if k in f.stem.lower()), None)
+              if key and key not in seen:
+                  selected.append(f); seen.add(key)
+              if len(selected)>=8: break
+          for f in selected:
+              shutil.copy2(f, dst/f.name)
+          (dst/'SELECTION.txt').write_text('\n'.join(str(f.relative_to(src)) for f in selected), encoding='utf-8')
+          PY
+          fi
+
           cat > "$DST/README.md" <<'EOF'
           # Arcont selected CC0 runtime assets
-          This folder contains only assets promoted from `assets/cc0_staging` for active Godot runtime use.
-          Source warehouse is ignored by Godot. Promotion requires source/license audit and metric/runtime tests.
-          - Weapons: Quaternius Ultimate Gun Pack — CC0.
-          - Zombie shells: Quaternius Ultimate Animated Character Pack — CC0; intact visual shell only until production segmented meshes exist.
-          - Street clutter: loafbrr LampPost/TrashCan/Bench — CC0.
-          - Factory cone/box: Kenney Factory Kit — CC0; `Textures/colormap.png` retained as a required glTF dependency.
-          Status: PROVISIONAL / not final Arcont art.
+
+          This directory is the curated runtime subset of the reusable CC0 warehouse.
+          The complete warehouse remains on `assets/cc0-staging` and is not deleted when Arcont changes art direction.
+
+          Current runtime candidates:
+          - Quaternius weapons — CC0.
+          - Quaternius zombie shells — CC0, current ART-PASS-1 fallback.
+          - Male City Zombie — CC0 realistic infected candidate, staged for import/metric/animation validation.
+          - Mobile Ready Zombie — CC0 low-cost infected/LOD reference.
+          - Human-scale Quaternius-derived CC0 reference GLB — scale/rig candidate only; not the full official UBC pack.
+          - loafbrr street clutter — CC0.
+          - Kenney Factory cone/box — CC0.
+          - Selected Kenney Nature Kit forest meshes — CC0; full 330+ pack remains in the reusable warehouse.
+
+          Poly Haven is retained as the realistic CC0 forest/PBR source pool, but high-resolution originals are not bulk-copied into the APK.
+          Status: PROVISIONAL / requires Godot import, metric and Android visual validation before replacing active art.
           EOF
 
-          touch assets/cc0_staging/.gdignore
+          rm -rf _cc0_library
+
       - name: Commit promotion
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add assets/cc0_staging/.gdignore assets/provisional/cc0_runtime
+          git add assets/provisional/cc0_runtime
           git diff --cached --quiet && exit 0
-          git commit -m 'assets: promote selected CC0 runtime library and ignore staging warehouse'
+          git commit -m 'assets: integrate expanded CC0 runtime candidate library'
           git push origin HEAD:feat/cc0-provisional-art-pass
