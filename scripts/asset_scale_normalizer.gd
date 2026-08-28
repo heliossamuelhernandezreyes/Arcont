@@ -39,7 +39,10 @@ static func normalize_longest_extent(root: Node3D, target_m: float) -> float:
 
 static func longest_extent(root: Node3D) -> float:
  var bounds := visual_bounds(root)
- return maxf(bounds.size.x, maxf(bounds.size.y, bounds.size.z))
+ var local_longest := maxf(bounds.size.x, maxf(bounds.size.y, bounds.size.z))
+ var world_scale := root.global_transform.basis.get_scale()
+ var uniform_scale := maxf(absf(world_scale.x), maxf(absf(world_scale.y), absf(world_scale.z)))
+ return local_longest * uniform_scale
 
 static func _collect_meshes(root: Node) -> Array[Node]:
  var out: Array[Node] = []
