@@ -12,6 +12,7 @@ signal active_reload_feedback(result:String,stage:int)
 @onready var player:CharacterBody3D=get_parent() as CharacterBody3D
 @onready var camera:Camera3D=player.get_node_or_null("CameraRig/SpringArm3D/Camera3D") as Camera3D
 @onready var gun:MeshInstance3D=player.get_node_or_null("BodyVisual/WeaponMount/Gun") as MeshInstance3D
+@onready var muzzle:Node3D=player.get_node_or_null("BodyVisual/WeaponMount/MuzzleFlash") as Node3D
 
 var profiles:=[
  {"name":"12G SHOTGUN","mag":8,"reserve":48,"damage":18.0,"interval":0.72,"reload":1.9,"recoil_pitch":0.055,"recoil_yaw":0.016,"pellets":8,"spread":5.2,"range":55.0,"impact":8.5,"energy":0.95,"penetrations":2,"noise":34.0,"ads_fov":58.0,"automatic":false,"active":[[0.42,0.13,0.22],[0.78,0.12,0.24]]},
@@ -98,16 +99,36 @@ func _report_weapon_sound()->void:
  var awareness:=scene.get_node_or_null("AwarenessDirector")
  if awareness and awareness.has_method("report_sound"):awareness.report_sound(player.global_position,float(profiles[slot]["noise"]),weapon_name.to_lower())
 
+func _camera_aim_point(space_state:PhysicsDirectSpaceState3D,max_range:float,exclude:Array[RID])->Vector3:
+ var camera_origin:=camera.global_position
+ var camera_forward:=-camera.global_transform.basis.z
+ var query:=PhysicsRayQueryParameters3D.create(camera_origin,camera_origin+camera_forward*max_range)
+ query.exclude=exclude
+ query.collide_with_areas=false
+ var result:=space_state.intersect_ray(query)
+ if result.is_empty():return camera_origin+camera_forward*max_range
+ return result.get("position",camera_origin+camera_forward*max_range)
+
 func _fire_weapon()->void:
  if camera==null:return
  var world:=camera.get_world_3d();if world==null:return
- var p:Dictionary=profiles[slot];var origin:=camera.global_position;var forward:=-camera.global_transform.basis.z;var right:=camera.global_transform.basis.x;var up:=camera.global_transform.basis.y;var spread_mult:=1.0
+ var p:Dictionary=profiles[slot]
+ var exclude:Array[RID]=[]
+ if player:exclude.append(player.get_rid())
+ var space_state:=world.direct_space_state
+ var aim_point:=_camera_aim_point(space_state,float(p["range"]),exclude)
+ var origin:=muzzle.global_position if muzzle else (gun.global_position if gun else camera.global_position)
+ var base_direction:=(aim_point-origin).normalized()
+ if base_direction.length_squared()<0.001:base_direction=-camera.global_transform.basis.z
+ var right:=camera.global_transform.basis.x
+ var up:=camera.global_transform.basis.y
+ var spread_mult:=1.0
  if player and player.has_method("get_weapon_spread_multiplier"):spread_mult=float(player.get_weapon_spread_multiplier())
  if aiming:spread_mult*=0.48
- var spread:=tan(deg_to_rad(float(p["spread"])*spread_mult));var exclude:Array[RID]=[]
- if player:exclude.append(player.get_rid())
+ var spread:=tan(deg_to_rad(float(p["spread"])*spread_mult))
  for _i in int(p["pellets"]):
-  var direction:=(forward+right*randf_range(-spread,spread)+up*randf_range(-spread,spread)).normalized();_trace_round(world.direct_space_state,origin,direction,exclude,p)
+  var direction:=(base_direction+right*randf_range(-spread,spread)+up*randf_range(-spread,spread)).normalized()
+  _trace_round(space_state,origin,direction,exclude,p)
 
 func _trace_round(space_state:PhysicsDirectSpaceState3D,origin:Vector3,direction:Vector3,exclude:Array[RID],p:Dictionary)->void:
  var energy:=float(p["energy"]);var start_energy:=energy;var current_origin:=origin;var travelled:=0.0;var penetrations:=0;var local_exclude:=exclude.duplicate();var max_range:=float(p["range"])
@@ -126,7 +147,8 @@ func _trace_round(space_state:PhysicsDirectSpaceState3D,origin:Vector3,direction
 func request_reload()->bool:
  if reloading:return active_reload_tap()
  if ammo_in_mag>=magazine_size or reserve_ammo<=0:return false
- reloading=true;reload_total=float(profiles[slot]["reload"]);reload_timer=reload_total;reload_elapsed=0.0;active_stage=0;active_savings=0.0;reload_state_changed.emit(true);return true
+ var reload_mult:=float(player.get_reload_time_multiplier()) if player and player.has_method("get_reload_time_multiplier") else 1.0
+ reloading=true;reload_total=float(profiles[slot]["reload"])*maxf(reload_mult,0.1);reload_timer=reload_total;reload_elapsed=0.0;active_stage=0;active_savings=0.0;reload_state_changed.emit(true);return true
 func active_reload_tap()->bool:
  if not reloading:return false
  var windows:Array=profiles[slot].get("active",[])
