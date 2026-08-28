@@ -15,7 +15,9 @@ const SOURCE_PATHS:=[
 const BAYONET_PATH:=BASE+"Accessories/Bayonet.fbx"
 
 static func build(parent:Node3D,slot:int,muzzle:Node3D=null)->void:
- for child in parent.get_children():child.queue_free()
+ parent.scale=Vector3.ONE
+ for child in parent.get_children():
+  parent.remove_child(child);child.queue_free()
  var i:=clampi(slot,0,VISUAL_IDS.size()-1)
  parent.set_meta("weapon_visual_id",VISUAL_IDS[i])
  parent.set_meta("art_status","CC0-PROVISIONAL")
@@ -24,8 +26,7 @@ static func build(parent:Node3D,slot:int,muzzle:Node3D=null)->void:
  if not ok:
   parent.set_meta("art_status","FALLBACK-PROXY")
   _fallback(parent,i)
- if i==4:
-  _attach_bayonet(parent)
+ if i==4:_attach_bayonet(parent)
  if muzzle:
   var p:=muzzle.position;p.z=MUZZLE_Z[i];muzzle.position=p
 
@@ -34,7 +35,7 @@ static func _attach_metric_model(parent:Node3D,path:String,target_length:float,n
  if packed==null:return false
  var adapter:=Node3D.new();adapter.name=node_name;parent.add_child(adapter)
  var model:=packed.instantiate() as Node3D
- if model==null:adapter.queue_free();return false
+ if model==null:parent.remove_child(adapter);adapter.queue_free();return false
  adapter.add_child(model)
  _orient_long_axis_to_z(adapter,model)
  _center_model(adapter,model)
@@ -52,9 +53,7 @@ static func _orient_long_axis_to_z(adapter:Node3D,model:Node3D)->void:
  if pos>neg:model.rotation_degrees.y+=180.0
 
 static func _center_model(adapter:Node3D,model:Node3D)->void:
- var b:=AssetScaleNormalizer.visual_bounds(adapter)
- var c:=b.get_center()
- model.position+=Vector3(-c.x,-c.y,-c.z)
+ var b:=AssetScaleNormalizer.visual_bounds(adapter);var c:=b.get_center();model.position+=Vector3(-c.x,-c.y,-c.z)
 
 static func _attach_bayonet(parent:Node3D)->void:
  var holder:=Node3D.new();holder.name="BayonetMount";holder.position=Vector3(0,-0.03,-0.58);parent.add_child(holder)
