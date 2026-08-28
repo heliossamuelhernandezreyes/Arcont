@@ -1,30 +1,33 @@
 extends SceneTree
 
-const ENV_SCRIPT := preload("res://scripts/forest_village_environment.gd")
+const MAIN := preload("res://scenes/main.tscn")
 
 func _init() -> void:
  call_deferred("_run")
 
 func _run() -> void:
- var root3d := Node3D.new()
- root.add_child(root3d)
- var budget_script := load("res://scripts/performance_budget.gd")
- var budget := Node.new()
- budget.name = "PerformanceBudget"
- budget.set_script(budget_script)
- root3d.add_child(budget)
- var env := Node3D.new()
- env.name = "ForestVillage"
- env.set_script(ENV_SCRIPT)
- root3d.add_child(env)
+ var main := MAIN.instantiate()
+ root.add_child(main)
  await process_frame
  await process_frame
+ var env := main.get_node_or_null("ForestVillage")
+ var polish := main.get_node_or_null("ForestVillagePolish")
+ if env == null: return _fail("ForestVillage missing")
+ if polish == null: return _fail("ForestVillagePolish missing")
  var chunks := 0
  var village := 0
  var canopy := 0
  var landmarks := 0
  var story := 0
- var spawns := get_nodes_in_group("enemy_spawn").size()
+ var macro_occluders := 0
+ var transitions := 0
+ var mission_landmarks := 0
+ var story_chain := 0
+ var canopy_frames := 0
+ var entrance_layers := 0
+ var accent_lights := 0
+ var shadowed_omni := 0
+ var budgeted := 0
  for node in _all_nodes(env):
   if String(node.name).begins_with("ForestChunk_"): chunks += 1
   if node.has_meta("art_layer"):
@@ -33,15 +36,41 @@ func _run() -> void:
     "canopy": canopy += 1
     "landmark", "landform": landmarks += 1
     "story_prop": story += 1
+ for node in _all_nodes(polish):
+  if node.has_meta("art_layer"):
+   var layer := String(node.get_meta("art_layer"))
+   match layer:
+    "macro_occluder": macro_occluders += 1
+    "macro_transition": transitions += 1
+    "mission_landmark": mission_landmarks += 1
+    "story_chain": story_chain += 1
+    "canopy_frame_polish": canopy_frames += 1
+    "accent_light": accent_lights += 1
+   if layer.begins_with("entrance_"): entrance_layers += 1
+  if node.has_meta("base_visibility_end"): budgeted += 1
+  if node is OmniLight3D and (node as OmniLight3D).shadow_enabled: shadowed_omni += 1
+ var spawns := get_nodes_in_group("enemy_spawn").size()
  if chunks < 4: return _fail("forest needs spatial chunks: %d" % chunks)
  if village < 8: return _fail("village massing incomplete: %d" % village)
  if canopy < 20: return _fail("forest canopy too sparse: %d" % canopy)
  if landmarks < 5: return _fail("landmark/landform hierarchy incomplete: %d" % landmarks)
- if story < 2: return _fail("environmental storytelling missing")
+ if story < 2: return _fail("base environmental storytelling missing")
  if spawns < 8: return _fail("forest enemy approach lanes missing: %d" % spawns)
- print("FOREST_VILLAGE_ART|chunks=%d|village=%d|canopy=%d|landmarks=%d|story=%d|spawns=%d" % [chunks,village,canopy,landmarks,story,spawns])
- print("ARCONT FOREST VILLAGE: ART-PASS-1 contract OK")
- root3d.queue_free()
+ if macro_occluders < 8: return _fail("macro occlusion hierarchy incomplete: %d" % macro_occluders)
+ if transitions < 4: return _fail("forest-to-village transition bands incomplete: %d" % transitions)
+ if mission_landmarks < 10: return _fail("mission landmarks are not visually anchored: %d" % mission_landmarks)
+ if story_chain < 8: return _fail("retreat story chain too weak: %d" % story_chain)
+ if canopy_frames < 10: return _fail("entrance framing canopy incomplete: %d" % canopy_frames)
+ if entrance_layers < 12: return _fail("four entrance identities incomplete: %d" % entrance_layers)
+ if accent_lights != 3: return _fail("polish lighting budget changed: %d" % accent_lights)
+ if shadowed_omni != 0: return _fail("polish OmniLights must remain unshadowed")
+ if budgeted < 45: return _fail("polish layer lacks visibility budgeting: %d" % budgeted)
+ if String(polish.get_meta("art_status","")) != "ART-PASS-2-POLISHED": return _fail("polish art status missing")
+ var moon := main.get_node_or_null("MoonLight") as DirectionalLight3D
+ if moon == null or not moon.shadow_enabled: return _fail("moon must remain the primary shadowed key")
+ print("FOREST_VILLAGE_ART|chunks=%d|village=%d|canopy=%d|landmarks=%d|spawns=%d|macro=%d|transitions=%d|mission=%d|story_chain=%d|frames=%d|entrances=%d|budgeted=%d" % [chunks,village,canopy,landmarks,spawns,macro_occluders,transitions,mission_landmarks,story_chain,canopy_frames,entrance_layers,budgeted])
+ print("ARCONT FOREST VILLAGE: ART-PASS-2-POLISHED contract OK")
+ main.queue_free()
  await process_frame
  quit(0)
 
