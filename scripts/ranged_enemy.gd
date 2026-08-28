@@ -108,11 +108,26 @@ func _choose_tactic() -> void:
 		if cover!=Vector3.INF:
 			tactical_target=cover;has_tactical_target=true
 		return
+	if role=="anchor":
+		_choose_anchor_tactic()
+		return
 	var side:=-1.0 if role=="flank_left" else 1.0
 	var flank:=TacticalAI.flank_point(self,player,side,preferred_distance*0.9)
 	var flank_cover:=TacticalAI.best_cover_near(self,player,flank,preferred_distance,30.0)
 	tactical_target=flank_cover if flank_cover!=Vector3.INF else flank
 	has_tactical_target=true
+
+func _choose_anchor_tactic()->void:
+	var distance:=global_position.distance_to(player.global_position)
+	if distance>=preferred_distance-2.5 and distance<=preferred_distance+4.0 and TacticalAI.point_has_cover(global_position,player.global_position):
+		has_tactical_target=false
+		return
+	var anchor_cover:=TacticalAI.best_cover_near(self,player,global_position,preferred_distance,18.0)
+	if anchor_cover!=Vector3.INF and anchor_cover.distance_to(global_position)>0.9:
+		tactical_target=anchor_cover
+		has_tactical_target=true
+	else:
+		has_tactical_target=false
 
 func _movement_velocity()->Vector3:
 	if player==null or awareness_state=="idle":return Vector3.ZERO
@@ -127,6 +142,10 @@ func _movement_velocity()->Vector3:
 	if not has_visual_contact:return _velocity_to(last_known_position)
 	var flat:=player.global_position-global_position;flat.y=0.0
 	var distance:=flat.length()
+	if role=="anchor":
+		if distance>preferred_distance+5.0:return _velocity_to(player.global_position)*0.72
+		if distance<preferred_distance-4.0:return -flat.normalized()*move_speed*0.55
+		return Vector3.ZERO
 	if distance>preferred_distance+3.0:return _velocity_to(player.global_position)
 	if distance<preferred_distance-3.0:return -flat.normalized()*move_speed*0.7
 	return Vector3.ZERO
@@ -143,11 +162,11 @@ func _next_navigation_point(target_position:Vector3)->Vector3:
 func _try_fire()->void:
 	var world:=get_world_3d()
 	if world==null or player==null:return
-	var cadence:=0.78 if role=="suppress" else 1.0
+	var cadence:=0.78 if role=="suppress" else (1.12 if role=="anchor" else 1.0)
 	fire_timer=fire_interval*cadence
 	var origin:=global_position+Vector3.UP*1.25
 	var aim:=player.global_position+Vector3.UP*0.65
-	var spread:=accuracy_spread*(0.82 if role=="suppress" else 1.0)
+	var spread:=accuracy_spread*(0.82 if role=="suppress" else (0.88 if role=="anchor" else 1.0))
 	aim+=Vector3(randf_range(-spread,spread),randf_range(-spread,spread),randf_range(-spread,spread))*origin.distance_to(aim)
 	var direction:=(aim-origin).normalized()
 	_trace_round(world.direct_space_state,origin,direction)
