@@ -1,5 +1,6 @@
 extends SceneTree
 
+# ART-PASS-2-POLISHED regression contract.
 const MAIN := preload("res://scenes/main.tscn")
 
 func _init() -> void:
