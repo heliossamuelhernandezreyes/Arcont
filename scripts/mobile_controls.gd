@@ -3,6 +3,7 @@ extends Control
 @export var force_visible:=false
 @export var joystick_radius:=86.0
 @export var button_radius:=46.0
+@export var auto_sprint_threshold:=0.92
 var player:Node=null
 var companion:Node=null
 var throwables:Node=null
@@ -65,12 +66,18 @@ func _assign_touch(index:int,p:Vector2)->void:
  if p.x>=size.x*0.36 and look_touch<0:look_touch=index
 func _handle_drag(event:InputEventScreenDrag)->void:
  if event.index==move_touch:
-  move_vector=((event.position-move_origin)/joystick_radius).limit_length(1.0);if player.has_method("set_mobile_move"):player.set_mobile_move(move_vector);queue_redraw()
+  move_vector=((event.position-move_origin)/joystick_radius).limit_length(1.0)
+  if player.has_method("set_mobile_move"):player.set_mobile_move(move_vector)
+  if player.has_method("set_mobile_sprint"):player.set_mobile_sprint(move_vector.length()>=auto_sprint_threshold)
+  queue_redraw()
  elif event.index==melee_touch:
   if melee and melee.has_method("update_guard_drag"):melee.update_guard_drag(event.position)
  elif event.index==look_touch and player.has_method("add_mobile_look"):player.add_mobile_look(event.relative)
 func _release_touch(index:int)->void:
- if index==move_touch:move_touch=-1;move_vector=Vector2.ZERO;if player and player.has_method("set_mobile_move"):player.set_mobile_move(Vector2.ZERO)
+ if index==move_touch:
+  move_touch=-1;move_vector=Vector2.ZERO
+  if player and player.has_method("set_mobile_move"):player.set_mobile_move(Vector2.ZERO)
+  if player and player.has_method("set_mobile_sprint"):player.set_mobile_sprint(false)
  elif index==look_touch:look_touch=-1
  elif index==fire_touch:fire_touch=-1;if weapon and weapon.has_method("set_trigger"):weapon.set_trigger(false)
  elif index==ads_touch:ads_touch=-1;if weapon and weapon.has_method("set_ads"):weapon.set_ads(false)
@@ -105,8 +112,8 @@ func _jump_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x-
 func _crouch_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x-270,s.y-76)
 func _dodge_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x-190,s.y-170)
 func _melee_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x-82,s.y-310)
-func _reload_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x-345,70)
-func _weapon_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x-282,70)
-func _throw_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x-219,70)
-func _command_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x-156,70)
+func _reload_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.53,58)
+func _weapon_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.60,58)
+func _throw_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.67,58)
+func _command_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.74,58)
 func _throw_cycle_center()->Vector2:return _throw_center()
