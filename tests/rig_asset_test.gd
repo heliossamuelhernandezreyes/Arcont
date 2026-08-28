@@ -29,7 +29,7 @@ func _init()->void:
  var main_packed:=load("res://scenes/main.tscn") as PackedScene
  if main_packed==null:failures.append("No se pudo cargar main para probar locomoción")
  else:
-  var main:=main_packed.instantiate();root.add_child(main);await process_frame;await process_frame
+  var main:=main_packed.instantiate();root.add_child(main);await process_frame;await process_frame;await physics_frame;await physics_frame
   var body_visual:=main.get_node_or_null("Player/BodyVisual")
   var operator:=main.get_node_or_null("Player/BodyVisual/OperatorModel") as Node3D
   if operator==null:failures.append("Falta OperatorModel runtime")
@@ -84,7 +84,8 @@ func _init()->void:
    if playback==null:failures.append("AnimationTree sin playback runtime")
    else:
     var current:=String(playback.get_current_node());print("RUNTIME ANIMATION STATE: ",current," playing=",playback.is_playing())
-    if current!="" and current not in ["Start","idle","run","jump"]:failures.append("Estado AnimationTree inesperado: "+current)
+    if not playback.is_playing():failures.append("AnimationTree sigue detenido; produciría bind/T-pose")
+    if current not in ["idle","run","jump"]:failures.append("Estado AnimationTree no salió de Start: "+current)
    if tree.get("parameters/locomotion/run/run_speed/scale")==null:failures.append("Falta parámetro runtime de velocidad de carrera")
    if tree.get("parameters/ads_layer/blend_amount")==null:failures.append("Falta parámetro runtime ADS")
   if body_visual!=null:
@@ -98,7 +99,7 @@ func _init()->void:
     print("WEAPON GLOBAL SCALE: ",global_scale)
     if global_scale.x<0.45 or global_scale.x>2.2:failures.append("Escala global del arma incoherente: "+str(global_scale))
   main.queue_free();await process_frame
- if failures.is_empty():print("ARCONT RIG: compatibility + metric scale + TPS framing + filtered ADS AnimationTree OK");quit(0);return
+ if failures.is_empty():print("ARCONT RIG: compatibility + metric scale + TPS framing + playing ADS AnimationTree OK");quit(0);return
  for failure in failures:push_error("ARCONT RIG: "+failure)
  quit(1)
 func _is_lower_body_track(path:String)->bool:
