@@ -147,8 +147,8 @@ func _complete_mission()->void:
  objective_label.text="MISION COMPLETADA // EXTRACCION CONFIRMADA"
  mission_completed.emit()
 
-func _set_stage(next:int)->void:
- stage=next
+func _set_stage(next_stage:int)->void:
+ stage=next_stage
 func _request_reinforcements(count:int)->void:
  if get_parent().has_method("spawn_reinforcements"):
   get_parent().spawn_reinforcements(count)
