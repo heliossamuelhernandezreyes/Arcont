@@ -2,25 +2,9 @@ name: Godot CI
 
 on:
   push:
-    paths:
-      - 'project.godot'
-      - 'export_presets.cfg'
-      - 'assets/**'
-      - 'scenes/**'
-      - 'scripts/**'
-      - 'tests/**'
-      - 'tools/character_generator/**'
-      - '.github/workflows/godot-ci.yml'
+    paths: ['project.godot','export_presets.cfg','assets/**','scenes/**','scripts/**','tests/**','tools/character_generator/**','.github/workflows/godot-ci.yml']
   pull_request:
-    paths:
-      - 'project.godot'
-      - 'export_presets.cfg'
-      - 'assets/**'
-      - 'scenes/**'
-      - 'scripts/**'
-      - 'tests/**'
-      - 'tools/character_generator/**'
-      - '.github/workflows/godot-ci.yml'
+    paths: ['project.godot','export_presets.cfg','assets/**','scenes/**','scripts/**','tests/**','tools/character_generator/**','.github/workflows/godot-ci.yml']
   workflow_dispatch:
 
 jobs:
@@ -52,109 +36,40 @@ jobs:
           unzip -q /tmp/godot/templates.tpz -d /tmp/godot/templates
           mkdir -p "$HOME/.local/share/godot/export_templates/${TEMPLATE_VERSION}"
           cp -a /tmp/godot/templates/templates/. "$HOME/.local/share/godot/export_templates/${TEMPLATE_VERSION}/"
-          ls -la "$HOME/.local/share/godot/export_templates/${TEMPLATE_VERSION}"
       - name: Import and parse project
         shell: bash
         run: |
           set +e
           "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --editor --quit > import.log 2>&1
-          rc=$?
-          cat import.log
+          rc=$?; cat import.log
           if [ "$rc" -ne 0 ]; then exit "$rc"; fi
           if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" import.log; then exit 1; fi
-          exit 0
       - name: Survivor generator contract
         run: python tests/character_generator_test.py
       - name: Rig and animation asset test
-        shell: bash
-        run: |
-          set +e
-          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/rig_asset_test.gd > rig.log 2>&1
-          rc=$?
-          cat rig.log
-          if [ "$rc" -ne 0 ]; then exit "$rc"; fi
-          if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" rig.log; then exit 1; fi
-          exit 0
+        run: "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/rig_asset_test.gd
       - name: Metric asset scale test
-        shell: bash
-        run: |
-          set +e
-          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/asset_scale_test.gd > scale.log 2>&1
-          rc=$?
-          cat scale.log
-          if [ "$rc" -ne 0 ]; then exit "$rc"; fi
-          if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" scale.log; then exit 1; fi
-          exit 0
+        run: "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/asset_scale_test.gd
       - name: Runtime candidate asset audit
-        shell: bash
-        run: |
-          set +e
-          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/runtime_candidate_assets_test.gd > runtime-candidates.log 2>&1
-          rc=$?
-          cat runtime-candidates.log
-          if [ "$rc" -ne 0 ]; then exit "$rc"; fi
-          if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" runtime-candidates.log; then exit 1; fi
-          exit 0
+        run: "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/runtime_candidate_assets_test.gd
       - name: Weapon visual contract test
-        shell: bash
-        run: |
-          set +e
-          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/weapon_visual_test.gd > weapons.log 2>&1
-          rc=$?
-          cat weapons.log
-          if [ "$rc" -ne 0 ]; then exit "$rc"; fi
-          if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" weapons.log; then exit 1; fi
-          exit 0
+        run: "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/weapon_visual_test.gd
       - name: Zombie visual contract test
-        shell: bash
-        run: |
-          set +e
-          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/zombie_visual_test.gd > zombies.log 2>&1
-          rc=$?
-          cat zombies.log
-          if [ "$rc" -ne 0 ]; then exit "$rc"; fi
-          if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" zombies.log; then exit 1; fi
-          exit 0
+        run: "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/zombie_visual_test.gd
       - name: Zombie geometry metrics
-        shell: bash
-        run: |
-          set +e
-          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/zombie_geometry_metrics.gd > zombie-geometry.log 2>&1
-          rc=$?
-          cat zombie-geometry.log
-          if [ "$rc" -ne 0 ]; then exit "$rc"; fi
-          if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" zombie-geometry.log; then exit 1; fi
-          exit 0
-      - name: Hero street art contract test
-        shell: bash
-        run: |
-          set +e
-          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/hero_street_art_test.gd > hero-street.log 2>&1
-          rc=$?
-          cat hero-street.log
-          if [ "$rc" -ne 0 ]; then exit "$rc"; fi
-          if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" hero-street.log; then exit 1; fi
-          exit 0
+        run: "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/zombie_geometry_metrics.gd
+      - name: Forest village art contract test
+        run: "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/forest_village_art_test.gd
       - name: Structural smoke test
-        shell: bash
-        run: |
-          set +e
-          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/smoke_test.gd > smoke.log 2>&1
-          rc=$?
-          cat smoke.log
-          if [ "$rc" -ne 0 ]; then exit "$rc"; fi
-          if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" smoke.log; then exit 1; fi
-          exit 0
+        run: "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/smoke_test.gd
       - name: Boot main scene briefly
         shell: bash
         run: |
           set +e
           "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --quit-after 120 > boot.log 2>&1
-          rc=$?
-          cat boot.log
+          rc=$?; cat boot.log
           if [ "$rc" -ne 0 ]; then exit "$rc"; fi
           if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" boot.log; then exit 1; fi
-          exit 0
       - name: Export Android debug APK
         shell: bash
         env:
@@ -169,7 +84,7 @@ jobs:
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
-          name: Arcont-Android-Debug
+          name: Arcont-Android-Debug-ForestVillage
           path: build/Arcont-debug.apk
           if-no-files-found: error
           retention-days: 14
