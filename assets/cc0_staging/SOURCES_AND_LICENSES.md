@@ -28,12 +28,16 @@ All entries below were checked as CC0/public-domain-dedicated at intake time. Pr
 ## Quaternius — Universal Base Characters
 - Category: human-scale characters
 - Author: Quaternius
-- Source: https://quaternius.com/packs/universalbasecharacters.html
-- Distribution: https://quaternius.itch.io/universal-base-characters
+- Official source: https://quaternius.com/packs/universalbasecharacters.html
+- Official distribution: https://quaternius.itch.io/universal-base-characters
 - License: CC0 1.0 Universal
 - Declared contents: 6 game-ready humanoid bases (male/female; Regular, Superhero, Teen), 20 hairstyles, humanoid rig, FBX/glTF; average ~13k triangles.
 - Compatibility: designed for Universal Animation Library; Godot-compatible standard/source distributions.
-- Arcont use: preferred provisional human-scale player/NPC bases. ART-CANDIDATE only until metric, skeleton, material and Android tests pass.
+- Automation limitation: the complete free official pack does not currently expose a stable direct archive URL suitable for unattended ingestion. Best-effort official retrieval remains in the workflow but failure is nonfatal.
+- Staged fallback/reference: `human_scale_characters/quaternius_universal_base_candidate_mirror/night-striker-reference.glb` is a **single audited redistributed/modified CC0 reference derived from Universal Base Characters**, sourced from the public `Seyamalam/blood-league-kickoff` repository, with its accompanying `LICENSE-BASE-CHARACTERS.txt` retained beside it.
+- Mirror provenance: https://github.com/Seyamalam/blood-league-kickoff
+- Important: the staged derivative/reference must never be described as the complete Universal Base Characters pack.
+- Arcont use: human-scale player/NPC compatibility test and art-direction comparison until the complete official pack can be staged. ARCONT-CANDIDATE only until metric, skeleton, material and Android tests pass.
 
 ## Rikindle3D — Male City Zombie
 - Category: realistic/human-scale infected
@@ -104,6 +108,7 @@ All entries below were checked as CC0/public-domain-dedicated at intake time. Pr
 - Source: https://polyhaven.com/
 - License: assets are CC0.
 - Intake policy: do NOT blindly mirror the whole catalog. Maintain a curated manifest of Arcont-relevant candidates and download selected assets only after visual/size review. This avoids turning the Git repository into a multi-gigabyte asset dump.
+- Current shortlist: `asphalt_02`, `concrete_floor_damaged_01`, `rubble`, `trashbag`, `metal_trash_can`.
 - API note: live API terms are distinct from the asset license; provenance must be retained.
 - Arcont use: realistic concrete/asphalt/grime/rubble/industrial/street materials and hero props to raise visual fidelity while keeping existing Kenney geometry available.
 
@@ -113,3 +118,4 @@ All entries below were checked as CC0/public-domain-dedicated at intake time. Pr
 - No asset is final merely because it is CC0.
 - Before promotion inspect logos/text/signage for trademarks or third-party imagery.
 - Preserve source archives/provenance in staging; runtime should contain only curated game-ready derivatives.
+- Generated/derived inventory belongs in `INGEST_INVENTORY.md`; semantic cross-project classification belongs in `ASSET_CATALOG.md`.
