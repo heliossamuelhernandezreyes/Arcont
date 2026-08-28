@@ -9,9 +9,12 @@ func _init()->void:call_deferred("_run")
 func _run()->void:
  var scene:=MAIN.instantiate();root.add_child(scene);await process_frame;await process_frame
  var weapon:=scene.get_node_or_null("Player/Weapon")
- var gun:=scene.get_node_or_null("Player/BodyVisual/WeaponMount/Gun") as MeshInstance3D
- var muzzle:=scene.get_node_or_null("Player/BodyVisual/WeaponMount/MuzzleFlash") as Node3D
- if weapon==null or gun==null or muzzle==null:_fail("weapon visual nodes missing");return
+ if weapon==null:_fail("weapon controller missing");return
+ # BodyVisual may reparent the weapon mount under the live skeleton. Use the controller's
+ # resolved runtime references instead of assuming the authoring-time scene path survives.
+ var gun:=weapon.gun as MeshInstance3D
+ var muzzle:=weapon.muzzle as Node3D
+ if gun==null or muzzle==null:_fail("runtime weapon visual references missing gun=%s muzzle=%s"%[str(gun),str(muzzle)]);return
  var seen:={}
  for slot in range(5):
   if slot==0:weapon._build_weapon_visual()
