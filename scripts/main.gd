@@ -4,6 +4,7 @@ const ENEMY_SCENE:=preload("res://scenes/enemy.tscn")
 const RANGED_SCENE:=preload("res://scenes/ranged_enemy.tscn")
 const XENO_LANCER_SCENE:=preload("res://scenes/xeno_lancer.tscn")
 const XENO_STALKER_SCENE:=preload("res://scenes/xeno_stalker.tscn")
+const PERFORMANCE_OVERLAY:=preload("res://scripts/performance_overlay.gd")
 @export var first_wave_size:=8
 @export var wave_growth:=4
 @export var time_between_waves:=2.5
@@ -29,6 +30,7 @@ var spawn_points:Array[Node3D]=[]
 @onready var weapon_label:Label=$HUD/WeaponName
 @onready var info_label:Label=$HUD/Info
 func _ready()->void:
+ var perf:=PERFORMANCE_OVERLAY.new();perf.name="PerformanceOverlay";add_child(perf)
  player.add_to_group("player");player.health_changed.connect(_on_player_health_changed);player.died.connect(_on_player_died)
  weapon.ammo_changed.connect(_on_ammo_changed);weapon.reload_state_changed.connect(_on_reload_state_changed);weapon.weapon_changed.connect(_on_weapon_changed)
  weapon.shot_fired.connect(feedback.on_shot_fired);weapon.impact_feedback.connect(feedback.on_hit_feedback);budget.profile_changed.connect(_on_performance_profile_changed)
