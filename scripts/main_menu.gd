@@ -9,14 +9,14 @@ func _ready()->void:
  layer=50;process_mode=Node.PROCESS_MODE_ALWAYS;_build();get_tree().paused=true
 func _build()->void:
  panel=ColorRect.new();panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);panel.color=Color(0.025,0.035,0.055,0.94);add_child(panel)
- var box:=VBoxContainer.new();box.set_anchors_preset(Control.PRESET_CENTER);box.position=Vector2(-185,-190);box.size=Vector2(370,380);box.add_theme_constant_override("separation",14);panel.add_child(box)
- title=Label.new();title.text="ARCONT";title.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;title.add_theme_font_size_override("font_size",42);box.add_child(title)
- var subtitle:=Label.new();subtitle.text="DISTRITO DE EVACUACION 07\nPROTOTIPO TACTICO";subtitle.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;box.add_child(subtitle)
- play=Button.new();play.text="INICIAR MISION";play.custom_minimum_size=Vector2(370,54);play.pressed.connect(_start);box.add_child(play)
- camera=Button.new();camera.text="CAMARA: TACTICAL";camera.custom_minimum_size=Vector2(370,48);camera.pressed.connect(_cycle_camera);box.add_child(camera)
+ var box:=VBoxContainer.new();box.set_anchors_preset(Control.PRESET_CENTER);box.position=Vector2(-190,-215);box.size=Vector2(380,430);box.add_theme_constant_override("separation",12);panel.add_child(box)
+ title=Label.new();title.text="ARCONT";title.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;title.add_theme_font_size_override("font_size",40);box.add_child(title)
+ var subtitle:=Label.new();subtitle.text="DISTRITO DE EVACUACION 07\nPROTOTIPO TACTICO MOVIL";subtitle.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;box.add_child(subtitle)
+ play=Button.new();play.text="INICIAR MISION";play.custom_minimum_size=Vector2(380,56);play.pressed.connect(_start);box.add_child(play)
+ camera=Button.new();camera.text="CAMARA: TACTICAL";camera.custom_minimum_size=Vector2(380,50);camera.pressed.connect(_cycle_camera);box.add_child(camera)
  sensitivity_label=Label.new();sensitivity_label.text="SENSIBILIDAD TACTIL: 4.0";sensitivity_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;box.add_child(sensitivity_label)
- sensitivity=HSlider.new();sensitivity.min_value=1.5;sensitivity.max_value=9.0;sensitivity.step=0.1;sensitivity.value=4.0;sensitivity.custom_minimum_size=Vector2(370,36);sensitivity.value_changed.connect(_sensitivity_changed);box.add_child(sensitivity)
- var note:=Label.new();note.text="Arrastra el lado derecho para mirar\nCAM cambia distancia · MENU pausa";note.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;box.add_child(note)
+ sensitivity=HSlider.new();sensitivity.min_value=1.5;sensitivity.max_value=9.0;sensitivity.step=0.1;sensitivity.value=4.0;sensitivity.custom_minimum_size=Vector2(380,38);sensitivity.value_changed.connect(_sensitivity_changed);box.add_child(sensitivity)
+ var note:=Label.new();note.text="IZQUIERDA: mover · DERECHA: mirar\nFIRE dispara · ADS apunta · RLD recarga\nCAM: TACTICAL / CLOSE / WIDE · MENU pausa";note.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;note.add_theme_font_size_override("font_size",13);box.add_child(note)
 func _start()->void:
  panel.visible=false;play.text="CONTINUAR";get_tree().paused=false
 func _cycle_camera()->void:
