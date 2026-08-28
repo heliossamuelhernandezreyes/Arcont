@@ -1,7 +1,7 @@
 extends Node
 class_name ThirdPersonADS
 
-@export var hip_distance := 5.60
+@export var hip_distance := 5.45
 @export var hip_height := 0.95
 @export var hip_shoulder := 1.15
 @export var ads_distance := 2.85
