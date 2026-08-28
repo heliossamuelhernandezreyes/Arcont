@@ -1,12 +1,12 @@
 extends Node
 class_name ThirdPersonADS
 
-@export var hip_distance := 5.2
-@export var hip_height := 1.05
-@export var hip_shoulder := 1.05
-@export var ads_distance := 3.0
-@export var ads_height := 0.88
-@export var ads_shoulder := 0.78
+@export var hip_distance := 6.0
+@export var hip_height := 1.18
+@export var hip_shoulder := 1.22
+@export var ads_distance := 3.35
+@export var ads_height := 1.02
+@export var ads_shoulder := 0.86
 @export var transition_speed := 14.0
 @export var collision_margin := 0.18
 
