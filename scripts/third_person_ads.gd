@@ -1,36 +1,58 @@
 extends Node
 class_name ThirdPersonADS
-@export var hip_distance:=5.2
-@export var hip_height:=1.05
-@export var hip_shoulder:=1.05
-@export var ads_distance:=3.0
-@export var ads_height:=0.88
-@export var ads_shoulder:=0.78
-@export var transition_speed:=14.0
-@export var collision_margin:=0.28
-var player:CharacterBody3D
-var camera_rig:Node3D
-var camera:Camera3D
-var weapon:Node
-func _ready()->void:
- player=get_parent() as CharacterBody3D;if player==null:return
- process_physics_priority=100;camera_rig=player.get_node_or_null("CameraRig") as Node3D;camera=player.get_node_or_null("CameraRig/Camera3D") as Camera3D;weapon=player.get_node_or_null("Weapon")
-func _physics_process(delta:float)->void:
- if player==null or camera==null or camera_rig==null or weapon==null:return
- var aiming:=bool(weapon.get("aiming"));var shoulder:=float(player.get("shoulder_side"));if is_zero_approx(shoulder):shoulder=1.0
- _apply_camera_collision(_camera_target(aiming,shoulder),delta)
-func _camera_target(aiming:bool,shoulder:float)->Vector3:
- var scale:=float(player.camera_distance_scale()) if player.has_method("camera_distance_scale") else 1.0
- var target:=Vector3(ads_shoulder*shoulder,ads_height,ads_distance*scale) if aiming else Vector3(hip_shoulder*shoulder,hip_height,hip_distance*scale)
+
+@export var hip_distance := 5.2
+@export var hip_height := 1.05
+@export var hip_shoulder := 1.05
+@export var ads_distance := 3.0
+@export var ads_height := 0.88
+@export var ads_shoulder := 0.78
+@export var transition_speed := 14.0
+@export var collision_margin := 0.18
+
+var player: CharacterBody3D
+var camera_rig: Node3D
+var spring_arm: SpringArm3D
+var camera: Camera3D
+var weapon: Node
+
+func _ready() -> void:
+ player = get_parent() as CharacterBody3D
+ if player == null:
+  return
+ process_physics_priority = 100
+ camera_rig = player.get_node_or_null("CameraRig") as Node3D
+ spring_arm = player.get_node_or_null("CameraRig/SpringArm3D") as SpringArm3D
+ camera = player.get_node_or_null("CameraRig/SpringArm3D/Camera3D") as Camera3D
+ weapon = player.get_node_or_null("Weapon")
+ if spring_arm:
+  spring_arm.margin = collision_margin
+  spring_arm.add_excluded_object(player.get_rid())
+
+func _physics_process(delta: float) -> void:
+ if player == null or camera == null or camera_rig == null or spring_arm == null or weapon == null:
+  return
+ var aiming := bool(weapon.get("aiming"))
+ var shoulder := float(player.get("shoulder_side"))
+ if is_zero_approx(shoulder):
+  shoulder = 1.0
+ var target := _camera_target(aiming, shoulder)
+ var blend := minf(delta * transition_speed, 1.0)
+ spring_arm.spring_length = lerpf(spring_arm.spring_length, target.z, blend)
+ camera.position.x = lerpf(camera.position.x, target.x, blend)
+ camera.position.y = lerpf(camera.position.y, target.y, blend)
+ camera.position.z = 0.0
+
+func _camera_target(aiming: bool, shoulder: float) -> Vector3:
+ var scale := float(player.camera_distance_scale()) if player.has_method("camera_distance_scale") else 1.0
+ var target := Vector3(ads_shoulder * shoulder, ads_height, ads_distance * scale) if aiming else Vector3(hip_shoulder * shoulder, hip_height, hip_distance * scale)
  if bool(player.get("in_cover")):
-  var peek:=float(player.get("cover_peek_side"));if absf(peek)>0.01:target.x+=peek*(0.30 if aiming else 0.46)
-  if aiming and float(player.get("cover_height"))<=1.25:target.y+=0.36
+  var peek := float(player.get("cover_peek_side"))
+  if absf(peek) > 0.01:
+   target.x += peek * (0.30 if aiming else 0.46)
+  if aiming and float(player.get("cover_height")) <= 1.25:
+   target.y += 0.36
  return target
-func _apply_camera_collision(target_local:Vector3,delta:float)->void:
- var target_global:=camera_rig.to_global(target_local);var origin:=camera_rig.global_position;var safe_local:=target_local;var world:=player.get_world_3d()
- if world!=null:
-  var query:=PhysicsRayQueryParameters3D.create(origin,target_global);query.exclude=[player.get_rid()];query.collide_with_areas=false;var hit:=world.direct_space_state.intersect_ray(query)
-  if not hit.is_empty():
-   var point:Vector3=hit.get("position",origin);var direction:=(target_global-origin).normalized();safe_local=camera_rig.to_local(point-direction*collision_margin)
- camera.position=camera.position.lerp(safe_local,minf(delta*transition_speed,1.0))
-func is_aiming()->bool:return weapon!=null and bool(weapon.get("aiming"))
+
+func is_aiming() -> bool:
+ return weapon != null and bool(weapon.get("aiming"))
