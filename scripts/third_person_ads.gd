@@ -45,14 +45,9 @@ func _physics_process(delta: float) -> void:
 
 func _camera_target(aiming: bool, shoulder: float) -> Vector3:
  var scale := float(player.camera_distance_scale()) if player.has_method("camera_distance_scale") else 1.0
- var target := Vector3(ads_shoulder * shoulder, ads_height, ads_distance * scale) if aiming else Vector3(hip_shoulder * shoulder, hip_height, hip_distance * scale)
- if bool(player.get("in_cover")):
-  var peek := float(player.get("cover_peek_side"))
-  if absf(peek) > 0.01:
-   target.x += peek * (0.30 if aiming else 0.46)
-  if aiming and float(player.get("cover_height")) <= 1.25:
-   target.y += 0.36
- return target
+ if aiming:
+  return Vector3(ads_shoulder * shoulder, ads_height, ads_distance * scale)
+ return Vector3(hip_shoulder * shoulder, hip_height, hip_distance * scale)
 
 func is_aiming() -> bool:
  return weapon != null and bool(weapon.get("aiming"))
