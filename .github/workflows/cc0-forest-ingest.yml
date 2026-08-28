@@ -1,0 +1,90 @@
+name: CC0 Forest Asset Ingest
+
+on:
+  push:
+    branches: [assets/cc0-staging]
+    paths:
+      - '.github/workflows/cc0-forest-ingest.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ingest-forest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout staging branch
+        uses: actions/checkout@v4
+        with:
+          ref: assets/cc0-staging
+
+      - name: Download Kenney Nature Kit CC0
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/arcont_forest
+          curl -L --fail --retry 3 --connect-timeout 20 --max-time 240 \
+            'https://opengameart.org/sites/default/files/Nature%20Kit%20%282.1%29.zip' \
+            -o /tmp/arcont_forest/kenney_nature_kit.zip
+
+      - name: Add forest library without touching existing assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="$GITHUB_WORKSPACE/assets/cc0_staging/vendor"
+          mkdir -p "$ROOT/environment_forest/kenney_nature_kit"
+          unzip -oq /tmp/arcont_forest/kenney_nature_kit.zip -d "$ROOT/environment_forest/kenney_nature_kit"
+
+          mkdir -p "$ROOT/realistic_forest_manifest"
+          cat > "$ROOT/realistic_forest_manifest/README.md" <<'EOF'
+          # Realistic forest CC0 source pool
+
+          ## Kenney Nature Kit 2.1
+          - Source: https://kenney.nl/assets/nature-kit
+          - OpenGameArt mirror: https://opengameart.org/content/nature-kit
+          - License: CC0 1.0
+          - 330+ nature objects: trees, foliage, rocks, terrain, water, camping props and related nature pieces.
+          - Role: reusable lightweight forest library and mobile fallback/proxy source.
+
+          ## Poly Haven Pine Forest
+          - Source: https://polyhaven.com/collections
+          - Collection: Pine Forest
+          - License: CC0 1.0
+          - Role: realistic production-source pool for trees, forest floor, rocks, bark/foliage materials and HDRI references.
+          - High-resolution source files are deliberately not mirrored wholesale into Git. Promote game-sized derivatives only after texture/geometry budgets are chosen.
+
+          Warehouse rule: never delete the stylized/low-poly library when realistic assets are added. Assets can be reused by other games.
+          EOF
+
+      - name: Refresh warehouse inventory
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          root=Path('assets/cc0_staging/vendor')
+          lines=['# Generated CC0 staging inventory','', 'Generated from the reusable warehouse. Assets are not production-approved until audited.','']
+          total=0
+          for category in sorted(p for p in root.iterdir() if p.is_dir()):
+              files=[f for f in category.rglob('*') if f.is_file()]
+              size=sum(f.stat().st_size for f in files); total += size
+              exts={}
+              for f in files:
+                  e=f.suffix.lower() or '<none>'; exts[e]=exts.get(e,0)+1
+              lines += [f'## {category.name}', f'- files: {len(files)}', f'- size: {size/1024/1024:.2f} MiB', '- formats: '+(', '.join(f'{k}={v}' for k,v in sorted(exts.items())) if exts else 'none'), '']
+          lines.append(f'**Total staged size:** {total/1024/1024:.2f} MiB')
+          Path('assets/cc0_staging/INGEST_INVENTORY.md').write_text('\n'.join(lines), encoding='utf-8')
+          PY
+
+      - name: Commit forest library
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/cc0_staging
+          if git diff --cached --quiet; then echo 'No forest changes.'; exit 0; fi
+          git commit -m 'assets: add reusable CC0 forest library'
+          git pull --rebase origin assets/cc0-staging
+          git push origin HEAD:assets/cc0-staging
