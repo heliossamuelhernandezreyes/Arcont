@@ -43,7 +43,7 @@ func _init() -> void:
  _check_methods("res://scripts/main.gd",["_start_next_wave","spawn_reinforcements","spawn_ranged_enemies","spawn_xeno_lancers","spawn_xeno_stalkers","spawn_brute","_spawn_position_for","_apply_enemy_visual_budget","_on_weapon_changed"],failures)
  _check_methods("res://scripts/performance_budget.gd",["get_animation_quality","get_animation_update_interval","get_visibility_scale","get_prop_scale","get_enemy_detail_scale","_apply_tier"],failures)
  _check_methods("res://scripts/provisional_character_visual.gd",["_update_procedural","_update_locomotion_input","_update_tactical_pose","get_ads_weight","_setup_animation_tree","_configure_ads_filter","_bind_weapon_to_hand","_find_skeleton"],failures)
- _check_methods("res://scripts/forest_village_environment.gd",["_build_ground","_build_village","_build_forest","_build_storytelling","_build_spawn_points","_spawn_asset","_bind_performance_budget"],failures)
+ _check_methods("res://scripts/forest_village_environment.gd",["_ground_and_paths","_village","_tactical_routes","_forest_mass","_forest_detail","_story_props","_boundaries","_spawn_points","_spawn_asset","_bind_budget"],failures)
  _check_methods("res://scripts/forest_village_polish.gd",["_macro_composition","_entrance_identities","_village_depth","_mission_landmarks","_forest_frames","_storytelling_pass","_lighting_pass","_bind_budget","_apply_budget"],failures)
 
  _check_text("res://scripts/weapon.gd","CameraRig/SpringArm3D/Camera3D",failures)
@@ -55,7 +55,7 @@ func _init() -> void:
  _check_text("res://scripts/provisional_character_visual.gd","parameters/ads_layer/blend_amount",failures)
  _check_text("res://scripts/performance_budget.gd","signal visual_budget_changed",failures)
  _check_text("res://scripts/main.gd","budget.visual_budget_changed.connect(_on_visual_budget_changed)",failures)
- _check_text("res://scripts/forest_village_environment.gd","world_size:=Vector2(170.0,220.0)",failures)
+ _check_text("res://scripts/forest_village_environment.gd","@export var world_size := Vector2(170.0, 220.0)",failures)
  _check_text("res://scripts/forest_village_environment.gd","tree_blocks.fbx",failures)
  _check_text("res://scripts/forest_village_environment.gd","bridge_center_stone.fbx",failures)
  _check_text("res://scripts/forest_village_environment.gd","ForestChunk_",failures)
