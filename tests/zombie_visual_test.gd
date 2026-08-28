@@ -43,10 +43,10 @@ func _run() -> void:
 		_fail("knockdown animation not mapped: %s" % down_anim)
 		return
 	visual.set("action_lock", 0.0)
-	visual.call("_play_best", ["punch"], false, true)
+	enemy.set("attack_timer", 0.8)
 	await process_frame
 	if "punch" not in String(visual.call("get_current_animation")).to_lower():
-		_fail("punch animation not mapped")
+		_fail("runtime attack did not map to punch: %s" % String(visual.call("get_current_animation")))
 		return
 	var body := enemy.get_node("Body") as Node3D
 	var arm_l := enemy.get_node("ArmL") as Node3D
