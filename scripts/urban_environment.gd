@@ -26,7 +26,6 @@ func _mat(c:Color,r:float)->StandardMaterial3D:var m:=StandardMaterial3D.new();m
 func _build_ground()->void:
  _box("Ground",Vector3(0,-0.18,0),Vector3(district_size.x,0.35,district_size.y),mat_asphalt,true)
  for x in [-road_width*0.5-4.0,road_width*0.5+4.0]:_box("Sidewalk",Vector3(x,0.08,0),Vector3(7.5,0.16,district_size.y-6.0),mat_concrete,true)
- # Frontage slabs close the visual gap between sidewalk and building line.
  for x in [-18.6,18.6]:_box("Frontage",Vector3(x,0.045,0),Vector3(7.3,0.09,district_size.y-6.0),mat_concrete,true)
  for z in range(-100,101,12):_detail_box("LaneMark",Vector3(0,0.012,float(z)),Vector3(0.16,0.018,5.0),mat_concrete,90.0)
 func _build_city()->void:
@@ -37,14 +36,12 @@ func _build_city()->void:
   if asset:asset.position.y=0.15
 func _build_checkpoint()->void:
  _box("Checkpoint",Vector3(0,0.55,5),Vector3(5.5,1.1,0.75),mat_military,true);_box("CheckpointL",Vector3(-4.5,0.55,7),Vector3(3.0,1.1,0.7),mat_military,true,Vector3(0,20,0));_box("CheckpointR",Vector3(4.5,0.55,3),Vector3(3.0,1.1,0.7),mat_military,true,Vector3(0,-20,0))
- # Hazard bands make the combat landmark readable without another texture sampler.
  for x in [-2.0,-1.0,0.0,1.0,2.0]:_detail_box("HazardBand",Vector3(float(x),1.115,5.0),Vector3(0.32,0.018,0.78),mat_warning,55.0,Vector3(0,0,18))
 func _build_vehicles()->void:
  for data in [[Vector3(-3.0,0.18,-72),Vector3(0,12,0)],[Vector3(4.0,0.18,-44),Vector3(0,-8,0)],[Vector3(-3.0,0.18,-20),Vector3(0,12,0)],[Vector3(3.0,0.18,28),Vector3(0,-18,0)],[Vector3(-12.0,0.18,54),Vector3(0,82,0)],[Vector3(11.0,0.18,82),Vector3(0,96,0)]]:_vehicle(data[0],data[1])
 func _vehicle(pos:Vector3,rot:Vector3)->void:
  _collision_box("VehicleCollision",pos+Vector3(0,0.65,0),Vector3(2.0,1.3,4.2),rot);_spawn_asset(CAR_MODELS[vehicle_index%CAR_MODELS.size()],pos,rot,vehicle_visibility_range,"vehicle",float(METRIC_TARGETS["vehicle"]));vehicle_index+=1
 func _build_props()->void:
- # Deliberately irregular placements avoid the previous showroom rhythm.
  for data in [[Vector3(-10.2,0.15,-83),78.0],[Vector3(10.0,0.15,-57),-92.0],[Vector3(-9.4,0.15,-7),103.0],[Vector3(9.8,0.15,20),-76.0],[Vector3(-10.4,0.15,49),95.0],[Vector3(9.1,0.15,77),-88.0]]:_spawn_asset(PROP_MODELS["bench"],data[0],Vector3(0,float(data[1]),0),prop_visibility_range,"prop",float(METRIC_TARGETS["bench"]))
  for data in [[Vector3(6.1,0.15,-69),14.0],[Vector3(-7.4,0.15,-35),-23.0],[Vector3(6.5,0.15,9),31.0],[Vector3(-7.2,0.15,30),-17.0],[Vector3(8.1,0.15,65),46.0]]:_spawn_asset(PROP_MODELS["box_a"],data[0],Vector3(0,float(data[1]),0),prop_visibility_range,"prop",float(METRIC_TARGETS["box"]))
 func _build_cc0_clutter()->void:
@@ -53,7 +50,6 @@ func _build_cc0_clutter()->void:
  for p in [Vector3(-5.7,0.15,3.0),Vector3(-4.9,0.15,4.2),Vector3(4.9,0.15,6.2),Vector3(5.8,0.15,7.0),Vector3(-6.2,0.15,-68.0),Vector3(5.9,0.15,29.0)]:_spawn_asset(CC0_CONE,p,Vector3.ZERO,52.0,"prop",float(METRIC_TARGETS["cone"]))
  for p in [Vector3(-8.0,0.15,-34),Vector3(7.8,0.15,12),Vector3(-8.2,0.15,60),Vector3(7.5,0.15,86)]:_spawn_asset(CC0_BOX_SMALL,p,Vector3(0,20,0),58.0,"prop",float(METRIC_TARGETS["factory_box"]))
 func _build_surface_story()->void:
- # Opaque thin geometry gives road history without alpha overdraw or decal limits.
  var patches:=[ [Vector3(-2.8,0.014,-58),Vector3(3.8,0.018,7.0),-7.0], [Vector3(2.0,0.014,-15),Vector3(5.2,0.018,8.0),11.0], [Vector3(-1.5,0.014,43),Vector3(4.0,0.018,6.0),-14.0], [Vector3(2.8,0.014,78),Vector3(3.3,0.018,5.2),8.0] ]
  for d in patches:_detail_box("RoadPatch",d[0],d[1],mat_patch,72.0,Vector3(0,float(d[2]),0))
  var skid_lines:=[[-2.0,-31.0,-7.0],[-1.45,-31.5,-7.0],[1.8,17.0,9.0],[2.35,17.4,9.0]]
@@ -66,16 +62,14 @@ func _build_debris()->void:
   var s:=Vector3(0.34+0.09*float(i%3),0.18+0.05*float(i%2),0.28+0.07*float((i+1)%3));_detail_box("Rubble",rubble[i],s,mat_rubble,48.0,Vector3(float(i*13%24),float(i*31%180),float(i*7%18)))
  var papers:=[Vector3(-3.7,0.028,-26),Vector3(-2.9,0.028,-25.1),Vector3(4.1,0.028,11.5),Vector3(3.5,0.028,12.3),Vector3(-4.8,0.028,52.0),Vector3(5.2,0.028,74.0),Vector3(4.5,0.028,75.0)]
  for i in range(papers.size()):_detail_box("Paper",papers[i],Vector3(0.34+0.05*float(i%2),0.012,0.24),mat_paper,38.0,Vector3(0,float((i*47)%180),0))
- # Broken metal fragments near the failed checkpoint sell impact while remaining cheap.
  for d in [[Vector3(-3.5,0.16,8.6),Vector3(0.16,0.14,1.4),33.0],[Vector3(4.0,0.12,0.2),Vector3(0.18,0.12,1.0),-26.0],[Vector3(-1.8,0.10,10.2),Vector3(0.12,0.10,0.8),68.0]]:_detail_box("MetalDebris",d[0],d[1],mat_dark_metal,48.0,Vector3(0,float(d[2]),12.0))
 func _build_hero_composition()->void:
- # A wrecked containment pocket frames the objective and creates asymmetric cover silhouettes.
  _box("HeroBarrierL",Vector3(-5.4,0.42,-1.8),Vector3(2.4,0.84,0.55),mat_military,true,Vector3(0,31,0))
  _box("HeroBarrierR",Vector3(5.2,0.42,10.2),Vector3(2.7,0.84,0.55),mat_military,true,Vector3(0,-37,0))
  _detail_box("HeroWarningL",Vector3(-5.4,0.85,-1.8),Vector3(1.9,0.035,0.58),mat_warning,60.0,Vector3(0,31,0))
  _detail_box("HeroWarningR",Vector3(5.2,0.85,10.2),Vector3(2.1,0.035,0.58),mat_warning,60.0,Vector3(0,-37,0))
- # Small rubble piles pull the eye toward the checkpoint instead of uniformly filling the whole street.
- for p in [Vector3(-6.4,0.08,1.0),Vector3(-5.9,0.10,1.6),Vector3(6.1,0.09,8.0),Vector3(5.7,0.07,8.7)]:_detail_box("HeroRubble",p,Vector3(0.42,0.18,0.35),mat_rubble,55.0,Vector3(0,randf_range(-35,35),0))
+ var hero_rubble:=[Vector3(-6.4,0.08,1.0),Vector3(-5.9,0.10,1.6),Vector3(6.1,0.09,8.0),Vector3(5.7,0.07,8.7)]
+ for i in range(hero_rubble.size()):_detail_box("HeroRubble",hero_rubble[i],Vector3(0.42,0.18,0.35),mat_rubble,55.0,Vector3(0,float(-31+i*23),0))
 func _build_boundary()->void:
  var hx:=district_size.x*0.5;var hz:=district_size.y*0.5
  _collision_box("BoundaryN",Vector3(0,1.5,-hz),Vector3(district_size.x,3.0,0.6));_collision_box("BoundaryS",Vector3(0,1.5,hz),Vector3(district_size.x,3.0,0.6));_collision_box("BoundaryW",Vector3(-hx,1.5,0),Vector3(0.6,3.0,district_size.y));_collision_box("BoundaryE",Vector3(hx,1.5,0),Vector3(0.6,3.0,district_size.y))
@@ -96,7 +90,7 @@ func _spawn_asset(path:String,pos:Vector3,rot:=Vector3.ZERO,visibility_end:=0.0,
  if visibility_end>0.0:_apply_visibility_range(instance,visibility_end)
  return instance
 func _detail_box(node_name:String,pos:Vector3,size:Vector3,material:Material,visibility_end:=48.0,rotation_deg:=Vector3.ZERO)->MeshInstance3D:
- var mi:=MeshInstance3D.new();mi.name=node_name;mi.position=pos;mi.rotation_degrees=rotation_deg;var mesh:=BoxMesh.new();mesh.size=size;mi.mesh=mesh;mi.material_override=material;mi.set_meta("budget_class","prop");mi.set_meta("base_visibility_end",visibility_end);add_child(mi);_apply_visibility_range(mi,visibility_end);return mi
+ var mi:=MeshInstance3D.new();mi.name=node_name;mi.position=pos;mi.rotation_degrees=rotation_deg;var mesh:=BoxMesh.new();mesh.size=size;mi.mesh=mesh;mi.material_override=material;mi.set_meta("art_layer",node_name);mi.set_meta("budget_class","prop");mi.set_meta("base_visibility_end",visibility_end);add_child(mi);_apply_visibility_range(mi,visibility_end);return mi
 func _bind_performance_budget()->void:
  var scene:=get_tree().current_scene;if scene==null:return
  performance_budget=scene.get_node_or_null("PerformanceBudget")
