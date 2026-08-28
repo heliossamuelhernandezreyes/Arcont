@@ -30,7 +30,23 @@ func _init()->void:
  if main_packed==null:failures.append("No se pudo cargar main para probar locomoción")
  else:
   var main:=main_packed.instantiate();root.add_child(main);await process_frame;await process_frame
-  var body_visual:=main.get_node_or_null("Player/BodyVisual");var locomotion:=main.get_node_or_null("Player/BodyVisual/LocomotionAnimationPlayer") as AnimationPlayer
+  var body_visual:=main.get_node_or_null("Player/BodyVisual")
+  var operator:=main.get_node_or_null("Player/BodyVisual/OperatorModel") as Node3D
+  if operator==null:failures.append("Falta OperatorModel runtime")
+  else:
+   var s:=operator.scale
+   print("PLAYER MODEL SCALE: ",s)
+   if s.x<0.005 or s.x>0.02 or s.y<0.005 or s.y>0.02 or s.z<0.005 or s.z>0.02:failures.append("Escala del jugador fuera del contrato métrico: "+str(s))
+  var rig:=main.get_node_or_null("Player/CameraRig") as Node3D
+  var arm:=main.get_node_or_null("Player/CameraRig/SpringArm3D") as SpringArm3D
+  var cam:=main.get_node_or_null("Player/CameraRig/SpringArm3D/Camera3D") as Camera3D
+  if rig==null or arm==null or cam==null:failures.append("Falta rig TPS completo")
+  else:
+   print("TPS CONTRACT rig_y=",rig.position.y," arm=",arm.spring_length," cam=",cam.position)
+   if absf(rig.position.y)>0.25:failures.append("CameraRig tiene offset vertical excesivo: "+str(rig.position.y))
+   if arm.spring_length<2.2 or arm.spring_length>5.5:failures.append("SpringArm fuera de rango TPS: "+str(arm.spring_length))
+   if cam.position.y<0.35 or cam.position.y>1.15:failures.append("Altura local de cámara TPS inválida: "+str(cam.position.y))
+  var locomotion:=main.get_node_or_null("Player/BodyVisual/LocomotionAnimationPlayer") as AnimationPlayer
   if locomotion==null:failures.append("No se creó AnimationPlayer de locomoción en runtime")
   else:
    for expected in ["idle","run","jump","targeting_pose"]:
@@ -75,8 +91,14 @@ func _init()->void:
    var attachment:=_find_named(body_visual,"WeaponHandAttachment") as BoneAttachment3D
    if attachment==null:failures.append("No se creó BoneAttachment3D del arma")
    elif attachment.bone_name!="RightHand":failures.append("El arma no está enlazada a RightHand")
+   var mounted_weapon:=_find_named(body_visual,"WeaponMount") as Node3D
+   if mounted_weapon==null:failures.append("Falta WeaponMount runtime")
+   else:
+    var global_scale:=mounted_weapon.global_transform.basis.get_scale()
+    print("WEAPON GLOBAL SCALE: ",global_scale)
+    if global_scale.x<0.45 or global_scale.x>2.2:failures.append("Escala global del arma incoherente: "+str(global_scale))
   main.queue_free();await process_frame
- if failures.is_empty():print("ARCONT RIG: compatibility + filtered ADS AnimationTree OK");quit(0);return
+ if failures.is_empty():print("ARCONT RIG: compatibility + metric scale + TPS framing + filtered ADS AnimationTree OK");quit(0);return
  for failure in failures:push_error("ARCONT RIG: "+failure)
  quit(1)
 func _is_lower_body_track(path:String)->bool:
