@@ -9,26 +9,27 @@ func _init() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
-	var failed := false
-	for path in ZOMBIE_ASSETS:
-		var packed := load(path) as PackedScene
+	var failed: bool = false
+	for path_variant in ZOMBIE_ASSETS:
+		var path: String = String(path_variant)
+		var packed: PackedScene = load(path) as PackedScene
 		if packed == null:
 			push_error("GEOMETRY METRICS: unable to load %s" % path)
 			failed = true
 			continue
-		var instance := packed.instantiate()
+		var instance: Node = packed.instantiate()
 		root.add_child(instance)
 		await process_frame
-		var metrics := _measure_node(instance)
+		var metrics: Dictionary = _measure_node(instance)
 		print("ARCONT_GEOMETRY asset=%s mesh_instances=%d surfaces=%d vertices=%d indices=%d triangles=%d" % [
 			path,
-			metrics.mesh_instances,
-			metrics.surfaces,
-			metrics.vertices,
-			metrics.indices,
-			metrics.triangles,
+			int(metrics["mesh_instances"]),
+			int(metrics["surfaces"]),
+			int(metrics["vertices"]),
+			int(metrics["indices"]),
+			int(metrics["triangles"]),
 		])
-		if metrics.mesh_instances <= 0 or metrics.triangles <= 0:
+		if int(metrics["mesh_instances"]) <= 0 or int(metrics["triangles"]) <= 0:
 			push_error("GEOMETRY METRICS: no drawable triangle geometry found in %s" % path)
 			failed = true
 		instance.queue_free()
@@ -36,7 +37,7 @@ func _run() -> void:
 	quit(1 if failed else 0)
 
 func _measure_node(node: Node) -> Dictionary:
-	var result := {
+	var result: Dictionary = {
 		"mesh_instances": 0,
 		"surfaces": 0,
 		"vertices": 0,
@@ -48,27 +49,27 @@ func _measure_node(node: Node) -> Dictionary:
 
 func _measure_recursive(node: Node, result: Dictionary) -> void:
 	if node is MeshInstance3D:
-		var mesh_instance := node as MeshInstance3D
-		var mesh := mesh_instance.mesh
+		var mesh_instance: MeshInstance3D = node as MeshInstance3D
+		var mesh: Mesh = mesh_instance.mesh
 		if mesh != null:
-			result.mesh_instances += 1
-			for surface in mesh.get_surface_count():
-				result.surfaces += 1
-				var arrays := mesh.surface_get_arrays(surface)
+			result["mesh_instances"] = int(result["mesh_instances"]) + 1
+			for surface: int in range(mesh.get_surface_count()):
+				result["surfaces"] = int(result["surfaces"]) + 1
+				var arrays: Array = mesh.surface_get_arrays(surface)
 				if arrays.size() <= Mesh.ARRAY_INDEX:
 					continue
-				var vertices = arrays[Mesh.ARRAY_VERTEX]
-				var indices = arrays[Mesh.ARRAY_INDEX]
-				var vertex_count := vertices.size() if vertices != null else 0
-				var index_count := indices.size() if indices != null else 0
-				result.vertices += vertex_count
-				result.indices += index_count
-				var primitive := mesh.surface_get_primitive_type(surface)
-				var element_count := index_count if index_count > 0 else vertex_count
+				var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+				var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+				var vertex_count: int = vertices.size()
+				var index_count: int = indices.size()
+				result["vertices"] = int(result["vertices"]) + vertex_count
+				result["indices"] = int(result["indices"]) + index_count
+				var primitive: int = int(mesh.surface_get_primitive_type(surface))
+				var element_count: int = index_count if index_count > 0 else vertex_count
 				match primitive:
 					Mesh.PRIMITIVE_TRIANGLES:
-						result.triangles += element_count / 3
+						result["triangles"] = int(result["triangles"]) + (element_count / 3)
 					Mesh.PRIMITIVE_TRIANGLE_STRIP:
-						result.triangles += max(element_count - 2, 0)
-	for child in node.get_children():
+						result["triangles"] = int(result["triangles"]) + maxi(element_count - 2, 0)
+	for child: Node in node.get_children():
 		_measure_recursive(child, result)
