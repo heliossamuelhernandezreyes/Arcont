@@ -6,6 +6,7 @@ extends Node3D
 @export var animation_blend:=0.16
 @export var run_reference_speed:=6.2
 @export var weapon_bone_name:="RightHand"
+@export_range(0.0,1.0,0.01) var hip_combat_pose_weight:=0.58
 var animation_player:AnimationPlayer
 var animation_tree:AnimationTree
 var state_machine:AnimationNodeStateMachine
@@ -33,10 +34,8 @@ func _ready()->void:
  _setup_animation_player();call_deferred("_bind_weapon_to_hand");call_deferred("_setup_animation_tree")
 func _physics_process(delta:float)->void:
  if player_body==null or animation_tree==null:return
- if state_playback==null:
-  state_playback=animation_tree.get("parameters/locomotion/playback") as AnimationNodeStateMachinePlayback
- if state_playback!=null and not state_playback.is_playing():
-  state_playback.start("idle",true);animation_tree.advance(0.0001);current_state="idle"
+ if state_playback==null:state_playback=animation_tree.get("parameters/locomotion/playback") as AnimationNodeStateMachinePlayback
+ if state_playback!=null and not state_playback.is_playing():state_playback.start("idle",true);animation_tree.advance(0.0001);current_state="idle"
  var speed:=Vector2(player_body.velocity.x,player_body.velocity.z).length();_update_locomotion_input(speed)
  if not player_body.is_on_floor():_play_state("jump")
  elif speed>0.25:_play_state("run");animation_tree.set("parameters/locomotion/run/run_speed/scale",clampf(speed/maxf(run_reference_speed,0.1),0.65,1.45))
@@ -56,12 +55,14 @@ func _weapon_stance()->Dictionary:
   _:return {"hip_pos":Vector3(0.022,-0.038,-0.095),"ads_pos":Vector3(0.014,-0.018,-0.13),"hip_rot":Vector3(-7.0,90.0,-2.0),"ads_rot":Vector3(-3.5,90.0,-0.5)}
 func _update_tactical_pose(delta:float)->void:
  var aiming:=weapon!=null and bool(weapon.get("aiming"));ads_weight=move_toward(ads_weight,1.0 if aiming else 0.0,delta*7.5)
- if animation_tree:animation_tree.set("parameters/ads_layer/blend_amount",ads_weight)
+ var combat_weight:=lerpf(hip_combat_pose_weight,1.0,ads_weight)
+ if animation_tree:animation_tree.set("parameters/ads_layer/blend_amount",combat_weight)
  if weapon_mount:
   var stance:=_weapon_stance();var hip_pos:Vector3=stance["hip_pos"];var ads_pos:Vector3=stance["ads_pos"];var hip_rot:Vector3=stance["hip_rot"];var ads_rot:Vector3=stance["ads_rot"]
   weapon_mount.position=weapon_mount.position.lerp(hip_pos.lerp(ads_pos,ads_weight),clampf(delta*13.0,0.0,1.0));weapon_mount.rotation_degrees=weapon_mount.rotation_degrees.lerp(hip_rot.lerp(ads_rot,ads_weight),clampf(delta*13.0,0.0,1.0))
 func get_locomotion_input()->Vector2:return locomotion_input
 func get_ads_weight()->float:return ads_weight
+func get_combat_pose_weight()->float:return lerpf(hip_combat_pose_weight,1.0,ads_weight)
 func get_ads_filter_track_count()->int:return ads_filter_track_count
 func get_weapon_stance_slot()->int:return int(weapon.get("slot")) if weapon!=null else -1
 func _bind_weapon_to_hand()->void:
@@ -89,13 +90,12 @@ func _setup_animation_tree()->void:
  _connect_state("Start","idle",0.0);_connect_state("idle","run",animation_blend);_connect_state("run","idle",animation_blend);_connect_state("idle","jump",0.08);_connect_state("run","jump",0.08);_connect_state("jump","idle",0.12);_connect_state("jump","run",0.12)
  var root_blend:=AnimationNodeBlendTree.new();root_blend.add_node("locomotion",state_machine,Vector2(-260,0));root_blend.add_node("targeting_pose",_animation_node("targeting_pose"),Vector2(-260,180))
  var ads_layer:=AnimationNodeBlend2.new();ads_layer.filter_enabled=true;root_blend.add_node("ads_layer",ads_layer,Vector2(20,70));root_blend.connect_node("ads_layer",0,"locomotion");root_blend.connect_node("ads_layer",1,"targeting_pose");root_blend.connect_node("output",0,"ads_layer");_configure_ads_filter(ads_layer)
- animation_tree=AnimationTree.new();animation_tree.name="LocomotionAnimationTree";add_child(animation_tree);animation_tree.anim_player=animation_tree.get_path_to(animation_player);animation_tree.tree_root=root_blend;animation_tree.active=true;animation_tree.set("parameters/ads_layer/blend_amount",0.0)
+ animation_tree=AnimationTree.new();animation_tree.name="LocomotionAnimationTree";add_child(animation_tree);animation_tree.anim_player=animation_tree.get_path_to(animation_player);animation_tree.tree_root=root_blend;animation_tree.active=true;animation_tree.set("parameters/ads_layer/blend_amount",hip_combat_pose_weight)
  state_playback=null;call_deferred("_start_locomotion_playback")
 func _start_locomotion_playback()->void:
  if animation_tree==null or not animation_tree.is_inside_tree():return
  state_playback=animation_tree.get("parameters/locomotion/playback") as AnimationNodeStateMachinePlayback
- if state_playback!=null:
-  state_playback.start("idle",true);animation_tree.advance(0.0001);current_state="idle"
+ if state_playback!=null:state_playback.start("idle",true);animation_tree.advance(0.0001);current_state="idle"
 func _configure_ads_filter(layer:AnimationNodeBlend2)->void:
  ads_filter_track_count=0
  if animation_player==null or not animation_player.has_animation("targeting_pose"):return
