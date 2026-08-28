@@ -78,7 +78,7 @@ scale=Vector3(0.01,0.01,0.01)
 [node name="WeaponMount" type="Node3D" parent="Player/BodyVisual"]
 position=Vector3(0.02,-0.03,-0.08)
 rotation_degrees=Vector3(-8,90,-2)
-scale=Vector3(100,100,100)
+scale=Vector3(1,1,1)
 [node name="Gun" type="MeshInstance3D" parent="Player/BodyVisual/WeaponMount"]
 scale=Vector3(0.82,0.82,0.82)
 mesh=SubResource("GunMesh")
