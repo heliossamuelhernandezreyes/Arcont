@@ -2,10 +2,26 @@ name: Godot CI
 
 on:
   push:
-    paths: ['project.godot','export_presets.cfg','assets/**','scenes/**','scripts/**','tests/**','tools/character_generator/**','.github/workflows/godot-ci.yml']
+    paths:
+      - project.godot
+      - export_presets.cfg
+      - assets/**
+      - scenes/**
+      - scripts/**
+      - tests/**
+      - tools/character_generator/**
+      - .github/workflows/godot-ci.yml
   pull_request:
-    paths: ['project.godot','export_presets.cfg','assets/**','scenes/**','scripts/**','tests/**','tools/character_generator/**','.github/workflows/godot-ci.yml']
-  workflow_dispatch:
+    paths:
+      - project.godot
+      - export_presets.cfg
+      - assets/**
+      - scenes/**
+      - scripts/**
+      - tests/**
+      - tools/character_generator/**
+      - .github/workflows/godot-ci.yml
+  workflow_dispatch: {}
 
 jobs:
   validate:
@@ -18,6 +34,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Install Godot 4.7.2
         shell: bash
         run: |
@@ -27,6 +44,7 @@ jobs:
           unzip -q /tmp/godot/godot.zip -d /tmp/godot
           chmod +x "$GODOT_BIN"
           "$GODOT_BIN" --version
+
       - name: Install Godot export templates
         shell: bash
         run: |
@@ -36,40 +54,56 @@ jobs:
           unzip -q /tmp/godot/templates.tpz -d /tmp/godot/templates
           mkdir -p "$HOME/.local/share/godot/export_templates/${TEMPLATE_VERSION}"
           cp -a /tmp/godot/templates/templates/. "$HOME/.local/share/godot/export_templates/${TEMPLATE_VERSION}/"
+
       - name: Import and parse project
         shell: bash
         run: |
           set +e
           "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --editor --quit > import.log 2>&1
-          rc=$?; cat import.log
+          rc=$?
+          cat import.log
           if [ "$rc" -ne 0 ]; then exit "$rc"; fi
           if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" import.log; then exit 1; fi
+          exit 0
+
       - name: Survivor generator contract
         run: python tests/character_generator_test.py
+
       - name: Rig and animation asset test
-        run: "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/rig_asset_test.gd
+        run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/rig_asset_test.gd
+
       - name: Metric asset scale test
-        run: "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/asset_scale_test.gd
+        run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/asset_scale_test.gd
+
       - name: Runtime candidate asset audit
-        run: "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/runtime_candidate_assets_test.gd
+        run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/runtime_candidate_assets_test.gd
+
       - name: Weapon visual contract test
-        run: "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/weapon_visual_test.gd
+        run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/weapon_visual_test.gd
+
       - name: Zombie visual contract test
-        run: "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/zombie_visual_test.gd
+        run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/zombie_visual_test.gd
+
       - name: Zombie geometry metrics
-        run: "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/zombie_geometry_metrics.gd
+        run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/zombie_geometry_metrics.gd
+
       - name: Forest village art contract test
-        run: "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/forest_village_art_test.gd
+        run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/forest_village_art_test.gd
+
       - name: Structural smoke test
-        run: "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/smoke_test.gd
+        run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/smoke_test.gd
+
       - name: Boot main scene briefly
         shell: bash
         run: |
           set +e
           "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --quit-after 120 > boot.log 2>&1
-          rc=$?; cat boot.log
+          rc=$?
+          cat boot.log
           if [ "$rc" -ne 0 ]; then exit "$rc"; fi
           if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" boot.log; then exit 1; fi
+          exit 0
+
       - name: Export Android debug APK
         shell: bash
         env:
@@ -81,10 +115,11 @@ jobs:
           "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --export-debug "Android" build/Arcont-debug.apk | tee android-export.log
           test -s build/Arcont-debug.apk
           ls -lh build/Arcont-debug.apk
+
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
-          name: Arcont-Android-Debug-ForestVillage
+          name: Arcont-Android-Debug-ForestVillage-Polished
           path: build/Arcont-debug.apk
           if-no-files-found: error
           retention-days: 14
