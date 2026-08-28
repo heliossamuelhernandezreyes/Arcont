@@ -36,9 +36,18 @@ var generator_light:OmniLight3D
 var evac_light:OmniLight3D
 var moon_light:DirectionalLight3D
 var emergency_light:OmniLight3D
+var moon_base_energy:=1.65
+var emergency_base_energy:=2.1
 func _ready()->void:
- player=get_parent().get_node("Player") as Node3D;weapon=get_parent().get_node("Player/CameraRig/Camera3D/Weapon");companion=get_parent().get_node_or_null("CompanionRobot")
- objective_label=get_parent().get_node("HUD/Objective") as Label;info_label=get_parent().get_node("HUD/Info") as Label;moon_light=get_parent().get_node_or_null("MoonLight") as DirectionalLight3D;emergency_light=get_parent().get_node_or_null("EmergencyLight") as OmniLight3D
+ player=get_parent().get_node("Player") as Node3D
+ weapon=player.get_node_or_null("Weapon")
+ companion=get_parent().get_node_or_null("CompanionRobot")
+ objective_label=get_parent().get_node("HUD/Objective") as Label
+ info_label=get_parent().get_node("HUD/Info") as Label
+ moon_light=get_parent().get_node_or_null("MoonLight") as DirectionalLight3D
+ emergency_light=get_parent().get_node_or_null("EmergencyLight") as OmniLight3D
+ if moon_light:moon_base_energy=moon_light.light_energy
+ if emergency_light:emergency_base_energy=emergency_light.light_energy
  defend_remaining=defend_duration;_build_objective_props();_set_stage(STAGE_GENERATOR)
 func _process(delta:float)->void:
  if player==null or not is_instance_valid(player):return
@@ -75,11 +84,11 @@ func _trigger_defense_events()->void:
  if elapsed>=22.0 and not xeno_pulse_triggered:xeno_pulse_triggered=true;_trigger_xeno_pulse()
 func _trigger_blackout()->void:
  info_label.text="RADIO // FALLO DE RED\nAPAGON LOCAL · INTERFERENCIA XENOLOGICA"
- if moon_light:moon_light.light_energy=0.18
- if emergency_light:emergency_light.light_energy=0.15
+ if moon_light:moon_light.light_energy=maxf(moon_base_energy*0.20,0.28)
+ if emergency_light:emergency_light.light_energy=maxf(emergency_base_energy*0.20,0.28)
  await get_tree().create_timer(3.2).timeout
- if moon_light:moon_light.light_energy=1.05
- if emergency_light:emergency_light.light_energy=1.8
+ if moon_light:moon_light.light_energy=moon_base_energy
+ if emergency_light:emergency_light.light_energy=emergency_base_energy
 func _spawn_brute_event()->void:
  info_label.text="R-3 // ALERTA DE MASA\nCONTACTO PESADO · CLASIFICACION BRUTE"
  if get_parent().has_method("spawn_brute"):get_parent().spawn_brute()
@@ -121,11 +130,8 @@ func _request_xeno(count:int)->void:
 func _request_stalker(count:int)->void:
  if get_parent().has_method("spawn_xeno_stalkers"):get_parent().spawn_xeno_stalkers(count)
 func _build_objective_props()->void:
- generator_root=_root_prop("MissionGenerator",generator_position,true);supply_root=_root_prop("MissionSupplies",supply_position,false);evac_root=_root_prop("MissionEvac",evac_position,false);_build_generator.call_deferred();_build_supplies.call_deferred();_build_evac.call_deferred()
-func _root_prop(name_value:String,pos:Vector3,visible_value:bool)->Node3D:
- var root:=Node3D.new();root.name=name_value;root.position=pos;root.visible=visible_value;get_parent().add_child.call_deferred(root);return root
-func _build_generator()->void:_prop_box(generator_root,Vector3(0,0.55,0),Vector3(1.5,1.1,1.15),Color(0.12,0.16,0.12));generator_light=OmniLight3D.new();generator_light.position=Vector3(0,1.55,0);generator_light.light_color=Color(1,0.22,0.06);generator_light.light_energy=2.2;generator_light.omni_range=5.0;generator_root.add_child(generator_light)
-func _build_supplies()->void:_prop_box(supply_root,Vector3(0,0.35,0),Vector3(1.25,0.7,0.9),Color(0.16,0.25,0.16))
-func _build_evac()->void:_prop_box(evac_root,Vector3(0,0.08,0),Vector3(4.8,0.16,4.8),Color(0.06,0.14,0.20));evac_light=OmniLight3D.new();evac_light.position=Vector3(0,3.2,0);evac_light.light_color=Color(0.14,0.58,1);evac_light.light_energy=2.8;evac_light.omni_range=8.0;evac_root.add_child(evac_light)
-func _prop_box(parent:Node3D,local_position:Vector3,size:Vector3,color:Color)->void:
- var mi:=MeshInstance3D.new();var mesh:=BoxMesh.new();mesh.size=size;mi.mesh=mesh;mi.position=local_position;var mat:=StandardMaterial3D.new();mat.albedo_color=color;mi.material_override=mat;parent.add_child(mi)
+ generator_root=Node3D.new();generator_root.name="GeneratorObjective";generator_root.position=generator_position;get_parent().add_child.call_deferred(generator_root)
+ generator_light=OmniLight3D.new();generator_light.light_color=Color(0.65,0.12,0.08);generator_light.light_energy=1.8;generator_light.omni_range=8.0;generator_root.add_child(generator_light)
+ supply_root=Node3D.new();supply_root.name="SupplyObjective";supply_root.position=supply_position;supply_root.visible=false;get_parent().add_child.call_deferred(supply_root)
+ evac_root=Node3D.new();evac_root.name="EvacObjective";evac_root.position=evac_position;evac_root.visible=false;get_parent().add_child.call_deferred(evac_root)
+ evac_light=OmniLight3D.new();evac_light.light_color=Color(0.12,0.55,1.0);evac_light.light_energy=2.4;evac_light.omni_range=10.0;evac_light.visible=false;evac_root.add_child(evac_light)
