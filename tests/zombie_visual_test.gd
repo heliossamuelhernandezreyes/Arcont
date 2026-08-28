@@ -30,6 +30,24 @@ func _run() -> void:
 	if names.is_empty():
 		_fail("CC0 zombie imported without animation library")
 		return
+	visual.call("_on_staggered", enemy, 0.25)
+	await process_frame
+	if "recievehit" not in String(visual.call("get_current_animation")).to_lower():
+		_fail("hit reaction animation not mapped: %s" % String(visual.call("get_current_animation")))
+		return
+	visual.set("action_lock", 0.0)
+	visual.call("_on_knocked_down", enemy, 0.60)
+	await process_frame
+	var down_anim := String(visual.call("get_current_animation")).to_lower()
+	if "sitdown" not in down_anim and "defeat" not in down_anim:
+		_fail("knockdown animation not mapped: %s" % down_anim)
+		return
+	visual.set("action_lock", 0.0)
+	visual.call("_play_best", ["punch"], false, true)
+	await process_frame
+	if "punch" not in String(visual.call("get_current_animation")).to_lower():
+		_fail("punch animation not mapped")
+		return
 	var body := enemy.get_node("Body") as Node3D
 	var arm_l := enemy.get_node("ArmL") as Node3D
 	var arm_r := enemy.get_node("ArmR") as Node3D
@@ -51,7 +69,7 @@ func _run() -> void:
 		_fail("intact right arm missing in fallback")
 		return
 	print("CC0 ZOMBIE source=%s extent=%.3f animations=%s" % [source, extent, names])
-	print("ARCONT CC0 ZOMBIE: intact animated shell + anatomical fallback OK")
+	print("ARCONT CC0 ZOMBIE: combat animations + intact shell + anatomical fallback OK")
 	enemy.queue_free()
 	await process_frame
 	quit(0)
