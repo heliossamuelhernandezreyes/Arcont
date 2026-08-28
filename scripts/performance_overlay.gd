@@ -20,7 +20,7 @@ func _process(delta:float)->void:
 func _input(event:InputEvent)->void:
  if event is InputEventKey and event.pressed and not event.echo and event.keycode==KEY_F3:toggle()
  elif event is InputEventScreenTouch and event.pressed:
-  var p:=event.position
+  var p:Vector2=(event as InputEventScreenTouch).position
   if p.x<=150.0 and p.y>=145.0 and p.y<=225.0:toggle()
 
 func toggle()->void:
