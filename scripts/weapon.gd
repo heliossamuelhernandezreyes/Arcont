@@ -10,7 +10,7 @@ signal ads_changed(active:bool)
 signal active_reload_feedback(result:String,stage:int)
 
 @onready var player:CharacterBody3D=get_parent() as CharacterBody3D
-@onready var camera:Camera3D=player.get_node_or_null("CameraRig/Camera3D") as Camera3D
+@onready var camera:Camera3D=player.get_node_or_null("CameraRig/SpringArm3D/Camera3D") as Camera3D
 @onready var gun:MeshInstance3D=player.get_node_or_null("BodyVisual/WeaponMount/Gun") as MeshInstance3D
 
 var profiles:=[
