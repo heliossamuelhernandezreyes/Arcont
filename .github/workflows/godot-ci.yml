@@ -105,6 +105,16 @@ jobs:
           if [ "$rc" -ne 0 ]; then exit "$rc"; fi
           if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" zombies.log; then exit 1; fi
           exit 0
+      - name: Hero street art contract test
+        shell: bash
+        run: |
+          set +e
+          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/hero_street_art_test.gd > hero-street.log 2>&1
+          rc=$?
+          cat hero-street.log
+          if [ "$rc" -ne 0 ]; then exit "$rc"; fi
+          if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" hero-street.log; then exit 1; fi
+          exit 0
       - name: Structural smoke test
         shell: bash
         run: |
