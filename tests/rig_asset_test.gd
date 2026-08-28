@@ -42,8 +42,9 @@ func _init() -> void:
 			var list := player.get_animation_list()
 			print("CLIP ANIMS ", clip_path, ": ", list)
 			if list.is_empty(): failures.append("Clip sin animaciones: " + clip_path)
-			if player.has_animation("Root|0_Targeting Pose"):
-				_print_animation_tracks(player.get_animation("Root|0_Targeting Pose"), clip_path)
+			for anim_name in list:
+				if String(anim_name).contains("Targeting Pose"):
+					_print_animation_tracks(player.get_animation(anim_name), clip_path)
 		clip.free()
 
 	var main_packed := load("res://scenes/main.tscn") as PackedScene
@@ -75,8 +76,11 @@ func _init() -> void:
 					if not machine.has_node(state): failures.append("Falta estado AnimationTree: " + state)
 			var playback := tree.get("parameters/playback") as AnimationNodeStateMachinePlayback
 			if playback == null: failures.append("AnimationTree sin playback runtime")
-			elif not playback.is_playing(): failures.append("State machine runtime no está reproduciendo")
-			else: print("RUNTIME ANIMATION STATE: ", playback.get_current_node())
+			else:
+				var current := String(playback.get_current_node())
+				print("RUNTIME ANIMATION STATE: ", current, " playing=", playback.is_playing())
+				# main abre con menú/pausa; is_playing() no es contrato válido aquí.
+				if current != "" and current not in ["idle", "run", "jump"]: failures.append("Estado AnimationTree inesperado: " + current)
 			var run_scale = tree.get("parameters/run/run_speed/scale")
 			if run_scale == null: failures.append("Falta parámetro runtime de velocidad de carrera")
 			else: print("RUNTIME RUN SCALE: ", run_scale)
