@@ -29,6 +29,7 @@ Start with [art/ART_BIBLE.md](art/ART_BIBLE.md) and use [art/ART_AUDIT_CHECKLIST
 - [art/MOBILE_VISUAL_BUDGETS.md](art/MOBILE_VISUAL_BUDGETS.md) — visual budget framework and benchmark scenes.
 - [art/AI_ASSET_PIPELINE.md](art/AI_ASSET_PIPELINE.md) — generative 3D to production asset pipeline.
 - [art/ART_AUDIT_CHECKLIST.md](art/ART_AUDIT_CHECKLIST.md) — reusable visual/technical review gate.
+- [art/CURRENT_BUILD_ART_AUDIT.md](art/CURRENT_BUILD_ART_AUDIT.md) — audited disposition and production order for the current mobile-playtest-2 visuals.
 - [art/OFFICIAL_SOURCES.md](art/OFFICIAL_SOURCES.md) — primary Godot documentation catalog.
 
 ## Gameplay
