@@ -85,6 +85,16 @@ jobs:
           if [ "$rc" -ne 0 ]; then exit "$rc"; fi
           if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" scale.log; then exit 1; fi
           exit 0
+      - name: Runtime candidate asset audit
+        shell: bash
+        run: |
+          set +e
+          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/runtime_candidate_assets_test.gd > runtime-candidates.log 2>&1
+          rc=$?
+          cat runtime-candidates.log
+          if [ "$rc" -ne 0 ]; then exit "$rc"; fi
+          if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" runtime-candidates.log; then exit 1; fi
+          exit 0
       - name: Weapon visual contract test
         shell: bash
         run: |
