@@ -5,6 +5,7 @@ signal died
 signal injury_changed(zone: String, severity: float)
 signal suppression_changed(value: float)
 signal camera_mode_changed(mode: String)
+signal shoulder_changed(side: float)
 
 @export var walk_speed := 5.5
 @export var sprint_speed := 8.5
@@ -17,14 +18,17 @@ signal camera_mode_changed(mode: String)
 @export var body_turn_speed := 11.0
 @export var aim_turn_speed := 17.0
 @export var max_health := 100.0
+
 @onready var camera_rig: Node3D = $CameraRig
 @onready var weapon: Node = $Weapon
 @onready var body_visual: Node3D = $BodyVisual
 @onready var mobility: Node = $TacticalMobility
+
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var camera_yaw := 0.0
 var pitch := -0.12
 var camera_mode := 0
+var shoulder_side := 1.0
 var mobile_move := Vector2.ZERO
 var mobile_sprint := false
 var mobile_jump_requested := false
@@ -32,6 +36,7 @@ var health := 100.0
 var dead := false
 var injuries := {"head":0.0,"torso":0.0,"left_arm":0.0,"right_arm":0.0,"left_leg":0.0,"right_leg":0.0}
 var suppression := 0.0
+var was_on_floor := true
 
 func _ready() -> void:
  add_to_group("player")
@@ -45,6 +50,7 @@ func _ready() -> void:
 
 func _emit_initial_state() -> void:
  health_changed.emit(health, max_health)
+ shoulder_changed.emit(shoulder_side)
 
 func _unhandled_input(event: InputEvent) -> void:
  if dead:
@@ -53,26 +59,50 @@ func _unhandled_input(event: InputEvent) -> void:
   _apply_look(event.relative * mouse_sensitivity)
  if event.is_action_pressed("reload"):
   request_reload()
- if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_V:
-  cycle_camera_mode()
+ if event is InputEventKey and event.pressed and not event.echo:
+  if event.keycode == KEY_V:
+   cycle_camera_mode()
+  elif event.keycode == KEY_Q:
+   switch_shoulder()
 
 func _physics_process(delta: float) -> void:
  if dead:
   return
  suppression = maxf(suppression - delta * 0.42, 0.0)
+
+ var currently_on_floor := is_on_floor()
+ if mobility and mobility.has_method("record_vertical_speed") and not currently_on_floor:
+  mobility.record_vertical_speed(velocity.y)
+ if currently_on_floor and not was_on_floor and mobility and mobility.has_method("handle_landing"):
+  mobility.handle_landing()
+ was_on_floor = currently_on_floor
+
+ if mobility and mobility.has_method("blocks_normal_movement") and bool(mobility.blocks_normal_movement()):
+  velocity = Vector3.ZERO
+  return
+
  if not is_on_floor():
   velocity.y -= gravity * delta
  elif Input.is_action_just_pressed("jump") or mobile_jump_requested:
-  velocity.y = jump_velocity * clampf(1.0 - _leg_injury_load() * 0.18, 0.62, 1.0)
+  var traversed := false
+  if mobility and mobility.has_method("try_contextual_jump"):
+   traversed = bool(mobility.try_contextual_jump())
+  if not traversed and not (mobility and mobility.has_method("blocks_jump") and bool(mobility.blocks_jump())):
+   velocity.y = jump_velocity * clampf(1.0 - _leg_injury_load() * 0.18, 0.62, 1.0)
  mobile_jump_requested = false
+
  var input_vec := _movement_input()
  var direction := _world_direction(input_vec)
  var sprinting := Input.is_action_pressed("sprint") or mobile_sprint
  var target_speed := (sprint_speed if sprinting else walk_speed) * clampf(1.0 - _leg_injury_load() * 0.22, 0.45, 1.0)
+ if mobility and mobility.has_method("movement_speed_multiplier"):
+  target_speed *= float(mobility.movement_speed_multiplier())
  var target := direction * target_speed
  var accel := acceleration if is_on_floor() else air_acceleration
  velocity.x = move_toward(velocity.x, target.x, accel * delta)
  velocity.z = move_toward(velocity.z, target.z, accel * delta)
+ if mobility and mobility.has_method("apply_motion_override"):
+  mobility.apply_motion_override()
  _update_body_orientation(direction, delta)
  move_and_slide()
 
@@ -100,16 +130,17 @@ func _world_direction(input_vec: Vector2) -> Vector3:
 func _leg_injury_load() -> float:
  return float(injuries["left_leg"]) + float(injuries["right_leg"])
 
+func _arm_injury_load() -> float:
+ return (float(injuries["left_arm"]) + float(injuries["right_arm"])) * 0.5
+
 func get_weapon_spread_multiplier() -> float:
- var arm_load := (float(injuries["left_arm"]) + float(injuries["right_arm"])) * 0.5
- return 1.0 + arm_load * 0.72 + suppression * 0.62
+ return 1.0 + _arm_injury_load() * 0.72 + suppression * 0.62
 
 func get_recoil_multiplier() -> float:
- var arm_load := (float(injuries["left_arm"]) + float(injuries["right_arm"])) * 0.5
- return 1.0 + arm_load * 0.58 + suppression * 0.48
+ return 1.0 + _arm_injury_load() * 0.58 + suppression * 0.48
 
 func get_reload_time_multiplier() -> float:
- return 1.0
+ return 1.0 + _arm_injury_load() * 0.55
 
 func apply_suppression(intensity: float, _hold_time := 0.55) -> void:
  if intensity > 0.0:
@@ -186,6 +217,10 @@ func request_reload() -> void:
 func _try_fire() -> void:
  if not dead and weapon and weapon.has_method("try_fire"):
   weapon.try_fire()
+
+func switch_shoulder() -> void:
+ shoulder_side *= -1.0
+ shoulder_changed.emit(shoulder_side)
 
 func cycle_camera_mode() -> void:
  camera_mode = (camera_mode + 1) % 3
