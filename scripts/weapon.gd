@@ -182,23 +182,4 @@ func _player_controller()->Node:return player
 func _build_weapon_visual()->void:
  if gun==null:return
  gun.mesh=null
- for child in gun.get_children():child.queue_free()
- var steel:=_mat(Color(0.09,0.105,0.12),0.7,0.42);var dark:=_mat(Color(0.025,0.03,0.036),0.75,0.36);var polymer:=_mat(Color(0.11,0.125,0.115),0.08,0.78);var accent:=_mat(Color(0.34,0.17,0.06),0.12,0.64);var blade:=_mat(Color(0.45,0.49,0.52),0.85,0.22)
- match slot:
-  0:
-   _add_box(gun,"DetailReceiver",Vector3.ZERO,Vector3(0.24,0.18,0.54),steel);_add_box(gun,"DetailStock",Vector3(0,-0.01,0.40),Vector3(0.22,0.16,0.34),polymer);_add_cylinder(gun,"DetailBarrel",Vector3(0,0.03,-0.58),0.05,0.92,dark);_add_box(gun,"DetailPump",Vector3(0,-0.07,-0.32),Vector3(0.19,0.14,0.28),accent)
-  1:
-   _add_box(gun,"DetailReceiver",Vector3.ZERO,Vector3(0.22,0.17,0.50),steel);_add_box(gun,"DetailMagazine",Vector3(0,-0.18,-0.04),Vector3(0.14,0.32,0.18),dark);_add_cylinder(gun,"DetailBarrel",Vector3(0,0.03,-0.56),0.035,0.80,dark)
-  2:
-   _add_box(gun,"DetailSlide",Vector3(0,0.03,-0.10),Vector3(0.17,0.12,0.40),steel);_add_box(gun,"DetailGrip",Vector3(0,-0.15,0.07),Vector3(0.14,0.28,0.17),polymer)
-  3:
-   _add_box(gun,"DetailReceiver",Vector3.ZERO,Vector3(0.20,0.16,0.60),steel);_add_box(gun,"DetailStock",Vector3(0,-0.02,0.46),Vector3(0.20,0.16,0.46),accent);_add_cylinder(gun,"DetailLongBarrel",Vector3(0,0.03,-0.80),0.032,1.20,dark);_add_cylinder(gun,"DetailScope",Vector3(0,0.15,-0.12),0.052,0.40,dark);_add_box(gun,"DetailBolt",Vector3(0.14,0.04,0.02),Vector3(0.17,0.05,0.06),steel)
-  _:
-   _add_box(gun,"DetailReceiver",Vector3.ZERO,Vector3(0.21,0.17,0.54),steel);_add_box(gun,"DetailStock",Vector3(0,-0.01,0.42),Vector3(0.20,0.16,0.40),polymer);_add_cylinder(gun,"DetailBarrel",Vector3(0,0.03,-0.62),0.034,0.90,dark);_add_box(gun,"DetailBlade",Vector3(0,-0.035,-1.02),Vector3(0.035,0.08,0.46),blade)
-
-func _mat(color:Color,metallic:float,roughness:float)->StandardMaterial3D:
- var m:=StandardMaterial3D.new();m.albedo_color=color;m.metallic=metallic;m.roughness=roughness;return m
-func _add_box(parent:Node3D,name:String,pos:Vector3,size:Vector3,mat:Material)->void:
- var n:=MeshInstance3D.new();n.name=name;var mesh:=BoxMesh.new();mesh.size=size;n.mesh=mesh;n.material_override=mat;n.position=pos;parent.add_child(n)
-func _add_cylinder(parent:Node3D,name:String,pos:Vector3,radius:float,height:float,mat:Material)->void:
- var n:=MeshInstance3D.new();n.name=name;var mesh:=CylinderMesh.new();mesh.top_radius=radius;mesh.bottom_radius=radius;mesh.height=height;mesh.radial_segments=12;n.mesh=mesh;n.material_override=mat;n.position=pos;n.rotation_degrees.x=90.0;parent.add_child(n)
+ WeaponVisualFactory.build(gun,slot,muzzle)
