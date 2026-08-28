@@ -5,7 +5,7 @@
 [ext_resource path="res://scripts/weapon.gd" type="Script" id="4_weapon"]
 [ext_resource path="res://scripts/performance_budget.gd" type="Script" id="5_budget"]
 [ext_resource path="res://scripts/combat_feedback.gd" type="Script" id="6_feedback"]
-[ext_resource path="res://scripts/urban_environment.gd" type="Script" id="7_environment"]
+[ext_resource path="res://scripts/forest_village_environment.gd" type="Script" id="7_environment"]
 [ext_resource path="res://scripts/mission_director.gd" type="Script" id="8_mission"]
 [ext_resource path="res://scenes/companion_robot.tscn" type="PackedScene" id="9_robot"]
 [ext_resource path="res://scripts/awareness_director.gd" type="Script" id="10_awareness"]
@@ -25,13 +25,18 @@ height=1.8
 size=Vector3(0.16,0.11,0.62)
 [sub_resource type="Environment" id="Env"]
 background_mode=1
-background_color=Color(0.055,0.07,0.095,1)
+background_color=Color(0.025,0.045,0.055,1)
 ambient_light_source=3
-ambient_light_color=Color(0.50,0.58,0.72,1)
-ambient_light_energy=0.82
+ambient_light_color=Color(0.38,0.47,0.52,1)
+ambient_light_energy=0.72
 reflected_light_source=2
 tonemap_mode=2
-fog_enabled=false
+fog_enabled=true
+fog_light_color=Color(0.23,0.30,0.31,1)
+fog_light_energy=0.55
+fog_density=0.006
+fog_height=1.5
+fog_height_density=0.12
 [node name="Main" type="Node3D"]
 script=ExtResource("2_main")
 [node name="PerformanceBudget" type="Node" parent="."]
@@ -42,7 +47,7 @@ script=ExtResource("10_awareness")
 script=ExtResource("11_navigation")
 [node name="CombatFeedback" type="Node" parent="."]
 script=ExtResource("6_feedback")
-[node name="UrbanDistrict" type="Node3D" parent="."]
+[node name="ForestVillage" type="Node3D" parent="."]
 script=ExtResource("7_environment")
 [node name="MissionDirector" type="Node" parent="."]
 script=ExtResource("8_mission")
@@ -51,28 +56,28 @@ script=ExtResource("12_throwables")
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment=SubResource("Env")
 [node name="MoonLight" type="DirectionalLight3D" parent="."]
-rotation_degrees=Vector3(-52,-38,0)
-light_color=Color(0.70,0.79,1,1)
-light_energy=1.45
+rotation_degrees=Vector3(-48,-31,0)
+light_color=Color(0.72,0.82,0.88,1)
+light_energy=1.35
 shadow_enabled=true
-shadow_blur=1.2
+shadow_blur=1.35
 [node name="EmergencyLight" type="OmniLight3D" parent="."]
-position=Vector3(-5.8,3.2,5.5)
-light_color=Color(1,0.29,0.12,1)
-light_energy=4.2
-omni_range=17.0
+position=Vector3(-8,3.2,28)
+light_color=Color(1,0.28,0.10,1)
+light_energy=3.2
+omni_range=14.0
 shadow_enabled=false
 [node name="EmergencyLightFar" type="OmniLight3D" parent="."]
-position=Vector3(6.5,3.0,-22)
-light_color=Color(0.18,0.38,1,1)
-light_energy=2.2
-omni_range=11.0
+position=Vector3(0,3.0,-64)
+light_color=Color(0.16,0.43,1,1)
+light_energy=1.8
+omni_range=10.0
 shadow_enabled=false
 [node name="Enemies" type="Node3D" parent="."]
 [node name="CompanionRobot" parent="." instance=ExtResource("9_robot")]
 position=Vector3(-3.4,0.2,17)
 [node name="Player" type="CharacterBody3D" parent="." groups=["player"]]
-position=Vector3(0,1.05,19)
+position=Vector3(0,1.05,52)
 script=ExtResource("1_player")
 [node name="Collision" type="CollisionShape3D" parent="Player"]
 shape=SubResource("PlayerShape")
@@ -99,12 +104,11 @@ position=Vector3(0,0.35,0)
 target_position=Vector3(0,0,-1.0)
 enabled=true
 [node name="CameraRig" type="Node3D" parent="Player"]
-position=Vector3(0,0,0)
 [node name="SpringArm3D" type="SpringArm3D" parent="Player/CameraRig"]
-spring_length=4.35
+spring_length=5.45
 margin=0.22
 [node name="Camera3D" type="Camera3D" parent="Player/CameraRig/SpringArm3D"]
-position=Vector3(0.88,0.72,0)
+position=Vector3(1.15,0.95,0)
 current=true
 fov=72.0
 near=0.12
@@ -156,7 +160,7 @@ offset_top=14.0
 offset_right=520.0
 offset_bottom=58.0
 theme_override_font_sizes/font_size=12
-text="ARCONT // EVAC-07\nCONTENCION FALLIDA · PRESENCIA XENOLOGICA"
+text="ARCONT // ALDEA 04\nBOSQUE DE CONTENCION · SEÑAL PERDIDA"
 [node name="Objective" type="Label" parent="HUD"]
 offset_left=16.0
 offset_top=128.0
