@@ -36,7 +36,7 @@ func _build_shell() -> void:
 	model_root.name = "CC0ZombieModel"
 	add_child(model_root)
 	model_root.rotation_degrees = Vector3(0.0, 180.0, 0.0)
-	AssetScaleNormalizer.normalize_to_longest_extent(model_root, TARGET_HEIGHT_M)
+	AssetScaleNormalizer.normalize_longest_extent(model_root, TARGET_HEIGHT_M)
 	model_root.set_meta("source_asset", source_asset)
 	model_root.set_meta("art_status", "CC0-PROVISIONAL-HYBRID")
 	model_root.set_meta("metric_target_extent_m", TARGET_HEIGHT_M)
