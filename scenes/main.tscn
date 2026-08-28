@@ -25,11 +25,12 @@ height=1.8
 size=Vector3(0.16,0.11,0.62)
 [sub_resource type="Environment" id="Env"]
 background_mode=1
-background_color=Color(0.075,0.09,0.12,1)
+background_color=Color(0.16,0.19,0.24,1)
 ambient_light_source=3
-ambient_light_color=Color(0.58,0.64,0.74,1)
-ambient_light_energy=1.05
+ambient_light_color=Color(0.72,0.78,0.90,1)
+ambient_light_energy=1.35
 reflected_light_source=2
+tonemap_mode=2
 fog_enabled=false
 [node name="Main" type="Node3D"]
 script=ExtResource("2_main")
@@ -50,15 +51,16 @@ script=ExtResource("12_throwables")
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment=SubResource("Env")
 [node name="MoonLight" type="DirectionalLight3D" parent="."]
-rotation_degrees=Vector3(-50,-28,0)
-light_color=Color(0.84,0.89,1,1)
-light_energy=1.65
+rotation_degrees=Vector3(-48,-32,0)
+light_color=Color(0.90,0.94,1,1)
+light_energy=2.2
 shadow_enabled=true
+shadow_blur=1.5
 [node name="EmergencyLight" type="OmniLight3D" parent="."]
 position=Vector3(-6,3.5,5)
-light_color=Color(1,0.52,0.31,1)
-light_energy=2.1
-omni_range=12.0
+light_color=Color(1,0.46,0.28,1)
+light_energy=2.6
+omni_range=14.0
 [node name="Enemies" type="Node3D" parent="."]
 [node name="CompanionRobot" parent="." instance=ExtResource("9_robot")]
 position=Vector3(-3.4,0.2,17)
@@ -72,9 +74,11 @@ position=Vector3(0,-0.9,0)
 script=ExtResource("13_character_visual")
 [node name="OperatorModel" parent="Player/BodyVisual" instance=ExtResource("14_operator")]
 rotation_degrees=Vector3(0,180,0)
+scale=Vector3(0.01,0.01,0.01)
 [node name="WeaponMount" type="Node3D" parent="Player/BodyVisual"]
 position=Vector3(0.02,-0.03,-0.08)
 rotation_degrees=Vector3(-8,90,-2)
+scale=Vector3(100,100,100)
 [node name="Gun" type="MeshInstance3D" parent="Player/BodyVisual/WeaponMount"]
 scale=Vector3(0.82,0.82,0.82)
 mesh=SubResource("GunMesh")
@@ -88,15 +92,15 @@ position=Vector3(0,0.35,0)
 target_position=Vector3(0,0,-1.0)
 enabled=true
 [node name="CameraRig" type="Node3D" parent="Player"]
-position=Vector3(0,1.15,0)
+position=Vector3(0,0,0)
 [node name="SpringArm3D" type="SpringArm3D" parent="Player/CameraRig"]
-spring_length=6.0
-margin=0.18
+spring_length=4.35
+margin=0.22
 [node name="Camera3D" type="Camera3D" parent="Player/CameraRig/SpringArm3D"]
-position=Vector3(1.22,1.18,0)
+position=Vector3(0.88,0.72,0)
 current=true
 fov=72.0
-near=0.08
+near=0.12
 [node name="Weapon" type="Node" parent="Player"]
 script=ExtResource("4_weapon")
 [node name="VisualAnimator" type="Node" parent="Player/Weapon"]
