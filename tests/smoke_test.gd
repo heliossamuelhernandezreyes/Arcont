@@ -28,30 +28,21 @@ func _init()->void:
  for method in ["_update_generator","_update_defense","_trigger_defense_events","_spawn_brute_event","_request_reinforcements","_request_ranged","_request_xeno","_request_stalker","_collect_supplies","_complete_mission","_objective_world_position","_objective_distance"]:_check_script_method("res://scripts/mission_director.gd",method,failures)
  for method in ["_start_next_wave","spawn_reinforcements","spawn_ranged_enemies","spawn_xeno_lancers","spawn_xeno_stalkers","spawn_brute","_spawn_position_for","_on_weapon_changed"]:_check_script_method("res://scripts/main.gd",method,failures)
  for method in ["get_animation_quality","get_animation_update_interval","_apply_tier"]:_check_script_method("res://scripts/performance_budget.gd",method,failures)
- for method in ["_apply_skin_recursive","_update_procedural","_quality_interval","_setup_animation_player","_import_clip","_play_state","_bind_weapon_to_hand","_find_skeleton"]:_check_script_method("res://scripts/provisional_character_visual.gd",method,failures)
+ for method in ["_apply_skin_recursive","_update_procedural","_quality_interval","_setup_animation_player","_setup_animation_tree","_animation_node","_connect_state","_import_clip","_play_state","_bind_weapon_to_hand","_find_skeleton"]:_check_script_method("res://scripts/provisional_character_visual.gd",method,failures)
  for method in ["show_pause","toggle_pause","_sensitivity_changed"]:_check_script_method("res://scripts/main_menu.gd",method,failures)
- _check_text("res://scripts/weapon.gd","CameraRig/SpringArm3D/Camera3D",failures)
- _check_text("res://scripts/weapon.gd","if DisplayServer.is_touchscreen_available():return",failures)
- _check_text("res://scripts/mobile_controls.gd","get_viewport().set_input_as_handled()",failures)
- _check_text("res://scripts/mobile_controls.gd","\"camera\":if player.has_method(\"cycle_camera_mode\")",failures)
- _check_text("res://scripts/mobile_controls.gd","\"menu\":if menu and menu.has_method(\"toggle_pause\")",failures)
- _check_text("res://project.godot","pointing/emulate_mouse_from_touch=false",failures)
- _check_text("res://project.godot","pointing/emulate_touch_from_mouse=false",failures)
- _check_text("res://project.godot","buffering/agile_event_flushing=true",failures)
- _check_text("res://scripts/urban_environment.gd","building_A.fbx",failures)
- _check_text("res://scripts/urban_environment.gd","car_police.fbx",failures)
- _check_text("res://scripts/urban_environment.gd","_collision_box(\"BuildingCollision\"",failures)
+ _check_text("res://scripts/weapon.gd","CameraRig/SpringArm3D/Camera3D",failures);_check_text("res://scripts/weapon.gd","if DisplayServer.is_touchscreen_available():return",failures)
+ _check_text("res://scripts/mobile_controls.gd","get_viewport().set_input_as_handled()",failures);_check_text("res://scripts/mobile_controls.gd","\"camera\":if player.has_method(\"cycle_camera_mode\")",failures);_check_text("res://scripts/mobile_controls.gd","\"menu\":if menu and menu.has_method(\"toggle_pause\")",failures)
+ _check_text("res://project.godot","pointing/emulate_mouse_from_touch=false",failures);_check_text("res://project.godot","pointing/emulate_touch_from_mouse=false",failures);_check_text("res://project.godot","buffering/agile_event_flushing=true",failures)
+ _check_text("res://scripts/urban_environment.gd","building_A.fbx",failures);_check_text("res://scripts/urban_environment.gd","car_police.fbx",failures);_check_text("res://scripts/urban_environment.gd","_collision_box(\"BuildingCollision\"",failures)
  _check_text("res://scripts/third_person_ads.gd","spring_arm.add_excluded_object(player.get_rid())",failures)
- _check_text("res://scripts/provisional_character_visual.gd","BoneAttachment3D.new()",failures)
+ _check_text("res://scripts/provisional_character_visual.gd","BoneAttachment3D.new()",failures);_check_text("res://scripts/provisional_character_visual.gd","AnimationNodeStateMachine.new()",failures);_check_text("res://scripts/provisional_character_visual.gd","AnimationTree.new()",failures);_check_text("res://scripts/provisional_character_visual.gd","state_playback.travel(state)",failures)
  if failures.is_empty():print("ARCONT CI: smoke test OK");quit(0);return
  for failure in failures:push_error("ARCONT CI: "+failure)
  quit(1)
-
 func _check_scene(path:String,required_nodes:Array,failures:Array[String])->void:
  var packed:=load(path) as PackedScene
  if packed==null:failures.append("No se pudo cargar "+path);return
- var instance:=packed.instantiate()
- if instance==null:failures.append("No se pudo instanciar "+path);return
+ var instance:=packed.instantiate();if instance==null:failures.append("No se pudo instanciar "+path);return
  for node_path in required_nodes:
   if instance.get_node_or_null(String(node_path))==null:failures.append(path+" no contiene nodo requerido: "+String(node_path))
  instance.free()
@@ -62,14 +53,11 @@ func _check_absent(path:String,forbidden_nodes:Array,failures:Array[String])->vo
   if instance.get_node_or_null(String(node_path))!=null:failures.append(path+" conserva nodo FPS prohibido: "+String(node_path))
  instance.free()
 func _check_script_method(path:String,method_name:String,failures:Array[String])->void:
- var script:=load(path) as Script
- if script==null:failures.append("No se pudo cargar script "+path);return
+ var script:=load(path) as Script;if script==null:failures.append("No se pudo cargar script "+path);return
  var found:=false
  for method in script.get_script_method_list():
   if String(method.get("name",""))==method_name:found=true;break
  if not found:failures.append(path+" no contiene método requerido: "+method_name)
 func _check_text(path:String,needle:String,failures:Array[String])->void:
- var file:=FileAccess.open(path,FileAccess.READ)
- if file==null:failures.append("No se pudo leer "+path);return
- var text:=file.get_as_text()
- if text.find(needle)<0:failures.append(path+" no contiene contrato requerido: "+needle)
+ var file:=FileAccess.open(path,FileAccess.READ);if file==null:failures.append("No se pudo leer "+path);return
+ var text:=file.get_as_text();if text.find(needle)<0:failures.append(path+" no contiene contrato requerido: "+needle)
