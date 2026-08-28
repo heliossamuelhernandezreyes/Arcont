@@ -9,6 +9,7 @@ var companion:Node=null
 var throwables:Node=null
 var weapon:Node=null
 var melee:Node=null
+var menu:Node=null
 var claims:Dictionary={}
 var move_touch:=-1
 var look_touch:=-1
@@ -24,6 +25,7 @@ func _process(delta:float)->void:
  if reload_feedback_timer>0.0:reload_feedback_timer=maxf(0.0,reload_feedback_timer-delta);queue_redraw()
 func _bind_player()->void:
  player=get_tree().get_first_node_in_group("player");companion=get_tree().get_first_node_in_group("friendly_companion");throwables=get_tree().get_first_node_in_group("throwable_controller")
+ if get_tree().current_scene:menu=get_tree().current_scene.get_node_or_null("MainMenu")
  if player==null and get_tree().current_scene:player=get_tree().current_scene.get_node_or_null("Player")
  if player:weapon=player.get_node_or_null("Weapon");melee=player.get_node_or_null("MeleeCombat")
  _bind_weapon_feedback()
@@ -58,6 +60,7 @@ func _claim_touch(index:int,p:Vector2)->void:
   "throw":if throwables and throwables.has_method("mobile_throw"):throwables.mobile_throw()
   "command":if companion and companion.has_method("cycle_command"):companion.cycle_command()
   "camera":if player.has_method("cycle_camera_mode"):player.cycle_camera_mode()
+  "menu":if menu and menu.has_method("toggle_pause"):menu.toggle_pause()
 func _action_at(p:Vector2)->String:
  var size:=get_viewport_rect().size
  if p.distance_to(_fire_center())<=button_radius*1.20:return "fire"
@@ -71,6 +74,7 @@ func _action_at(p:Vector2)->String:
  if p.distance_to(_throw_center())<=button_radius*0.72:return "throw"
  if p.distance_to(_command_center())<=button_radius*0.72:return "command"
  if p.distance_to(_camera_center())<=button_radius*0.72:return "camera"
+ if p.distance_to(_menu_center())<=button_radius*0.72:return "menu"
  if p.x<size.x*0.36 and p.y>size.y*0.38 and move_touch<0:return "move"
  if p.x>=size.x*0.36 and look_touch<0:return "look"
  return "none"
@@ -100,7 +104,7 @@ func _draw()->void:
  var size:=get_viewport_rect().size;var stick:=move_origin if move_touch>=0 else Vector2(120,size.y-120);var knob:=stick+move_vector*joystick_radius*0.62
  draw_circle(stick,joystick_radius,Color(0.10,0.12,0.16,0.20));draw_arc(stick,joystick_radius,0,TAU,36,Color(0.8,0.85,0.95,0.30),2.0);draw_circle(knob,joystick_radius*0.28,Color(0.85,0.9,1,0.32))
  _draw_button(_fire_center(),button_radius*1.05,"FIRE");_draw_button(_ads_center(),button_radius*0.82,"ADS");_draw_button(_jump_center(),button_radius*0.78,"JUMP");_draw_button(_crouch_center(),button_radius*0.70,"CRCH");_draw_button(_dodge_center(),button_radius*0.70,"DODGE");_draw_button(_melee_center(),button_radius*0.78,_melee_label())
- _draw_button(_reload_center(),button_radius*0.58,"RLD");_draw_button(_weapon_center(),button_radius*0.58,"WPN");_draw_button(_throw_center(),button_radius*0.58,"THR");_draw_button(_command_center(),button_radius*0.58,"R3");_draw_button(_camera_center(),button_radius*0.58,"CAM");_draw_active_reload()
+ _draw_button(_reload_center(),button_radius*0.58,"RLD");_draw_button(_weapon_center(),button_radius*0.58,"WPN");_draw_button(_throw_center(),button_radius*0.58,"THR");_draw_button(_command_center(),button_radius*0.58,"R3");_draw_button(_camera_center(),button_radius*0.58,"CAM");_draw_button(_menu_center(),button_radius*0.58,"MENU");_draw_active_reload()
 func _draw_button(c:Vector2,r:float,label:String)->void:
  draw_circle(c,r,Color(0.12,0.15,0.20,0.22));draw_arc(c,r,0,TAU,30,Color(0.86,0.91,1,0.42),2.0);var f:=ThemeDB.fallback_font;var fs:=12;var w:=f.get_string_size(label,HORIZONTAL_ALIGNMENT_LEFT,-1,fs).x;draw_string(f,c+Vector2(-w*0.5,4),label,HORIZONTAL_ALIGNMENT_LEFT,-1,fs,Color(0.96,0.98,1,0.82))
 func _draw_active_reload()->void:
@@ -118,8 +122,9 @@ func _jump_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x-
 func _crouch_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x-270,s.y-76)
 func _dodge_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x-190,s.y-170)
 func _melee_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x-82,s.y-310)
-func _reload_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.50,58)
-func _weapon_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.57,58)
-func _throw_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.64,58)
-func _command_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.71,58)
-func _camera_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.78,58)
+func _reload_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.47,58)
+func _weapon_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.54,58)
+func _throw_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.61,58)
+func _command_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.68,58)
+func _camera_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.75,58)
+func _menu_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.82,58)
