@@ -9,18 +9,9 @@ var companion:Node=null
 var throwables:Node=null
 var weapon:Node=null
 var melee:Node=null
+var claims:Dictionary={}
 var move_touch:=-1
 var look_touch:=-1
-var fire_touch:=-1
-var ads_touch:=-1
-var jump_touch:=-1
-var crouch_touch:=-1
-var dodge_touch:=-1
-var reload_touch:=-1
-var weapon_touch:=-1
-var throw_touch:=-1
-var command_touch:=-1
-var melee_touch:=-1
 var move_origin:=Vector2.ZERO
 var move_vector:=Vector2.ZERO
 var touch_enabled:=false
@@ -44,57 +35,72 @@ func _on_active_reload_feedback(result:String,_stage:int)->void:reload_feedback_
 func _input(event:InputEvent)->void:
  if not touch_enabled:return
  if player==null or not is_instance_valid(player):_bind_player();if player==null:return
- if event is InputEventScreenTouch:_handle_touch(event)
- elif event is InputEventScreenDrag:_handle_drag(event)
+ if event is InputEventScreenTouch:_handle_touch(event);get_viewport().set_input_as_handled()
+ elif event is InputEventScreenDrag:_handle_drag(event);get_viewport().set_input_as_handled()
 func _handle_touch(event:InputEventScreenTouch)->void:
- if event.pressed:_assign_touch(event.index,event.position)
+ if event.pressed:_claim_touch(event.index,event.position)
  else:_release_touch(event.index)
  queue_redraw()
-func _assign_touch(index:int,p:Vector2)->void:
- if p.distance_to(_fire_center())<=button_radius*1.25 and fire_touch<0:fire_touch=index;if weapon and weapon.has_method("set_trigger"):weapon.set_trigger(true);return
- if p.distance_to(_ads_center())<=button_radius and ads_touch<0:ads_touch=index;if weapon and weapon.has_method("set_ads"):weapon.set_ads(true);return
- if p.distance_to(_jump_center())<=button_radius and jump_touch<0:jump_touch=index;if player.has_method("request_mobile_jump"):player.request_mobile_jump();return
- if p.distance_to(_crouch_center())<=button_radius and crouch_touch<0:crouch_touch=index;if player.has_method("request_crouch"):player.request_crouch();return
- if p.distance_to(_dodge_center())<=button_radius and dodge_touch<0:dodge_touch=index;if player.has_method("request_dodge"):player.request_dodge();return
- if p.distance_to(_melee_center())<=button_radius and melee_touch<0:melee_touch=index;if melee and melee.has_method("begin_guard"):melee.begin_guard(p);return
- if p.distance_to(_reload_center())<=button_radius*0.72 and reload_touch<0:reload_touch=index;if player.has_method("request_reload"):player.request_reload();return
- if p.distance_to(_weapon_center())<=button_radius*0.72 and weapon_touch<0:weapon_touch=index;if weapon and weapon.has_method("cycle_weapon"):weapon.cycle_weapon();return
- if p.distance_to(_throw_center())<=button_radius*0.72 and throw_touch<0:throw_touch=index;if throwables and throwables.has_method("mobile_throw"):throwables.mobile_throw();return
- if p.distance_to(_command_center())<=button_radius*0.72 and command_touch<0:command_touch=index;if companion and companion.has_method("cycle_command"):companion.cycle_command();return
+func _claim_touch(index:int,p:Vector2)->void:
+ if claims.has(index):return
+ var action:=_action_at(p);claims[index]=action
+ match action:
+  "move":move_touch=index;move_origin=p;move_vector=Vector2.ZERO;if player.has_method("set_mobile_move"):player.set_mobile_move(Vector2.ZERO)
+  "look":look_touch=index
+  "fire":if weapon and weapon.has_method("set_trigger"):weapon.set_trigger(true)
+  "ads":if weapon and weapon.has_method("set_ads"):weapon.set_ads(true)
+  "jump":if player.has_method("request_mobile_jump"):player.request_mobile_jump()
+  "crouch":if player.has_method("request_crouch"):player.request_crouch()
+  "dodge":if player.has_method("request_dodge"):player.request_dodge()
+  "melee":if melee and melee.has_method("begin_guard"):melee.begin_guard(p)
+  "reload":if player.has_method("request_reload"):player.request_reload()
+  "weapon":if weapon and weapon.has_method("cycle_weapon"):weapon.cycle_weapon()
+  "throw":if throwables and throwables.has_method("mobile_throw"):throwables.mobile_throw()
+  "command":if companion and companion.has_method("cycle_command"):companion.cycle_command()
+  "camera":if player.has_method("cycle_camera_mode"):player.cycle_camera_mode()
+func _action_at(p:Vector2)->String:
  var size:=get_viewport_rect().size
- if p.x<size.x*0.36 and p.y>size.y*0.40 and move_touch<0:move_touch=index;move_origin=p;move_vector=Vector2.ZERO;if player.has_method("set_mobile_move"):player.set_mobile_move(move_vector);return
- if p.x>=size.x*0.36 and look_touch<0:look_touch=index
+ if p.distance_to(_fire_center())<=button_radius*1.20:return "fire"
+ if p.distance_to(_ads_center())<=button_radius*0.95:return "ads"
+ if p.distance_to(_jump_center())<=button_radius*0.90:return "jump"
+ if p.distance_to(_crouch_center())<=button_radius*0.82:return "crouch"
+ if p.distance_to(_dodge_center())<=button_radius*0.82:return "dodge"
+ if p.distance_to(_melee_center())<=button_radius*0.92:return "melee"
+ if p.distance_to(_reload_center())<=button_radius*0.72:return "reload"
+ if p.distance_to(_weapon_center())<=button_radius*0.72:return "weapon"
+ if p.distance_to(_throw_center())<=button_radius*0.72:return "throw"
+ if p.distance_to(_command_center())<=button_radius*0.72:return "command"
+ if p.distance_to(_camera_center())<=button_radius*0.72:return "camera"
+ if p.x<size.x*0.36 and p.y>size.y*0.38 and move_touch<0:return "move"
+ if p.x>=size.x*0.36 and look_touch<0:return "look"
+ return "none"
 func _handle_drag(event:InputEventScreenDrag)->void:
- if event.index==move_touch:
-  move_vector=((event.position-move_origin)/joystick_radius).limit_length(1.0)
-  if player.has_method("set_mobile_move"):player.set_mobile_move(move_vector)
-  if player.has_method("set_mobile_sprint"):player.set_mobile_sprint(move_vector.length()>=auto_sprint_threshold)
-  queue_redraw()
- elif event.index==melee_touch:
-  if melee and melee.has_method("update_guard_drag"):melee.update_guard_drag(event.position)
- elif event.index==look_touch and player.has_method("add_mobile_look"):player.add_mobile_look(event.relative)
+ var action:=String(claims.get(event.index,"none"))
+ match action:
+  "move":
+   move_vector=((event.position-move_origin)/joystick_radius).limit_length(1.0)
+   if player.has_method("set_mobile_move"):player.set_mobile_move(move_vector)
+   if player.has_method("set_mobile_sprint"):player.set_mobile_sprint(move_vector.length()>=auto_sprint_threshold)
+   queue_redraw()
+  "melee":if melee and melee.has_method("update_guard_drag"):melee.update_guard_drag(event.position)
+  "look":if player.has_method("add_mobile_look"):player.add_mobile_look(event.relative)
 func _release_touch(index:int)->void:
- if index==move_touch:
-  move_touch=-1;move_vector=Vector2.ZERO
-  if player and player.has_method("set_mobile_move"):player.set_mobile_move(Vector2.ZERO)
-  if player and player.has_method("set_mobile_sprint"):player.set_mobile_sprint(false)
- elif index==look_touch:look_touch=-1
- elif index==fire_touch:fire_touch=-1;if weapon and weapon.has_method("set_trigger"):weapon.set_trigger(false)
- elif index==ads_touch:ads_touch=-1;if weapon and weapon.has_method("set_ads"):weapon.set_ads(false)
- elif index==jump_touch:jump_touch=-1
- elif index==crouch_touch:crouch_touch=-1
- elif index==dodge_touch:dodge_touch=-1
- elif index==reload_touch:reload_touch=-1
- elif index==weapon_touch:weapon_touch=-1
- elif index==throw_touch:throw_touch=-1
- elif index==command_touch:command_touch=-1
- elif index==melee_touch:melee_touch=-1;if melee and melee.has_method("release_attack"):melee.release_attack()
+ var action:=String(claims.get(index,"none"));claims.erase(index)
+ match action:
+  "move":
+   if index==move_touch:move_touch=-1;move_vector=Vector2.ZERO
+   if player and player.has_method("set_mobile_move"):player.set_mobile_move(Vector2.ZERO)
+   if player and player.has_method("set_mobile_sprint"):player.set_mobile_sprint(false)
+  "look":if index==look_touch:look_touch=-1
+  "fire":if weapon and weapon.has_method("set_trigger"):weapon.set_trigger(false)
+  "ads":if weapon and weapon.has_method("set_ads"):weapon.set_ads(false)
+  "melee":if melee and melee.has_method("release_attack"):melee.release_attack()
 func _draw()->void:
  if not touch_enabled:return
  var size:=get_viewport_rect().size;var stick:=move_origin if move_touch>=0 else Vector2(120,size.y-120);var knob:=stick+move_vector*joystick_radius*0.62
  draw_circle(stick,joystick_radius,Color(0.10,0.12,0.16,0.20));draw_arc(stick,joystick_radius,0,TAU,36,Color(0.8,0.85,0.95,0.30),2.0);draw_circle(knob,joystick_radius*0.28,Color(0.85,0.9,1,0.32))
  _draw_button(_fire_center(),button_radius*1.05,"FIRE");_draw_button(_ads_center(),button_radius*0.82,"ADS");_draw_button(_jump_center(),button_radius*0.78,"JUMP");_draw_button(_crouch_center(),button_radius*0.70,"CRCH");_draw_button(_dodge_center(),button_radius*0.70,"DODGE");_draw_button(_melee_center(),button_radius*0.78,_melee_label())
- _draw_button(_reload_center(),button_radius*0.58,"RLD");_draw_button(_weapon_center(),button_radius*0.58,"WPN");_draw_button(_throw_center(),button_radius*0.58,"THR");_draw_button(_command_center(),button_radius*0.58,"R3");_draw_active_reload()
+ _draw_button(_reload_center(),button_radius*0.58,"RLD");_draw_button(_weapon_center(),button_radius*0.58,"WPN");_draw_button(_throw_center(),button_radius*0.58,"THR");_draw_button(_command_center(),button_radius*0.58,"R3");_draw_button(_camera_center(),button_radius*0.58,"CAM");_draw_active_reload()
 func _draw_button(c:Vector2,r:float,label:String)->void:
  draw_circle(c,r,Color(0.12,0.15,0.20,0.22));draw_arc(c,r,0,TAU,30,Color(0.86,0.91,1,0.42),2.0);var f:=ThemeDB.fallback_font;var fs:=12;var w:=f.get_string_size(label,HORIZONTAL_ALIGNMENT_LEFT,-1,fs).x;draw_string(f,c+Vector2(-w*0.5,4),label,HORIZONTAL_ALIGNMENT_LEFT,-1,fs,Color(0.96,0.98,1,0.82))
 func _draw_active_reload()->void:
@@ -112,8 +118,8 @@ func _jump_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x-
 func _crouch_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x-270,s.y-76)
 func _dodge_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x-190,s.y-170)
 func _melee_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x-82,s.y-310)
-func _reload_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.53,58)
-func _weapon_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.60,58)
-func _throw_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.67,58)
-func _command_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.74,58)
-func _throw_cycle_center()->Vector2:return _throw_center()
+func _reload_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.50,58)
+func _weapon_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.57,58)
+func _throw_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.64,58)
+func _command_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.71,58)
+func _camera_center()->Vector2:var s:=get_viewport_rect().size;return Vector2(s.x*0.78,58)
