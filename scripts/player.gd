@@ -14,6 +14,8 @@ signal camera_mode_changed(mode: String)
 @export var mouse_sensitivity := 0.0022
 @export var mobile_look_sensitivity := 0.0040
 @export var mobile_invert_y := false
+@export var body_turn_speed := 11.0
+@export var aim_turn_speed := 17.0
 @export var max_health := 100.0
 @onready var camera_rig: Node3D = $CameraRig
 @onready var weapon: Node = $Weapon
@@ -71,9 +73,19 @@ func _physics_process(delta: float) -> void:
  var accel := acceleration if is_on_floor() else air_acceleration
  velocity.x = move_toward(velocity.x, target.x, accel * delta)
  velocity.z = move_toward(velocity.z, target.z, accel * delta)
- if direction.length_squared() > 0.02 and not bool(weapon.get("aiming")):
-  body_visual.look_at(body_visual.global_position + direction, Vector3.UP)
+ _update_body_orientation(direction, delta)
  move_and_slide()
+
+func _update_body_orientation(direction: Vector3, delta: float) -> void:
+ var aiming := weapon != null and bool(weapon.get("aiming"))
+ var target_yaw := body_visual.rotation.y
+ var turn_speed := body_turn_speed
+ if aiming:
+  target_yaw = camera_yaw
+  turn_speed = aim_turn_speed
+ elif direction.length_squared() > 0.02:
+  target_yaw = atan2(-direction.x, -direction.z)
+ body_visual.rotation.y = lerp_angle(body_visual.rotation.y, target_yaw, clampf(delta * turn_speed, 0.0, 1.0))
 
 func _movement_input() -> Vector2:
  var keyboard := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
@@ -83,7 +95,7 @@ func _movement_input() -> Vector2:
 
 func _world_direction(input_vec: Vector2) -> Vector3:
  var yaw_basis := Basis(Vector3.UP, camera_yaw)
- return (yaw_basis.x * input_vec.x + (-yaw_basis.z) * -input_vec.y).normalized()
+ return (yaw_basis.x * input_vec.x + yaw_basis.z * input_vec.y).normalized()
 
 func _leg_injury_load() -> float:
  return float(injuries["left_leg"]) + float(injuries["right_leg"])
@@ -186,6 +198,9 @@ func camera_mode_name() -> String:
 func camera_distance_scale() -> float:
  var scales: Array[float] = [1.0, 0.72, 1.42]
  return scales[camera_mode]
+
+func set_mobile_look_sensitivity(value: float) -> void:
+ mobile_look_sensitivity = clampf(value, 0.0015, 0.0090)
 
 func _on_weapon_recoil(recoil_pitch_value: float, recoil_yaw_value: float) -> void:
  camera_yaw += recoil_yaw_value
