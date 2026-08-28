@@ -30,7 +30,7 @@ func _ready()->void:
   weapon=player_body.get_node_or_null("Weapon")
   weapon_mount=get_node_or_null("WeaponMount") as Node3D
  var texture:=load(skin_path) as Texture2D;if texture!=null:_apply_skin_recursive(self,texture)
- _bind_weapon_to_hand();_setup_animation_player();call_deferred("_setup_animation_tree")
+ _setup_animation_player();call_deferred("_bind_weapon_to_hand");call_deferred("_setup_animation_tree")
 func _physics_process(delta:float)->void:
  if player_body==null or animation_tree==null:return
  if state_playback==null:
