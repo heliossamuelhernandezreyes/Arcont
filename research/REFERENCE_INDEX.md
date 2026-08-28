@@ -17,6 +17,20 @@ This branch is Arcont's isolated, persistent research/audit workspace and techni
 - [godot/resources_architecture.md](godot/resources_architecture.md)
 - [godot/audio.md](godot/audio.md)
 
+## Visual art and production quality
+Start with [art/ART_BIBLE.md](art/ART_BIBLE.md) and use [art/ART_AUDIT_CHECKLIST.md](art/ART_AUDIT_CHECKLIST.md) for reviews.
+- [art/ART_BIBLE.md](art/ART_BIBLE.md) — visual pillars, hierarchy and quality states.
+- [art/CHARACTERS.md](art/CHARACTERS.md) — silhouette, topology, rigging, materials, anatomy and LOD.
+- [art/ENVIRONMENT_ART.md](art/ENVIRONMENT_ART.md) — modular urban art, composition, tactical readability and destruction.
+- [art/MATERIALS_PBR.md](art/MATERIALS_PBR.md) — PBR authoring and mobile material policy.
+- [art/LIGHTING.md](art/LIGHTING.md) — lighting hierarchy, mobile constraints, tonemapping and calibration.
+- [art/VFX.md](art/VFX.md) — weapon, gore and gameplay VFX with mobile limits.
+- [art/ANIMATION_QUALITY.md](art/ANIMATION_QUALITY.md) — locomotion, combat, traversal and retargeting quality.
+- [art/MOBILE_VISUAL_BUDGETS.md](art/MOBILE_VISUAL_BUDGETS.md) — visual budget framework and benchmark scenes.
+- [art/AI_ASSET_PIPELINE.md](art/AI_ASSET_PIPELINE.md) — generative 3D to production asset pipeline.
+- [art/ART_AUDIT_CHECKLIST.md](art/ART_AUDIT_CHECKLIST.md) — reusable visual/technical review gate.
+- [art/OFFICIAL_SOURCES.md](art/OFFICIAL_SOURCES.md) — primary Godot documentation catalog.
+
 ## Gameplay
 - [gameplay/game_feel.md](gameplay/game_feel.md)
 - [gameplay/damage_anatomy_gore.md](gameplay/damage_anatomy_gore.md)
@@ -71,6 +85,7 @@ This branch is Arcont's isolated, persistent research/audit workspace and techni
 - Urban mobile levels need explicit visibility/LOD/occlusion strategy.
 - AI navigation, perception and decision work should be budgeted rather than uniformly updated every frame.
 - Anatomical damage is more valuable when it changes gameplay capability rather than acting as cosmetic gore alone.
+- Visual quality must be evaluated through metric scale, silhouette, material response, lighting and mobile performance rather than asset-source prestige or raw polygon count.
 
 ## Maintenance contract
 For normal Arcont work, consult the relevant topic files first. Perform focused external research only when the lab is missing or has stale evidence, then add the useful result here. Full research sweeps are reserved for major engine/platform changes and explicit audits.
