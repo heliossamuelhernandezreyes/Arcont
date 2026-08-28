@@ -40,11 +40,10 @@ jobs:
           cp "$CBASE/GLTF/LampPostTrachCanBench.gltf" "$DST/street_clutter/GLTF/"
           cp -a "$CBASE/Textures/." "$DST/street_clutter/Textures/"
 
-          FROOT="$SRC/environment_factory/kenney_factory_kit"
-          FBASE="$FROOT/Models/GLB format"
+          FBASE="$SRC/environment_factory/kenney_factory_kit/Models/GLB format"
           cp "$FBASE/cone.glb" "$DST/factory/"
           cp "$FBASE/box-small.glb" "$DST/factory/"
-          cp "$FROOT/Models/Textures/colormap.png" "$DST/factory/Textures/colormap.png"
+          cp "$FBASE/Textures/colormap.png" "$DST/factory/Textures/colormap.png"
 
           cat > "$DST/README.md" <<'EOF'
           # Arcont selected CC0 runtime assets
