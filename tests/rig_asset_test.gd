@@ -79,8 +79,8 @@ func _init() -> void:
 			else:
 				var current := String(playback.get_current_node())
 				print("RUNTIME ANIMATION STATE: ", current, " playing=", playback.is_playing())
-				# main abre con menú/pausa; is_playing() no es contrato válido aquí.
-				if current != "" and current not in ["idle", "run", "jump"]: failures.append("Estado AnimationTree inesperado: " + current)
+				# main abre con menú y árbol pausado: Start es el pseudoestado válido antes del primer frame de juego.
+				if current != "" and current not in ["Start", "idle", "run", "jump"]: failures.append("Estado AnimationTree inesperado: " + current)
 			var run_scale = tree.get("parameters/run/run_speed/scale")
 			if run_scale == null: failures.append("Falta parámetro runtime de velocidad de carrera")
 			else: print("RUNTIME RUN SCALE: ", run_scale)
