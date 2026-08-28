@@ -8,8 +8,8 @@ extends Node3D
 const CAR_MODELS:=["res://assets/provisional/city/car_hatchback.fbx","res://assets/provisional/city/car_police.fbx","res://assets/provisional/city/car_sedan.fbx","res://assets/provisional/city/car_stationwagon.fbx"]
 const BUILDINGS:=["res://assets/provisional/city/building_A.fbx","res://assets/provisional/city/building_B.fbx","res://assets/provisional/city/building_C.fbx","res://assets/provisional/city/building_D.fbx"]
 const PROP_MODELS:={"bench":"res://assets/provisional/city/bench.fbx","box_a":"res://assets/provisional/city/box_A.fbx","box_b":"res://assets/provisional/city/box_B.fbx","bush":"res://assets/provisional/city/bush.fbx"}
-const CC0_STREET_CLUSTER:="res://assets/cc0_staging/vendor/props_street_clutter/loafbrr_street_clutter/GLTF/LampPostTrachCanBench.gltf"
-const CC0_FACTORY_BASE:="res://assets/cc0_staging/vendor/environment_factory/kenney_factory_kit/Models/GLB format/"
+const CC0_STREET_CLUSTER:="res://assets/provisional/cc0_runtime/street_clutter/GLTF/LampPostTrachCanBench.gltf"
+const CC0_FACTORY_BASE:="res://assets/provisional/cc0_runtime/factory/"
 const CC0_CONE:=CC0_FACTORY_BASE+"cone.glb"
 const CC0_BOX_SMALL:=CC0_FACTORY_BASE+"box-small.glb"
 const METRIC_TARGETS:={"building":16.0,"vehicle":4.5,"bench":2.0,"box":1.0,"bush":1.5,"street_cluster":5.0,"cone":0.75,"factory_box":1.0}
