@@ -25,10 +25,10 @@ height=1.8
 size=Vector3(0.16,0.11,0.62)
 [sub_resource type="Environment" id="Env"]
 background_mode=1
-background_color=Color(0.16,0.19,0.24,1)
+background_color=Color(0.055,0.07,0.095,1)
 ambient_light_source=3
-ambient_light_color=Color(0.72,0.78,0.90,1)
-ambient_light_energy=1.35
+ambient_light_color=Color(0.50,0.58,0.72,1)
+ambient_light_energy=0.82
 reflected_light_source=2
 tonemap_mode=2
 fog_enabled=false
@@ -51,16 +51,23 @@ script=ExtResource("12_throwables")
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment=SubResource("Env")
 [node name="MoonLight" type="DirectionalLight3D" parent="."]
-rotation_degrees=Vector3(-48,-32,0)
-light_color=Color(0.90,0.94,1,1)
-light_energy=2.2
+rotation_degrees=Vector3(-52,-38,0)
+light_color=Color(0.70,0.79,1,1)
+light_energy=1.45
 shadow_enabled=true
-shadow_blur=1.5
+shadow_blur=1.2
 [node name="EmergencyLight" type="OmniLight3D" parent="."]
-position=Vector3(-6,3.5,5)
-light_color=Color(1,0.46,0.28,1)
-light_energy=2.6
-omni_range=14.0
+position=Vector3(-5.8,3.2,5.5)
+light_color=Color(1,0.29,0.12,1)
+light_energy=4.2
+omni_range=17.0
+shadow_enabled=false
+[node name="EmergencyLightFar" type="OmniLight3D" parent="."]
+position=Vector3(6.5,3.0,-22)
+light_color=Color(0.18,0.38,1,1)
+light_energy=2.2
+omni_range=11.0
+shadow_enabled=false
 [node name="Enemies" type="Node3D" parent="."]
 [node name="CompanionRobot" parent="." instance=ExtResource("9_robot")]
 position=Vector3(-3.4,0.2,17)
