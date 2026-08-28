@@ -80,7 +80,7 @@ func _quality_interval()->float:
  if budget and budget.has_method("get_animation_update_interval"):return float(budget.get_animation_update_interval())
  return 1.0/30.0 if OS.has_feature("mobile") else 0.0
 func _setup_animation_player()->void:
- animation_player=AnimationPlayer.new();animation_player.name="LocomotionAnimationPlayer";animation_player.root_node=NodePath("OperatorModel");add_child(animation_player)
+ animation_player=AnimationPlayer.new();animation_player.name="LocomotionAnimationPlayer";add_child(animation_player);animation_player.root_node=NodePath("../OperatorModel")
  var library:=AnimationLibrary.new();animation_player.add_animation_library("",library);_import_clip(library,idle_clip,"Root|Idle","idle",true);_import_clip(library,run_clip,"Root|Run","run",true);_import_clip(library,jump_clip,"Root|Jump","jump",false);_import_clip(library,idle_clip,"Root|0_Targeting Pose","targeting_pose",true)
 func _setup_animation_tree()->void:
  if animation_player==null or not is_inside_tree():return
