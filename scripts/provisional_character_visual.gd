@@ -33,6 +33,8 @@ func _ready()->void:
  _bind_weapon_to_hand();_setup_animation_player();call_deferred("_setup_animation_tree")
 func _physics_process(delta:float)->void:
  if player_body==null or animation_tree==null:return
+ if state_playback==null:
+  state_playback=animation_tree.get("parameters/locomotion/playback") as AnimationNodeStateMachinePlayback
  if state_playback!=null and not state_playback.is_playing():
   state_playback.start("idle",true);current_state="idle"
  var speed:=Vector2(player_body.velocity.x,player_body.velocity.z).length();_update_locomotion_input(speed)
@@ -83,13 +85,17 @@ func _setup_animation_player()->void:
 func _setup_animation_tree()->void:
  if animation_player==null or not is_inside_tree():return
  state_machine=AnimationNodeStateMachine.new();state_machine.add_node("idle",_animation_node("idle"),Vector2(0,0))
- var run_scale:=AnimationNodeTimeScale.new();var run_tree:=AnimationNodeBlendTree.new();run_tree.add_node("run_anim",_animation_node("run"),Vector2(-120,0));run_tree.add_node("run_speed",run_scale,Vector2(80,0));run_tree.connect_node("run_speed",0,"run_anim");run_tree.connect_node("output",0,"run_speed");state_machine.add_node("run",run_tree,Vector2(220,0));state_machine.add_node("jump",_animation_node("jump"),Vector2(110,-150));state_machine.set_start_node("idle")
+ var run_scale:=AnimationNodeTimeScale.new();var run_tree:=AnimationNodeBlendTree.new();run_tree.add_node("run_anim",_animation_node("run"),Vector2(-120,0));run_tree.add_node("run_speed",run_scale,Vector2(80,0));run_tree.connect_node("run_speed",0,"run_anim");run_tree.connect_node("output",0,"run_speed");state_machine.add_node("run",run_tree,Vector2(220,0));state_machine.add_node("jump",_animation_node("jump"),Vector2(110,-150))
  _connect_state("idle","run",animation_blend);_connect_state("run","idle",animation_blend);_connect_state("idle","jump",0.08);_connect_state("run","jump",0.08);_connect_state("jump","idle",0.12);_connect_state("jump","run",0.12)
  var root_blend:=AnimationNodeBlendTree.new();root_blend.add_node("locomotion",state_machine,Vector2(-260,0));root_blend.add_node("targeting_pose",_animation_node("targeting_pose"),Vector2(-260,180))
  var ads_layer:=AnimationNodeBlend2.new();ads_layer.filter_enabled=true;root_blend.add_node("ads_layer",ads_layer,Vector2(20,70));root_blend.connect_node("ads_layer",0,"locomotion");root_blend.connect_node("ads_layer",1,"targeting_pose");root_blend.connect_node("output",0,"ads_layer");_configure_ads_filter(ads_layer)
  animation_tree=AnimationTree.new();animation_tree.name="LocomotionAnimationTree";add_child(animation_tree);animation_tree.anim_player=animation_tree.get_path_to(animation_player);animation_tree.tree_root=root_blend;animation_tree.active=true;animation_tree.set("parameters/ads_layer/blend_amount",0.0)
+ state_playback=null;call_deferred("_start_locomotion_playback")
+func _start_locomotion_playback()->void:
+ if animation_tree==null or not animation_tree.is_inside_tree():return
  state_playback=animation_tree.get("parameters/locomotion/playback") as AnimationNodeStateMachinePlayback
- if state_playback!=null:state_playback.start("idle",true);current_state="idle"
+ if state_playback!=null:
+  state_playback.start("idle",true);current_state="idle"
 func _configure_ads_filter(layer:AnimationNodeBlend2)->void:
  ads_filter_track_count=0
  if animation_player==null or not animation_player.has_animation("targeting_pose"):return
