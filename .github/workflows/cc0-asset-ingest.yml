@@ -160,4 +160,7 @@ jobs:
           git add assets/cc0_staging
           if git diff --cached --quiet; then echo 'No asset changes to commit.'; exit 0; fi
           git commit -m 'assets: additive ingest of reusable CC0 library'
+          # The branch may receive documentation/catalog commits while downloads run.
+          # Rebase the generated asset commit instead of overwriting or force-pushing history.
+          git pull --rebase origin assets/cc0-staging
           git push origin HEAD:assets/cc0-staging
