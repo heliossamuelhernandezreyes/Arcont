@@ -1,8 +1,9 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource path="res://scripts/enemy.gd" type="Script" id="1_enemy"]
 [ext_resource path="res://scripts/zombie_visual_animator.gd" type="Script" id="2_anim"]
 [ext_resource path="res://scripts/zombie_melee_attack.gd" type="Script" id="3_melee"]
+[ext_resource path="res://scripts/zombie_cc0_visual.gd" type="Script" id="4_cc0"]
 
 [sub_resource type="CapsuleShape3D" id="EnemyShape"]
 radius = 0.45
@@ -50,6 +51,8 @@ emission_energy_multiplier = 0.35
 script = ExtResource("1_enemy")
 [node name="VisualAnimator" type="Node" parent="."]
 script = ExtResource("2_anim")
+[node name="CC0Visual" type="Node3D" parent="."]
+script = ExtResource("4_cc0")
 [node name="MeleeAttack" type="Node" parent="."]
 script = ExtResource("3_melee")
 [node name="Collision" type="CollisionShape3D" parent="."]
