@@ -1,12 +1,12 @@
 extends Node
 class_name ThirdPersonADS
 
-@export var hip_distance := 4.35
-@export var hip_height := 0.72
-@export var hip_shoulder := 0.88
-@export var ads_distance := 2.65
-@export var ads_height := 0.66
-@export var ads_shoulder := 0.68
+@export var hip_distance := 5.60
+@export var hip_height := 0.95
+@export var hip_shoulder := 1.15
+@export var ads_distance := 2.85
+@export var ads_height := 0.74
+@export var ads_shoulder := 0.78
 @export var transition_speed := 12.0
 @export var collision_margin := 0.22
 
@@ -28,6 +28,14 @@ func _ready() -> void:
  if spring_arm:
   spring_arm.margin = collision_margin
   spring_arm.add_excluded_object(player.get_rid())
+ _force_tactical_startup()
+
+func _force_tactical_startup()->void:
+ if player==null or spring_arm==null or camera==null:return
+ player.set("camera_mode",0);player.set("shoulder_side",1.0)
+ if weapon!=null and weapon.has_method("set_ads"):weapon.set_ads(false)
+ var target:=_camera_target(false,1.0)
+ spring_arm.spring_length=target.z;camera.position=Vector3(target.x,target.y,0.0)
 
 func _physics_process(delta: float) -> void:
  if player == null or camera == null or camera_rig == null or spring_arm == null or weapon == null:
