@@ -1,0 +1,67 @@
+name: CC0 Runtime Promote
+
+on:
+  push:
+    branches: [feat/cc0-provisional-art-pass]
+    paths:
+      - '.github/workflows/cc0-runtime-promote.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout integration branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/cc0-provisional-art-pass
+      - name: Promote selected runtime assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC='assets/cc0_staging/vendor'
+          DST='assets/provisional/cc0_runtime'
+          rm -rf "$DST"
+          mkdir -p "$DST/weapons" "$DST/street_clutter/GLTF" "$DST/street_clutter/Textures" "$DST/factory"
+
+          WBASE="$SRC/weapons/quaternius_ultimate_guns/Ultimate Gun Pack - July 2019/FBX"
+          cp "$WBASE/Shotgun_1.fbx" "$DST/weapons/"
+          cp "$WBASE/AssaultRifle2_1.fbx" "$DST/weapons/"
+          cp "$WBASE/Pistol_1.fbx" "$DST/weapons/"
+          cp "$WBASE/SniperRifle_1.fbx" "$DST/weapons/"
+          cp "$WBASE/AssaultRifle_5.fbx" "$DST/weapons/"
+          cp "$WBASE/Accessories/Bayonet.fbx" "$DST/weapons/"
+
+          CBASE="$SRC/props_street_clutter/loafbrr_street_clutter"
+          cp "$CBASE/GLTF/LampPostTrachCanBench.gltf" "$DST/street_clutter/GLTF/"
+          cp -a "$CBASE/Textures/." "$DST/street_clutter/Textures/"
+
+          FBASE="$SRC/environment_factory/kenney_factory_kit/Models/GLB format"
+          cp "$FBASE/cone.glb" "$DST/factory/"
+          cp "$FBASE/box-small.glb" "$DST/factory/"
+
+          cat > "$DST/README.md" <<'EOF'
+          # Arcont selected CC0 runtime assets
+          This folder contains only assets promoted from `assets/cc0_staging` for active Godot runtime use.
+          Source warehouse is ignored by Godot. Promotion requires source/license audit and metric/runtime tests.
+          - Weapons: Quaternius Ultimate Gun Pack — CC0.
+          - Street clutter: loafbrr LampPost/TrashCan/Bench — CC0.
+          - Factory cone/box: Kenney Factory Kit — CC0.
+          Status: PROVISIONAL / not final Arcont art.
+          EOF
+
+          touch assets/cc0_staging/.gdignore
+      - name: Commit promotion
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/cc0_staging/.gdignore assets/provisional/cc0_runtime
+          git diff --cached --quiet && exit 0
+          git commit -m 'assets: promote selected CC0 runtime library and ignore staging warehouse'
+          git push origin HEAD:feat/cc0-provisional-art-pass
