@@ -8,6 +8,7 @@ extends Node3D
 const CAR_MODELS:=["res://assets/provisional/city/car_hatchback.fbx","res://assets/provisional/city/car_police.fbx","res://assets/provisional/city/car_sedan.fbx","res://assets/provisional/city/car_stationwagon.fbx"]
 const BUILDINGS:=["res://assets/provisional/city/building_A.fbx","res://assets/provisional/city/building_B.fbx","res://assets/provisional/city/building_C.fbx","res://assets/provisional/city/building_D.fbx"]
 const PROP_MODELS:={"bench":"res://assets/provisional/city/bench.fbx","box_a":"res://assets/provisional/city/box_A.fbx","box_b":"res://assets/provisional/city/box_B.fbx","bush":"res://assets/provisional/city/bush.fbx"}
+const METRIC_TARGETS:={"building":16.0,"vehicle":4.5,"bench":2.0,"box":1.0,"bush":1.5}
 var mat_asphalt:StandardMaterial3D;var mat_concrete:StandardMaterial3D;var mat_building:StandardMaterial3D;var mat_military:StandardMaterial3D;var mat_boundary:StandardMaterial3D;var vehicle_index:=0
 var performance_budget:Node
 func _ready()->void:
@@ -22,7 +23,7 @@ func _build_ground()->void:
 func _build_city()->void:
  var placements:=[[-24.0,-96.0,0],[-23.0,-76.0,2],[-22.0,-54.0,0],[-22.0,-34.0,1],[-23.0,-12.0,2],[-22.0,16.0,3],[-22.0,42.0,0],[-22.0,66.0,2],[-23.0,90.0,1],[24.0,-96.0,3],[22.0,-76.0,0],[22.0,-55.0,1],[23.0,-31.0,3],[22.0,-7.0,0],[22.0,20.0,2],[23.0,45.0,1],[22.0,68.0,3],[24.0,92.0,2]]
  for d in placements:
-  var pos:=Vector3(float(d[0]),0.15,float(d[1]));var asset:=_spawn_asset(BUILDINGS[int(d[2])],pos,Vector3(0,90 if pos.x<0 else -90,0),Vector3.ONE,building_visibility_range,"building")
+  var pos:=Vector3(float(d[0]),0.15,float(d[1]));var asset:=_spawn_asset(BUILDINGS[int(d[2])],pos,Vector3(0,90 if pos.x<0 else -90,0),building_visibility_range,"building",float(METRIC_TARGETS["building"]))
   _collision_box("BuildingCollision",pos+Vector3(0,4.5,0),Vector3(15.0,9.0,16.0))
   if asset:asset.position.y=0.15
 func _build_checkpoint()->void:
@@ -30,10 +31,10 @@ func _build_checkpoint()->void:
 func _build_vehicles()->void:
  for data in [[Vector3(-3.0,0.18,-72),Vector3(0,12,0)],[Vector3(4.0,0.18,-44),Vector3(0,-8,0)],[Vector3(-3.0,0.18,-20),Vector3(0,12,0)],[Vector3(3.0,0.18,28),Vector3(0,-18,0)],[Vector3(-12.0,0.18,54),Vector3(0,82,0)],[Vector3(11.0,0.18,82),Vector3(0,96,0)]]:_vehicle(data[0],data[1])
 func _vehicle(pos:Vector3,rot:Vector3)->void:
- _collision_box("VehicleCollision",pos+Vector3(0,0.65,0),Vector3(2.0,1.3,4.2),rot);_spawn_asset(CAR_MODELS[vehicle_index%CAR_MODELS.size()],pos,rot,Vector3.ONE,vehicle_visibility_range,"vehicle");vehicle_index+=1
+ _collision_box("VehicleCollision",pos+Vector3(0,0.65,0),Vector3(2.0,1.3,4.2),rot);_spawn_asset(CAR_MODELS[vehicle_index%CAR_MODELS.size()],pos,rot,vehicle_visibility_range,"vehicle",float(METRIC_TARGETS["vehicle"]));vehicle_index+=1
 func _build_props()->void:
- for p in [Vector3(-9,0.15,-82),Vector3(9,0.15,-58),Vector3(-9,0.15,-5),Vector3(9,0.15,18),Vector3(-9,0.15,48),Vector3(9,0.15,76)]:_spawn_asset(PROP_MODELS["bench"],p,Vector3(0,90,0),Vector3.ONE,prop_visibility_range,"prop")
- for p in [Vector3(6,0.15,-70),Vector3(-7,0.15,-36),Vector3(6,0.15,8),Vector3(-7,0.15,31),Vector3(8,0.15,64)]:_spawn_asset(PROP_MODELS["box_a"],p,Vector3.ZERO,Vector3.ONE,prop_visibility_range,"prop")
+ for p in [Vector3(-9,0.15,-82),Vector3(9,0.15,-58),Vector3(-9,0.15,-5),Vector3(9,0.15,18),Vector3(-9,0.15,48),Vector3(9,0.15,76)]:_spawn_asset(PROP_MODELS["bench"],p,Vector3(0,90,0),prop_visibility_range,"prop",float(METRIC_TARGETS["bench"]))
+ for p in [Vector3(6,0.15,-70),Vector3(-7,0.15,-36),Vector3(6,0.15,8),Vector3(-7,0.15,31),Vector3(8,0.15,64)]:_spawn_asset(PROP_MODELS["box_a"],p,Vector3.ZERO,prop_visibility_range,"prop",float(METRIC_TARGETS["box"]))
 func _build_boundary()->void:
  var hx:=district_size.x*0.5;var hz:=district_size.y*0.5
  _collision_box("BoundaryN",Vector3(0,1.5,-hz),Vector3(district_size.x,3.0,0.6));_collision_box("BoundaryS",Vector3(0,1.5,hz),Vector3(district_size.x,3.0,0.6));_collision_box("BoundaryW",Vector3(-hx,1.5,0),Vector3(0.6,3.0,district_size.y));_collision_box("BoundaryE",Vector3(hx,1.5,0),Vector3(0.6,3.0,district_size.y))
@@ -42,20 +43,15 @@ func _build_points()->void:
  for i in points.size():var marker:=Marker3D.new();marker.name="EnemySpawn%02d"%i;marker.position=points[i];marker.add_to_group("enemy_spawn");add_child(marker)
  var cover_points:Array[Vector3]=[]
  for i in range(-8,9):cover_points.append(Vector3(-5 if i%2==0 else 5,0.2,float(i)*11.0))
- cover_points.append_array([
-  Vector3(-2.8,0.2,4.0),Vector3(2.8,0.2,6.0),Vector3(-5.4,0.2,8.2),Vector3(5.4,0.2,1.8),
-  Vector3(-4.6,0.2,-72.0),Vector3(-1.4,0.2,-72.0),Vector3(2.4,0.2,-44.0),Vector3(5.7,0.2,-44.0),
-  Vector3(-4.5,0.2,-20.0),Vector3(-1.3,0.2,-20.0),Vector3(1.4,0.2,28.0),Vector3(4.8,0.2,28.0),
-  Vector3(-12.0,0.2,51.5),Vector3(-12.0,0.2,56.5),Vector3(11.0,0.2,79.5),Vector3(11.0,0.2,84.5),
-  Vector3(-13.5,0.2,-54.0),Vector3(13.5,0.2,-55.0),Vector3(-13.5,0.2,42.0),Vector3(13.5,0.2,45.0)
- ])
+ cover_points.append_array([Vector3(-2.8,0.2,4.0),Vector3(2.8,0.2,6.0),Vector3(-5.4,0.2,8.2),Vector3(5.4,0.2,1.8),Vector3(-4.6,0.2,-72.0),Vector3(-1.4,0.2,-72.0),Vector3(2.4,0.2,-44.0),Vector3(5.7,0.2,-44.0),Vector3(-4.5,0.2,-20.0),Vector3(-1.3,0.2,-20.0),Vector3(1.4,0.2,28.0),Vector3(4.8,0.2,28.0),Vector3(-12.0,0.2,51.5),Vector3(-12.0,0.2,56.5),Vector3(11.0,0.2,79.5),Vector3(11.0,0.2,84.5),Vector3(-13.5,0.2,-54.0),Vector3(13.5,0.2,-55.0),Vector3(-13.5,0.2,42.0),Vector3(13.5,0.2,45.0)])
  for i in cover_points.size():_add_cover_marker(cover_points[i],i)
 func _add_cover_marker(pos:Vector3,index:int)->void:
  var marker:=Marker3D.new();marker.name="TacticalCover%02d"%index;marker.position=pos;marker.add_to_group("tactical_cover");add_child(marker)
-func _spawn_asset(path:String,pos:Vector3,rot:=Vector3.ZERO,scale_value:=Vector3.ONE,visibility_end:=0.0,budget_class:="prop")->Node3D:
+func _spawn_asset(path:String,pos:Vector3,rot:=Vector3.ZERO,visibility_end:=0.0,budget_class:="prop",target_extent_m:=0.0)->Node3D:
  var packed:=load(path) as PackedScene;if packed==null:return null
  var instance:=packed.instantiate() as Node3D;if instance==null:return null
- instance.position=pos;instance.rotation_degrees=rot;instance.scale=scale_value;instance.set_meta("budget_class",budget_class);instance.set_meta("base_visibility_end",visibility_end);add_child(instance)
+ instance.position=pos;instance.rotation_degrees=rot;instance.scale=Vector3.ONE;instance.set_meta("budget_class",budget_class);instance.set_meta("base_visibility_end",visibility_end);instance.set_meta("asset_source",path);add_child(instance)
+ if target_extent_m>0.0:AssetScaleNormalizer.normalize_longest_extent(instance,target_extent_m)
  if visibility_end>0.0:_apply_visibility_range(instance,visibility_end)
  return instance
 func _bind_performance_budget()->void:
