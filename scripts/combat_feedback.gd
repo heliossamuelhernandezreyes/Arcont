@@ -6,7 +6,7 @@ extends Node
 @export var blood_lifetime:=0.35
 @export var shake_decay:=10.0
 @export var mobile_effect_scale:=0.65
-@onready var camera:Camera3D=$"../Player/CameraRig/Camera3D"
+@onready var camera:Camera3D=$"../Player/CameraRig/SpringArm3D/Camera3D"
 @onready var hitmarker:Label=$"../HUD/HitMarker"
 @onready var muzzle:OmniLight3D=$"../Player/BodyVisual/WeaponMount/MuzzleFlash"
 var hitmarker_timer:=0.0
