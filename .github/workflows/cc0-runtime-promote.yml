@@ -41,21 +41,27 @@ jobs:
 
           if [ -d "$SRC/realistic_infected/rikindle3d_male_city_zombie" ]; then
             rm -rf "$DST/zombies/realistic_city_candidate"/*
-            cp -a "$SRC/realistic_infected/rikindle3d_male_city_zombie/." "$DST/zombies/realistic_city_candidate/"
+            find "$SRC/realistic_infected/rikindle3d_male_city_zombie" -maxdepth 1 -type f \
+              \( -iname '*.fbx' -o -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.txt' -o -iname '*.md' \) \
+              -exec cp '{}' "$DST/zombies/realistic_city_candidate/" \;
           fi
 
           if [ -d "$SRC/mobile_infected_reference/lucian_pavel_mobile_zombie" ]; then
             rm -rf "$DST/zombies/mobile_reference"/*
-            cp -a "$SRC/mobile_infected_reference/lucian_pavel_mobile_zombie/." "$DST/zombies/mobile_reference/"
+            find "$SRC/mobile_infected_reference/lucian_pavel_mobile_zombie" -maxdepth 1 -type f \
+              \( -iname '*.fbx' -o -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.txt' -o -iname '*.md' \) \
+              -exec cp '{}' "$DST/zombies/mobile_reference/" \;
           fi
 
           if [ -d "$SRC/human_scale_characters/quaternius_universal_base_candidate_mirror" ]; then
             rm -rf "$DST/characters/human_scale_candidate"/*
-            cp -a "$SRC/human_scale_characters/quaternius_universal_base_candidate_mirror/." "$DST/characters/human_scale_candidate/"
+            find "$SRC/human_scale_characters/quaternius_universal_base_candidate_mirror" -maxdepth 1 -type f \
+              \( -iname '*.glb' -o -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.txt' -o -iname '*.md' \) \
+              -exec cp '{}' "$DST/characters/human_scale_candidate/" \;
           fi
 
           # Keep the complete 330+ object Nature Kit in the reusable warehouse. Promote only
-          # a representative mobile-safe forest subset into the Arcont runtime tree.
+          # representative self-contained FBX meshes into the Arcont runtime tree.
           if [ -d "$SRC/environment_forest/kenney_nature_kit" ]; then
             rm -rf "$DST/forest"/*
             python - <<'PY'
@@ -66,13 +72,10 @@ jobs:
           dst = Path('assets/provisional/cc0_runtime/forest')
           dst.mkdir(parents=True, exist_ok=True)
           wanted = ('tree', 'pine', 'bush', 'rock', 'stone', 'grass', 'log', 'stump')
-          candidates = []
-          for f in src.rglob('*'):
-              if not f.is_file() or f.suffix.lower() not in {'.glb', '.gltf', '.fbx'}:
-                  continue
-              if any(k in f.stem.lower() for k in wanted):
-                  candidates.append(f)
-
+          candidates = [
+              f for f in src.rglob('*.fbx')
+              if any(k in f.stem.lower() for k in wanted)
+          ]
           selected = []
           seen = set()
           for f in sorted(candidates):
@@ -82,7 +85,6 @@ jobs:
                   seen.add(key)
               if len(selected) >= 8:
                   break
-
           for f in selected:
               shutil.copy2(f, dst / f.name)
           (dst / 'SELECTION.txt').write_text(
@@ -98,9 +100,9 @@ jobs:
 
           Newly promoted candidates:
           - Male City Zombie — realistic CC0 infected candidate.
-          - Mobile Ready Zombie — CC0 low-cost infected/LOD reference.
+          - Mobile Ready Zombie — CC0 low-cost infected/LOD reference. Authoring `.blend` files stay out of runtime.
           - Human-scale Quaternius-derived CC0 reference GLB — scale/rig candidate only; not the full official Universal Base Characters pack.
-          - Selected Kenney Nature Kit forest meshes — CC0; full 330+ pack remains in the reusable staging warehouse.
+          - Selected Kenney Nature Kit forest FBX meshes — CC0; full 330+ pack remains in the reusable staging warehouse.
 
           Poly Haven Pine Forest remains an approved realistic CC0 source pool. High-resolution source originals are not bulk-mirrored into the APK; game-sized derivatives will be promoted deliberately.
 
@@ -117,5 +119,5 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add assets/provisional/cc0_runtime
           git diff --cached --quiet && exit 0
-          git commit -m 'assets: promote human infected and forest candidates'
+          git commit -m 'assets: filter runtime candidate formats for Godot'
           git push origin HEAD:feat/cc0-provisional-art-pass
