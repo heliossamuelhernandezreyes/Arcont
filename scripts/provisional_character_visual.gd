@@ -17,7 +17,6 @@ var update_accumulator:=0.0
 var base_position:=Vector3.ZERO
 var procedural_pitch:=0.0
 var procedural_roll:=0.0
-var aim_yaw:=0.0
 
 func _ready()->void:
  player_body=get_parent() as CharacterBody3D;base_position=position
@@ -44,8 +43,11 @@ func _update_procedural(delta:float,speed:float)->void:
  var target_roll:=-lateral*(2.2 if quality==0 else 4.0)*(0.55 if aiming else 1.0);var target_pitch:=forward*(1.2 if quality==0 else 2.8);if aiming:target_pitch-=2.3
  var injuries:Dictionary=player_body.get("injuries") if player_body.get("injuries") is Dictionary else {};target_roll+=(float(injuries.get("left_leg",0.0))-float(injuries.get("right_leg",0.0)))*4.0
  var suppression:=float(player_body.get("suppression"));if quality>=1 and suppression>0.05:target_roll+=sin(phase*17.0)*suppression*0.45
- var shoulder:=float(player_body.get("shoulder_side"));aim_yaw=lerpf(aim_yaw,shoulder*4.0 if aiming else 0.0,minf(step*10.0,1.0));procedural_roll=lerpf(procedural_roll,target_roll,minf(step*9.0,1.0));procedural_pitch=lerpf(procedural_pitch,target_pitch,minf(step*7.0,1.0))
- position.y=lerpf(position.y,target_y,minf(step*8.0,1.0));rotation_degrees=Vector3(procedural_pitch,aim_yaw,procedural_roll)
+ procedural_roll=lerpf(procedural_roll,target_roll,minf(step*9.0,1.0));procedural_pitch=lerpf(procedural_pitch,target_pitch,minf(step*7.0,1.0))
+ position.y=lerpf(position.y,target_y,minf(step*8.0,1.0))
+ # Yaw belongs to the player movement/aim controller. This script only adds lean and pitch.
+ rotation_degrees.x=procedural_pitch
+ rotation_degrees.z=procedural_roll
 
 func _quality()->int:
  if budget and budget.has_method("get_animation_quality"):return int(budget.get_animation_quality())
