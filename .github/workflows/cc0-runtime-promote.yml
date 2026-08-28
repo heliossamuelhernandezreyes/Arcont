@@ -26,7 +26,7 @@ jobs:
           SRC='assets/cc0_staging/vendor'
           DST='assets/provisional/cc0_runtime'
           rm -rf "$DST"
-          mkdir -p "$DST/weapons" "$DST/street_clutter/GLTF" "$DST/street_clutter/Textures" "$DST/factory"
+          mkdir -p "$DST/weapons" "$DST/street_clutter/GLTF" "$DST/street_clutter/Textures" "$DST/factory/Textures"
 
           WBASE="$SRC/weapons/quaternius_ultimate_guns/Ultimate Gun Pack - July 2019/FBX"
           cp "$WBASE/Shotgun_1.fbx" "$DST/weapons/"
@@ -40,9 +40,11 @@ jobs:
           cp "$CBASE/GLTF/LampPostTrachCanBench.gltf" "$DST/street_clutter/GLTF/"
           cp -a "$CBASE/Textures/." "$DST/street_clutter/Textures/"
 
-          FBASE="$SRC/environment_factory/kenney_factory_kit/Models/GLB format"
+          FROOT="$SRC/environment_factory/kenney_factory_kit"
+          FBASE="$FROOT/Models/GLB format"
           cp "$FBASE/cone.glb" "$DST/factory/"
           cp "$FBASE/box-small.glb" "$DST/factory/"
+          cp "$FROOT/Models/Textures/colormap.png" "$DST/factory/Textures/colormap.png"
 
           cat > "$DST/README.md" <<'EOF'
           # Arcont selected CC0 runtime assets
@@ -50,7 +52,7 @@ jobs:
           Source warehouse is ignored by Godot. Promotion requires source/license audit and metric/runtime tests.
           - Weapons: Quaternius Ultimate Gun Pack — CC0.
           - Street clutter: loafbrr LampPost/TrashCan/Bench — CC0.
-          - Factory cone/box: Kenney Factory Kit — CC0.
+          - Factory cone/box: Kenney Factory Kit — CC0; `Textures/colormap.png` retained as a required glTF dependency.
           Status: PROVISIONAL / not final Arcont art.
           EOF
 
