@@ -1,4 +1,5 @@
-# Realistic environment source pool
+# Realistic environment CC0 source pool
 Poly Haven is approved as a CC0 source pool for realistic PBR materials, HDRIs and selected props.
-Do not mirror the complete catalog into Git. Curate asset IDs first, then ingest only assets that solve a concrete Arcont/future-game need.
-Existing Kenney environment packs remain preserved in the warehouse.
+Curated Arcont candidates: asphalt_02, concrete_floor_damaged_01, rubble, trashbag and metal_trash_can.
+High-resolution source originals are intentionally not mirrored wholesale into Git; game-sized derivatives should be ingested per concrete production need.
+Existing Kenney environment packs remain permanently preserved in the warehouse.
