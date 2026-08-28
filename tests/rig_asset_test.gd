@@ -38,9 +38,12 @@ func _init() -> void:
 		var clip_players := _find_by_class(clip, "AnimationPlayer")
 		if clip_players.is_empty(): failures.append("Clip sin AnimationPlayer: " + clip_path)
 		for p in clip_players:
-			var list := (p as AnimationPlayer).get_animation_list()
+			var player := p as AnimationPlayer
+			var list := player.get_animation_list()
 			print("CLIP ANIMS ", clip_path, ": ", list)
 			if list.is_empty(): failures.append("Clip sin animaciones: " + clip_path)
+			if player.has_animation("Root|0_Targeting Pose"):
+				_print_animation_tracks(player.get_animation("Root|0_Targeting Pose"), clip_path)
 		clip.free()
 
 	var main_packed := load("res://scenes/main.tscn") as PackedScene
@@ -92,6 +95,11 @@ func _init() -> void:
 		return
 	for failure in failures: push_error("ARCONT RIG: " + failure)
 	quit(1)
+
+func _print_animation_tracks(animation: Animation, source_path: String) -> void:
+	print("TARGETING POSE TRACK AUDIT ", source_path, " tracks=", animation.get_track_count())
+	for i in animation.get_track_count():
+		print("TARGET TRACK ", i, " type=", animation.track_get_type(i), " path=", animation.track_get_path(i))
 
 func _bone_names(skeleton: Skeleton3D) -> Array[String]:
 	var names: Array[String] = []
