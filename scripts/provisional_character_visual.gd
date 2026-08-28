@@ -42,22 +42,30 @@ func _update_locomotion_input(speed:float)->void:
  if speed<=0.05:locomotion_input=Vector2.ZERO;return
  var local_velocity:=player_body.global_transform.basis.inverse()*player_body.velocity
  locomotion_input=Vector2(local_velocity.x,-local_velocity.z).normalized()*clampf(speed/maxf(run_reference_speed,0.1),0.0,1.0)
+func _weapon_stance()->Dictionary:
+ var slot:=int(weapon.get("slot")) if weapon!=null else 1
+ match slot:
+  0:return {"hip_pos":Vector3(0.025,-0.035,-0.09),"ads_pos":Vector3(0.018,-0.018,-0.125),"hip_rot":Vector3(-7.0,90.0,-2.5),"ads_rot":Vector3(-3.8,90.0,-0.6)}
+  1:return {"hip_pos":Vector3(0.02,-0.035,-0.075),"ads_pos":Vector3(0.014,-0.016,-0.115),"hip_rot":Vector3(-6.0,90.0,-2.0),"ads_rot":Vector3(-3.2,90.0,-0.5)}
+  2:return {"hip_pos":Vector3(0.012,-0.025,-0.035),"ads_pos":Vector3(0.006,-0.012,-0.07),"hip_rot":Vector3(-3.0,90.0,-1.0),"ads_rot":Vector3(-1.5,90.0,-0.2)}
+  3:return {"hip_pos":Vector3(0.02,-0.045,-0.115),"ads_pos":Vector3(0.012,-0.02,-0.145),"hip_rot":Vector3(-8.5,90.0,-2.0),"ads_rot":Vector3(-4.0,90.0,-0.5)}
+  _:return {"hip_pos":Vector3(0.022,-0.038,-0.095),"ads_pos":Vector3(0.014,-0.018,-0.13),"hip_rot":Vector3(-7.0,90.0,-2.0),"ads_rot":Vector3(-3.5,90.0,-0.5)}
 func _update_tactical_pose(delta:float)->void:
  var aiming:=weapon!=null and bool(weapon.get("aiming"));ads_weight=move_toward(ads_weight,1.0 if aiming else 0.0,delta*7.5)
  if animation_tree:animation_tree.set("parameters/ads_layer/blend_amount",ads_weight)
  if weapon_mount:
-  var hip_pos:=Vector3(0.02,-0.03,-0.08);var ads_pos:=Vector3(0.025,-0.018,-0.105)
-  var hip_rot:=Vector3(-8.0,90.0,-2.0);var ads_rot:=Vector3(-4.5,90.0,-0.8)
+  var stance:=_weapon_stance();var hip_pos:Vector3=stance["hip_pos"];var ads_pos:Vector3=stance["ads_pos"];var hip_rot:Vector3=stance["hip_rot"];var ads_rot:Vector3=stance["ads_rot"]
   weapon_mount.position=weapon_mount.position.lerp(hip_pos.lerp(ads_pos,ads_weight),clampf(delta*13.0,0.0,1.0));weapon_mount.rotation_degrees=weapon_mount.rotation_degrees.lerp(hip_rot.lerp(ads_rot,ads_weight),clampf(delta*13.0,0.0,1.0))
 func get_locomotion_input()->Vector2:return locomotion_input
 func get_ads_weight()->float:return ads_weight
 func get_ads_filter_track_count()->int:return ads_filter_track_count
+func get_weapon_stance_slot()->int:return int(weapon.get("slot")) if weapon!=null else -1
 func _bind_weapon_to_hand()->void:
  if weapon_mount==null:return
  var operator:=get_node_or_null("OperatorModel");if operator==null:return
  var skeleton:=_find_skeleton(operator);if skeleton==null or skeleton.find_bone(weapon_bone_name)<0:return
  var attachment:=BoneAttachment3D.new();attachment.name="WeaponHandAttachment";attachment.bone_name=weapon_bone_name;skeleton.add_child(attachment)
- weapon_mount.reparent(attachment,false);weapon_mount.position=Vector3(0.02,-0.03,-0.08);weapon_mount.rotation_degrees=Vector3(-8.0,90.0,-2.0)
+ weapon_mount.reparent(attachment,false);var stance:=_weapon_stance();weapon_mount.position=stance["hip_pos"];weapon_mount.rotation_degrees=stance["hip_rot"]
 func _update_procedural(delta:float,speed:float)->void:
  var interval:=_quality_interval();update_accumulator+=delta;if interval>0.0 and update_accumulator<interval:return
  var step:=update_accumulator if interval>0.0 else delta;update_accumulator=0.0;phase+=step*(1.7+speed*0.22)
