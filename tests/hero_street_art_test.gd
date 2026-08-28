@@ -17,23 +17,25 @@ func _run() -> void:
 	var counts := {"RoadPatch":0,"Skid":0,"BloodMark":0,"Rubble":0,"HeroRubble":0,"Paper":0,"MetalDebris":0,"HazardBand":0,"HeroWarningL":0,"HeroWarningR":0}
 	var budgeted_details := 0
 	for child in district.get_children():
-		if counts.has(child.name): counts[child.name] = int(counts[child.name]) + 1
+		if child.has_meta("art_layer"):
+			var layer := String(child.get_meta("art_layer"))
+			if counts.has(layer): counts[layer] = int(counts[layer]) + 1
 		if child.has_meta("budget_class") and String(child.get_meta("budget_class")) == "prop" and child.has_meta("base_visibility_end"):
 			budgeted_details += 1
 	if int(counts["RoadPatch"]) < 4:
-		_fail("hero street missing road patches")
+		_fail("hero street missing road patches: %s" % counts)
 		return
 	if int(counts["Skid"]) < 4 or int(counts["BloodMark"]) < 3:
-		_fail("hero street missing surface storytelling")
+		_fail("hero street missing surface storytelling: %s" % counts)
 		return
 	if int(counts["Rubble"]) + int(counts["HeroRubble"]) < 10:
-		_fail("hero street rubble density too low")
+		_fail("hero street rubble density too low: %s" % counts)
 		return
 	if int(counts["Paper"]) < 7 or int(counts["MetalDebris"]) < 3:
-		_fail("hero street debris layers incomplete")
+		_fail("hero street debris layers incomplete: %s" % counts)
 		return
 	if int(counts["HazardBand"]) < 5 or int(counts["HeroWarningL"]) != 1 or int(counts["HeroWarningR"]) != 1:
-		_fail("checkpoint focal hierarchy missing")
+		_fail("checkpoint focal hierarchy missing: %s" % counts)
 		return
 	if budgeted_details < 45:
 		_fail("too few mobile-budgeted street details: %d" % budgeted_details)
