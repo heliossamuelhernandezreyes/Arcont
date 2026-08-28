@@ -13,7 +13,7 @@ permissions:
 jobs:
   ingest:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - name: Checkout staging branch
         uses: actions/checkout@v4
@@ -32,7 +32,6 @@ jobs:
           set -euo pipefail
           mkdir -p /tmp/arcont_cc0
           cd /tmp/arcont_cc0
-
           curl -L --fail --retry 3 --connect-timeout 20 --max-time 180 -o guns.zip 'https://opengameart.org/sites/default/files/ultimate_gun_pack_by_quaternius.zip'
           curl -L --fail --retry 3 --connect-timeout 20 --max-time 180 -o animations.zip 'https://opengameart.org/sites/default/files/universal_animation_library_2standard.zip'
           curl -L --fail --retry 3 --connect-timeout 20 --max-time 180 -o roads.zip 'https://opengameart.org/sites/default/files/kenney_city-kit-roads_0.zip'
@@ -41,6 +40,26 @@ jobs:
           curl -L --fail --retry 3 --connect-timeout 20 --max-time 180 -o trashcan.zip 'https://opengameart.org/sites/default/files/trashcan_yethiel.zip'
           curl -L --fail --retry 3 --connect-timeout 20 --max-time 180 -o street_clutter.zip 'https://opengameart.org/sites/default/files/lamppostbenchtrashcan_fbx_gltf_textures_blend.zip'
           curl -L --fail --retry 3 --connect-timeout 20 --max-time 180 -o paper_debris.zip 'https://opengameart.org/sites/default/files/paper_debris.zip'
+          # New human-scale candidates. OGA filenames are stable mirrors for the two zombie packs.
+          curl -L --fail --retry 3 --connect-timeout 20 --max-time 180 -o city_zombie.7z 'https://opengameart.org/sites/default/files/Male%20City%20Zombie.7z'
+          curl -L --fail --retry 3 --connect-timeout 20 --max-time 180 -o mobile_zombie.zip 'https://opengameart.org/sites/default/files/Zombie.zip'
+
+      - name: Download Universal Base Characters standard best effort
+        shell: bash
+        continue-on-error: true
+        run: |
+          set +e
+          cd /tmp/arcont_cc0
+          # Quaternius distributes this CC0 pack through itch.io. Direct links can rotate,
+          # so failure must not destroy the existing warehouse. Record the source in the ledger
+          # and allow a manual/source-key intake if the public endpoint changes.
+          for url in \
+            'https://quaternius.itch.io/universal-base-characters/file/Universal%20Base%20Characters%5BStandard%5D.zip' \
+            'https://quaternius.com/assets/packs/Universal%20Base%20Characters%5BStandard%5D.zip'; do
+            curl -L --fail --retry 2 --connect-timeout 20 --max-time 240 -o universal_base_characters.zip "$url" && exit 0
+          done
+          rm -f universal_base_characters.zip
+          exit 0
 
       - name: Download Zombie Apocalypse Kit best effort
         shell: bash
@@ -50,8 +69,7 @@ jobs:
           cd /tmp/arcont_cc0
           mkdir -p zombie_drive
           timeout 75s gdown --folder 'https://drive.google.com/drive/folders/1mWP6sCHun7OUMHQeDNZLrXTteXlzWg_t?usp=sharing' -O zombie_drive
-          rc=$?
-          echo "Zombie pack gdown exit code: $rc"
+          echo "Zombie pack gdown exit code: $?"
           exit 0
 
       - name: Extract and organize source packs
@@ -59,8 +77,9 @@ jobs:
         run: |
           set -euo pipefail
           ROOT="$GITHUB_WORKSPACE/assets/cc0_staging"
+          # Preserve the warehouse categories and rebuild deterministic vendor contents.
           rm -rf "$ROOT/vendor"
-          mkdir -p "$ROOT/vendor"/{weapons,animations,characters_zombies,environment_roads,environment_industrial,environment_factory,props_trashcan,props_street_clutter,props_paper}
+          mkdir -p "$ROOT/vendor"/{weapons,animations,characters_zombies,environment_roads,environment_industrial,environment_factory,props_trashcan,props_street_clutter,props_paper,human_scale_characters,realistic_infected,mobile_infected_reference,realistic_environment_manifest}
           cd /tmp/arcont_cc0
           unzip -q guns.zip -d "$ROOT/vendor/weapons/quaternius_ultimate_guns"
           unzip -q animations.zip -d "$ROOT/vendor/animations/quaternius_universal_animation_library_2"
@@ -70,10 +89,21 @@ jobs:
           unzip -q trashcan.zip -d "$ROOT/vendor/props_trashcan/yethiel_trashcan"
           unzip -q street_clutter.zip -d "$ROOT/vendor/props_street_clutter/loafbrr_street_clutter"
           unzip -q paper_debris.zip -d "$ROOT/vendor/props_paper/paul_wortmann_paper_debris"
+          7z x -y city_zombie.7z -o"$ROOT/vendor/realistic_infected/rikindle3d_male_city_zombie" >/dev/null
+          unzip -q mobile_zombie.zip -d "$ROOT/vendor/mobile_infected_reference/lucian_pavel_mobile_zombie"
+          if [ -s universal_base_characters.zip ]; then
+            unzip -q universal_base_characters.zip -d "$ROOT/vendor/human_scale_characters/quaternius_universal_base_characters" || rm -rf "$ROOT/vendor/human_scale_characters/quaternius_universal_base_characters"
+          fi
           if [ -d zombie_drive ] && [ "$(find zombie_drive -type f | wc -l)" -gt 0 ]; then
             mkdir -p "$ROOT/vendor/characters_zombies/quaternius_zombie_apocalypse"
             cp -a zombie_drive/. "$ROOT/vendor/characters_zombies/quaternius_zombie_apocalypse/"
           fi
+          cat > "$ROOT/vendor/realistic_environment_manifest/README.md" <<'EOF'
+          # Realistic environment source pool
+          Poly Haven is approved as a CC0 source pool for realistic PBR materials, HDRIs and selected props.
+          Do not mirror the complete catalog into Git. Curate asset IDs first, then ingest only assets that solve a concrete Arcont/future-game need.
+          Existing Kenney environment packs remain preserved in the warehouse.
+          EOF
 
       - name: Prune duplicate authoring formats
         shell: bash
@@ -82,8 +112,6 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           root=Path('assets/cc0_staging/vendor')
-          # Work pack-by-pack rather than every nested directory so a local glTF folder cannot delete
-          # unrelated FBX files elsewhere before we know an equivalent exists.
           packs=[]
           for category in root.iterdir():
               if not category.is_dir(): continue
@@ -92,19 +120,15 @@ jobs:
               files=[f for f in pack.rglob('*') if f.is_file()]
               has_gltf=any(f.suffix.lower() in {'.glb','.gltf'} for f in files)
               has_fbx=any(f.suffix.lower()=='.fbx' for f in files)
-              if has_gltf:
-                  drop={'.blend','.fbx','.obj','.mtl','.dae','.3ds','.max','.stl','.usdz'}
-              elif has_fbx:
-                  drop={'.blend','.obj','.mtl','.dae','.3ds','.max','.stl','.usdz'}
-              else:
-                  drop={'.blend','.dae','.3ds','.max','.stl','.usdz'}
+              if has_gltf: drop={'.blend','.fbx','.obj','.mtl','.dae','.3ds','.max','.stl','.usdz'}
+              elif has_fbx: drop={'.blend','.obj','.mtl','.dae','.3ds','.max','.stl','.usdz'}
+              else: drop={'.blend','.dae','.3ds','.max','.stl','.usdz'}
               for f in files:
                   if f.suffix.lower() in drop:
                       try: f.unlink()
                       except FileNotFoundError: pass
           for f in root.rglob('*'):
-              if f.is_file() and f.suffix.lower() in {'.zip','.7z','.rar'}:
-                  f.unlink()
+              if f.is_file() and f.suffix.lower() in {'.zip','.7z','.rar'}: f.unlink()
           PY
 
       - name: Write ingestion inventory
@@ -113,21 +137,15 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           root=Path('assets/cc0_staging/vendor')
-          lines=['# Generated CC0 staging inventory','', 'Generated by `cc0-asset-ingest.yml`. Do not treat these assets as production-approved until audited.','']
+          lines=['# Generated CC0 staging inventory','', 'Generated by `cc0-asset-ingest.yml`. Warehouse assets are not production-approved until audited.','']
           total=0
           for category in sorted([p for p in root.iterdir() if p.is_dir()]):
               files=[f for f in category.rglob('*') if f.is_file()]
-              size=sum(f.stat().st_size for f in files)
-              total += size
-              lines.append(f'## {category.name}')
-              lines.append(f'- files: {len(files)}')
-              lines.append(f'- size: {size/1024/1024:.2f} MiB')
+              size=sum(f.stat().st_size for f in files); total += size
+              lines += [f'## {category.name}', f'- files: {len(files)}', f'- size: {size/1024/1024:.2f} MiB']
               exts={}
-              for f in files:
-                  ext=f.suffix.lower() or '<none>'
-                  exts[ext]=exts.get(ext,0)+1
-              lines.append('- formats: '+(', '.join(f'{k}={v}' for k,v in sorted(exts.items())) if exts else 'none'))
-              lines.append('')
+              for f in files: exts[f.suffix.lower() or '<none>']=exts.get(f.suffix.lower() or '<none>',0)+1
+              lines += ['- formats: '+(', '.join(f'{k}={v}' for k,v in sorted(exts.items())) if exts else 'none'), '']
           lines.append(f'**Total staged size:** {total/1024/1024:.2f} MiB')
           Path('assets/cc0_staging/INGEST_INVENTORY.md').write_text('\n'.join(lines), encoding='utf-8')
           PY
@@ -139,9 +157,6 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add assets/cc0_staging
-          if git diff --cached --quiet; then
-            echo 'No asset changes to commit.'
-            exit 0
-          fi
+          if git diff --cached --quiet; then echo 'No asset changes to commit.'; exit 0; fi
           git commit -m 'assets: ingest organized CC0 provisional library'
           git push origin HEAD:assets/cc0-staging
