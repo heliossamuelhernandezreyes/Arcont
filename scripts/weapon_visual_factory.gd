@@ -4,7 +4,7 @@ extends RefCounted
 const VISUAL_IDS:= ["12g","ar5","p9","m90","br7"]
 const TARGET_LENGTHS:= [1.05,0.98,0.24,1.22,1.08]
 const MUZZLE_Z:= [-0.57,-0.54,-0.15,-0.66,-0.68]
-const BASE:="res://assets/cc0_staging/vendor/weapons/quaternius_ultimate_guns/Ultimate Gun Pack - July 2019/FBX/"
+const BASE:="res://assets/provisional/cc0_runtime/weapons/"
 const SOURCE_PATHS:=[
  BASE+"Shotgun_1.fbx",
  BASE+"AssaultRifle2_1.fbx",
@@ -12,7 +12,7 @@ const SOURCE_PATHS:=[
  BASE+"SniperRifle_1.fbx",
  BASE+"AssaultRifle_5.fbx"
 ]
-const BAYONET_PATH:=BASE+"Accessories/Bayonet.fbx"
+const BAYONET_PATH:=BASE+"Bayonet.fbx"
 
 static func build(parent:Node3D,slot:int,muzzle:Node3D=null)->void:
  parent.scale=Vector3.ONE
