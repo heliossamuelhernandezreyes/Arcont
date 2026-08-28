@@ -26,7 +26,7 @@ jobs:
           SRC='assets/cc0_staging/vendor'
           DST='assets/provisional/cc0_runtime'
           rm -rf "$DST"
-          mkdir -p "$DST/weapons" "$DST/street_clutter/GLTF" "$DST/street_clutter/Textures" "$DST/factory/Textures"
+          mkdir -p "$DST/weapons" "$DST/zombies" "$DST/street_clutter/GLTF" "$DST/street_clutter/Textures" "$DST/factory/Textures"
 
           WBASE="$SRC/weapons/quaternius_ultimate_guns/Ultimate Gun Pack - July 2019/FBX"
           cp "$WBASE/Shotgun_1.fbx" "$DST/weapons/"
@@ -35,6 +35,10 @@ jobs:
           cp "$WBASE/SniperRifle_1.fbx" "$DST/weapons/"
           cp "$WBASE/AssaultRifle_5.fbx" "$DST/weapons/"
           cp "$WBASE/Accessories/Bayonet.fbx" "$DST/weapons/"
+
+          ZBASE="$SRC/characters_zombies/quaternius_animated_characters/Ultimate Animated Character Pack - Nov 2019/FBX"
+          cp "$ZBASE/Zombie_Male.fbx" "$DST/zombies/"
+          cp "$ZBASE/Zombie_Female.fbx" "$DST/zombies/"
 
           CBASE="$SRC/props_street_clutter/loafbrr_street_clutter"
           cp "$CBASE/GLTF/LampPostTrachCanBench.gltf" "$DST/street_clutter/GLTF/"
@@ -50,6 +54,7 @@ jobs:
           This folder contains only assets promoted from `assets/cc0_staging` for active Godot runtime use.
           Source warehouse is ignored by Godot. Promotion requires source/license audit and metric/runtime tests.
           - Weapons: Quaternius Ultimate Gun Pack — CC0.
+          - Zombie shells: Quaternius Ultimate Animated Character Pack — CC0; intact visual shell only until production segmented meshes exist.
           - Street clutter: loafbrr LampPost/TrashCan/Bench — CC0.
           - Factory cone/box: Kenney Factory Kit — CC0; `Textures/colormap.png` retained as a required glTF dependency.
           Status: PROVISIONAL / not final Arcont art.
