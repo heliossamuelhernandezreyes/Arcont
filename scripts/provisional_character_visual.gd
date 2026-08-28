@@ -22,6 +22,7 @@ var procedural_pitch:=0.0
 var procedural_roll:=0.0
 var ads_weight:=0.0
 var locomotion_input:=Vector2.ZERO
+var ads_filter_track_count:=0
 func _ready()->void:
  player_body=get_parent() as CharacterBody3D;base_position=position
  var scene:=get_tree().current_scene;if scene:budget=scene.get_node_or_null("PerformanceBudget")
@@ -50,6 +51,7 @@ func _update_tactical_pose(delta:float)->void:
   weapon_mount.position=weapon_mount.position.lerp(hip_pos.lerp(ads_pos,ads_weight),clampf(delta*13.0,0.0,1.0));weapon_mount.rotation_degrees=weapon_mount.rotation_degrees.lerp(hip_rot.lerp(ads_rot,ads_weight),clampf(delta*13.0,0.0,1.0))
 func get_locomotion_input()->Vector2:return locomotion_input
 func get_ads_weight()->float:return ads_weight
+func get_ads_filter_track_count()->int:return ads_filter_track_count
 func _bind_weapon_to_hand()->void:
  if weapon_mount==null:return
  var operator:=get_node_or_null("OperatorModel");if operator==null:return
@@ -78,8 +80,15 @@ func _setup_animation_tree()->void:
  animation_tree=AnimationTree.new();animation_tree.name="LocomotionAnimationTree";add_child(animation_tree);animation_tree.anim_player=animation_tree.get_path_to(animation_player);animation_tree.tree_root=root_blend;animation_tree.active=true;animation_tree.set("parameters/ads_layer/blend_amount",0.0)
  state_playback=animation_tree.get("parameters/locomotion/playback") as AnimationNodeStateMachinePlayback;if state_playback!=null:state_playback.start("idle");current_state="idle"
 func _configure_ads_filter(layer:AnimationNodeBlend2)->void:
- var upper_body:=["Spine","Chest","UpperChest","Neck","Head","LeftShoulder","LeftArm","LeftForeArm","LeftHand","LeftHandIndex1","LeftHandIndex2","LeftHandIndex3","LeftHandThumb1","LeftHandThumb2","RightShoulder","RightArm","RightForeArm","RightHand","RightHandIndex1","RightHandIndex2","RightHandIndex3","RightHandThumb1","RightHandThumb2"]
- for bone in upper_body:layer.set_filter_path(NodePath("Root/Skeleton3D:"+bone),true)
+ ads_filter_track_count=0
+ if animation_player==null or not animation_player.has_animation("targeting_pose"):return
+ var upper_body:={"Spine":true,"Chest":true,"UpperChest":true,"Neck":true,"Head":true,"LeftShoulder":true,"LeftArm":true,"LeftForeArm":true,"LeftHand":true,"LeftHandIndex1":true,"LeftHandIndex2":true,"LeftHandIndex3":true,"LeftHandThumb1":true,"LeftHandThumb2":true,"RightShoulder":true,"RightArm":true,"RightForeArm":true,"RightHand":true,"RightHandIndex1":true,"RightHandIndex2":true,"RightHandIndex3":true,"RightHandThumb1":true,"RightHandThumb2":true}
+ var pose:=animation_player.get_animation("targeting_pose")
+ for i in pose.get_track_count():
+  var path:=pose.track_get_path(i)
+  if path.get_subname_count()==0:continue
+  var bone:=String(path.get_subname(path.get_subname_count()-1))
+  if upper_body.has(bone):layer.set_filter_path(path,true);ads_filter_track_count+=1
 func _animation_node(name:String)->AnimationNodeAnimation:var node:=AnimationNodeAnimation.new();node.animation=StringName(name);return node
 func _connect_state(from_state:String,to_state:String,xfade:float)->void:var transition:=AnimationNodeStateMachineTransition.new();transition.xfade_time=xfade;transition.reset=true;state_machine.add_transition(from_state,to_state,transition)
 func _play_state(state:String)->void:
