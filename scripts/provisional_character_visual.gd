@@ -34,7 +34,7 @@ func _physics_process(delta:float)->void:
  if player_body==null or animation_tree==null:return
  var speed:=Vector2(player_body.velocity.x,player_body.velocity.z).length();_update_locomotion_input(speed)
  if not player_body.is_on_floor():_play_state("jump")
- elif speed>0.25:_play_state("run");animation_tree.set("parameters/run/run_speed/scale",clampf(speed/maxf(run_reference_speed,0.1),0.65,1.45))
+ elif speed>0.25:_play_state("run");animation_tree.set("parameters/locomotion/run/run_speed/scale",clampf(speed/maxf(run_reference_speed,0.1),0.65,1.45))
  else:_play_state("idle")
  _update_tactical_pose(delta);_update_procedural(delta,speed)
 func _update_locomotion_input(speed:float)->void:
@@ -43,6 +43,7 @@ func _update_locomotion_input(speed:float)->void:
  locomotion_input=Vector2(local_velocity.x,-local_velocity.z).normalized()*clampf(speed/maxf(run_reference_speed,0.1),0.0,1.0)
 func _update_tactical_pose(delta:float)->void:
  var aiming:=weapon!=null and bool(weapon.get("aiming"));ads_weight=move_toward(ads_weight,1.0 if aiming else 0.0,delta*7.5)
+ if animation_tree:animation_tree.set("parameters/ads_layer/blend_amount",ads_weight)
  if weapon_mount:
   var hip_pos:=Vector3(0.02,-0.03,-0.08);var ads_pos:=Vector3(0.025,-0.018,-0.105)
   var hip_rot:=Vector3(-8.0,90.0,-2.0);var ads_rot:=Vector3(-4.5,90.0,-0.8)
@@ -66,14 +67,19 @@ func _quality_interval()->float:
  return 1.0/30.0 if OS.has_feature("mobile") else 0.0
 func _setup_animation_player()->void:
  animation_player=AnimationPlayer.new();animation_player.name="LocomotionAnimationPlayer";animation_player.root_node=NodePath("OperatorModel");add_child(animation_player)
- var library:=AnimationLibrary.new();animation_player.add_animation_library("",library);_import_clip(library,idle_clip,"Root|Idle","idle",true);_import_clip(library,run_clip,"Root|Run","run",true);_import_clip(library,jump_clip,"Root|Jump","jump",false)
+ var library:=AnimationLibrary.new();animation_player.add_animation_library("",library);_import_clip(library,idle_clip,"Root|Idle","idle",true);_import_clip(library,run_clip,"Root|Run","run",true);_import_clip(library,jump_clip,"Root|Jump","jump",false);_import_clip(library,idle_clip,"Root|0_Targeting Pose","targeting_pose",true)
 func _setup_animation_tree()->void:
  if animation_player==null or not is_inside_tree():return
  state_machine=AnimationNodeStateMachine.new();state_machine.add_node("idle",_animation_node("idle"),Vector2(0,0))
  var run_scale:=AnimationNodeTimeScale.new();var run_tree:=AnimationNodeBlendTree.new();run_tree.add_node("run_anim",_animation_node("run"),Vector2(-120,0));run_tree.add_node("run_speed",run_scale,Vector2(80,0));run_tree.connect_node("run_speed",0,"run_anim");run_tree.connect_node("output",0,"run_speed");state_machine.add_node("run",run_tree,Vector2(220,0));state_machine.add_node("jump",_animation_node("jump"),Vector2(110,-150))
  _connect_state("idle","run",animation_blend);_connect_state("run","idle",animation_blend);_connect_state("idle","jump",0.08);_connect_state("run","jump",0.08);_connect_state("jump","idle",0.12);_connect_state("jump","run",0.12)
- animation_tree=AnimationTree.new();animation_tree.name="LocomotionAnimationTree";add_child(animation_tree);animation_tree.anim_player=animation_tree.get_path_to(animation_player);animation_tree.tree_root=state_machine;animation_tree.active=true
- state_playback=animation_tree.get("parameters/playback") as AnimationNodeStateMachinePlayback;if state_playback!=null:state_playback.start("idle");current_state="idle"
+ var root_blend:=AnimationNodeBlendTree.new();root_blend.add_node("locomotion",state_machine,Vector2(-260,0));root_blend.add_node("targeting_pose",_animation_node("targeting_pose"),Vector2(-260,180))
+ var ads_layer:=AnimationNodeBlend2.new();ads_layer.filter_enabled=true;root_blend.add_node("ads_layer",ads_layer,Vector2(20,70));root_blend.connect_node("ads_layer",0,"locomotion");root_blend.connect_node("ads_layer",1,"targeting_pose");root_blend.connect_node("output",0,"ads_layer");_configure_ads_filter(ads_layer)
+ animation_tree=AnimationTree.new();animation_tree.name="LocomotionAnimationTree";add_child(animation_tree);animation_tree.anim_player=animation_tree.get_path_to(animation_player);animation_tree.tree_root=root_blend;animation_tree.active=true;animation_tree.set("parameters/ads_layer/blend_amount",0.0)
+ state_playback=animation_tree.get("parameters/locomotion/playback") as AnimationNodeStateMachinePlayback;if state_playback!=null:state_playback.start("idle");current_state="idle"
+func _configure_ads_filter(layer:AnimationNodeBlend2)->void:
+ var upper_body:=["Spine","Chest","UpperChest","Neck","Head","LeftShoulder","LeftArm","LeftForeArm","LeftHand","LeftHandIndex1","LeftHandIndex2","LeftHandIndex3","LeftHandThumb1","LeftHandThumb2","RightShoulder","RightArm","RightForeArm","RightHand","RightHandIndex1","RightHandIndex2","RightHandIndex3","RightHandThumb1","RightHandThumb2"]
+ for bone in upper_body:layer.set_filter_path(NodePath("Root/Skeleton3D:"+bone),true)
 func _animation_node(name:String)->AnimationNodeAnimation:var node:=AnimationNodeAnimation.new();node.animation=StringName(name);return node
 func _connect_state(from_state:String,to_state:String,xfade:float)->void:var transition:=AnimationNodeStateMachineTransition.new();transition.xfade_time=xfade;transition.reset=true;state_machine.add_transition(from_state,to_state,transition)
 func _play_state(state:String)->void:
