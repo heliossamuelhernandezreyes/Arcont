@@ -50,9 +50,20 @@ func _init()->void:
       if not machine.has_node(state):failures.append("Falta estado AnimationTree: "+state)
     if ads_layer==null:failures.append("Falta capa Blend2 ADS")
     elif not ads_layer.filter_enabled:failures.append("Capa ADS no tiene filtro de huesos activo")
-    elif body_visual!=null and body_visual.has_method("get_ads_filter_track_count"):
-     var filtered_count:=int(body_visual.get_ads_filter_track_count());print("ADS FILTERED IMPORT TRACKS: ",filtered_count)
-     if filtered_count<8:failures.append("Filtro ADS no enlazó suficientes tracks reales del tren superior: "+str(filtered_count))
+    else:
+     if body_visual!=null and body_visual.has_method("get_ads_filter_track_count"):
+      var filtered_count:=int(body_visual.get_ads_filter_track_count());print("ADS FILTERED IMPORT TRACKS: ",filtered_count)
+      if filtered_count<8:failures.append("Filtro ADS no enlazó suficientes tracks reales del tren superior: "+str(filtered_count))
+     if locomotion!=null and locomotion.has_animation("targeting_pose"):
+      var pose:=locomotion.get_animation("targeting_pose");var upper_filtered:=0;var lower_filtered:=0
+      for i in pose.get_track_count():
+       var track_path:=pose.track_get_path(i);var track_text:=String(track_path)
+       if ads_layer.is_path_filtered(track_path):
+        if _is_lower_body_track(track_text):lower_filtered+=1
+        else:upper_filtered+=1
+      print("ADS FILTER AUDIT upper=",upper_filtered," lower=",lower_filtered)
+      if upper_filtered<8:failures.append("Filtro ADS runtime no contiene suficientes tracks superiores")
+      if lower_filtered>0:failures.append("Filtro ADS contamina tren inferior: "+str(lower_filtered)+" tracks")
    var playback:=tree.get("parameters/locomotion/playback") as AnimationNodeStateMachinePlayback
    if playback==null:failures.append("AnimationTree sin playback runtime")
    else:
@@ -68,6 +79,10 @@ func _init()->void:
  if failures.is_empty():print("ARCONT RIG: compatibility + filtered ADS AnimationTree OK");quit(0);return
  for failure in failures:push_error("ARCONT RIG: "+failure)
  quit(1)
+func _is_lower_body_track(path:String)->bool:
+ for token in ["Hips","UpLeg","Leg","Foot","Toe","Heel","Knee"]:
+  if path.contains(token):return true
+ return false
 func _bone_names(skeleton:Skeleton3D)->Array[String]:
  var names:Array[String]=[]
  for i in skeleton.get_bone_count():names.append(skeleton.get_bone_name(i))
