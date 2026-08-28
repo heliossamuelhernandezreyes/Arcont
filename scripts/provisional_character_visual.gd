@@ -33,6 +33,8 @@ func _ready()->void:
  _bind_weapon_to_hand();_setup_animation_player();call_deferred("_setup_animation_tree")
 func _physics_process(delta:float)->void:
  if player_body==null or animation_tree==null:return
+ if state_playback!=null and not state_playback.is_playing():
+  state_playback.start("idle");current_state="idle"
  var speed:=Vector2(player_body.velocity.x,player_body.velocity.z).length();_update_locomotion_input(speed)
  if not player_body.is_on_floor():_play_state("jump")
  elif speed>0.25:_play_state("run");animation_tree.set("parameters/locomotion/run/run_speed/scale",clampf(speed/maxf(run_reference_speed,0.1),0.65,1.45))
@@ -86,7 +88,8 @@ func _setup_animation_tree()->void:
  var root_blend:=AnimationNodeBlendTree.new();root_blend.add_node("locomotion",state_machine,Vector2(-260,0));root_blend.add_node("targeting_pose",_animation_node("targeting_pose"),Vector2(-260,180))
  var ads_layer:=AnimationNodeBlend2.new();ads_layer.filter_enabled=true;root_blend.add_node("ads_layer",ads_layer,Vector2(20,70));root_blend.connect_node("ads_layer",0,"locomotion");root_blend.connect_node("ads_layer",1,"targeting_pose");root_blend.connect_node("output",0,"ads_layer");_configure_ads_filter(ads_layer)
  animation_tree=AnimationTree.new();animation_tree.name="LocomotionAnimationTree";add_child(animation_tree);animation_tree.anim_player=animation_tree.get_path_to(animation_player);animation_tree.tree_root=root_blend;animation_tree.active=true;animation_tree.set("parameters/ads_layer/blend_amount",0.0)
- state_playback=animation_tree.get("parameters/locomotion/playback") as AnimationNodeStateMachinePlayback;if state_playback!=null:state_playback.start("idle");current_state="idle"
+ state_playback=animation_tree.get("parameters/locomotion/playback") as AnimationNodeStateMachinePlayback
+ if state_playback!=null:state_playback.start("idle");current_state="idle"
 func _configure_ads_filter(layer:AnimationNodeBlend2)->void:
  ads_filter_track_count=0
  if animation_player==null or not animation_player.has_animation("targeting_pose"):return
