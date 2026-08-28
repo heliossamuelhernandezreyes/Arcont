@@ -50,6 +50,9 @@ func _init()->void:
       if not machine.has_node(state):failures.append("Falta estado AnimationTree: "+state)
     if ads_layer==null:failures.append("Falta capa Blend2 ADS")
     elif not ads_layer.filter_enabled:failures.append("Capa ADS no tiene filtro de huesos activo")
+    elif body_visual!=null and body_visual.has_method("get_ads_filter_track_count"):
+     var filtered_count:=int(body_visual.get_ads_filter_track_count());print("ADS FILTERED IMPORT TRACKS: ",filtered_count)
+     if filtered_count<8:failures.append("Filtro ADS no enlazó suficientes tracks reales del tren superior: "+str(filtered_count))
    var playback:=tree.get("parameters/locomotion/playback") as AnimationNodeStateMachinePlayback
    if playback==null:failures.append("AnimationTree sin playback runtime")
    else:
