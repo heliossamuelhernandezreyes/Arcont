@@ -1,0 +1,93 @@
+name: CC0 PBR Terrain Ingest
+
+on:
+  push:
+    branches: [assets/cc0-staging]
+    paths:
+      - '.github/workflows/cc0-pbr-terrain-ingest.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ingest-pbr-terrain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout staging
+        uses: actions/checkout@v4
+        with:
+          ref: assets/cc0-staging
+          fetch-depth: 0
+
+      - name: Download selected Poly Haven CC0 1K PBR maps
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, pathlib, urllib.request
+
+          assets = {
+            'forest_ground_04':'forest_ground',
+            'stony_dirt_path':'dirt_path',
+            'gravel_road':'gravel_road',
+            'concrete_floor':'concrete_floor',
+            'concrete_moss':'concrete_moss',
+            'rock_ground_02':'rock_ground',
+          }
+          root=pathlib.Path('assets/cc0_staging/vendor/pbr_terrain/poly_haven')
+          root.mkdir(parents=True, exist_ok=True)
+
+          def walk(obj, path=()):
+            if isinstance(obj, dict):
+              for k,v in obj.items(): yield from walk(v,path+(str(k),))
+            elif isinstance(obj, list):
+              for i,v in enumerate(obj): yield from walk(v,path+(str(i),))
+            elif isinstance(obj,str) and obj.startswith('http'):
+              yield path,obj
+
+          wanted={'diff':'albedo','diffuse':'albedo','nor_gl':'normal','normal_gl':'normal','rough':'roughness','arm':'arm'}
+          manifest=[]
+          for asset_id, local_name in assets.items():
+            api=f'https://api.polyhaven.com/files/{asset_id}'
+            with urllib.request.urlopen(api,timeout=30) as r: data=json.load(r)
+            candidates=[]
+            for path,url in walk(data):
+              key=' '.join(path).lower()
+              if '1k' not in key: continue
+              if not any(ext in url.lower() for ext in ('.jpg','.jpeg','.png')): continue
+              kind=None
+              for token,out in wanted.items():
+                if token in key:
+                  kind=out; break
+              if kind: candidates.append((kind,path,url))
+            chosen={}
+            for kind,path,url in candidates:
+              # Prefer JPG for compact runtime/staging; PNG otherwise.
+              score=(0 if url.lower().endswith(('.jpg','.jpeg')) else 1,len(path))
+              if kind not in chosen or score < chosen[kind][0]: chosen[kind]=(score,url)
+            dst=root/local_name; dst.mkdir(parents=True,exist_ok=True)
+            for kind in ('albedo','normal','roughness','arm'):
+              if kind not in chosen: continue
+              url=chosen[kind][1]
+              ext='.jpg' if url.lower().endswith(('.jpg','.jpeg')) else '.png'
+              out=dst/f'{kind}{ext}'
+              urllib.request.urlretrieve(url,out)
+              manifest.append(f'{local_name}/{out.name} <- {url}')
+            (dst/'SOURCE.md').write_text(
+              f'# {local_name}\n\n- Poly Haven asset: https://polyhaven.com/a/{asset_id}\n- License: CC0 1.0\n- Runtime target: Android 1K PBR source set\n',encoding='utf-8')
+          (root/'DOWNLOAD_MANIFEST.txt').write_text('\n'.join(manifest)+'\n',encoding='utf-8')
+          PY
+
+      - name: Commit reusable PBR source set
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/cc0_staging/vendor/pbr_terrain
+          if git diff --cached --quiet; then echo 'No staging changes.'; exit 0; fi
+          git commit -m 'assets: ingest Poly Haven CC0 PBR terrain set'
+          git pull --rebase origin assets/cc0-staging
+          git push origin HEAD:assets/cc0-staging
