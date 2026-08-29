@@ -26,9 +26,9 @@ func _build_pass() -> void:
   var pos := Vector3(authored.x, _height(authored.x, authored.z) + authored.y, authored.z)
   var house := ModularHouseBuilder.build(self, pos, float(spec[1]), int(spec[2]), materials)
   house.set_meta("terrain_base_y", _height(authored.x, authored.z))
- set_meta("art_status", "ART-PASS-9-MODULAR-ARCHITECTURE")
+ set_meta("art_status", "ART-PASS-9B-MODULAR-ARCHITECTURE")
  set_meta("house_count", HOUSE_SPECS.size())
- set_meta("architecture_contract", "MODULAR-HOUSE-V1")
+ set_meta("architecture_contract", "MODULAR-HOUSE-V2")
  set_meta("legacy_single_mesh_houses", "visuals_hidden; collision retained")
  set_meta("mobile_validation", "PENDING")
 
