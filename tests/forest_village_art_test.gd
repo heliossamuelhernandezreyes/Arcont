@@ -15,9 +15,11 @@ func _run() -> void:
  var env := main.get_node_or_null("ForestVillage")
  var polish := main.get_node_or_null("ForestVillagePolish")
  var scatter := main.get_node_or_null("EnvironmentScatter")
+ var terrain := main.get_node_or_null("ForestTerrainRelief")
  if env == null: return _fail("ForestVillage missing")
  if polish == null: return _fail("ForestVillagePolish missing")
  if scatter == null: return _fail("EnvironmentScatter missing")
+ if terrain == null or not terrain.has_method("get_height_at"): return _fail("ForestTerrainRelief height sampler missing")
  var chunks := 0
  var village := 0
  var legacy_canopy := 0
@@ -28,6 +30,12 @@ func _run() -> void:
  var terrain_paths := 0
  var terrain_grounded := 0
  var path_segments := 0
+ var path_height_checks := 0
+ var house_height_checks := 0
+ var spawn_height_checks := 0
+ var max_path_error := 0.0
+ var max_house_error := 0.0
+ var max_spawn_error := 0.0
  var macro_occluders := 0
  var transitions := 0
  var mission_landmarks := 0
@@ -42,10 +50,26 @@ func _run() -> void:
   if bool(node.get_meta("terrain_following_path",false)):
    terrain_paths += 1
    path_segments += int(node.get_meta("segment_count",0))
+   for segment in node.get_children():
+    if not segment is Node3D or not bool(segment.get_meta("terrain_grounded",false)): continue
+    var p := (segment as Node3D).global_position
+    var expected_ground := float(terrain.call("get_height_at",p.x,p.z))
+    var offset := p.y-expected_ground
+    var error := 0.0
+    if offset < 0.010: error=0.010-offset
+    elif offset > 0.050: error=offset-0.050
+    max_path_error=maxf(max_path_error,absf(error))
+    path_height_checks+=1
   if bool(node.get_meta("terrain_grounded",false)): terrain_grounded += 1
   if node.has_meta("art_layer"):
    match String(node.get_meta("art_layer")):
-    "village": village += 1
+    "village":
+     village += 1
+     if node is Node3D:
+      var hp := (node as Node3D).global_position
+      var house_expected := float(terrain.call("get_height_at",hp.x,hp.z))+0.12
+      max_house_error=maxf(max_house_error,absf(hp.y-house_expected))
+      house_height_checks+=1
     "canopy": legacy_canopy += 1
     "landmark", "landform": landmarks += 1
     "story_prop": story += 1
@@ -68,7 +92,14 @@ func _run() -> void:
    if layer.begins_with("entrance_"): entrance_layers += 1
   if node.has_meta("base_visibility_end"): budgeted += 1
   if node is OmniLight3D and (node as OmniLight3D).shadow_enabled: shadowed_omni += 1
- var spawns := get_nodes_in_group("enemy_spawn").size()
+ var spawn_nodes := get_nodes_in_group("enemy_spawn")
+ var spawns := spawn_nodes.size()
+ for spawn in spawn_nodes:
+  if not spawn is Node3D: continue
+  var sp := (spawn as Node3D).global_position
+  var spawn_expected := float(terrain.call("get_height_at",sp.x,sp.z))+0.2
+  max_spawn_error=maxf(max_spawn_error,absf(sp.y-spawn_expected))
+  spawn_height_checks+=1
  if chunks < 4: return _fail("forest needs spatial chunks: %d" % chunks)
  if village < 8: return _fail("village massing incomplete: %d" % village)
  if canopy_instances < 20: return _fail("consolidated forest canopy too sparse: %d" % canopy_instances)
@@ -79,6 +110,12 @@ func _run() -> void:
  if terrain_paths < 12: return _fail("terrain-following route coverage incomplete: %d" % terrain_paths)
  if path_segments < 70: return _fail("terrain route segmentation too coarse/missing: %d" % path_segments)
  if terrain_grounded < 45: return _fail("too few grounded village/route nodes: %d" % terrain_grounded)
+ if path_height_checks != path_segments: return _fail("not every terrain path segment was numerically checked: %d/%d" % [path_height_checks,path_segments])
+ if max_path_error > 0.001: return _fail("terrain path height contract error: %.5f" % max_path_error)
+ if house_height_checks < 8: return _fail("too few grounded houses numerically checked: %d" % house_height_checks)
+ if max_house_error > 0.001: return _fail("house base height contract error: %.5f" % max_house_error)
+ if spawn_height_checks != spawns: return _fail("not every enemy spawn was numerically checked: %d/%d" % [spawn_height_checks,spawns])
+ if max_spawn_error > 0.001: return _fail("enemy spawn height contract error: %.5f" % max_spawn_error)
  if env.get_node_or_null("ForestGroundCollision") != null: return _fail("legacy flat ForestGroundCollision must stay removed")
  if String(env.get_meta("art_status","")) != "ART-PASS-8-TERRAIN-GROUNDING": return _fail("terrain grounding art status missing")
  if spawns < 8: return _fail("forest enemy approach lanes missing: %d" % spawns)
@@ -95,8 +132,8 @@ func _run() -> void:
  if String(scatter.get_meta("art_status","")) != "ART-PASS-7-CC0-SCATTER": return _fail("CC0 scatter art status missing")
  var moon := main.get_node_or_null("MoonLight") as DirectionalLight3D
  if moon == null or not moon.shadow_enabled: return _fail("moon must remain the primary shadowed key")
- print("FOREST_VILLAGE_ART|chunks=%d|village=%d|canopy_instances=%d|cc0_tree_cells=%d|terrain_paths=%d|path_segments=%d|grounded=%d|landmarks=%d|spawns=%d|macro=%d|transitions=%d|mission=%d|story_chain=%d|frames=%d|entrances=%d|budgeted=%d" % [chunks,village,canopy_instances,cc0_tree_cells,terrain_paths,path_segments,terrain_grounded,landmarks,spawns,macro_occluders,transitions,mission_landmarks,story_chain,canopy_frames,entrance_layers,budgeted])
- print("ARCONT FOREST VILLAGE: terrain grounding + polished composition + CC0 MultiMesh canopy OK")
+ print("FOREST_VILLAGE_ART|chunks=%d|village=%d|canopy_instances=%d|cc0_tree_cells=%d|terrain_paths=%d|path_segments=%d|grounded=%d|path_checks=%d|path_err=%.5f|house_checks=%d|house_err=%.5f|spawn_checks=%d|spawn_err=%.5f|landmarks=%d|spawns=%d|macro=%d|transitions=%d|mission=%d|story_chain=%d|frames=%d|entrances=%d|budgeted=%d" % [chunks,village,canopy_instances,cc0_tree_cells,terrain_paths,path_segments,terrain_grounded,path_height_checks,max_path_error,house_height_checks,max_house_error,spawn_height_checks,max_spawn_error,landmarks,spawns,macro_occluders,transitions,mission_landmarks,story_chain,canopy_frames,entrance_layers,budgeted])
+ print("ARCONT FOREST VILLAGE: numeric terrain adherence + polished composition + CC0 MultiMesh canopy OK")
  main.queue_free()
  await process_frame
  quit(0)
