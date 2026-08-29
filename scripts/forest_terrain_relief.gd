@@ -39,24 +39,19 @@ func _build_height_field() -> void:
    heights[z * map_width + x] = _height_at_world(wx, wz)
 
 func _height_at_world(x: float, z: float) -> float:
- # Low-frequency deterministic noise without runtime Noise resources.
  var broad := sin(x * 0.041 + float(seed) * 0.00013) * 0.72
  broad += cos(z * 0.034 - float(seed) * 0.00017) * 0.58
  broad += sin((x + z) * 0.023) * 0.44
- # Outer forest rises into a natural bowl around the settlement.
  var nx := absf(x) / 85.0
  var nz := absf(z - 5.0) / 110.0
- var edge := clamp(maxf(nx, nz), 0.0, 1.25)
+ var edge: float = clampf(maxf(nx, nz), 0.0, 1.25)
  var ridge := pow(maxf(edge - 0.38, 0.0), 1.65) * 7.0
- # Keep village and main combat spine readable and traversable.
  var village_d := Vector2(x, z - 18.0).length()
  var basin_mask := smoothstep(22.0, 58.0, village_d)
  var h := (broad * 0.72 + ridge) * basin_mask
- # Drainage valley around the stream crossing near z=-40.
  var stream_d := absf(z + 40.0 + sin(x * 0.035) * 2.4)
  var stream_cut := (1.0 - smoothstep(3.0, 14.0, stream_d)) * 1.35
  h -= stream_cut
- # Main north/south road gets a gentle grading corridor.
  var road_d := absf(x - sin(z * 0.018) * 2.5)
  var road_mask := 1.0 - smoothstep(5.0, 13.0, road_d)
  h = lerpf(h, h * 0.28, road_mask * 0.72)
