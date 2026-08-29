@@ -6,6 +6,7 @@ extends Node3D
 const CONTINUOUS_ROUTE_PASS := preload("res://scripts/continuous_route_surface_pass.gd")
 const FOREST_TONE_PASS := preload("res://scripts/forest_visual_tone_pass.gd")
 const URBAN_STRUCTURE_PASS := preload("res://scripts/village_urban_structure_pass.gd")
+const MAP_COMPOSITION_PASS := preload("res://scripts/village_map_composition_pass.gd")
 
 const HOUSE_SPECS := [
  [Vector3(-22,0.12,-20),16.0,0], [Vector3(20,0.12,-23),-18.0,1],
@@ -31,7 +32,7 @@ func _build_pass() -> void:
   var house := ModularHouseBuilder.build(self,pos,float(spec[1]),int(spec[2]),materials)
   house.set_meta("terrain_base_y",_height(authored.x,authored.z))
  _mount_map_legibility_passes()
- set_meta("art_status","ART-PASS-11-VILLAGE-STRUCTURE")
+ set_meta("art_status","ART-PASS-12-FOREST-VILLAGE-COMPOSITION")
  set_meta("house_count",HOUSE_SPECS.size())
  set_meta("architecture_contract","MODULAR-HOUSE-V2-MESH-ROOF")
  set_meta("legacy_single_mesh_houses","visuals_hidden; collision retained")
@@ -48,6 +49,10 @@ func _mount_map_legibility_passes() -> void:
   var urban_pass := URBAN_STRUCTURE_PASS.new()
   urban_pass.name = "VillageUrbanStructurePass"
   world.add_child(urban_pass)
+ if world.get_node_or_null("VillageMapCompositionPass") == null:
+  var composition_pass := MAP_COMPOSITION_PASS.new()
+  composition_pass.name = "VillageMapCompositionPass"
+  world.add_child(composition_pass)
  if world.get_node_or_null("ForestVisualTonePass") == null:
   var tone_pass := FOREST_TONE_PASS.new()
   tone_pass.name = "ForestVisualTonePass"
@@ -66,14 +71,14 @@ func _height(x: float, z: float) -> float:
  return 0.0
 
 func _materials() -> Dictionary:
- var plaster := _mat(Color(0.38,0.35,0.29),0.94)
- var plaster_alt := _mat(Color(0.255,0.285,0.255),0.96)
- var roof := _mat(Color(0.145,0.048,0.036),0.93)
- var wood := _mat(Color(0.155,0.088,0.042),0.96)
- var stone := _mat(Color(0.205,0.215,0.20),0.99)
- var dark := _mat(Color(0.028,0.034,0.031),0.98)
- var glass := _mat(Color(0.075,0.105,0.105),0.45)
- glass.metallic = 0.04
+ var plaster := _mat(Color(0.31,0.285,0.23),0.94)
+ var plaster_alt := _mat(Color(0.20,0.235,0.205),0.96)
+ var roof := _mat(Color(0.105,0.034,0.028),0.94)
+ var wood := _mat(Color(0.115,0.062,0.030),0.97)
+ var stone := _mat(Color(0.145,0.155,0.145),0.99)
+ var dark := _mat(Color(0.018,0.024,0.022),0.99)
+ var glass := _mat(Color(0.045,0.070,0.068),0.48)
+ glass.metallic = 0.03
  return {"wall":plaster,"wall_alt":plaster_alt,"roof":roof,"wood":wood,"stone":stone,"dark":dark,"glass":glass}
 
 func _mat(color: Color, roughness: float) -> StandardMaterial3D:
