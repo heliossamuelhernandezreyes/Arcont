@@ -61,7 +61,10 @@ func _mount_map_legibility_passes() -> void:
 func _mount(world: Node,name_text: String,script_resource: Script) -> void:
  if world.get_node_or_null(name_text) != null:
   return
- var pass_node := script_resource.new()
+ var pass_node: Node = script_resource.new() as Node
+ if pass_node == null:
+  push_error("Failed to instantiate art pass: %s" % name_text)
+  return
  pass_node.name = name_text
  world.add_child(pass_node)
 
