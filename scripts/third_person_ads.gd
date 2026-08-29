@@ -14,6 +14,7 @@ class_name ThirdPersonADS
 @export var ads_shoulder := 0.58
 @export var transition_speed := 10.5
 @export var collision_margin := 0.18
+@export var camera_collision_radius := 0.18
 @export var minimum_safe_distance := 0.72
 
 var player: CharacterBody3D
@@ -36,6 +37,12 @@ func _ready() -> void:
  body_visual = player.get_node_or_null("BodyVisual") as Node3D
  if spring_arm:
   spring_arm.margin = collision_margin
+  # Godot explicitly supports a custom SpringArm shape; a small sphere is a
+  # robust shoulder-camera volume and avoids depending on the camera-frustum
+  # fallback in non-rendering diagnostics while also sliding cleanly on edges.
+  var collision_shape := SphereShape3D.new()
+  collision_shape.radius = camera_collision_radius
+  spring_arm.shape = collision_shape
   spring_arm.add_excluded_object(player.get_rid())
  _collect_body_meshes(body_visual)
  _force_tactical_startup()
