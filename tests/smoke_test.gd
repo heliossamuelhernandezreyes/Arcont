@@ -4,7 +4,7 @@ func _init() -> void:
  var failures:Array[String]=[]
  _check_scene("res://scenes/main.tscn",[
   "PerformanceBudget","AwarenessDirector","NavigationGraph","CombatFeedback",
-  "ForestVillage","ForestVillagePolish","MissionDirector","ThrowableController",
+  "ForestVillage","ForestVillagePolish","TerrainSurfacePass","MissionDirector","ThrowableController",
   "CompanionRobot","Player","Player/BodyVisual","Player/BodyVisual/OperatorModel",
   "Player/BodyVisual/WeaponMount","Player/BodyVisual/WeaponMount/Gun",
   "Player/BodyVisual/WeaponMount/MuzzleFlash","Player/CoverProbe",
@@ -45,6 +45,7 @@ func _init() -> void:
  _check_methods("res://scripts/provisional_character_visual.gd",["_update_procedural","_update_locomotion_input","_update_tactical_pose","get_ads_weight","_setup_animation_tree","_configure_ads_filter","_bind_weapon_to_hand","_find_skeleton"],failures)
  _check_methods("res://scripts/forest_village_environment.gd",["_ground_and_paths","_village","_tactical_routes","_forest_mass","_forest_detail","_story_props","_boundaries","_spawn_points","_spawn_asset","_bind_budget"],failures)
  _check_methods("res://scripts/forest_village_polish.gd",["_macro_composition","_entrance_identities","_village_depth","_mission_landmarks","_forest_frames","_storytelling_pass","_lighting_pass","_bind_budget","_apply_budget"],failures)
+ _check_methods("res://scripts/terrain_surface_pass.gd",["_build_materials","_textured_mat","_apply_existing_surface_materials","_add_ground_breakup","_add_mounds","_configure_sky","_bind_budget","_apply_budget"],failures)
 
  _check_text("res://scripts/weapon.gd","CameraRig/SpringArm3D/Camera3D",failures)
  _check_text("res://scripts/mobile_controls.gd","get_viewport().set_input_as_handled()",failures)
@@ -55,6 +56,10 @@ func _init() -> void:
  _check_text("res://scripts/third_person_ads.gd","minimum_safe_distance := 0.72",failures)
  _check_text("res://scenes/main.tscn","position=Vector3(0,1.58,0)",failures)
  _check_text("res://scenes/main.tscn","position=Vector3(0.82,0,0)",failures)
+ _check_text("res://scenes/main.tscn","TerrainSurfacePass",failures)
+ _check_text("res://scripts/terrain_surface_pass.gd","NoiseTexture2D.new()",failures)
+ _check_text("res://scripts/terrain_surface_pass.gd","ProceduralSkyMaterial.new()",failures)
+ _check_text("res://scripts/terrain_surface_pass.gd","TerrainMound",failures)
  _check_text("res://scripts/provisional_character_visual.gd","AnimationNodeStateMachine.new()",failures)
  _check_text("res://scripts/provisional_character_visual.gd","parameters/ads_layer/blend_amount",failures)
  _check_text("res://scripts/performance_budget.gd","signal visual_budget_changed",failures)
@@ -67,7 +72,7 @@ func _init() -> void:
  _check_text("res://scripts/forest_village_polish.gd","macro>meso>micro",failures)
 
  if failures.is_empty():
-  print("ARCONT CI: forest village + true TPS smoke test OK")
+  print("ARCONT CI: forest village + terrain surface + true TPS smoke test OK")
   quit(0)
   return
  for failure in failures:
