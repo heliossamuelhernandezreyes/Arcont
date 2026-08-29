@@ -1,7 +1,7 @@
 extends SceneTree
 
-# ART-PASS-2-POLISHED regression contract, extended for the ART-PASS-7
-# consolidated CC0 forest scatter architecture.
+# Forest composition regression contract extended for CC0 MultiMesh canopy and
+# ART-PASS-8 terrain grounding.
 const MAIN := preload("res://scenes/main.tscn")
 
 func _init() -> void:
@@ -25,6 +25,9 @@ func _run() -> void:
  var cc0_tree_cells := 0
  var landmarks := 0
  var story := 0
+ var terrain_paths := 0
+ var terrain_grounded := 0
+ var path_segments := 0
  var macro_occluders := 0
  var transitions := 0
  var mission_landmarks := 0
@@ -36,6 +39,10 @@ func _run() -> void:
  var budgeted := 0
  for node in _all_nodes(env):
   if String(node.name).begins_with("ForestChunk_"): chunks += 1
+  if bool(node.get_meta("terrain_following_path",false)):
+   terrain_paths += 1
+   path_segments += int(node.get_meta("segment_count",0))
+  if bool(node.get_meta("terrain_grounded",false)): terrain_grounded += 1
   if node.has_meta("art_layer"):
    match String(node.get_meta("art_layer")):
     "village": village += 1
@@ -69,6 +76,11 @@ func _run() -> void:
  if legacy_canopy != 0: return _fail("legacy individual canopy duplicates remain: %d" % legacy_canopy)
  if landmarks < 5: return _fail("landmark/landform hierarchy incomplete: %d" % landmarks)
  if story < 2: return _fail("base environmental storytelling missing")
+ if terrain_paths < 12: return _fail("terrain-following route coverage incomplete: %d" % terrain_paths)
+ if path_segments < 70: return _fail("terrain route segmentation too coarse/missing: %d" % path_segments)
+ if terrain_grounded < 45: return _fail("too few grounded village/route nodes: %d" % terrain_grounded)
+ if env.get_node_or_null("ForestGroundCollision") != null: return _fail("legacy flat ForestGroundCollision must stay removed")
+ if String(env.get_meta("art_status","")) != "ART-PASS-8-TERRAIN-GROUNDING": return _fail("terrain grounding art status missing")
  if spawns < 8: return _fail("forest enemy approach lanes missing: %d" % spawns)
  if macro_occluders < 8: return _fail("macro occlusion hierarchy incomplete: %d" % macro_occluders)
  if transitions < 4: return _fail("forest-to-village transition bands incomplete: %d" % transitions)
@@ -83,8 +95,8 @@ func _run() -> void:
  if String(scatter.get_meta("art_status","")) != "ART-PASS-7-CC0-SCATTER": return _fail("CC0 scatter art status missing")
  var moon := main.get_node_or_null("MoonLight") as DirectionalLight3D
  if moon == null or not moon.shadow_enabled: return _fail("moon must remain the primary shadowed key")
- print("FOREST_VILLAGE_ART|chunks=%d|village=%d|canopy_instances=%d|cc0_tree_cells=%d|legacy_canopy=%d|landmarks=%d|spawns=%d|macro=%d|transitions=%d|mission=%d|story_chain=%d|frames=%d|entrances=%d|budgeted=%d" % [chunks,village,canopy_instances,cc0_tree_cells,legacy_canopy,landmarks,spawns,macro_occluders,transitions,mission_landmarks,story_chain,canopy_frames,entrance_layers,budgeted])
- print("ARCONT FOREST VILLAGE: polished composition + CC0 MultiMesh canopy contract OK")
+ print("FOREST_VILLAGE_ART|chunks=%d|village=%d|canopy_instances=%d|cc0_tree_cells=%d|terrain_paths=%d|path_segments=%d|grounded=%d|landmarks=%d|spawns=%d|macro=%d|transitions=%d|mission=%d|story_chain=%d|frames=%d|entrances=%d|budgeted=%d" % [chunks,village,canopy_instances,cc0_tree_cells,terrain_paths,path_segments,terrain_grounded,landmarks,spawns,macro_occluders,transitions,mission_landmarks,story_chain,canopy_frames,entrance_layers,budgeted])
+ print("ARCONT FOREST VILLAGE: terrain grounding + polished composition + CC0 MultiMesh canopy OK")
  main.queue_free()
  await process_frame
  quit(0)
