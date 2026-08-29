@@ -3,13 +3,15 @@ func _init()->void:
  var failures:Array[String]=[]
  _check_scene("res://scenes/main.tscn",["ForestVillage","ForestVillagePolish","TerrainSurfacePass","ForestTerrainRelief","EnvironmentScatter","MissionDirector","Player","Player/CameraRig/SpringArm3D","Player/CameraRig/SpringArm3D/Camera3D","Enemies","HUD/MobileControls"],failures)
  _check_scene("res://scenes/enemy.tscn",["Collision","Body","Head","ArmL","ArmR","MeleeAttack"],failures)
- _check_methods("res://scripts/forest_terrain_relief.gd",["_build_height_field","_build_render_mesh","_build_collision","get_height_at","get_slope_at"],failures)
+ _check_methods("res://scripts/forest_terrain_relief.gd",["_build_terrain_material","_build_height_field","_build_render_mesh","_build_collision","get_height_at","get_slope_at"],failures)
  _check_methods("res://scripts/environment_scatter.gd",["_build_chunks","_make_cell","_placement_allowed","_in_authored_clearance","_add_authored_edge_dressing","_terrain_height","_terrain_slope"],failures)
- _check_methods("res://scripts/terrain_surface_pass.gd",["_build_materials","_apply_existing_surface_materials","_add_ground_breakup","_add_mounds","_configure_sky"],failures)
+ _check_methods("res://scripts/terrain_surface_pass.gd",["_build_materials","_apply_existing_surface_materials","_add_ground_breakup","_configure_sky"],failures)
  _check_methods("res://scripts/zombie_cc0_visual.gd",["_build_shell","_activate_segmented_fallback","get_source_asset","get_shell_extent"],failures)
  _check_methods("res://scripts/third_person_ads.gd",["_camera_target","_update_near_camera_visibility","get_camera_distance"],failures)
- _check_text("res://scripts/forest_terrain_relief.gd","ART-PASS-4-HEIGHTMAP",failures)
+ _check_text("res://scripts/forest_terrain_relief.gd","ART-PASS-6-PBR-TERRAIN",failures)
+ _check_text("res://scripts/forest_terrain_relief.gd","Poly Haven CC0 1K forest_ground_04",failures)
  _check_text("res://scripts/forest_terrain_relief.gd","HeightMapShape3D",failures)
+ _check_text("res://scripts/terrain_surface_pass.gd","ART-PASS-6-PBR-SURFACES",failures)
  _check_text("res://scripts/environment_scatter.gd","ART-PASS-5-FOREST-BIOMES",failures)
  _check_text("res://scripts/environment_scatter.gd","height+slope+biome+mission_clearance",failures)
  _check_text("res://scripts/environment_scatter.gd","dense edges + readable clearings + ridge silhouettes",failures)
@@ -23,7 +25,7 @@ func _init()->void:
  _check_text("res://scenes/main.tscn","EnvironmentScatter",failures)
  _check_text("res://scripts/third_person_ads.gd","spring_arm.add_excluded_object(player.get_rid())",failures)
  if failures.is_empty():
-  print("ARCONT CI: heightmap + forest biomes + edge dressing + humanoid infected + TPS OK");quit(0);return
+  print("ARCONT CI: PBR heightmap + forest biomes + edge dressing + humanoid infected + TPS OK");quit(0);return
  for failure in failures:push_error("ARCONT CI: "+failure)
  quit(1)
 func _check_scene(path:String,required_nodes:Array,failures:Array[String])->void:
