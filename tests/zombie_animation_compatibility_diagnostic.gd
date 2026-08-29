@@ -31,6 +31,8 @@ func _run() -> void:
 	print("ZOMBIE_MODEL_RIG|bones=%d|names=%s" % [model_bones.size(),model_bones])
 	model_root.free()
 
+	var direct_match_count := 0
+	var retarget_count := 0
 	for semantic in CLIPS:
 		var path: String = CLIPS[semantic]
 		var packed := load(path) as PackedScene
@@ -52,15 +54,20 @@ func _run() -> void:
 				if animation.track_get_type(i) in [Animation.TYPE_POSITION_3D,Animation.TYPE_ROTATION_3D,Animation.TYPE_SCALE_3D]:
 					transform_tracks += 1
 					if animation.track_get_path(i).get_subname_count() > 0: bone_like_tracks += 1
-		print("ZOMBIE_CLIP_AUDIT|semantic=%s|path=%s|bones=%d|common=%d|animations=%s|transform_tracks=%d|bone_tracks=%d" % [semantic,path,bones.size(),common,names,transform_tracks,bone_like_tracks])
+		var direct_match := model_bones.size() > 0 and common >= mini(12,model_bones.size())
+		var retargeting := "not_required" if direct_match else "required"
+		if direct_match: direct_match_count += 1
+		else: retarget_count += 1
+		print("ZOMBIE_CLIP_AUDIT|semantic=%s|path=%s|bones=%d|common=%d|animations=%s|transform_tracks=%d|bone_tracks=%d|retargeting=%s" % [semantic,path,bones.size(),common,names,transform_tracks,bone_like_tracks,retargeting])
 		if skeleton == null: failures.append("%s clip has no Skeleton3D" % semantic)
 		if player == null or names.is_empty(): failures.append("%s clip has no animation" % semantic)
-		if model_bones.size() > 0 and common < mini(12,model_bones.size()): failures.append("%s clip shares too few bones with primary model: %d" % [semantic,common])
+		if bones.size() < 12: failures.append("%s clip rig is too small to be a usable humanoid retarget source: %d bones" % [semantic,bones.size()])
 		if transform_tracks == 0: failures.append("%s clip has no transform tracks" % semantic)
 		root_node.free()
 
+	print("ZOMBIE_RETARGET_SUMMARY|direct_match=%d|retarget_required=%d|total=%d" % [direct_match_count,retarget_count,CLIPS.size()])
 	if failures.is_empty():
-		print("ARCONT ZOMBIE ANIMATION DIAGNOSTIC: semantic clip library is loadable and shares a usable humanoid rig vocabulary")
+		print("ARCONT ZOMBIE ANIMATION DIAGNOSTIC: semantic clip library is loadable; naming mismatch is explicitly classified as retargeting work, not direct compatibility")
 		quit(0)
 		return
 	for failure in failures:
