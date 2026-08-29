@@ -41,11 +41,11 @@ func _init()->void:
   var cam:=main.get_node_or_null("Player/CameraRig/SpringArm3D/Camera3D") as Camera3D
   if rig==null or arm==null or cam==null:failures.append("Falta rig TPS completo")
   else:
-   print("TPS CONTRACT pivot_y=",rig.position.y," arm=",arm.spring_length," shoulder=",cam.position)
+   print("TPS CONTRACT pivot_y=",rig.position.y," arm=",arm.spring_length," shoulder_origin=",arm.position," camera_local=",cam.position)
    if rig.position.y<1.35 or rig.position.y>1.85:failures.append("Altura de pivote TPS inválida: "+str(rig.position.y))
    if arm.spring_length<3.5 or arm.spring_length>5.5:failures.append("SpringArm fuera de rango TPS exploración: "+str(arm.spring_length))
-   if absf(cam.position.x)<0.45 or absf(cam.position.x)>1.15:failures.append("Offset de hombro TPS inválido: "+str(cam.position.x))
-   if absf(cam.position.y)>0.45:failures.append("Offset vertical local de cámara excesivo: "+str(cam.position.y))
+   if absf(arm.position.x)<0.45 or absf(arm.position.x)>1.15:failures.append("Offset de hombro SpringArm inválido: "+str(arm.position.x))
+   if cam.position.length()>0.05:failures.append("Camera3D debe quedar en origen local del SpringArm: "+str(cam.position))
    if not cam.current:failures.append("Camera3D TPS no es current")
   var locomotion:=main.get_node_or_null("Player/BodyVisual/LocomotionAnimationPlayer") as AnimationPlayer
   if locomotion==null:failures.append("No se creó AnimationPlayer de locomoción en runtime")
@@ -99,7 +99,7 @@ func _init()->void:
     var global_scale:=mounted_weapon.global_transform.basis.get_scale();print("WEAPON GLOBAL SCALE: ",global_scale)
     if global_scale.x<0.45 or global_scale.x>2.2:failures.append("Escala global del arma incoherente: "+str(global_scale))
   main.queue_free();await process_frame
- if failures.is_empty():print("ARCONT RIG: compatibility + metric scale + true shoulder TPS + playing ADS AnimationTree OK");quit(0);return
+ if failures.is_empty():print("ARCONT RIG: compatibility + metric scale + spring-arm shoulder TPS + playing ADS AnimationTree OK");quit(0);return
  for failure in failures:push_error("ARCONT RIG: "+failure)
  quit(1)
 func _is_lower_body_track(path:String)->bool:
