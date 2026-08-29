@@ -130,6 +130,25 @@ jobs:
           if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" boot.log; then exit 1; fi
           exit 0
 
+      - name: Capture current playable build screenshot
+        shell: bash
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          xvfb-run -a "$GODOT_BIN" --path "$GITHUB_WORKSPACE" --rendering-method gl_compatibility --script res://tests/capture_current_build.gd | tee screenshot-capture.log
+          test -s build/arcont-current-build.png
+          file build/arcont-current-build.png
+
+      - name: Upload current build screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: Arcont-Current-Build-Screenshot
+          path: build/arcont-current-build.png
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Export Android debug APK
         shell: bash
         env:
