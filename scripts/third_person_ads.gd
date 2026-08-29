@@ -2,9 +2,8 @@ extends Node
 class_name ThirdPersonADS
 
 # CameraRig owns orbit and vertical pivot. SpringArm owns BOTH the lateral
-# shoulder origin and collision distance. Camera3D stays at local origin so the
-# SpringArm is free to place its direct child at the solved collision distance
-# without fighting a second positional owner.
+# shoulder origin and collision distance. Camera3D is a direct child whose Z
+# placement is owned exclusively by SpringArm3D every physics frame.
 @export var hip_distance := 4.65
 @export var hip_pivot_height := 1.58
 @export var hip_shoulder := 0.82
@@ -37,9 +36,6 @@ func _ready() -> void:
  body_visual = player.get_node_or_null("BodyVisual") as Node3D
  if spring_arm:
   spring_arm.margin = collision_margin
-  # Godot explicitly supports a custom SpringArm shape; a small sphere is a
-  # robust shoulder-camera volume and avoids depending on the camera-frustum
-  # fallback in non-rendering diagnostics while also sliding cleanly on edges.
   var collision_shape := SphereShape3D.new()
   collision_shape.radius = camera_collision_radius
   spring_arm.shape = collision_shape
@@ -66,9 +62,10 @@ func _force_tactical_startup() -> void:
  camera_rig.position.y = target.y
  spring_arm.position.x = target.x
  spring_arm.spring_length = target.z
+ # Initial local origin is valid before the first SpringArm physics update.
+ # Never reset this transform afterwards: SpringArm3D writes Camera3D.position.z.
  camera.position = Vector3.ZERO
  camera.fov = hip_fov
- _update_near_camera_visibility()
 
 func _physics_process(delta: float) -> void:
  if player == null or camera == null or camera_rig == null or spring_arm == null or weapon == null:
@@ -82,8 +79,9 @@ func _physics_process(delta: float) -> void:
  camera_rig.position.y = lerpf(camera_rig.position.y,target.y,blend)
  spring_arm.position.x = lerpf(spring_arm.position.x,target.x,blend)
  spring_arm.spring_length = lerpf(spring_arm.spring_length,target.z,blend)
- camera.position = Vector3.ZERO
  camera.fov = lerpf(camera.fov, hip_fov if not aiming else 64.0, blend)
+ # SpringArm updates direct-child translation during physics; inspect visibility
+ # only after it has had at least one chance to establish a valid boom distance.
  _update_near_camera_visibility()
 
 func _camera_target(aiming: bool, shoulder: float) -> Vector3:
@@ -93,9 +91,6 @@ func _camera_target(aiming: bool, shoulder: float) -> Vector3:
  return Vector3(hip_shoulder * shoulder,hip_pivot_height,maxf(hip_distance * scale,minimum_safe_distance))
 
 func _update_near_camera_visibility() -> void:
- # Only hide the operator when collision legitimately puts the camera inside the
- # body shell. Under normal shoulder TPS the arm should keep this well above the
- # threshold; the semantic render diagnostic guards that invariant.
  var actual_distance := get_camera_distance()
  var shell_visible := actual_distance >= minimum_safe_distance
  for mesh in body_meshes:
