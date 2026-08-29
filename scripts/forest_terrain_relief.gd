@@ -9,24 +9,39 @@ extends Node3D
 @export var cell_size := 1.0
 @export var height_scale := 1.0
 
+const PBR_ROOT := "res://assets/provisional/cc0_runtime/pbr_terrain/poly_haven"
+const FOREST_ALBEDO := PBR_ROOT + "/forest_ground/albedo.jpg"
+const FOREST_NORMAL := PBR_ROOT + "/forest_ground/normal.jpg"
+const FOREST_ARM := PBR_ROOT + "/forest_ground/arm.jpg"
+
 var heights := PackedFloat32Array()
-var terrain_material: StandardMaterial3D
+var terrain_material: Material
 
 func _ready() -> void:
- terrain_material = _material(Color(0.085, 0.125, 0.052), 0.98)
+ terrain_material = _build_terrain_material()
  _build_height_field()
  _build_render_mesh()
  _build_collision()
  set_meta("art_layer", "continuous_forest_relief")
- set_meta("art_status", "ART-PASS-4-HEIGHTMAP")
+ set_meta("art_status", "ART-PASS-6-PBR-TERRAIN")
  set_meta("terrain_grid", Vector2i(map_width, map_depth))
+ set_meta("material_source", "Poly Haven CC0 1K forest_ground_04")
  set_meta("design_rule", "village basin + outer ridges + drainage valley + tactical corridors")
 
-func _material(color: Color, roughness: float) -> StandardMaterial3D:
- var m := StandardMaterial3D.new()
- m.albedo_color = color
- m.roughness = roughness
- return m
+func _build_terrain_material() -> Material:
+ if ResourceLoader.exists(FOREST_ALBEDO) and ResourceLoader.exists(FOREST_NORMAL) and ResourceLoader.exists(FOREST_ARM):
+  var material := ORMMaterial3D.new()
+  material.albedo_texture = load(FOREST_ALBEDO) as Texture2D
+  material.normal_enabled = true
+  material.normal_texture = load(FOREST_NORMAL) as Texture2D
+  material.orm_texture = load(FOREST_ARM) as Texture2D
+  material.uv1_scale = Vector3(0.72, 0.72, 0.72)
+  material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+  return material
+ var fallback := StandardMaterial3D.new()
+ fallback.albedo_color = Color(0.085, 0.125, 0.052)
+ fallback.roughness = 0.98
+ return fallback
 
 func _build_height_field() -> void:
  heights.resize(map_width * map_depth)
@@ -111,6 +126,7 @@ func _build_render_mesh() -> void:
  visual.visibility_range_end = 240.0
  visual.visibility_range_end_margin = 18.0
  visual.set_meta("terrain_surface", true)
+ visual.set_meta("pbr_runtime", ResourceLoader.exists(FOREST_ALBEDO))
  add_child(visual)
 
 func _sample_grid(x: int, z: int) -> float:
