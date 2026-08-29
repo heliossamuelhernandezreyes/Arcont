@@ -48,10 +48,19 @@ Arcont evidence (2026-08-29): the CC0 forest migration consolidated repeated gra
 
 Operational rule: when optimizing representation, preserve the gameplay/art invariant but change the observable used by the test. Never reintroduce expensive duplicate nodes merely to satisfy an assertion written for the old representation.
 
+## Lifecycle leak diagnostic evidence
+Status: TESTING.
+
+A Godot shutdown warning is not enough evidence to assign ownership to a gameplay system, imported asset, scene, Resource, or test harness. Diagnostic runs must preserve the complete verbose process output, preserve the original Godot exit code, expose numbered leak/ObjectDB/orphan/RID/resource matches with surrounding context, and retain the complete log as a CI artifact when ownership is still ambiguous.
+
+Arcont evidence (2026-08-29): production commit `b1917bc` added a first verbose `forest_village_art_test.gd` lifecycle diagnostic. Godot CI #437 completed successfully on Godot 4.7.2, proving the warning is non-blocking, but the first diagnostic representation does not provide durable, independently inspectable ownership evidence sufficient to justify a production fix. Therefore no subsystem is considered the confirmed leak owner yet.
+
+Operational rule: never patch a suspected owner merely because its resources appear near engine shutdown output. First make the diagnostic artifact durable and distinguish test-harness lifetime from scene/runtime ownership. Only promote the warning to a failing contract after a reproducible clean-lifecycle expectation exists.
+
 ## Current non-blocking CI warnings
-Observed on the validated terrain-grounding run #432 (2026-08-29):
+Observed on the validated terrain-grounding run #432 and still under lifecycle investigation on #437 (2026-08-29):
 - Android export reports that no project icon is configured. The debug APK is still created, signed, verified and uploaded; treat this as release/presentation debt, not a gameplay blocker.
-- Some headless tests report one leaked `ObjectDB` instance at exit. CI currently passes, but investigate before treating repeated scene load/unload memory behavior as production-clean.
+- Some headless tests report one leaked `ObjectDB` instance at exit. CI #437 itself completed successfully; exact ownership remains unconfirmed and must not be guessed.
 - Hosted CI has no ADB daemon, so `cannot connect to daemon at tcp:5037` can appear during headless Android tooling. This is not evidence of a device-runtime failure.
 
 Do not silence these warnings blindly. Track whether they persist, identify ownership, and turn them into failing contracts only when the expected clean behavior is defined and reproducible.
