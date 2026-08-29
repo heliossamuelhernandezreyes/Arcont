@@ -101,8 +101,8 @@ func _placement_allowed(x:float,z:float,kind:String)->bool:
  if _in_authored_clearance(x,z): return false
  var slope:=_terrain_slope(x,z)
  var height:=_terrain_height(x,z)
- var edge_factor:=clamp((absf(x)-34.0)/28.0,0.0,1.0)
- var ridge_factor:=clamp((height-1.2)/3.8,0.0,1.0)
+ var edge_factor: float = clampf((absf(x)-34.0)/28.0,0.0,1.0)
+ var ridge_factor: float = clampf((height-1.2)/3.8,0.0,1.0)
  match kind:
   "grass": return slope<=max_grass_slope and height<5.8
   "shrub": return slope<0.42 and (edge_factor>0.16 or ridge_factor>0.15)
@@ -122,8 +122,6 @@ func _in_authored_clearance(x:float,z:float)->bool:
  return false
 
 func _add_authored_edge_dressing()->void:
- # Fallen logs/roots and rock clusters reinforce entrances to clearings without
- # filling the combat cells themselves. These are sparse authored silhouettes.
  var anchors := [Vector3(-35,0,-67),Vector3(37,0,-61),Vector3(-43,0,-12),Vector3(42,0,18),Vector3(-39,0,53),Vector3(38,0,61)]
  for i in range(anchors.size()):
   var p:Vector3=anchors[i]; p.y=_terrain_height(p.x,p.z)+0.22
