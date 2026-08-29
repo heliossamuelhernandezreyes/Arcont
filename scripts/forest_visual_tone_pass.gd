@@ -1,8 +1,8 @@
 extends Node3D
 
-# ART-PASS-10: temporary art-direction override for the current low-poly forest
-# prototypes. It removes the cyan source-material read while the final realistic
-# tree/LOD family is still being acquired and validated.
+# ART-PASS-10C: temporary art-direction override for the current low-poly forest
+# prototypes. Imported FBX roots carry the art-layer metadata while their visible
+# GeometryInstance3D children usually do not, so layer lookup must walk ancestors.
 
 func _ready() -> void:
  call_deferred("_apply")
@@ -10,15 +10,16 @@ func _ready() -> void:
 func _apply() -> void:
  var scatter: Node = get_parent().get_node_or_null("EnvironmentScatter")
  var polish: Node = get_parent().get_node_or_null("ForestVillagePolish")
- var tree_mat := _material(Color(0.060,0.095,0.045),0.96)
- var shrub_mat := _material(Color(0.075,0.120,0.050),0.97)
- var grass_mat := _material(Color(0.105,0.135,0.055),0.99)
- var stone_mat := _material(Color(0.205,0.215,0.195),1.0)
+ var tree_mat := _material(Color(0.052,0.080,0.038),0.97)
+ var shrub_mat := _material(Color(0.065,0.103,0.044),0.98)
+ var grass_mat := _material(Color(0.090,0.115,0.048),0.99)
+ var stone_mat := _material(Color(0.185,0.192,0.177),1.0)
  var toned_cells: int = 0
  var toned_polish: int = 0
  if scatter != null:
   for node: Node in _all_nodes(scatter):
-   if not node is MultiMeshInstance3D: continue
+   if not node is MultiMeshInstance3D:
+    continue
    var kind := String(node.get_meta("biome_kind", ""))
    match kind:
     "tree": (node as MultiMeshInstance3D).material_override = tree_mat
@@ -29,8 +30,9 @@ func _apply() -> void:
    toned_cells += 1
  if polish != null:
   for node: Node in _all_nodes(polish):
-   if not node is GeometryInstance3D: continue
-   var layer := String(node.get_meta("art_layer", ""))
+   if not node is GeometryInstance3D:
+    continue
+   var layer := _effective_layer(node, polish)
    if layer == "canopy_frame_polish":
     (node as GeometryInstance3D).material_override = tree_mat
     toned_polish += 1
@@ -40,12 +42,23 @@ func _apply() -> void:
    elif layer == "ground_polish":
     (node as GeometryInstance3D).material_override = grass_mat
     toned_polish += 1
- set_meta("art_status","ART-PASS-10-FOREST-TONE")
+ set_meta("art_status","ART-PASS-10C-FOREST-TONE")
  set_meta("toned_cells",toned_cells)
  set_meta("toned_polish_geometry",toned_polish)
- set_meta("forest_tone_contract","FOREST-TONE-PLACEHOLDER-V2")
+ set_meta("forest_tone_contract","FOREST-TONE-PLACEHOLDER-V3")
+ set_meta("layer_resolution","nearest ancestor art_layer")
  set_meta("final_tree_asset",false)
  set_meta("reason","visual coherence until realistic tree LOD family is validated")
+
+func _effective_layer(node: Node, stop: Node) -> String:
+ var current: Node = node
+ while current != null:
+  if current.has_meta("art_layer"):
+   return String(current.get_meta("art_layer", ""))
+  if current == stop:
+   break
+  current = current.get_parent()
+ return ""
 
 func _material(color: Color, roughness: float) -> StandardMaterial3D:
  var mat := StandardMaterial3D.new()
@@ -59,6 +72,7 @@ func _all_nodes(root: Node) -> Array[Node]:
  var index: int = 0
  while index < result.size():
   var current: Node = result[index]
-  for child: Node in current.get_children(): result.append(child)
+  for child: Node in current.get_children():
+   result.append(child)
   index += 1
  return result
