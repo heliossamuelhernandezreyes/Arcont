@@ -1,9 +1,10 @@
 extends SceneTree
 
-# Visual evidence helper: renders the current playable scene and writes a PNG.
-# This is observational only; it does not mutate gameplay state or assert art quality.
+# Visual evidence helper: starts the current playable mission, lets the live scene
+# settle, then captures several real gameplay views from the player's camera.
+# Observational only: no gameplay/resource files are mutated.
 const MAIN := preload("res://scenes/main.tscn")
-const OUTPUT := "res://build/arcont-current-build.png"
+const OUTPUT_DIR := "res://build/gameplay-captures"
 
 func _init() -> void:
 	call_deferred("_capture")
@@ -12,28 +13,62 @@ func _capture() -> void:
 	var main := MAIN.instantiate()
 	root.add_child(main)
 
-	# Give imports, camera, procedural environment and first-frame lighting time to settle.
-	for _i in range(20):
+	# MainMenu intentionally pauses on boot. Invoke the same start path as the PLAY button.
+	for _i in range(8):
+		await process_frame
+	var menu := main.get_node_or_null("MainMenu")
+	if menu == null or not menu.has_method("_start"):
+		push_error("ARCONT_GAMEPLAY_SCREENSHOT: MainMenu start path unavailable")
+		quit(1)
+		return
+	menu.call("_start")
+
+	# Let the actual mission, procedural environment, lighting and camera run.
+	for _i in range(90):
 		await process_frame
 
-	RenderingServer.force_draw(false)
-	await process_frame
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUTPUT_DIR))
+	await _save_view("gameplay-start.png")
 
-	var viewport := root.get_viewport()
-	var image := viewport.get_texture().get_image()
-	if image == null or image.is_empty():
-		push_error("ARCONT_SCREENSHOT: viewport image is empty")
+	var player := main.get_node_or_null("Player") as Node3D
+	if player == null:
+		push_error("ARCONT_GAMEPLAY_SCREENSHOT: Player unavailable")
 		quit(1)
 		return
 
-	var output_path := ProjectSettings.globalize_path(OUTPUT)
-	var err := image.save_png(output_path)
-	if err != OK:
-		push_error("ARCONT_SCREENSHOT: save_png failed with code %d" % err)
-		quit(1)
-		return
+	# Move through the authored village along the playable corridor. These are real
+	# runtime camera views; we only reposition the player between observational shots.
+	player.position = Vector3(0.0, 1.05, 28.0)
+	for _i in range(20): await process_frame
+	await _save_view("gameplay-village-approach.png")
 
-	print("ARCONT_SCREENSHOT|path=%s|width=%d|height=%d" % [output_path, image.get_width(), image.get_height()])
+	player.position = Vector3(-6.0, 1.05, 2.0)
+	player.rotation.y = deg_to_rad(18.0)
+	for _i in range(20): await process_frame
+	await _save_view("gameplay-village-center.png")
+
+	player.position = Vector3(5.0, 1.05, -28.0)
+	player.rotation.y = deg_to_rad(170.0)
+	for _i in range(20): await process_frame
+	await _save_view("gameplay-north-lookback.png")
+
 	main.queue_free()
 	await process_frame
 	quit(0)
+
+func _save_view(file_name: String) -> void:
+	RenderingServer.force_draw(false)
+	await process_frame
+	var image := root.get_viewport().get_texture().get_image()
+	if image == null or image.is_empty():
+		push_error("ARCONT_GAMEPLAY_SCREENSHOT: viewport image is empty for %s" % file_name)
+		quit(1)
+		return
+	var output := OUTPUT_DIR + "/" + file_name
+	var output_path := ProjectSettings.globalize_path(output)
+	var err := image.save_png(output_path)
+	if err != OK:
+		push_error("ARCONT_GAMEPLAY_SCREENSHOT: save_png failed for %s with code %d" % [file_name, err])
+		quit(1)
+		return
+	print("ARCONT_GAMEPLAY_SCREENSHOT|path=%s|width=%d|height=%d" % [output_path, image.get_width(), image.get_height()])
