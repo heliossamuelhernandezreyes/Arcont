@@ -45,7 +45,8 @@ func _init()->void:
    if rig.position.y<1.35 or rig.position.y>1.85:failures.append("Altura de pivote TPS inválida: "+str(rig.position.y))
    if arm.spring_length<3.5 or arm.spring_length>5.5:failures.append("SpringArm fuera de rango TPS exploración: "+str(arm.spring_length))
    if absf(arm.position.x)<0.45 or absf(arm.position.x)>1.15:failures.append("Offset de hombro SpringArm inválido: "+str(arm.position.x))
-   if cam.position.length()>0.05:failures.append("Camera3D debe quedar en origen local del SpringArm: "+str(cam.position))
+   if cam.get_parent()!=arm:failures.append("Camera3D debe ser hija directa del SpringArm para conservar la solución nativa de colisión")
+   if absf(cam.position.x)>0.05 or absf(cam.position.y)>0.05:failures.append("Camera3D adquirió deriva lateral/vertical local inesperada: "+str(cam.position))
    if not cam.current:failures.append("Camera3D TPS no es current")
   var locomotion:=main.get_node_or_null("Player/BodyVisual/LocomotionAnimationPlayer") as AnimationPlayer
   if locomotion==null:failures.append("No se creó AnimationPlayer de locomoción en runtime")
