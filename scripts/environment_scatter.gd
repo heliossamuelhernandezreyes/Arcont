@@ -139,15 +139,22 @@ func _make_cell(node_name:String,center:Vector3,count:int,kind:String)->void:
  node.multimesh=mm
  node.set_meta("scatter_cell",true); node.set_meta("biome_kind",kind); node.set_meta("accepted_instances",accepted.size())
  if kind!="stone":
+  var metric_range:=_metric_range_for(kind)
   node.set_meta("asset_source",String(prototypes[kind]["path"])); node.set_meta("cc0_runtime",bool(prototypes[kind]["real"]))
+  node.set_meta("metric_instance_contract",true); node.set_meta("metric_scale_mode","uniform_longest_extent")
+  node.set_meta("metric_source_extent_m",float(prototypes[kind]["source_extent"])); node.set_meta("metric_target_min_m",metric_range.x); node.set_meta("metric_target_max_m",metric_range.y)
  add_child(node)
 
-func _target_extent(kind:String)->float:
+func _metric_range_for(kind:String)->Vector2:
  match kind:
-  "tree": return rng.randf_range(8.0,13.2)
-  "shrub": return rng.randf_range(1.1,1.85)
-  "grass": return rng.randf_range(0.62,1.12)
-  _: return 1.0
+  "tree": return Vector2(8.0,13.2)
+  "shrub": return Vector2(1.1,1.85)
+  "grass": return Vector2(0.62,1.12)
+  _: return Vector2(1.0,1.0)
+
+func _target_extent(kind:String)->float:
+ var metric_range:=_metric_range_for(kind)
+ return rng.randf_range(metric_range.x,metric_range.y)
 
 func _visibility_for(kind:String)->float:
  if kind=="grass": return minf(visibility_end,48.0)
