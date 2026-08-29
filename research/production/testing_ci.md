@@ -39,5 +39,22 @@ Operational rule: before committing an intentional contract deletion/rename, sea
 
 Re-audit: structural test framework changes, major scene architecture rewrite, or CI pipeline redesign.
 
+## Consolidated-instance regression contracts
+Status: IMPLEMENTED / EVOLVING.
+
+When repeated scene nodes are migrated into `MultiMeshInstance3D`, node count is no longer a valid proxy for content density or art coverage. Validate the replacement architecture using explicit metadata and aggregate instance counts: source asset, semantic kind, accepted instance count, metric source extent, target metric range, and whether the real runtime asset or a fallback is active.
+
+Arcont evidence (2026-08-29): the CC0 forest migration consolidated repeated grass, shrubs and trees. CI #425/#428 exposed stale tests that still counted individual forest nodes. The replacement contracts now validate 96 grass + 64 shrub + 96 tree instances (256 total) and require the CC0 tree cells rather than restoring duplicate nodes. CI #429 completed through Android export after those contracts were migrated.
+
+Operational rule: when optimizing representation, preserve the gameplay/art invariant but change the observable used by the test. Never reintroduce expensive duplicate nodes merely to satisfy an assertion written for the old representation.
+
+## Current non-blocking CI warnings
+Observed on the validated terrain-grounding run #432 (2026-08-29):
+- Android export reports that no project icon is configured. The debug APK is still created, signed, verified and uploaded; treat this as release/presentation debt, not a gameplay blocker.
+- Some headless tests report one leaked `ObjectDB` instance at exit. CI currently passes, but investigate before treating repeated scene load/unload memory behavior as production-clean.
+- Hosted CI has no ADB daemon, so `cannot connect to daemon at tcp:5037` can appear during headless Android tooling. This is not evidence of a device-runtime failure.
+
+Do not silence these warnings blindly. Track whether they persist, identify ownership, and turn them into failing contracts only when the expected clean behavior is defined and reproducible.
+
 ## Dependency discipline
 Pin important engine/tool versions, record upgrade rationale, and re-audit Reference Lab findings when engine behavior changes.
