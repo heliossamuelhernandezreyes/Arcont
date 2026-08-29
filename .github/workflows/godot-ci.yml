@@ -93,6 +93,14 @@ jobs:
       - name: Performance telemetry contract
         run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/performance_telemetry_test.gd
 
+      - name: ObjectDB lifecycle diagnostic
+        shell: bash
+        run: |
+          set -o pipefail
+          "$GODOT_BIN" --verbose --headless --path "$GITHUB_WORKSPACE" --script res://tests/forest_village_art_test.gd 2>&1 | tee objectdb-diagnostic.log
+          echo "--- ObjectDB diagnostic excerpt ---"
+          grep -Ei -C 8 "ObjectDB|leak|orphan" objectdb-diagnostic.log || true
+
       - name: Structural smoke test
         run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/smoke_test.gd
 
