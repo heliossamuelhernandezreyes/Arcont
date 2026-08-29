@@ -26,18 +26,18 @@ height=1.8
 size=Vector3(0.16,0.11,0.62)
 [sub_resource type="Environment" id="Env"]
 background_mode=1
-background_color=Color(0.025,0.045,0.055,1)
+background_color=Color(0.035,0.065,0.085,1)
 ambient_light_source=3
-ambient_light_color=Color(0.38,0.47,0.52,1)
-ambient_light_energy=0.72
+ambient_light_color=Color(0.46,0.57,0.64,1)
+ambient_light_energy=1.02
 reflected_light_source=2
 tonemap_mode=2
 fog_enabled=true
-fog_light_color=Color(0.23,0.30,0.31,1)
-fog_light_energy=0.55
-fog_density=0.006
-fog_height=1.5
-fog_height_density=0.12
+fog_light_color=Color(0.29,0.37,0.40,1)
+fog_light_energy=0.72
+fog_density=0.0045
+fog_height=1.8
+fog_height_density=0.085
 [node name="Main" type="Node3D"]
 script=ExtResource("2_main")
 [node name="PerformanceBudget" type="Node" parent="."]
@@ -60,10 +60,10 @@ script=ExtResource("12_throwables")
 environment=SubResource("Env")
 [node name="MoonLight" type="DirectionalLight3D" parent="."]
 rotation_degrees=Vector3(-48,-31,0)
-light_color=Color(0.72,0.82,0.88,1)
-light_energy=1.35
+light_color=Color(0.72,0.84,0.94,1)
+light_energy=1.65
 shadow_enabled=true
-shadow_blur=1.35
+shadow_blur=1.45
 [node name="EmergencyLight" type="OmniLight3D" parent="."]
 position=Vector3(-8,3.2,28)
 light_color=Color(1,0.28,0.10,1)
@@ -107,14 +107,15 @@ position=Vector3(0,0.35,0)
 target_position=Vector3(0,0,-1.0)
 enabled=true
 [node name="CameraRig" type="Node3D" parent="Player"]
+position=Vector3(0,1.58,0)
 [node name="SpringArm3D" type="SpringArm3D" parent="Player/CameraRig"]
-spring_length=5.45
-margin=0.22
+spring_length=4.65
+margin=0.18
 [node name="Camera3D" type="Camera3D" parent="Player/CameraRig/SpringArm3D"]
-position=Vector3(1.15,0.95,0)
+position=Vector3(0.82,0,0)
 current=true
 fov=72.0
-near=0.12
+near=0.08
 [node name="Weapon" type="Node" parent="Player"]
 script=ExtResource("4_weapon")
 [node name="VisualAnimator" type="Node" parent="Player/Weapon"]
