@@ -12,6 +12,7 @@ const READABILITY_PASS := preload("res://scripts/forest_village_readability_pass
 const PROP_TONE_PASS := preload("res://scripts/village_prop_tone_pass.gd")
 const ORGANIC_FOREST_PASS := preload("res://scripts/organic_forest_proxy_pass.gd")
 const SURFACE_CLEANUP_PASS := preload("res://scripts/village_surface_cleanup_pass.gd")
+const FOREST_STRATA_PASS := preload("res://scripts/forest_strata_pass.gd")
 
 const HOUSE_SPECS := [
  [Vector3(-22,0.12,-20),16.0,0], [Vector3(20,0.12,-23),-18.0,1],
@@ -37,7 +38,7 @@ func _build_pass() -> void:
   var house := ModularHouseBuilder.build(self,pos,float(spec[1]),int(spec[2]),materials)
   house.set_meta("terrain_base_y",_height(authored.x,authored.z))
  _mount_map_legibility_passes()
- set_meta("art_status","ART-PASS-16-FOREST-VILLAGE-SURFACE-CLEANUP")
+ set_meta("art_status","ART-PASS-17-LAYERED-FOREST")
  set_meta("house_count",HOUSE_SPECS.size())
  set_meta("architecture_contract","MODULAR-HOUSE-V2-MESH-ROOF")
  set_meta("legacy_single_mesh_houses","visuals_hidden; collision retained")
@@ -46,42 +47,23 @@ func _build_pass() -> void:
 
 func _mount_map_legibility_passes() -> void:
  var world := get_parent()
- if world.get_node_or_null("ContinuousRouteSurfacePass") == null:
-  var route_pass := CONTINUOUS_ROUTE_PASS.new()
-  route_pass.name = "ContinuousRouteSurfacePass"
-  world.add_child(route_pass)
- if world.get_node_or_null("VillageUrbanStructurePass") == null:
-  var urban_pass := URBAN_STRUCTURE_PASS.new()
-  urban_pass.name = "VillageUrbanStructurePass"
-  world.add_child(urban_pass)
- if world.get_node_or_null("VillageMapCompositionPass") == null:
-  var composition_pass := MAP_COMPOSITION_PASS.new()
-  composition_pass.name = "VillageMapCompositionPass"
-  world.add_child(composition_pass)
- if world.get_node_or_null("ForestVisualTonePass") == null:
-  var tone_pass := FOREST_TONE_PASS.new()
-  tone_pass.name = "ForestVisualTonePass"
-  world.add_child(tone_pass)
- if world.get_node_or_null("VillageAtmospherePass") == null:
-  var atmosphere_pass := ATMOSPHERE_PASS.new()
-  atmosphere_pass.name = "VillageAtmospherePass"
-  world.add_child(atmosphere_pass)
- if world.get_node_or_null("ForestVillageReadabilityPass") == null:
-  var readability_pass := READABILITY_PASS.new()
-  readability_pass.name = "ForestVillageReadabilityPass"
-  world.add_child(readability_pass)
- if world.get_node_or_null("VillagePropTonePass") == null:
-  var prop_pass := PROP_TONE_PASS.new()
-  prop_pass.name = "VillagePropTonePass"
-  world.add_child(prop_pass)
- if world.get_node_or_null("OrganicForestProxyPass") == null:
-  var organic_pass := ORGANIC_FOREST_PASS.new()
-  organic_pass.name = "OrganicForestProxyPass"
-  world.add_child(organic_pass)
- if world.get_node_or_null("VillageSurfaceCleanupPass") == null:
-  var cleanup_pass := SURFACE_CLEANUP_PASS.new()
-  cleanup_pass.name = "VillageSurfaceCleanupPass"
-  world.add_child(cleanup_pass)
+ _mount(world,"ContinuousRouteSurfacePass",CONTINUOUS_ROUTE_PASS)
+ _mount(world,"VillageUrbanStructurePass",URBAN_STRUCTURE_PASS)
+ _mount(world,"VillageMapCompositionPass",MAP_COMPOSITION_PASS)
+ _mount(world,"ForestVisualTonePass",FOREST_TONE_PASS)
+ _mount(world,"VillageAtmospherePass",ATMOSPHERE_PASS)
+ _mount(world,"ForestVillageReadabilityPass",READABILITY_PASS)
+ _mount(world,"VillagePropTonePass",PROP_TONE_PASS)
+ _mount(world,"OrganicForestProxyPass",ORGANIC_FOREST_PASS)
+ _mount(world,"VillageSurfaceCleanupPass",SURFACE_CLEANUP_PASS)
+ _mount(world,"ForestStrataPass",FOREST_STRATA_PASS)
+
+func _mount(world: Node,name_text: String,script_resource: Script) -> void:
+ if world.get_node_or_null(name_text) != null:
+  return
+ var pass_node := script_resource.new()
+ pass_node.name = name_text
+ world.add_child(pass_node)
 
 func _hide_legacy_houses(node: Node) -> void:
  for child in node.get_children():
