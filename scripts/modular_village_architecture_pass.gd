@@ -8,6 +8,7 @@ const FOREST_TONE_PASS := preload("res://scripts/forest_visual_tone_pass.gd")
 const URBAN_STRUCTURE_PASS := preload("res://scripts/village_urban_structure_pass.gd")
 const MAP_COMPOSITION_PASS := preload("res://scripts/village_map_composition_pass.gd")
 const ATMOSPHERE_PASS := preload("res://scripts/village_atmosphere_pass.gd")
+const READABILITY_PASS := preload("res://scripts/forest_village_readability_pass.gd")
 
 const HOUSE_SPECS := [
  [Vector3(-22,0.12,-20),16.0,0], [Vector3(20,0.12,-23),-18.0,1],
@@ -33,7 +34,7 @@ func _build_pass() -> void:
   var house := ModularHouseBuilder.build(self,pos,float(spec[1]),int(spec[2]),materials)
   house.set_meta("terrain_base_y",_height(authored.x,authored.z))
  _mount_map_legibility_passes()
- set_meta("art_status","ART-PASS-12B-FOREST-VILLAGE-COMPOSITION")
+ set_meta("art_status","ART-PASS-13-FOREST-VILLAGE-READABILITY")
  set_meta("house_count",HOUSE_SPECS.size())
  set_meta("architecture_contract","MODULAR-HOUSE-V2-MESH-ROOF")
  set_meta("legacy_single_mesh_houses","visuals_hidden; collision retained")
@@ -62,6 +63,10 @@ func _mount_map_legibility_passes() -> void:
   var atmosphere_pass := ATMOSPHERE_PASS.new()
   atmosphere_pass.name = "VillageAtmospherePass"
   world.add_child(atmosphere_pass)
+ if world.get_node_or_null("ForestVillageReadabilityPass") == null:
+  var readability_pass := READABILITY_PASS.new()
+  readability_pass.name = "ForestVillageReadabilityPass"
+  world.add_child(readability_pass)
 
 func _hide_legacy_houses(node: Node) -> void:
  for child in node.get_children():
