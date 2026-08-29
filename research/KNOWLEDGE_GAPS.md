@@ -12,6 +12,7 @@ This file is a living queue, not a statement that a topic is unimportant.
 - Mobile urban visibility, occlusion, LOD/HLOD and shadow budgets.
 - Audio architecture and spatial gunshot/impact/footstep system.
 - Data-driven weapons/enemies/materials/encounters using Resources.
+- Forest prop acquisition: find/license/validate a true fallen-trunk or deadwood asset and a small ground-stone family suitable for repeated scatter. Current promoted candidates `campfire_logs.fbx` and `cliff_blockCave_rock.fbx` are semantically/scale-inappropriate for those roles; do not substitute them merely to eliminate procedural placeholders.
 
 ## Priority B — near-term production
 - Root motion policy for vaults, mantles, melee and executions.
