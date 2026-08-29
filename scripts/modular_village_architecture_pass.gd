@@ -5,6 +5,7 @@ extends Node3D
 
 const CONTINUOUS_ROUTE_PASS := preload("res://scripts/continuous_route_surface_pass.gd")
 const FOREST_TONE_PASS := preload("res://scripts/forest_visual_tone_pass.gd")
+const URBAN_STRUCTURE_PASS := preload("res://scripts/village_urban_structure_pass.gd")
 
 const HOUSE_SPECS := [
  [Vector3(-22,0.12,-20),16.0,0], [Vector3(20,0.12,-23),-18.0,1],
@@ -24,47 +25,18 @@ func _build_pass() -> void:
  if legacy != null:
   _hide_legacy_houses(legacy)
  var materials := _materials()
- var repaired_roofs := 0
  for spec in HOUSE_SPECS:
   var authored: Vector3 = spec[0]
-  var pos := Vector3(authored.x, _height(authored.x, authored.z) + authored.y, authored.z)
-  var house := ModularHouseBuilder.build(self, pos, float(spec[1]), int(spec[2]), materials)
-  house.set_meta("terrain_base_y", _height(authored.x, authored.z))
-  _repair_roof_readability(house)
-  repaired_roofs += 1
+  var pos := Vector3(authored.x,_height(authored.x,authored.z)+authored.y,authored.z)
+  var house := ModularHouseBuilder.build(self,pos,float(spec[1]),int(spec[2]),materials)
+  house.set_meta("terrain_base_y",_height(authored.x,authored.z))
  _mount_map_legibility_passes()
- set_meta("art_status", "ART-PASS-10-MAP-LEGIBILITY")
- set_meta("house_count", HOUSE_SPECS.size())
- set_meta("architecture_contract", "MODULAR-HOUSE-V2-ROOF-FIX")
- set_meta("repaired_roofs", repaired_roofs)
- set_meta("legacy_single_mesh_houses", "visuals_hidden; collision retained")
- set_meta("visual_acceptance", "PENDING_CAPTURE_REVIEW")
- set_meta("mobile_validation", "PENDING")
-
-func _repair_roof_readability(house: Node3D) -> void:
- # CI #450 showed the generated gable planes forming a valley/inverted-V.
- # Correct their slope directions after construction. The four-plane hip
- # approximation also overlapped badly in the capture, so suppress its side
- # plates until a purpose-built hip mesh replaces the approximation.
- var left := house.get_node_or_null("RoofLeft") as Node3D
- var right := house.get_node_or_null("RoofRight") as Node3D
- if left != null:
-  left.rotation_degrees.z = 28.0
- if right != null:
-  right.rotation_degrees.z = -28.0
- var fascia_left := house.get_node_or_null("FasciaLeft") as Node3D
- var fascia_right := house.get_node_or_null("FasciaRight") as Node3D
- if fascia_left != null:
-  fascia_left.rotation_degrees.z = 28.0
- if fascia_right != null:
-  fascia_right.rotation_degrees.z = -28.0
- var hip_left := house.get_node_or_null("HipLeft") as Node3D
- var hip_right := house.get_node_or_null("HipRight") as Node3D
- if hip_left != null:
-  hip_left.visible = false
- if hip_right != null:
-  hip_right.visible = false
- house.set_meta("roof_visual_fix", "CI450-slope-correction")
+ set_meta("art_status","ART-PASS-11-VILLAGE-STRUCTURE")
+ set_meta("house_count",HOUSE_SPECS.size())
+ set_meta("architecture_contract","MODULAR-HOUSE-V2-MESH-ROOF")
+ set_meta("legacy_single_mesh_houses","visuals_hidden; collision retained")
+ set_meta("visual_acceptance","PENDING_CAPTURE_REVIEW")
+ set_meta("mobile_validation","PENDING")
 
 func _mount_map_legibility_passes() -> void:
  var world := get_parent()
@@ -72,6 +44,10 @@ func _mount_map_legibility_passes() -> void:
   var route_pass := CONTINUOUS_ROUTE_PASS.new()
   route_pass.name = "ContinuousRouteSurfacePass"
   world.add_child(route_pass)
+ if world.get_node_or_null("VillageUrbanStructurePass") == null:
+  var urban_pass := URBAN_STRUCTURE_PASS.new()
+  urban_pass.name = "VillageUrbanStructurePass"
+  world.add_child(urban_pass)
  if world.get_node_or_null("ForestVisualTonePass") == null:
   var tone_pass := FOREST_TONE_PASS.new()
   tone_pass.name = "ForestVisualTonePass"
@@ -79,19 +55,17 @@ func _mount_map_legibility_passes() -> void:
 
 func _hide_legacy_houses(node: Node) -> void:
  for child in node.get_children():
-  if child is Node3D and String(child.get_meta("art_layer", "")) == "village":
+  if child is Node3D and String(child.get_meta("art_layer","")) == "village":
    (child as Node3D).visible = false
-   child.set_meta("superseded_visual_by", "ModularVillageArchitecturePass")
+   child.set_meta("superseded_visual_by","ModularVillageArchitecturePass")
   _hide_legacy_houses(child)
 
 func _height(x: float, z: float) -> float:
  if terrain != null and terrain.has_method("get_height_at"):
-  return float(terrain.call("get_height_at", x, z))
+  return float(terrain.call("get_height_at",x,z))
  return 0.0
 
 func _materials() -> Dictionary:
- # Muted procedural placeholders: silhouette/layout first, architectural PBR
- # after this pass survives capture review.
  var plaster := _mat(Color(0.38,0.35,0.29),0.94)
  var plaster_alt := _mat(Color(0.255,0.285,0.255),0.96)
  var roof := _mat(Color(0.145,0.048,0.036),0.93)
