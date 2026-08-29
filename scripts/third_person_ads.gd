@@ -1,8 +1,10 @@
 extends Node
 class_name ThirdPersonADS
 
-# CameraRig owns orbit. The pivot is raised to chest/head level; SpringArm owns
-# collision distance; Camera3D only owns the lateral shoulder offset.
+# CameraRig owns orbit and vertical pivot. SpringArm owns BOTH the lateral
+# shoulder origin and collision distance. Camera3D stays at local origin so the
+# SpringArm is free to place its direct child at the solved collision distance
+# without fighting a second positional owner.
 @export var hip_distance := 4.65
 @export var hip_pivot_height := 1.58
 @export var hip_shoulder := 0.82
@@ -55,8 +57,9 @@ func _force_tactical_startup() -> void:
   weapon.set_ads(false)
  var target := _camera_target(false,1.0)
  camera_rig.position.y = target.y
+ spring_arm.position.x = target.x
  spring_arm.spring_length = target.z
- camera.position = Vector3(target.x,0.0,0.0)
+ camera.position = Vector3.ZERO
  camera.fov = hip_fov
  _update_near_camera_visibility()
 
@@ -70,10 +73,10 @@ func _physics_process(delta: float) -> void:
  var target := _camera_target(aiming,shoulder)
  var blend := 1.0 - exp(-transition_speed * delta)
  camera_rig.position.y = lerpf(camera_rig.position.y,target.y,blend)
+ spring_arm.position.x = lerpf(spring_arm.position.x,target.x,blend)
  spring_arm.spring_length = lerpf(spring_arm.spring_length,target.z,blend)
- camera.position.x = lerpf(camera.position.x,target.x,blend)
- camera.position.y = 0.0
- camera.position.z = 0.0
+ camera.position = Vector3.ZERO
+ camera.fov = lerpf(camera.fov, hip_fov if not aiming else 64.0, blend)
  _update_near_camera_visibility()
 
 func _camera_target(aiming: bool, shoulder: float) -> Vector3:
@@ -83,9 +86,10 @@ func _camera_target(aiming: bool, shoulder: float) -> Vector3:
  return Vector3(hip_shoulder * shoulder,hip_pivot_height,maxf(hip_distance * scale,minimum_safe_distance))
 
 func _update_near_camera_visibility() -> void:
- # SpringArm can legitimately collapse in doorways. Hiding only the operator shell
- # at extreme compression prevents the camera from rendering from inside the head.
- var actual_distance := camera.global_position.distance_to(player.global_position + Vector3.UP * camera_rig.position.y)
+ # Only hide the operator when collision legitimately puts the camera inside the
+ # body shell. Under normal shoulder TPS the arm should keep this well above the
+ # threshold; the semantic render diagnostic guards that invariant.
+ var actual_distance := get_camera_distance()
  var shell_visible := actual_distance >= minimum_safe_distance
  for mesh in body_meshes:
   if is_instance_valid(mesh):
