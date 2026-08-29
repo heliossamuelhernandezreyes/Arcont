@@ -72,6 +72,9 @@ jobs:
       - name: Rig and animation asset test
         run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/rig_asset_test.gd
 
+      - name: TPS screen-space diagnostic
+        run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/tps_render_diagnostic.gd
+
       - name: Metric asset scale test
         run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/asset_scale_test.gd
 
@@ -130,6 +133,26 @@ jobs:
           if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" boot.log; then exit 1; fi
           exit 0
 
+      - name: Capture TPS character contract screenshots
+        shell: bash
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        run: |
+          set -euo pipefail
+          rm -rf build/character-contract-captures
+          mkdir -p build/character-contract-captures
+          xvfb-run -a "$GODOT_BIN" --path "$GITHUB_WORKSPACE" --rendering-method gl_compatibility --script res://tests/capture_character_contract.gd | tee character-capture.log
+          test "$(find build/character-contract-captures -maxdepth 1 -name '*.png' -type f | wc -l)" -eq 3
+          file build/character-contract-captures/*.png
+
+      - name: Upload TPS character contract screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: Arcont-Character-Contract-Screenshots
+          path: build/character-contract-captures/*.png
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Capture in-mission gameplay screenshots
         shell: bash
         env:
@@ -165,7 +188,7 @@ jobs:
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
-          name: Arcont-Android-Debug-ForestVillage-Polished
+          name: Arcont-Android-Debug-ForestVillage
           path: build/Arcont-debug.apk
           if-no-files-found: error
           retention-days: 14
