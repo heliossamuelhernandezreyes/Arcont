@@ -73,7 +73,10 @@ jobs:
         run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/rig_asset_test.gd
 
       - name: TPS screen-space diagnostic
-        run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/tps_render_diagnostic.gd
+        shell: bash
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        run: xvfb-run -a "$GODOT_BIN" --path "$GITHUB_WORKSPACE" --rendering-method gl_compatibility --script res://tests/tps_render_diagnostic.gd
 
       - name: Metric asset scale test
         run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/asset_scale_test.gd
@@ -83,6 +86,9 @@ jobs:
 
       - name: Weapon visual contract test
         run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/weapon_visual_test.gd
+
+      - name: Zombie animation compatibility diagnostic
+        run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/zombie_animation_compatibility_diagnostic.gd
 
       - name: Zombie visual contract test
         run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/zombie_visual_test.gd
