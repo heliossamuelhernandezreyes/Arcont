@@ -1,8 +1,8 @@
 extends Node3D
 
-# ART-PASS-13: final readability layer for the current prototype assets.
-# Brings the forest into the settlement edge and adds a sparse practical-light
-# rhythm so architecture, fences and routes remain legible at dusk.
+# ART-PASS-13B: readability layer for current prototype assets. Forest masses
+# use a very low emissive floor only so CI/software captures preserve their
+# silhouette; final foliage shading remains pending the realistic tree family.
 
 const TREE := "res://assets/provisional/cc0_runtime/forest/tree_blocks.fbx"
 const BUSH := "res://assets/provisional/cc0_runtime/forest/plant_bush.fbx"
@@ -22,14 +22,14 @@ func _build() -> void:
  if terrain == null or not terrain.has_method("get_height_at"):
   return
  rng.seed = 130829
- tree_mat = _mat(Color(0.055,0.095,0.045),0.98)
- shrub_mat = _mat(Color(0.065,0.105,0.045),0.99)
+ tree_mat = _foliage(Color(0.075,0.135,0.065),0.18)
+ shrub_mat = _foliage(Color(0.085,0.145,0.060),0.16)
  wood_mat = _mat(Color(0.080,0.045,0.026),0.98)
  lamp_mat = _emissive(Color(0.42,0.18,0.055),Color(1.0,0.34,0.08),2.0)
  _encroach_forest()
  _practical_lights()
- set_meta("art_status","ART-PASS-13-FOREST-VILLAGE-READABILITY")
- set_meta("visual_contract","FOREST-ENCROACHMENT-AND-PRACTICALS-V1")
+ set_meta("art_status","ART-PASS-13B-FOREST-VILLAGE-READABILITY")
+ set_meta("visual_contract","FOREST-ENCROACHMENT-AND-PRACTICALS-V2")
  set_meta("final_tree_asset",false)
  set_meta("mobile_validation","PENDING")
 
@@ -102,6 +102,9 @@ func _height(x: float,z: float) -> float:
 
 func _mat(color: Color,roughness: float) -> StandardMaterial3D:
  var m := StandardMaterial3D.new(); m.albedo_color = color; m.roughness = roughness; return m
+
+func _foliage(color: Color,energy: float) -> StandardMaterial3D:
+ var m := _mat(color,0.98); m.emission_enabled = true; m.emission = color; m.emission_energy_multiplier = energy; return m
 
 func _emissive(color: Color,emission: Color,energy: float) -> StandardMaterial3D:
  var m := _mat(color,0.86); m.emission_enabled = true; m.emission = emission; m.emission_energy_multiplier = energy; return m
