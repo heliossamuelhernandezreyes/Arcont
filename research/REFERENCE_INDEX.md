@@ -28,6 +28,7 @@ Start with [art/ART_BIBLE.md](art/ART_BIBLE.md) and use [art/ART_AUDIT_CHECKLIST
 - [art/ANIMATION_QUALITY.md](art/ANIMATION_QUALITY.md) — locomotion, combat, traversal and retargeting quality.
 - [art/MOBILE_VISUAL_BUDGETS.md](art/MOBILE_VISUAL_BUDGETS.md) — visual budget framework and benchmark scenes.
 - [art/AI_ASSET_PIPELINE.md](art/AI_ASSET_PIPELINE.md) — generative 3D to production asset pipeline.
+- [art/MODEL_ASSET_CATALOG.md](art/MODEL_ASSET_CATALOG.md) — persistent external 3D model/gallery catalog, provenance, status and mobile trial policy.
 - [art/ART_AUDIT_CHECKLIST.md](art/ART_AUDIT_CHECKLIST.md) — reusable visual/technical review gate.
 - [art/CURRENT_BUILD_ART_AUDIT.md](art/CURRENT_BUILD_ART_AUDIT.md) — audited disposition and production order for the current mobile-playtest-2 visuals.
 - [art/OFFICIAL_SOURCES.md](art/OFFICIAL_SOURCES.md) — primary Godot documentation catalog.
