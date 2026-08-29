@@ -130,22 +130,23 @@ jobs:
           if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" boot.log; then exit 1; fi
           exit 0
 
-      - name: Capture current playable build screenshot
+      - name: Capture in-mission gameplay screenshots
         shell: bash
         env:
           LIBGL_ALWAYS_SOFTWARE: "1"
         run: |
           set -euo pipefail
-          mkdir -p build
+          rm -rf build/gameplay-captures
+          mkdir -p build/gameplay-captures
           xvfb-run -a "$GODOT_BIN" --path "$GITHUB_WORKSPACE" --rendering-method gl_compatibility --script res://tests/capture_current_build.gd | tee screenshot-capture.log
-          test -s build/arcont-current-build.png
-          file build/arcont-current-build.png
+          test "$(find build/gameplay-captures -maxdepth 1 -name '*.png' -type f | wc -l)" -eq 4
+          file build/gameplay-captures/*.png
 
-      - name: Upload current build screenshot
+      - name: Upload in-mission gameplay screenshots
         uses: actions/upload-artifact@v4
         with:
-          name: Arcont-Current-Build-Screenshot
-          path: build/arcont-current-build.png
+          name: Arcont-In-Mission-Gameplay-Screenshots
+          path: build/gameplay-captures/*.png
           if-no-files-found: error
           retention-days: 14
 
