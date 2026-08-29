@@ -32,7 +32,7 @@ func _init() -> void:
  _check_methods("res://scripts/enemy.gd",["receive_melee_attack","force_knockdown","melee_execute","apply_hit","_sever_limb","_enter_crawl","_spawn_physics_parts","set_performance_profile"],failures)
  _check_methods("res://scripts/weapon.gd",["set_trigger","set_ads","cycle_weapon","switch_weapon","try_fire","_fire_weapon","_trace_round","request_reload","active_reload_tap","add_ammo","_build_weapon_visual"],failures)
  _check_methods("res://scripts/weapon_visual_animator.gd",["_bind_visual","_capture_detail_bases","_on_shot","_on_reload_state","_animate_m90","_animate_m90_reload","_ensure_round_visual"],failures)
- _check_methods("res://scripts/third_person_ads.gd",["_camera_target","is_aiming"],failures)
+ _check_methods("res://scripts/third_person_ads.gd",["_camera_target","_update_near_camera_visibility","get_camera_distance","is_aiming"],failures)
  _check_methods("res://scripts/tactical_mobility.gd",["toggle_crouch","request_slide","try_contextual_jump","try_vault","try_mantle","request_dodge","movement_speed_multiplier","blocks_normal_movement"],failures)
  _check_methods("res://scripts/awareness_director.gd",["report_sound","sustain_lure","recent_sound_for","report_contact","shared_intel_for"],failures)
  _check_methods("res://scripts/throwable_controller.gd",["cycle_throwable","throw_selected","mobile_throw","mobile_cycle","_bind_hud","_update_hud"],failures)
@@ -51,6 +51,10 @@ func _init() -> void:
  _check_text("res://project.godot","pointing/emulate_mouse_from_touch=false",failures)
  _check_text("res://project.godot","pointing/emulate_touch_from_mouse=false",failures)
  _check_text("res://scripts/third_person_ads.gd","spring_arm.add_excluded_object(player.get_rid())",failures)
+ _check_text("res://scripts/third_person_ads.gd","hip_pivot_height := 1.58",failures)
+ _check_text("res://scripts/third_person_ads.gd","minimum_safe_distance := 0.72",failures)
+ _check_text("res://scenes/main.tscn","position=Vector3(0,1.58,0)",failures)
+ _check_text("res://scenes/main.tscn","position=Vector3(0.82,0,0)",failures)
  _check_text("res://scripts/provisional_character_visual.gd","AnimationNodeStateMachine.new()",failures)
  _check_text("res://scripts/provisional_character_visual.gd","parameters/ads_layer/blend_amount",failures)
  _check_text("res://scripts/performance_budget.gd","signal visual_budget_changed",failures)
@@ -63,7 +67,7 @@ func _init() -> void:
  _check_text("res://scripts/forest_village_polish.gd","macro>meso>micro",failures)
 
  if failures.is_empty():
-  print("ARCONT CI: forest village smoke test OK")
+  print("ARCONT CI: forest village + true TPS smoke test OK")
   quit(0)
   return
  for failure in failures:
