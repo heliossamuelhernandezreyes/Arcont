@@ -121,10 +121,11 @@ enabled=true
 [node name="CameraRig" type="Node3D" parent="Player"]
 position=Vector3(0,1.58,0)
 [node name="SpringArm3D" type="SpringArm3D" parent="Player/CameraRig"]
+position=Vector3(0.82,0,0)
 spring_length=4.65
 margin=0.18
 [node name="Camera3D" type="Camera3D" parent="Player/CameraRig/SpringArm3D"]
-position=Vector3(0.82,0,0)
+position=Vector3(0,0,0)
 current=true
 fov=72.0
 near=0.08
@@ -258,8 +259,3 @@ grow_horizontal=2
 grow_vertical=2
 mouse_filter=2
 joystick_radius=76.0
-button_radius=40.0
-script=ExtResource("3_mobile")
-[node name="MainMenu" type="CanvasLayer" parent="."]
-process_mode=3
-script=ExtResource("19_menu")
