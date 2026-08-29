@@ -1,6 +1,6 @@
 extends Node3D
 
-# ART-PASS-13B: readability layer for current prototype assets. Forest masses
+# ART-PASS-14: readability layer for current prototype assets. Forest masses
 # use a very low emissive floor only so CI/software captures preserve their
 # silhouette; final foliage shading remains pending the realistic tree family.
 
@@ -27,9 +27,10 @@ func _build() -> void:
  wood_mat = _mat(Color(0.080,0.045,0.026),0.98)
  lamp_mat = _emissive(Color(0.42,0.18,0.055),Color(1.0,0.34,0.08),2.0)
  _encroach_forest()
+ _roadside_growth()
  _practical_lights()
- set_meta("art_status","ART-PASS-13B-FOREST-VILLAGE-READABILITY")
- set_meta("visual_contract","FOREST-ENCROACHMENT-AND-PRACTICALS-V2")
+ set_meta("art_status","ART-PASS-14-FOREST-VILLAGE-READABILITY")
+ set_meta("visual_contract","FOREST-ENCROACHMENT-AND-PRACTICALS-V3")
  set_meta("final_tree_asset",false)
  set_meta("mobile_validation","PENDING")
 
@@ -37,16 +38,32 @@ func _encroach_forest() -> void:
  var positions := [
   Vector3(-34,0,-42),Vector3(-31,0,-26),Vector3(-35,0,-8),Vector3(-33,0,12),Vector3(-36,0,33),Vector3(-32,0,54),
   Vector3(34,0,-43),Vector3(31,0,-27),Vector3(35,0,-8),Vector3(33,0,13),Vector3(36,0,33),Vector3(32,0,54),
-  Vector3(-25,0,67),Vector3(24,0,69),Vector3(-19,0,-54),Vector3(20,0,-55)
+  Vector3(-25,0,67),Vector3(24,0,69),Vector3(-19,0,-54),Vector3(20,0,-55),
+  Vector3(-27,0,47),Vector3(28,0,46),Vector3(-28,0,22),Vector3(28,0,20),Vector3(-27,0,-5),Vector3(27,0,-7),Vector3(-28,0,-38),Vector3(28,0,-39)
  ]
  for i: int in range(positions.size()):
   var p: Vector3 = positions[i]
   p.y = _height(p.x,p.z)+0.04
-  _spawn(TREE,p,rng.randf_range(10.0,13.2),tree_mat,"encroaching_tree")
+  _spawn(TREE,p,rng.randf_range(9.5,13.2),tree_mat,"encroaching_tree")
   if i % 2 == 0:
    var b := p + Vector3(rng.randf_range(-2.8,2.8),0,rng.randf_range(-2.8,2.8))
    b.y = _height(b.x,b.z)+0.03
    _spawn(BUSH,b,rng.randf_range(1.2,1.8),shrub_mat,"encroaching_understory")
+
+func _roadside_growth() -> void:
+ var zs := [44.0,32.0,18.0,4.0,-11.0,-26.0]
+ for zi: int in range(zs.size()):
+  var z: float = zs[zi]
+  for side in [-1.0,1.0]:
+   var x: float = side*(11.5+rng.randf_range(-1.0,1.2))
+   if zi in [1,4] and side > 0.0:
+    continue
+   var p := Vector3(x,_height(x,z)+0.03,z+rng.randf_range(-1.2,1.2))
+   _spawn(BUSH,p,rng.randf_range(1.7,2.5),shrub_mat,"roadside_overgrowth")
+  if zi % 2 == 0:
+   var tx: float = (-1.0 if zi % 4 == 0 else 1.0)*rng.randf_range(16.0,20.0)
+   var tp := Vector3(tx,_height(tx,z)+0.04,z+rng.randf_range(-2.0,2.0))
+   _spawn(TREE,tp,rng.randf_range(8.5,10.5),tree_mat,"roadside_tree")
 
 func _practical_lights() -> void:
  var lights := [Vector3(-8,0,28),Vector3(8,0,8),Vector3(-8,0,-18)]
