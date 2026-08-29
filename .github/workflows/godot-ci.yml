@@ -90,6 +90,9 @@ jobs:
       - name: Forest village art contract test
         run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/forest_village_art_test.gd
 
+      - name: Performance telemetry contract
+        run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/performance_telemetry_test.gd
+
       - name: Structural smoke test
         run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/smoke_test.gd
 
