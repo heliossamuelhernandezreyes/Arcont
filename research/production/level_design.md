@@ -20,6 +20,23 @@ A procedural test district is useful for systems validation; a commercial slice 
 - Controlled sight distance for both performance and cognition.
 - Use architecture as occlusion/HLOD opportunity.
 
+## Continuous-relief ownership and grounding
+Status: IMPLEMENTED / EVOLVING for the forest-village slice.
+
+A continuous heightmap should have one physical ground owner. Do not leave a full-map flat collider hidden underneath it merely because an older blockout used one; competing ground surfaces create false contact, hovering, buried props and hard-to-diagnose movement behavior.
+
+For Arcont's current forest slice:
+- `ForestTerrainRelief` owns macro rendering/collision through the shared height field and `HeightMapShape3D`.
+- Decorative roads/tracks sample the terrain during scene construction. They do not need their own gameplay collision when the heightmap already owns walkable ground.
+- Long road overlays should follow relief in bounded pieces or a purpose-built sampled mesh rather than one long flat slab.
+- Buildings, wells, cover and authored landmarks sample a stable base elevation but remain upright; do not normal-align architecture to local terrain noise.
+- Water can remain level when the terrain itself authors the drainage cut.
+- Enemy/spawn markers and gameplay collision associated with structures must use the same terrain-height contract as their visuals.
+
+Arcont evidence (2026-08-29): ART-PASS-8 replaced the old flat `ForestGroundCollision`, grounded the village and routes to `ForestTerrainRelief`, and produced 20 terrain-following route groups / 169 sampled segments / 224 grounded nodes. Godot CI #432 passed import, art contract, structural smoke, main boot and Android export.
+
+Performance note: 169 separate route segments are a correctness-first representation, not a final mobile draw-call target. Profile or consolidate them into fewer sampled meshes before declaring the route rendering budget production-ready. Do not blindly optimize without measurements, but keep representation scalable.
+
 ## Encounter grammar
 Exploration -> warning/contact -> positioning -> pressure -> escalation/role introduction -> release/reward -> transition.
 Break this grammar deliberately when surprise serves the experience.
