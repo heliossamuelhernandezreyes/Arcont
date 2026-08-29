@@ -1,7 +1,7 @@
 extends Node3D
 
-# ART-PASS-12: settlement composition. The goal is to make the frame read as an
-# abandoned rural village being swallowed by forest, not a greybox plaza.
+# ART-PASS-12B: settlement composition. The frame must read as an abandoned
+# rural village being swallowed by forest, not as a greybox plaza.
 
 const TREE := "res://assets/provisional/cc0_runtime/forest/tree_blocks.fbx"
 const BUSH := "res://assets/provisional/cc0_runtime/forest/plant_bush.fbx"
@@ -14,6 +14,9 @@ var mat_mud: StandardMaterial3D
 var mat_wood: StandardMaterial3D
 var mat_stone: StandardMaterial3D
 var mat_dark: StandardMaterial3D
+var mat_tree: StandardMaterial3D
+var mat_shrub: StandardMaterial3D
+var mat_decay: StandardMaterial3D
 
 func _ready() -> void:
  call_deferred("_build")
@@ -23,18 +26,21 @@ func _build() -> void:
  if terrain == null or not terrain.has_method("get_height_at"):
   return
  rng.seed = 120829
- mat_yard = _mat(Color(0.075,0.085,0.045),0.99)
- mat_mud = _mat(Color(0.080,0.058,0.036),1.0)
- mat_wood = _mat(Color(0.095,0.052,0.028),0.98)
- mat_stone = _mat(Color(0.135,0.145,0.135),1.0)
- mat_dark = _mat(Color(0.022,0.028,0.024),1.0)
+ mat_yard = _mat(Color(0.055,0.065,0.034),0.99)
+ mat_mud = _mat(Color(0.062,0.043,0.027),1.0)
+ mat_wood = _mat(Color(0.075,0.040,0.022),0.98)
+ mat_stone = _mat(Color(0.105,0.116,0.107),1.0)
+ mat_dark = _mat(Color(0.012,0.017,0.015),1.0)
+ mat_tree = _mat(Color(0.028,0.052,0.023),0.98)
+ mat_shrub = _mat(Color(0.040,0.070,0.028),0.99)
+ mat_decay = _mat(Color(0.060,0.037,0.021),1.0)
  _parcel_yards()
  _property_edges()
  _forest_enclosure()
  _village_verticals()
  _abandonment_marks()
- set_meta("art_status","ART-PASS-12-FOREST-VILLAGE-COMPOSITION")
- set_meta("map_contract","FOREST-VILLAGE-COMPOSITION-V1")
+ set_meta("art_status","ART-PASS-12B-FOREST-VILLAGE-COMPOSITION")
+ set_meta("map_contract","FOREST-VILLAGE-COMPOSITION-V2")
  set_meta("visual_goal","abandoned rural settlement swallowed by forest")
  set_meta("mobile_validation","PENDING")
 
@@ -65,16 +71,18 @@ func _forest_enclosure() -> void:
   Vector3(-58,0,-50),Vector3(-46,0,-57),Vector3(-31,0,-61),Vector3(-15,0,-66),Vector3(4,0,-68),Vector3(23,0,-64),Vector3(41,0,-58),Vector3(57,0,-48),
   Vector3(-62,0,-28),Vector3(-65,0,-5),Vector3(-64,0,18),Vector3(-60,0,42),Vector3(-52,0,63),Vector3(-38,0,76),
   Vector3(62,0,-26),Vector3(65,0,-4),Vector3(64,0,19),Vector3(60,0,42),Vector3(52,0,62),Vector3(37,0,77),
-  Vector3(-22,0,82),Vector3(-5,0,86),Vector3(15,0,84),Vector3(29,0,81)
+  Vector3(-22,0,82),Vector3(-5,0,86),Vector3(15,0,84),Vector3(29,0,81),
+  Vector3(-45,0,-39),Vector3(-48,0,-18),Vector3(-49,0,4),Vector3(-47,0,27),Vector3(-43,0,50),
+  Vector3(45,0,-40),Vector3(48,0,-18),Vector3(49,0,4),Vector3(47,0,27),Vector3(43,0,50)
  ]
  for i: int in range(belt.size()):
   var p: Vector3 = belt[i]
   p.y = _height(p.x,p.z)+0.05
-  _spawn_asset(TREE,p,Vector3(0,rng.randf_range(0,360),0),rng.randf_range(9.5,13.0),"composition_tree")
+  _spawn_asset(TREE,p,Vector3(0,rng.randf_range(0,360),0),rng.randf_range(10.5,14.0),"composition_tree",mat_tree)
   if i % 2 == 0:
    var b := p + Vector3(rng.randf_range(-3.2,3.2),0,rng.randf_range(-3.2,3.2))
    b.y = _height(b.x,b.z)+0.04
-   _spawn_asset(BUSH,b,Vector3(0,rng.randf_range(0,360),0),rng.randf_range(1.1,1.8),"composition_understory")
+   _spawn_asset(BUSH,b,Vector3(0,rng.randf_range(0,360),0),rng.randf_range(1.2,2.0),"composition_understory",mat_shrub)
 
 func _village_verticals() -> void:
  var poles := [Vector3(-9,0,48),Vector3(8,0,38),Vector3(-8,0,20),Vector3(9,0,4),Vector3(-8,0,-15),Vector3(7,0,-34)]
@@ -92,7 +100,7 @@ func _abandonment_marks() -> void:
   _box("BrokenFence",p,Vector3(2.6,0.18,0.16),mat_wood,Vector3(0,float(i*31-22),rng.randf_range(-16,16)))
   if i % 2 == 0:
    var s := p + Vector3(1.1,0,-0.8)
-   _spawn_asset(STUMP,s,Vector3(0,rng.randf_range(0,360),0),rng.randf_range(0.8,1.2),"composition_decay")
+   _spawn_asset(STUMP,s,Vector3(0,rng.randf_range(0,360),0),rng.randf_range(0.8,1.2),"composition_decay",mat_decay)
 
 func _front_dir(front: String) -> Vector3:
  match front:
@@ -150,7 +158,7 @@ func _tri(st: SurfaceTool,a: Vector3,b: Vector3,c: Vector3) -> void:
  st.set_uv(Vector2(b.x,b.z)*0.15); st.add_vertex(b)
  st.set_uv(Vector2(c.x,c.z)*0.15); st.add_vertex(c)
 
-func _spawn_asset(path: String,pos: Vector3,rot: Vector3,target_extent: float,layer: String) -> Node3D:
+func _spawn_asset(path: String,pos: Vector3,rot: Vector3,target_extent: float,layer: String,override_material: Material) -> Node3D:
  if not ResourceLoader.exists(path): return null
  var packed := load(path) as PackedScene
  if packed == null: return null
@@ -162,15 +170,17 @@ func _spawn_asset(path: String,pos: Vector3,rot: Vector3,target_extent: float,la
  AssetScaleNormalizer.normalize_longest_extent(node,target_extent)
  node.set_meta("art_layer",layer)
  node.set_meta("base_visibility_end",145.0)
- _visibility(node,145.0)
+ _visibility_and_material(node,145.0,override_material)
  return node
 
-func _visibility(node: Node,distance: float) -> void:
+func _visibility_and_material(node: Node,distance: float,override_material: Material) -> void:
  if node is GeometryInstance3D:
   var g := node as GeometryInstance3D
   g.visibility_range_end = distance
   g.visibility_range_end_margin = 7.0
- for child: Node in node.get_children(): _visibility(child,distance)
+  g.material_override = override_material
+ for child: Node in node.get_children():
+  _visibility_and_material(child,distance,override_material)
 
 func _box(name_text: String,pos: Vector3,size: Vector3,material: Material,rot := Vector3.ZERO) -> MeshInstance3D:
  var node := MeshInstance3D.new()
