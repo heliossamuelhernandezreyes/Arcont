@@ -13,6 +13,11 @@ This file is a living queue, not a statement that a topic is unimportant.
 - Audio architecture and spatial gunshot/impact/footstep system.
 - Data-driven weapons/enemies/materials/encounters using Resources.
 - Forest prop acquisition: find/license/validate a true fallen-trunk or deadwood asset and a small ground-stone family suitable for repeated scatter. Current promoted candidates `campfire_logs.fbx` and `cliff_blockCave_rock.fbx` are semantically/scale-inappropriate for those roles; do not substitute them merely to eliminate procedural placeholders.
+  - Candidate A, preferred for audit: Kenney Nature Kit (`https://kenney.nl/assets/nature-kit`). Official Kenney page: 330 3D files, CC0, nature/tree/rock/foliage. Secondary inventories indicate the kit also contains a log and multiple rocks/stones. Before integration, inspect the downloaded archive itself, identify exact filenames, record archive/version/hash when practical, measure geometry/scale, and promote only the selected assets.
+  - Candidate B, secondary: Fertile Soil Productions Nature Props (`https://fertile-soil-productions.itch.io/nature-props`), creator page states CC0 and lists 14 logs/branches/roots plus 13 rocks/stepping stones. Audit visual fit, download provenance and exact model filenames before use.
+  - Status: CANDIDATES FOUND, NOT YET PROMOTED. Existing procedural small stones/fallen logs remain safer than semantically wrong substitutions until a candidate passes the asset pipeline.
+- Android presentation debt: configure an Arcont project/app icon before release-facing builds. Current debug export succeeds without it, but Godot emits an explicit missing-icon warning.
+- Headless test cleanup: investigate the recurring single `ObjectDB` leak warning before declaring repeated scene load/unload behavior production-clean.
 
 ## Priority B — near-term production
 - Root motion policy for vaults, mantles, melee and executions.
