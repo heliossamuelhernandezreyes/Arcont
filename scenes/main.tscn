@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3]
+[gd_scene load_steps=25 format=3]
 [ext_resource path="res://scripts/player.gd" type="Script" id="1_player"]
 [ext_resource path="res://scripts/main.gd" type="Script" id="2_main"]
 [ext_resource path="res://scripts/mobile_controls.gd" type="Script" id="3_mobile"]
@@ -19,6 +19,7 @@
 [ext_resource path="res://scripts/melee_combat_controller.gd" type="Script" id="18_melee"]
 [ext_resource path="res://scripts/main_menu.gd" type="Script" id="19_menu"]
 [ext_resource path="res://scripts/forest_village_polish.gd" type="Script" id="20_polish"]
+[ext_resource path="res://scripts/terrain_surface_pass.gd" type="Script" id="21_terrain"]
 [sub_resource type="CapsuleShape3D" id="PlayerShape"]
 radius=0.4
 height=1.8
@@ -52,6 +53,8 @@ script=ExtResource("6_feedback")
 script=ExtResource("7_environment")
 [node name="ForestVillagePolish" type="Node3D" parent="."]
 script=ExtResource("20_polish")
+[node name="TerrainSurfacePass" type="Node3D" parent="."]
+script=ExtResource("21_terrain")
 [node name="MissionDirector" type="Node" parent="."]
 script=ExtResource("8_mission")
 [node name="ThrowableController" type="Node" parent="." groups=["throwable_controller"]]
