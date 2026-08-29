@@ -96,10 +96,25 @@ jobs:
       - name: ObjectDB lifecycle diagnostic
         shell: bash
         run: |
+          set +e
           set -o pipefail
           "$GODOT_BIN" --verbose --headless --path "$GITHUB_WORKSPACE" --script res://tests/forest_village_art_test.gd 2>&1 | tee objectdb-diagnostic.log
-          echo "--- ObjectDB diagnostic excerpt ---"
-          grep -Ei -C 8 "ObjectDB|leak|orphan" objectdb-diagnostic.log || true
+          rc=${PIPESTATUS[0]}
+          echo "OBJECTDB_DIAGNOSTIC_GODOT_EXIT=$rc"
+          echo "--- ObjectDB/RID/leak matches with line numbers and context ---"
+          grep -nEi -C 12 "ObjectDB|leaked|leak at exit|orphan|RID.*leak|Resources still in use|resource.*still in use" objectdb-diagnostic.log || true
+          echo "--- ObjectDB diagnostic final 200 lines ---"
+          tail -n 200 objectdb-diagnostic.log || true
+          exit "$rc"
+
+      - name: Upload ObjectDB lifecycle diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Arcont-ObjectDB-Lifecycle-Diagnostic
+          path: objectdb-diagnostic.log
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Structural smoke test
         run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/smoke_test.gd
