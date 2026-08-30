@@ -48,7 +48,10 @@ func _init() -> void:
  if operator==null:failures.append("Falta OperatorModel")
  else:
   var s:=operator.scale
-  if s.x<0.005 or s.x>0.02 or absf(s.x-s.y)>0.0001 or absf(s.x-s.z)>0.0001:failures.append("Escala de importación del operador fuera de contrato: "+str(s))
+  if s.x<0.035 or s.x>0.06 or absf(s.x-s.y)>0.0001 or absf(s.x-s.z)>0.0001:failures.append("Escala de importación del operador fuera de contrato TPS humano: "+str(s))
+  var operator_extent:=AssetScaleNormalizer.longest_extent(operator)
+  print("METRIC OPERATOR extent=",operator_extent," scale=",s)
+  if operator_extent<1.35 or operator_extent>5.5:failures.append("Bounds visuales del operador fuera de rango humano/TPS: "+str(operator_extent))
  var weapon_mount:=_find_named(main,"WeaponMount") as Node3D
  if weapon_mount==null:failures.append("Falta WeaponMount")
  else:
