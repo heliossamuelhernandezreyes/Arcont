@@ -1,0 +1,127 @@
+name: Build official Godot TPS demo Android 4.7.2
+
+on:
+  push:
+    branches:
+      - research/tps-demo-android-4.7
+    paths:
+      - .github/workflows/build-official-tps-demo-android-4.7.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      GODOT_VERSION: 4.7.2
+      GODOT_STATUS: stable
+      DEMO_REF: master
+
+    steps:
+      - name: Checkout Arcont workflow branch
+        uses: actions/checkout@v4
+
+      - name: Checkout official Godot TPS demo
+        uses: actions/checkout@v4
+        with:
+          repository: godotengine/tps-demo
+          ref: ${{ env.DEMO_REF }}
+          path: tps-demo
+
+      - name: Download Godot 4.7.2 and export templates
+        shell: bash
+        run: |
+          set -euxo pipefail
+          wget -q "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-${GODOT_STATUS}/Godot_v${GODOT_VERSION}-${GODOT_STATUS}_linux.x86_64.zip" -O godot.zip
+          wget -q "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-${GODOT_STATUS}/Godot_v${GODOT_VERSION}-${GODOT_STATUS}_export_templates.tpz" -O templates.tpz
+          unzip -q godot.zip -d godot-bin
+          GODOT_BIN="$(find godot-bin -maxdepth 1 -type f -name 'Godot_v*_linux.x86_64' | head -n 1)"
+          chmod +x "$GODOT_BIN"
+          mkdir -p "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_STATUS}"
+          unzip -q templates.tpz -d templates-unpacked
+          cp -a templates-unpacked/templates/. "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_STATUS}/"
+          echo "GODOT_BIN=$PWD/$GODOT_BIN" >> "$GITHUB_ENV"
+          "$GODOT_BIN" --version
+
+      - name: Configure Android export preset
+        shell: bash
+        run: |
+          set -euxo pipefail
+          mkdir -p tps-demo/build
+          cat > tps-demo/export_presets.cfg <<'EOF'
+          [preset.0]
+
+          name="Android"
+          platform="Android"
+          runnable=true
+          advanced_options=false
+          dedicated_server=false
+          custom_features=""
+          export_filter="all_resources"
+          include_filter=""
+          exclude_filter=""
+          export_path="build/tps-demo-godot-4.7.2.apk"
+          encryption_include_filters=""
+          encryption_exclude_filters=""
+          encrypt_pck=false
+          encrypt_directory=false
+          script_export_mode=2
+
+          [preset.0.options]
+
+          custom_template/debug=""
+          custom_template/release=""
+          gradle_build/use_gradle_build=false
+          gradle_build/export_format=0
+          architectures/armeabi-v7a=false
+          architectures/arm64-v8a=true
+          architectures/x86=false
+          architectures/x86_64=false
+          package/unique_name="org.godotengine.tpsdemo47"
+          package/name="Godot TPS Demo 4.7.2"
+          package/signed=true
+          version/code=1
+          version/name="4.7.2-demo"
+          screen/immersive_mode=true
+          screen/edge_to_edge=true
+          xr_features/xr_mode=0
+          EOF
+
+      - name: Import project with Godot 4.7.2
+        shell: bash
+        run: |
+          set -o pipefail
+          "$GODOT_BIN" --headless --editor --path tps-demo --quit 2>&1 | tee godot-import.log
+
+      - name: Export Android debug APK
+        shell: bash
+        run: |
+          set -euxo pipefail
+          "$GODOT_BIN" --headless --path tps-demo --export-debug Android "build/tps-demo-godot-4.7.2.apk" 2>&1 | tee godot-export.log
+          test -s tps-demo/build/tps-demo-godot-4.7.2.apk
+          sha256sum tps-demo/build/tps-demo-godot-4.7.2.apk | tee tps-demo/build/SHA256SUMS.txt
+          ls -lh tps-demo/build/tps-demo-godot-4.7.2.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: official-godot-tps-demo-android-4.7.2
+          path: |
+            tps-demo/build/tps-demo-godot-4.7.2.apk
+            tps-demo/build/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload build logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: official-godot-tps-demo-android-4.7.2-build-logs
+          path: |
+            godot-import.log
+            godot-export.log
+          if-no-files-found: ignore
+          retention-days: 7
