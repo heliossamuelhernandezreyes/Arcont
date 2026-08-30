@@ -1,12 +1,11 @@
-[gd_scene load_steps=22 format=3]
-
+[gd_scene load_steps=28 format=3]
 [ext_resource path="res://scripts/player.gd" type="Script" id="1_player"]
 [ext_resource path="res://scripts/main.gd" type="Script" id="2_main"]
 [ext_resource path="res://scripts/mobile_controls.gd" type="Script" id="3_mobile"]
 [ext_resource path="res://scripts/weapon.gd" type="Script" id="4_weapon"]
 [ext_resource path="res://scripts/performance_budget.gd" type="Script" id="5_budget"]
 [ext_resource path="res://scripts/combat_feedback.gd" type="Script" id="6_feedback"]
-[ext_resource path="res://scripts/urban_environment.gd" type="Script" id="7_environment"]
+[ext_resource path="res://scripts/forest_village_environment.gd" type="Script" id="7_environment"]
 [ext_resource path="res://scripts/mission_director.gd" type="Script" id="8_mission"]
 [ext_resource path="res://scenes/companion_robot.tscn" type="PackedScene" id="9_robot"]
 [ext_resource path="res://scripts/awareness_director.gd" type="Script" id="10_awareness"]
@@ -18,23 +17,31 @@
 [ext_resource path="res://scripts/third_person_ads.gd" type="Script" id="16_ads"]
 [ext_resource path="res://scripts/tactical_mobility.gd" type="Script" id="17_mobility"]
 [ext_resource path="res://scripts/melee_combat_controller.gd" type="Script" id="18_melee"]
-
+[ext_resource path="res://scripts/main_menu.gd" type="Script" id="19_menu"]
+[ext_resource path="res://scripts/forest_village_polish.gd" type="Script" id="20_polish"]
+[ext_resource path="res://scripts/terrain_surface_pass.gd" type="Script" id="21_terrain"]
+[ext_resource path="res://scripts/forest_terrain_relief.gd" type="Script" id="22_relief"]
+[ext_resource path="res://scripts/environment_scatter.gd" type="Script" id="23_scatter"]
+[ext_resource path="res://scripts/modular_village_architecture_pass.gd" type="Script" id="24_architecture"]
 [sub_resource type="CapsuleShape3D" id="PlayerShape"]
 radius=0.4
 height=1.8
 [sub_resource type="BoxMesh" id="GunMesh"]
-size=Vector3(0.28,0.18,0.82)
+size=Vector3(0.16,0.11,0.62)
 [sub_resource type="Environment" id="Env"]
 background_mode=1
-background_color=Color(0.018,0.025,0.038,1)
+background_color=Color(0.035,0.065,0.085,1)
 ambient_light_source=3
-ambient_light_color=Color(0.34,0.40,0.50,1)
-ambient_light_energy=0.72
+ambient_light_color=Color(0.46,0.57,0.64,1)
+ambient_light_energy=1.02
+reflected_light_source=2
+tonemap_mode=2
 fog_enabled=true
-fog_light_color=Color(0.15,0.18,0.24,1)
-fog_light_energy=0.55
-fog_density=0.012
-
+fog_light_color=Color(0.29,0.37,0.40,1)
+fog_light_energy=0.72
+fog_density=0.0045
+fog_height=1.8
+fog_height_density=0.085
 [node name="Main" type="Node3D"]
 script=ExtResource("2_main")
 [node name="PerformanceBudget" type="Node" parent="."]
@@ -45,27 +52,47 @@ script=ExtResource("10_awareness")
 script=ExtResource("11_navigation")
 [node name="CombatFeedback" type="Node" parent="."]
 script=ExtResource("6_feedback")
-[node name="UrbanDistrict" type="Node3D" parent="."]
+[node name="ForestVillage" type="Node3D" parent="."]
 script=ExtResource("7_environment")
+[node name="ForestVillagePolish" type="Node3D" parent="."]
+script=ExtResource("20_polish")
+[node name="TerrainSurfacePass" type="Node3D" parent="."]
+script=ExtResource("21_terrain")
+[node name="ForestTerrainRelief" type="Node3D" parent="."]
+script=ExtResource("22_relief")
+[node name="EnvironmentScatter" type="Node3D" parent="."]
+script=ExtResource("23_scatter")
+[node name="ModularVillageArchitecturePass" type="Node3D" parent="."]
+script=ExtResource("24_architecture")
 [node name="MissionDirector" type="Node" parent="."]
 script=ExtResource("8_mission")
-[node name="ThrowableController" type="Node" parent="."]
+[node name="ThrowableController" type="Node" parent="." groups=["throwable_controller"]]
 script=ExtResource("12_throwables")
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment=SubResource("Env")
 [node name="MoonLight" type="DirectionalLight3D" parent="."]
-rotation_degrees=Vector3(-52,-28,0)
-light_energy=1.05
+rotation_degrees=Vector3(-48,-31,0)
+light_color=Color(0.72,0.84,0.94,1)
+light_energy=1.65
 shadow_enabled=true
+shadow_blur=1.45
 [node name="EmergencyLight" type="OmniLight3D" parent="."]
-position=Vector3(-6,3.5,5)
+position=Vector3(-8,3.2,28)
+light_color=Color(1,0.28,0.10,1)
+light_energy=3.2
+omni_range=14.0
+shadow_enabled=false
+[node name="EmergencyLightFar" type="OmniLight3D" parent="."]
+position=Vector3(0,3.0,-64)
+light_color=Color(0.16,0.43,1,1)
 light_energy=1.8
 omni_range=10.0
+shadow_enabled=false
 [node name="Enemies" type="Node3D" parent="."]
 [node name="CompanionRobot" parent="." instance=ExtResource("9_robot")]
 position=Vector3(-3.4,0.2,17)
 [node name="Player" type="CharacterBody3D" parent="." groups=["player"]]
-position=Vector3(0,1.05,19)
+position=Vector3(0,1.05,52)
 script=ExtResource("1_player")
 [node name="Collision" type="CollisionShape3D" parent="Player"]
 shape=SubResource("PlayerShape")
@@ -74,30 +101,37 @@ position=Vector3(0,-0.9,0)
 script=ExtResource("13_character_visual")
 [node name="OperatorModel" parent="Player/BodyVisual" instance=ExtResource("14_operator")]
 rotation_degrees=Vector3(0,180,0)
+scale=Vector3(0.045,0.045,0.045)
+[node name="WeaponMount" type="Node3D" parent="Player/BodyVisual"]
+position=Vector3(0.02,-0.03,-0.08)
+rotation_degrees=Vector3(-8,90,-2)
+scale=Vector3(1,1,1)
+[node name="Gun" type="MeshInstance3D" parent="Player/BodyVisual/WeaponMount"]
+scale=Vector3(0.82,0.82,0.82)
+mesh=SubResource("GunMesh")
+[node name="MuzzleFlash" type="OmniLight3D" parent="Player/BodyVisual/WeaponMount"]
+position=Vector3(0,0,-0.78)
+omni_range=3.0
+light_energy=3.4
+visible=false
 [node name="CoverProbe" type="RayCast3D" parent="Player"]
 position=Vector3(0,0.35,0)
 target_position=Vector3(0,0,-1.0)
 enabled=true
 [node name="CameraRig" type="Node3D" parent="Player"]
-position=Vector3(0,0.75,0)
-[node name="Camera3D" type="Camera3D" parent="Player/CameraRig"]
-position=Vector3(0.72,0.55,3.35)
+position=Vector3(0,1.58,0)
+[node name="SpringArm3D" type="SpringArm3D" parent="Player/CameraRig"]
+position=Vector3(0.82,0,0)
+spring_length=4.65
+margin=0.18
+[node name="Camera3D" type="Camera3D" parent="Player/CameraRig/SpringArm3D"]
+position=Vector3(0,0,0)
 current=true
 fov=72.0
-[node name="Gun" type="MeshInstance3D" parent="Player/CameraRig/Camera3D"]
-position=Vector3(0.30,-0.22,-0.72)
-mesh=SubResource("GunMesh")
-[node name="MuzzleFlash" type="OmniLight3D" parent="Player/CameraRig/Camera3D"]
-position=Vector3(0.30,-0.20,-1.10)
-omni_range=3.0
-light_energy=3.4
-visible=false
-[node name="RayCast3D" type="RayCast3D" parent="Player/CameraRig/Camera3D"]
-target_position=Vector3(0,0,-100)
-enabled=true
-[node name="Weapon" type="Node" parent="Player/CameraRig/Camera3D"]
+near=0.08
+[node name="Weapon" type="Node" parent="Player"]
 script=ExtResource("4_weapon")
-[node name="VisualAnimator" type="Node" parent="Player/CameraRig/Camera3D/Weapon"]
+[node name="VisualAnimator" type="Node" parent="Player/Weapon"]
 script=ExtResource("15_weapon_anim")
 [node name="ThirdPersonADS" type="Node" parent="Player"]
 script=ExtResource("16_ads")
@@ -107,78 +141,169 @@ script=ExtResource("17_mobility")
 script=ExtResource("18_melee")
 [node name="HUD" type="CanvasLayer" parent="."]
 [node name="Crosshair" type="Label" parent="HUD"]
-offset_left=632.0
-offset_top=345.0
-offset_right=648.0
-offset_bottom=375.0
-text="+"
-[node name="HitMarker" type="Label" parent="HUD"]
-offset_left=622.0
-offset_top=337.0
-offset_right=658.0
-offset_bottom=383.0
-text="×"
-visible=false
-[node name="Info" type="Label" parent="HUD"]
-offset_left=20.0
-offset_top=18.0
-offset_right=760.0
-offset_bottom=80.0
-text="ARCONT // DISTRITO DE EVACUACION 07\nCONTENCION FALLIDA · PRESENCIA XENOLOGICA"
-[node name="Objective" type="Label" parent="HUD"]
-offset_left=20.0
-offset_top=198.0
-offset_right=790.0
-offset_bottom=236.0
-text="OBJETIVO // REACTIVA EL GENERADOR"
-[node name="Wave" type="Label" parent="HUD"]
-offset_left=20.0
-offset_top=92.0
-offset_right=240.0
-offset_bottom=122.0
-text="OLEADA 01"
-[node name="Alive" type="Label" parent="HUD"]
-offset_left=20.0
-offset_top=120.0
-offset_right=240.0
-offset_bottom=150.0
-text="HOSTILES 08"
-[node name="Health" type="Label" parent="HUD"]
-offset_left=20.0
-offset_top=154.0
-offset_right=260.0
-offset_bottom=184.0
-text="VIDA 100"
-[node name="WeaponName" type="Label" parent="HUD"]
-offset_left=1020.0
-offset_top=525.0
-offset_right=1265.0
-offset_bottom=555.0
-text="1 // 12G SHOTGUN"
-[node name="Ammo" type="Label" parent="HUD"]
-offset_left=1040.0
-offset_top=630.0
-offset_right=1260.0
-offset_bottom=675.0
-text="08 / 048"
-[node name="Reload" type="Label" parent="HUD"]
-offset_left=1020.0
-offset_top=595.0
-offset_right=1260.0
-offset_bottom=625.0
-text=""
-[node name="Throwable" type="Label" parent="HUD"]
-offset_left=960.0
-offset_top=555.0
-offset_right=1260.0
-offset_bottom=585.0
-text="ARROJABLE // GRANADA  x3"
-[node name="MobileControls" type="Control" parent="HUD"]
-layout_mode=3
-anchors_preset=15
-anchor_right=1.0
-anchor_bottom=1.0
+anchors_preset=8
+anchor_left=0.5
+anchor_top=0.5
+anchor_right=0.5
+anchor_bottom=0.5
+offset_left=-8.0
+offset_top=-15.0
+offset_right=8.0
+offset_bottom=15.0
 grow_horizontal=2
 grow_vertical=2
-mouse_filter=2
+text="+"
+horizontal_alignment=1
+vertical_alignment=1
+[node name="HitMarker" type="Label" parent="HUD"]
+anchors_preset=8
+anchor_left=0.5
+anchor_top=0.5
+anchor_right=0.5
+anchor_bottom=0.5
+offset_left=-18.0
+offset_top=-23.0
+offset_right=18.0
+offset_bottom=23.0
+grow_horizontal=2
+grow_vertical=2
+text="×"
+horizontal_alignment=1
+vertical_alignment=1
+visible=false
+[node name="Info" type="Label" parent="HUD"]
+offset_left=16.0
+offset_top=14.0
+offset_right=520.0
+offset_bottom=58.0
+theme_override_font_sizes/font_size=12
+text="ARCONT // ALDEA 04\nBOSQUE DE CONTENCION · SEÑAL PERDIDA"
+[node name="Objective" type="Label" parent="HUD"]
+offset_left=16.0
+offset_top=128.0
+offset_right=600.0
+offset_bottom=154.0
+theme_override_font_sizes/font_size=13
+text="OBJETIVO // REACTIVA EL GENERADOR"
+[node name="Wave" type="Label" parent="HUD"]
+offset_left=16.0
+offset_top=64.0
+offset_right=190.0
+offset_bottom=84.0
+theme_override_font_sizes/font_size=12
+text="OLEADA 01"
+[node name="Alive" type="Label" parent="HUD"]
+offset_left=16.0
+offset_top=84.0
+offset_right=190.0
+offset_bottom=104.0
+theme_override_font_sizes/font_size=12
+text="HOSTILES 08"
+[node name="Health" type="Label" parent="HUD"]
+offset_left=16.0
+offset_top=104.0
+offset_right=220.0
+offset_bottom=124.0
+theme_override_font_sizes/font_size=12
+text="VIDA 100 / 100"
+[node name="WeaponName" type="Label" parent="HUD"]
+anchors_preset=1
+anchor_left=1.0
+anchor_right=1.0
+offset_left=-250.0
+offset_top=14.0
+offset_right=-16.0
+offset_bottom=36.0
+theme_override_font_sizes/font_size=12
+text="1 // 12G SHOTGUN"
+horizontal_alignment=2
+[node name="Ammo" type="Label" parent="HUD"]
+anchors_preset=1
+anchor_left=1.0
+anchor_right=1.0
+offset_left=-250.0
+offset_top=36.0
+offset_right=-16.0
+offset_bottom=58.0
+theme_override_font_sizes/font_size=12
+text="08 / 048"
+horizontal_alignment=2
+[node name="Throwable" type="Label" parent="HUD"]
+anchors_preset=1
+anchor_left=1.0
+anchor_right=1.0
+offset_left=-250.0
+offset_top=78.0
+offset_right=-16.0
+offset_bottom=100.0
+theme_override_font_sizes/font_size=11
+text="ARROJABLE // GRANADA x3"
+horizontal_alignment=2
+[node name="Perf" type="Label" parent="HUD"]
+offset_left=12.0
+offset_top=170.0
+offset_right=300.0
+offset_bottom=296.0
+theme_override_font_sizes/font_size=11
+text="PERF [tap]"
+[node name="MobileControls" type="CanvasLayer" parent="."]
 script=ExtResource("3_mobile")
+[node name="MovePad" type="Control" parent="MobileControls"]
+layout_mode=3
+anchors_preset=3
+anchor_left=0.0
+anchor_top=1.0
+anchor_right=0.0
+anchor_bottom=1.0
+offset_left=20.0
+offset_top=-210.0
+offset_right=220.0
+offset_bottom=-10.0
+mouse_filter=1
+[node name="LookPad" type="Control" parent="MobileControls"]
+layout_mode=3
+anchors_preset=3
+anchor_left=1.0
+anchor_top=1.0
+anchor_right=1.0
+anchor_bottom=1.0
+offset_left=-420.0
+offset_top=-250.0
+offset_right=-10.0
+offset_bottom=-10.0
+mouse_filter=1
+[node name="Fire" type="Button" parent="MobileControls"]
+layout_mode=0
+offset_left=1120.0
+offset_top=390.0
+offset_right=1260.0
+offset_bottom=530.0
+text="FIRE"
+[node name="Aim" type="Button" parent="MobileControls"]
+layout_mode=0
+offset_left=1000.0
+offset_top=320.0
+offset_right=1110.0
+offset_bottom=415.0
+text="ADS"
+[node name="Jump" type="Button" parent="MobileControls"]
+layout_mode=0
+offset_left=1110.0
+offset_top=550.0
+offset_right=1210.0
+offset_bottom=650.0
+text="JUMP"
+[node name="Crouch" type="Button" parent="MobileControls"]
+layout_mode=0
+offset_left=990.0
+offset_top=540.0
+offset_right=1090.0
+offset_bottom=640.0
+text="CROUCH"
+[node name="Sprint" type="Button" parent="MobileControls"]
+layout_mode=0
+offset_left=80.0
+offset_top=430.0
+offset_right=200.0
+offset_bottom=535.0
+text="SPRINT"

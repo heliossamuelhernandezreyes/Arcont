@@ -1,0 +1,70 @@
+name: Promote CC0 PBR Terrain Runtime
+
+on:
+  push:
+    branches: [feat/cc0-provisional-art-pass]
+    paths:
+      - '.github/workflows/promote-pbr-runtime.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout game branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/cc0-provisional-art-pass
+          path: game
+          fetch-depth: 0
+
+      - name: Checkout validated CC0 staging
+        uses: actions/checkout@v4
+        with:
+          ref: assets/cc0-staging
+          path: staging
+          fetch-depth: 1
+
+      - name: Promote selected 1K terrain materials
+        shell: bash
+        run: |
+          set -euo pipefail
+          src='staging/assets/cc0_staging/vendor/pbr_terrain/poly_haven'
+          dst='game/assets/provisional/cc0_runtime/pbr_terrain/poly_haven'
+          rm -rf "$dst"
+          mkdir -p "$dst"
+          for material in forest_ground dirt_path gravel_road concrete_floor concrete_moss rock_ground; do
+            test -f "$src/$material/albedo.jpg"
+            test -f "$src/$material/normal.jpg"
+            test -f "$src/$material/roughness.jpg"
+            test -f "$src/$material/arm.jpg"
+            mkdir -p "$dst/$material"
+            cp "$src/$material"/{albedo.jpg,normal.jpg,roughness.jpg,arm.jpg,SOURCE.md} "$dst/$material/"
+          done
+          cp "$src/DOWNLOAD_MANIFEST.txt" "$dst/"
+          cat > "$dst/RUNTIME_PROMOTION.md" <<'EOF'
+          # Runtime PBR terrain promotion
+
+          Source branch: `assets/cc0-staging`.
+          Source provider: Poly Haven, CC0 1.0.
+          Resolution: 1K Android-oriented source set.
+          Runtime families: forest ground, dirt path, gravel road, concrete floor, mossy concrete, rock ground.
+          Maps: albedo, OpenGL normal, roughness, ARM.
+          EOF
+
+      - name: Commit runtime material set
+        working-directory: game
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/provisional/cc0_runtime/pbr_terrain
+          if git diff --cached --quiet; then echo 'Runtime PBR set already current.'; exit 0; fi
+          git commit -m 'assets: promote CC0 1K PBR terrain runtime set'
+          git pull --rebase origin feat/cc0-provisional-art-pass
+          git push origin HEAD:feat/cc0-provisional-art-pass

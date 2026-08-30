@@ -3,23 +3,25 @@ name: Godot CI
 on:
   push:
     paths:
-      - 'project.godot'
-      - 'export_presets.cfg'
-      - 'assets/**'
-      - 'scenes/**'
-      - 'scripts/**'
-      - 'tests/**'
-      - '.github/workflows/godot-ci.yml'
+      - project.godot
+      - export_presets.cfg
+      - assets/**
+      - scenes/**
+      - scripts/**
+      - tests/**
+      - tools/character_generator/**
+      - .github/workflows/godot-ci.yml
   pull_request:
     paths:
-      - 'project.godot'
-      - 'export_presets.cfg'
-      - 'assets/**'
-      - 'scenes/**'
-      - 'scripts/**'
-      - 'tests/**'
-      - '.github/workflows/godot-ci.yml'
-  workflow_dispatch:
+      - project.godot
+      - export_presets.cfg
+      - assets/**
+      - scenes/**
+      - scripts/**
+      - tests/**
+      - tools/character_generator/**
+      - .github/workflows/godot-ci.yml
+  workflow_dispatch: {}
 
 jobs:
   validate:
@@ -32,6 +34,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Install Godot 4.7.2
         shell: bash
         run: |
@@ -41,6 +44,7 @@ jobs:
           unzip -q /tmp/godot/godot.zip -d /tmp/godot
           chmod +x "$GODOT_BIN"
           "$GODOT_BIN" --version
+
       - name: Install Godot export templates
         shell: bash
         run: |
@@ -50,7 +54,7 @@ jobs:
           unzip -q /tmp/godot/templates.tpz -d /tmp/godot/templates
           mkdir -p "$HOME/.local/share/godot/export_templates/${TEMPLATE_VERSION}"
           cp -a /tmp/godot/templates/templates/. "$HOME/.local/share/godot/export_templates/${TEMPLATE_VERSION}/"
-          ls -la "$HOME/.local/share/godot/export_templates/${TEMPLATE_VERSION}"
+
       - name: Import and parse project
         shell: bash
         run: |
@@ -61,26 +65,120 @@ jobs:
           if [ "$rc" -ne 0 ]; then exit "$rc"; fi
           if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" import.log; then exit 1; fi
           exit 0
+
+      - name: Survivor generator contract
+        run: python tests/character_generator_test.py
+
       - name: Rig and animation asset test
+        run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/rig_asset_test.gd
+
+      - name: TPS screen-space diagnostic
+        shell: bash
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        run: xvfb-run -a "$GODOT_BIN" --path "$GITHUB_WORKSPACE" --rendering-method gl_compatibility --script res://tests/tps_render_diagnostic.gd
+
+      - name: Metric asset scale test
+        run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/asset_scale_test.gd
+
+      - name: Runtime candidate asset audit
+        run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/runtime_candidate_assets_test.gd
+
+      - name: Weapon visual contract test
+        run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/weapon_visual_test.gd
+
+      - name: Zombie animation compatibility diagnostic
+        run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/zombie_animation_compatibility_diagnostic.gd
+
+      - name: Zombie visual contract test
+        run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/zombie_visual_test.gd
+
+      - name: Zombie geometry metrics
+        run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/zombie_geometry_metrics.gd
+
+      # P0 visual evidence is deliberately captured before broad smoke/lifecycle
+      # gates. A later unrelated failure must never erase the screenshots needed
+      # to judge TPS framing or infected deformation.
+      - name: Capture P0 TPS visual evidence
+        if: always()
+        shell: bash
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        run: |
+          set -euo pipefail
+          rm -rf build/character-contract-captures
+          mkdir -p build/character-contract-captures
+          xvfb-run -a "$GODOT_BIN" --path "$GITHUB_WORKSPACE" --rendering-method gl_compatibility --script res://tests/capture_character_contract.gd | tee character-capture.log
+          test "$(find build/character-contract-captures -maxdepth 1 -name '*.png' -type f | wc -l)" -eq 4
+          file build/character-contract-captures/*.png
+
+      - name: Upload P0 TPS visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Arcont-P0-TPS-Visual-Evidence
+          path: |
+            build/character-contract-captures/*.png
+            character-capture.log
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Capture P0 infected visual evidence
+        if: always()
+        shell: bash
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        run: |
+          set -euo pipefail
+          rm -rf build/zombie-contract-captures
+          mkdir -p build/zombie-contract-captures
+          xvfb-run -a "$GODOT_BIN" --path "$GITHUB_WORKSPACE" --rendering-method gl_compatibility --script res://tests/capture_zombie_contract.gd | tee zombie-capture.log
+          test "$(find build/zombie-contract-captures -maxdepth 1 -name '*.png' -type f | wc -l)" -eq 3
+          file build/zombie-contract-captures/*.png
+
+      - name: Upload P0 infected visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Arcont-P0-Infected-Visual-Evidence
+          path: |
+            build/zombie-contract-captures/*.png
+            zombie-capture.log
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Forest village art contract test
+        run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/forest_village_art_test.gd
+
+      - name: Performance telemetry contract
+        run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/performance_telemetry_test.gd
+
+      - name: ObjectDB lifecycle diagnostic
         shell: bash
         run: |
           set +e
-          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/rig_asset_test.gd > rig.log 2>&1
-          rc=$?
-          cat rig.log
-          if [ "$rc" -ne 0 ]; then exit "$rc"; fi
-          if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" rig.log; then exit 1; fi
-          exit 0
+          set -o pipefail
+          "$GODOT_BIN" --verbose --headless --path "$GITHUB_WORKSPACE" --script res://tests/forest_village_art_test.gd 2>&1 | tee objectdb-diagnostic.log
+          rc=${PIPESTATUS[0]}
+          echo "OBJECTDB_DIAGNOSTIC_GODOT_EXIT=$rc"
+          echo "--- ObjectDB/RID/leak matches with line numbers and context ---"
+          grep -nEi -C 12 "ObjectDB|leaked|leak at exit|orphan|RID.*leak|Resources still in use|resource.*still in use" objectdb-diagnostic.log || true
+          echo "--- ObjectDB diagnostic final 200 lines ---"
+          tail -n 200 objectdb-diagnostic.log || true
+          exit "$rc"
+
+      - name: Upload ObjectDB lifecycle diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Arcont-ObjectDB-Lifecycle-Diagnostic
+          path: objectdb-diagnostic.log
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Structural smoke test
-        shell: bash
-        run: |
-          set +e
-          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/smoke_test.gd > smoke.log 2>&1
-          rc=$?
-          cat smoke.log
-          if [ "$rc" -ne 0 ]; then exit "$rc"; fi
-          if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" smoke.log; then exit 1; fi
-          exit 0
+        run: $GODOT_BIN --headless --path "$GITHUB_WORKSPACE" --script res://tests/smoke_test.gd
+
       - name: Boot main scene briefly
         shell: bash
         run: |
@@ -91,6 +189,27 @@ jobs:
           if [ "$rc" -ne 0 ]; then exit "$rc"; fi
           if grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" boot.log; then exit 1; fi
           exit 0
+
+      - name: Capture in-mission gameplay screenshots
+        shell: bash
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        run: |
+          set -euo pipefail
+          rm -rf build/gameplay-captures
+          mkdir -p build/gameplay-captures
+          xvfb-run -a "$GODOT_BIN" --path "$GITHUB_WORKSPACE" --rendering-method gl_compatibility --script res://tests/capture_current_build.gd | tee screenshot-capture.log
+          test "$(find build/gameplay-captures -maxdepth 1 -name '*.png' -type f | wc -l)" -eq 4
+          file build/gameplay-captures/*.png
+
+      - name: Upload in-mission gameplay screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: Arcont-In-Mission-Gameplay-Screenshots
+          path: build/gameplay-captures/*.png
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Export Android debug APK
         shell: bash
         env:
@@ -102,10 +221,11 @@ jobs:
           "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --export-debug "Android" build/Arcont-debug.apk | tee android-export.log
           test -s build/Arcont-debug.apk
           ls -lh build/Arcont-debug.apk
+
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
-          name: Arcont-Android-Debug
+          name: Arcont-Android-Debug-ForestVillage
           path: build/Arcont-debug.apk
           if-no-files-found: error
           retention-days: 14

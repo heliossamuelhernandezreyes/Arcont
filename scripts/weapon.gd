@@ -9,7 +9,11 @@ signal weapon_changed(name:String,slot:int)
 signal ads_changed(active:bool)
 signal active_reload_feedback(result:String,stage:int)
 
-@onready var camera:Camera3D=get_parent() as Camera3D
+@onready var player:CharacterBody3D=get_parent() as CharacterBody3D
+@onready var camera:Camera3D=player.get_node_or_null("CameraRig/SpringArm3D/Camera3D") as Camera3D
+@onready var gun:MeshInstance3D=player.get_node_or_null("BodyVisual/WeaponMount/Gun") as MeshInstance3D
+@onready var muzzle:Node3D=player.get_node_or_null("BodyVisual/WeaponMount/MuzzleFlash") as Node3D
+
 var profiles:=[
  {"name":"12G SHOTGUN","mag":8,"reserve":48,"damage":18.0,"interval":0.72,"reload":1.9,"recoil_pitch":0.055,"recoil_yaw":0.016,"pellets":8,"spread":5.2,"range":55.0,"impact":8.5,"energy":0.95,"penetrations":2,"noise":34.0,"ads_fov":58.0,"automatic":false,"active":[[0.42,0.13,0.22],[0.78,0.12,0.24]]},
  {"name":"AR-5 RIFLE","mag":30,"reserve":150,"damage":27.0,"interval":0.105,"reload":2.15,"recoil_pitch":0.020,"recoil_yaw":0.008,"pellets":1,"spread":1.15,"range":92.0,"impact":3.8,"energy":1.20,"penetrations":3,"noise":30.0,"ads_fov":48.0,"automatic":true,"active":[[0.30,0.11,0.30],[0.66,0.10,0.34],[0.88,0.09,0.26]]},
@@ -47,14 +51,16 @@ var ammo_in_mag:int:
 func _ready()->void:
  base_fov=camera.fov if camera else 72.0
  _build_weapon_visual();_emit_state()
+
 func _unhandled_input(event:InputEvent)->void:
+ if DisplayServer.is_touchscreen_available():return
  if event is InputEventMouseButton:
   if event.button_index==MOUSE_BUTTON_LEFT:set_trigger(event.pressed)
   elif event.button_index==MOUSE_BUTTON_RIGHT:set_ads(event.pressed)
   elif event.pressed and event.button_index==MOUSE_BUTTON_WHEEL_UP:switch_weapon((slot+profiles.size()-1)%profiles.size())
   elif event.pressed and event.button_index==MOUSE_BUTTON_WHEEL_DOWN:cycle_weapon()
- if event is InputEventKey and event.pressed and not event.echo:
-  if event.keycode>=KEY_1 and event.keycode<=KEY_5:switch_weapon(event.keycode-KEY_1)
+ if event is InputEventKey and event.pressed and not event.echo and event.keycode>=KEY_1 and event.keycode<=KEY_5:switch_weapon(event.keycode-KEY_1)
+
 func _process(delta:float)->void:
  fire_timer=maxf(fire_timer-delta,0.0);bolt_timer=maxf(bolt_timer-delta,0.0)
  if bolt_pending and bolt_timer<=0.0:bolt_pending=false
@@ -63,6 +69,7 @@ func _process(delta:float)->void:
   if reload_timer<=0.0:_finish_reload()
  if trigger_held and bool(profiles[slot]["automatic"]):try_fire()
  if camera:camera.fov=lerpf(camera.fov,float(profiles[slot]["ads_fov"]) if aiming else base_fov,minf(delta*11.0,1.0))
+
 func set_trigger(active:bool)->void:
  if active and not trigger_held:try_fire()
  trigger_held=active
@@ -74,31 +81,55 @@ func switch_weapon(next_slot:int)->void:
  var target:=clampi(next_slot,0,profiles.size()-1)
  if target==slot:return
  cancel_reload();slot=target;trigger_held=false;fire_timer=0.18;bolt_pending=false;_build_weapon_visual();_emit_state()
+
 func try_fire()->bool:
- if reloading or fire_timer>0.0 or bolt_pending:return false
+ if reloading or fire_timer>0.0 or bolt_pending or camera==null:return false
  if ammo_in_mag<=0:request_reload();return false
  var p:Dictionary=profiles[slot];fire_timer=float(p["interval"]);ammo_in_mag-=1
  if slot==3:bolt_pending=true;bolt_timer=float(p["interval"])
  ammo_changed.emit(ammo_in_mag,reserve_ammo,magazine_size);shot_fired.emit();_report_weapon_sound()
- var handling:=_player_controller();var recoil_mult:=1.0
- if handling and handling.has_method("get_recoil_multiplier"):recoil_mult=float(handling.get_recoil_multiplier())
+ var recoil_mult:=float(player.get_recoil_multiplier()) if player and player.has_method("get_recoil_multiplier") else 1.0
  var ads_recoil:=0.78 if aiming else 1.0
  recoil_requested.emit(float(p["recoil_pitch"])*recoil_mult*ads_recoil,randf_range(-float(p["recoil_yaw"]),float(p["recoil_yaw"]))*recoil_mult*ads_recoil)
  _fire_weapon();return true
+
 func _report_weapon_sound()->void:
  var scene:=get_tree().current_scene
  if scene==null:return
  var awareness:=scene.get_node_or_null("AwarenessDirector")
- if awareness and awareness.has_method("report_sound"):awareness.report_sound(camera.global_position,float(profiles[slot]["noise"]),weapon_name.to_lower())
+ if awareness and awareness.has_method("report_sound"):awareness.report_sound(player.global_position,float(profiles[slot]["noise"]),weapon_name.to_lower())
+
+func _camera_aim_point(space_state:PhysicsDirectSpaceState3D,max_range:float,exclude:Array[RID])->Vector3:
+ var camera_origin:=camera.global_position
+ var camera_forward:=-camera.global_transform.basis.z
+ var query:=PhysicsRayQueryParameters3D.create(camera_origin,camera_origin+camera_forward*max_range)
+ query.exclude=exclude
+ query.collide_with_areas=false
+ var result:=space_state.intersect_ray(query)
+ if result.is_empty():return camera_origin+camera_forward*max_range
+ return result.get("position",camera_origin+camera_forward*max_range)
+
 func _fire_weapon()->void:
+ if camera==null:return
  var world:=camera.get_world_3d();if world==null:return
- var p:Dictionary=profiles[slot];var origin:=camera.global_position;var forward:=-camera.global_transform.basis.z;var right:=camera.global_transform.basis.x;var up:=camera.global_transform.basis.y;var handling:=_player_controller();var spread_mult:=1.0
- if handling and handling.has_method("get_weapon_spread_multiplier"):spread_mult=float(handling.get_weapon_spread_multiplier())
- if aiming:spread_mult*=0.48
- var spread:=tan(deg_to_rad(float(p["spread"])*spread_mult));var player:=handling as CollisionObject3D;var exclude:Array[RID]=[]
+ var p:Dictionary=profiles[slot]
+ var exclude:Array[RID]=[]
  if player:exclude.append(player.get_rid())
+ var space_state:=world.direct_space_state
+ var aim_point:=_camera_aim_point(space_state,float(p["range"]),exclude)
+ var origin:=muzzle.global_position if muzzle else (gun.global_position if gun else camera.global_position)
+ var base_direction:=(aim_point-origin).normalized()
+ if base_direction.length_squared()<0.001:base_direction=-camera.global_transform.basis.z
+ var right:=camera.global_transform.basis.x
+ var up:=camera.global_transform.basis.y
+ var spread_mult:=1.0
+ if player and player.has_method("get_weapon_spread_multiplier"):spread_mult=float(player.get_weapon_spread_multiplier())
+ if aiming:spread_mult*=0.48
+ var spread:=tan(deg_to_rad(float(p["spread"])*spread_mult))
  for _i in int(p["pellets"]):
-  var direction:=(forward+right*randf_range(-spread,spread)+up*randf_range(-spread,spread)).normalized();_trace_round(world.direct_space_state,origin,direction,exclude,p)
+  var direction:=(base_direction+right*randf_range(-spread,spread)+up*randf_range(-spread,spread)).normalized()
+  _trace_round(space_state,origin,direction,exclude,p)
+
 func _trace_round(space_state:PhysicsDirectSpaceState3D,origin:Vector3,direction:Vector3,exclude:Array[RID],p:Dictionary)->void:
  var energy:=float(p["energy"]);var start_energy:=energy;var current_origin:=origin;var travelled:=0.0;var penetrations:=0;var local_exclude:=exclude.duplicate();var max_range:=float(p["range"])
  while energy>0.05 and travelled<max_range:
@@ -112,10 +143,12 @@ func _trace_round(space_state:PhysicsDirectSpaceState3D,origin:Vector3,direction
   energy=new_energy;penetrations+=1
   if collider is CollisionObject3D:local_exclude.append((collider as CollisionObject3D).get_rid())
   var skip:=Ballistics.thickness_for(collider)+0.08;current_origin=hit_point+direction*skip;travelled+=skip
+
 func request_reload()->bool:
  if reloading:return active_reload_tap()
  if ammo_in_mag>=magazine_size or reserve_ammo<=0:return false
- reloading=true;reload_total=float(profiles[slot]["reload"]);reload_timer=reload_total;reload_elapsed=0.0;active_stage=0;active_savings=0.0;reload_state_changed.emit(true);return true
+ var reload_mult:=float(player.get_reload_time_multiplier()) if player and player.has_method("get_reload_time_multiplier") else 1.0
+ reloading=true;reload_total=float(profiles[slot]["reload"])*maxf(reload_mult,0.1);reload_timer=reload_total;reload_elapsed=0.0;active_stage=0;active_savings=0.0;reload_state_changed.emit(true);return true
 func active_reload_tap()->bool:
  if not reloading:return false
  var windows:Array=profiles[slot].get("active",[])
@@ -144,32 +177,9 @@ func add_ammo(amount:int)->void:
  if amount<=0:return
  reserve_ammo+=amount;ammo_changed.emit(ammo_in_mag,reserve_ammo,magazine_size)
 func _emit_state()->void:ammo_changed.emit(ammo_in_mag,reserve_ammo,magazine_size);weapon_changed.emit(weapon_name,slot)
-func _player_controller()->Node:
- var node:Node=camera
- for _i in 4:
-  if node==null:break
-  if node.is_in_group("player"):return node
-  node=node.get_parent()
- return null
+func _player_controller()->Node:return player
+
 func _build_weapon_visual()->void:
- if camera==null:return
- var gun:=camera.get_node_or_null("Gun") as MeshInstance3D;if gun==null:return
+ if gun==null:return
  gun.mesh=null
- for child in gun.get_children():child.queue_free()
- var steel:=_mat(Color(0.07,0.085,0.095),0.74,0.48);var dark:=_mat(Color(0.025,0.03,0.034),0.82,0.34);var polymer:=_mat(Color(0.10,0.115,0.105),0.12,0.82);var accent:=_mat(Color(0.34,0.16,0.055),0.18,0.68);var blade:=_mat(Color(0.42,0.46,0.48),0.88,0.24)
- if slot==0:
-  _add_box(gun,"DetailReceiver",Vector3.ZERO,Vector3(0.26,0.19,0.58),steel);_add_box(gun,"DetailStock",Vector3(0,-0.015,0.42),Vector3(0.24,0.17,0.34),polymer);_add_cylinder(gun,"DetailBarrel",Vector3(0,0.035,-0.62),0.055,0.96,dark);_add_box(gun,"DetailPump",Vector3(0,-0.075,-0.35),Vector3(0.20,0.15,0.31),accent)
- elif slot==1:
-  _add_box(gun,"DetailReceiver",Vector3.ZERO,Vector3(0.23,0.18,0.50),steel);_add_box(gun,"DetailMagazine",Vector3(0,-0.20,-0.05),Vector3(0.15,0.34,0.18),dark);_add_cylinder(gun,"DetailBarrel",Vector3(0,0.03,-0.58),0.038,0.82,dark)
- elif slot==2:
-  _add_box(gun,"DetailSlide",Vector3(0,0.03,-0.12),Vector3(0.18,0.13,0.42),steel);_add_box(gun,"DetailGrip",Vector3(0,-0.16,0.08),Vector3(0.15,0.30,0.18),polymer);_add_cylinder(gun,"DetailBarrel",Vector3(0,0.03,-0.34),0.028,0.30,dark)
- elif slot==3:
-  _add_box(gun,"DetailReceiver",Vector3.ZERO,Vector3(0.20,0.17,0.62),steel);_add_box(gun,"DetailStock",Vector3(0,-0.02,0.48),Vector3(0.21,0.17,0.48),accent);_add_cylinder(gun,"DetailLongBarrel",Vector3(0,0.03,-0.82),0.034,1.25,dark);_add_cylinder(gun,"DetailScope",Vector3(0,0.16,-0.12),0.055,0.42,dark);_add_box(gun,"DetailBolt",Vector3(0.15,0.04,0.02),Vector3(0.18,0.05,0.06),steel)
- else:
-  _add_box(gun,"DetailReceiver",Vector3.ZERO,Vector3(0.22,0.18,0.56),steel);_add_box(gun,"DetailStock",Vector3(0,-0.01,0.44),Vector3(0.22,0.17,0.40),polymer);_add_box(gun,"DetailMagazine",Vector3(0,-0.20,-0.02),Vector3(0.14,0.30,0.17),dark);_add_cylinder(gun,"DetailBarrel",Vector3(0,0.03,-0.68),0.036,0.98,dark);_add_box(gun,"DetailBayonet",Vector3(0,-0.015,-1.23),Vector3(0.055,0.035,0.62),blade,Vector3(0,0,0));_add_box(gun,"DetailBayonetGuard",Vector3(0,-0.005,-0.91),Vector3(0.18,0.055,0.045),steel)
-func _mat(color:Color,metallic:float,roughness:float)->StandardMaterial3D:
- var m:=StandardMaterial3D.new();m.albedo_color=color;m.metallic=metallic;m.roughness=roughness;return m
-func _add_box(parent:Node3D,node_name:String,position:Vector3,size:Vector3,material:Material,rotation_deg:=Vector3.ZERO)->void:
- var node:=MeshInstance3D.new();node.name=node_name;node.position=position;node.rotation_degrees=rotation_deg;var mesh:=BoxMesh.new();mesh.size=size;node.mesh=mesh;node.material_override=material;parent.add_child(node)
-func _add_cylinder(parent:Node3D,node_name:String,position:Vector3,radius:float,length:float,material:Material)->void:
- var node:=MeshInstance3D.new();node.name=node_name;node.position=position;node.rotation_degrees=Vector3(90,0,0);var mesh:=CylinderMesh.new();mesh.top_radius=radius;mesh.bottom_radius=radius;mesh.height=length;node.mesh=mesh;node.material_override=material;parent.add_child(node)
+ WeaponVisualFactory.build(gun,slot,muzzle)

@@ -1,0 +1,81 @@
+name: CC0 Zombie Ingest
+
+on:
+  push:
+    branches: [feat/cc0-provisional-art-pass]
+    paths:
+      - '.github/workflows/cc0-zombie-ingest.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout integration branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/cc0-provisional-art-pass
+      - name: Download CC0 animated characters pack
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/zombie_pack
+          curl -L --fail --retry 3 --connect-timeout 20 --max-time 180 -o /tmp/animated.zip 'https://opengameart.org/sites/default/files/ultimate_animated_character_pack_by_quaternius.zip'
+          unzip -q /tmp/animated.zip -d /tmp/zombie_pack
+      - name: Filter zombie runtime assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEST='assets/cc0_staging/vendor/characters_zombies/quaternius_animated_characters'
+          rm -rf "$DEST"
+          mkdir -p "$DEST"
+          python - <<'PY'
+          from pathlib import Path
+          import shutil
+          src=Path('/tmp/zombie_pack')
+          dest=Path('assets/cc0_staging/vendor/characters_zombies/quaternius_animated_characters')
+          chosen=[]
+          for f in src.rglob('*'):
+              if not f.is_file(): continue
+              low=str(f).lower()
+              ext=f.suffix.lower()
+              if 'zombie' in low and ext in {'.fbx','.png','.jpg','.jpeg','.txt'}:
+                  rel=f.relative_to(src)
+                  out=dest/rel
+                  out.parent.mkdir(parents=True,exist_ok=True)
+                  shutil.copy2(f,out);chosen.append(out)
+          # preserve license/readme evidence even if not named zombie
+          for f in src.rglob('*'):
+              if f.is_file() and any(k in f.name.lower() for k in ('license','readme')):
+                  out=dest/'docs'/f.name
+                  out.parent.mkdir(parents=True,exist_ok=True)
+                  if not out.exists(): shutil.copy2(f,out)
+          if not chosen:
+              raise SystemExit('No zombie runtime assets found')
+          print('Filtered zombie files:', len(chosen))
+          for f in chosen[:40]: print(f)
+          PY
+      - name: Write source record
+        run: |
+          cat > assets/cc0_staging/vendor/characters_zombies/quaternius_animated_characters/ARCONT_SOURCE.md <<'EOF'
+          # Quaternius Animated Characters Pack — filtered zombie subset
+          Source: https://opengameart.org/content/animated-characters-pack
+          Author: Quaternius
+          License: CC0
+          Use: provisional animated infected candidate for Arcont.
+          Status: UNREVIEWED-CC0 until rig/scale/anatomy/mobile audit passes.
+          EOF
+      - name: Commit filtered zombie assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/cc0_staging/vendor/characters_zombies/quaternius_animated_characters
+          git diff --cached --quiet && exit 0
+          git commit -m 'assets: add filtered CC0 animated zombie candidates'
+          git push origin HEAD:feat/cc0-provisional-art-pass

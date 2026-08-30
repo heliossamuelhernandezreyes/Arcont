@@ -1,0 +1,123 @@
+name: CC0 Runtime Promote
+
+on:
+  push:
+    branches: [feat/cc0-provisional-art-pass]
+    paths:
+      - '.github/workflows/cc0-runtime-promote.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout integration branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/cc0-provisional-art-pass
+
+      - name: Checkout reusable CC0 warehouse
+        uses: actions/checkout@v4
+        with:
+          ref: assets/cc0-staging
+          path: _cc0_library
+
+      - name: Add expanded runtime candidates without deleting existing art
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC='_cc0_library/assets/cc0_staging/vendor'
+          DST='assets/provisional/cc0_runtime'
+
+          mkdir -p \
+            "$DST/zombies/realistic_city_candidate" \
+            "$DST/zombies/mobile_reference" \
+            "$DST/characters/human_scale_candidate" \
+            "$DST/forest"
+
+          if [ -d "$SRC/realistic_infected/rikindle3d_male_city_zombie" ]; then
+            rm -rf "$DST/zombies/realistic_city_candidate"/*
+            find "$SRC/realistic_infected/rikindle3d_male_city_zombie" -maxdepth 1 -type f \
+              \( -iname '*.fbx' -o -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.txt' -o -iname '*.md' \) \
+              -exec cp '{}' "$DST/zombies/realistic_city_candidate/" \;
+          fi
+
+          if [ -d "$SRC/mobile_infected_reference/lucian_pavel_mobile_zombie" ]; then
+            rm -rf "$DST/zombies/mobile_reference"/*
+            find "$SRC/mobile_infected_reference/lucian_pavel_mobile_zombie" -maxdepth 1 -type f \
+              \( -iname '*.fbx' -o -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.txt' -o -iname '*.md' \) \
+              -exec cp '{}' "$DST/zombies/mobile_reference/" \;
+          fi
+
+          if [ -d "$SRC/human_scale_characters/quaternius_universal_base_candidate_mirror" ]; then
+            rm -rf "$DST/characters/human_scale_candidate"/*
+            find "$SRC/human_scale_characters/quaternius_universal_base_candidate_mirror" -maxdepth 1 -type f \
+              \( -iname '*.glb' -o -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.txt' -o -iname '*.md' \) \
+              -exec cp '{}' "$DST/characters/human_scale_candidate/" \;
+          fi
+
+          # Keep the complete 330+ object Nature Kit in the reusable warehouse. Promote only
+          # representative self-contained FBX meshes into the Arcont runtime tree.
+          if [ -d "$SRC/environment_forest/kenney_nature_kit" ]; then
+            rm -rf "$DST/forest"/*
+            python - <<'PY'
+          from pathlib import Path
+          import shutil
+
+          src = Path('_cc0_library/assets/cc0_staging/vendor/environment_forest/kenney_nature_kit')
+          dst = Path('assets/provisional/cc0_runtime/forest')
+          dst.mkdir(parents=True, exist_ok=True)
+          wanted = ('tree', 'pine', 'bush', 'rock', 'stone', 'grass', 'log', 'stump')
+          candidates = [
+              f for f in src.rglob('*.fbx')
+              if any(k in f.stem.lower() for k in wanted)
+          ]
+          selected = []
+          seen = set()
+          for f in sorted(candidates):
+              key = next((k for k in wanted if k in f.stem.lower()), None)
+              if key and key not in seen:
+                  selected.append(f)
+                  seen.add(key)
+              if len(selected) >= 8:
+                  break
+          for f in selected:
+              shutil.copy2(f, dst / f.name)
+          (dst / 'SELECTION.txt').write_text(
+              '\n'.join(str(f.relative_to(src)) for f in selected), encoding='utf-8'
+          )
+          PY
+          fi
+
+          cat > "$DST/CANDIDATE_LIBRARY.md" <<'EOF'
+          # Expanded Arcont CC0 runtime candidates
+
+          Existing active weapons, zombie shells, street clutter and factory assets are preserved.
+
+          Newly promoted candidates:
+          - Male City Zombie — realistic CC0 infected candidate.
+          - Mobile Ready Zombie — CC0 low-cost infected/LOD reference. Authoring `.blend` files stay out of runtime.
+          - Human-scale Quaternius-derived CC0 reference GLB — scale/rig candidate only; not the full official Universal Base Characters pack.
+          - Selected Kenney Nature Kit forest FBX meshes — CC0; full 330+ pack remains in the reusable staging warehouse.
+
+          Poly Haven Pine Forest remains an approved realistic CC0 source pool. High-resolution source originals are not bulk-mirrored into the APK; game-sized derivatives will be promoted deliberately.
+
+          Status: PROVISIONAL. Import/metric/animation/Android validation is required before any candidate replaces active art.
+          EOF
+
+          rm -rf _cc0_library
+
+      - name: Commit promotion
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/provisional/cc0_runtime
+          git diff --cached --quiet && exit 0
+          git commit -m 'assets: filter runtime candidate formats for Godot'
+          git push origin HEAD:feat/cc0-provisional-art-pass
