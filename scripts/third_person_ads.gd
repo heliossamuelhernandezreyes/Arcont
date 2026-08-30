@@ -42,6 +42,7 @@ func _ready() -> void:
   spring_arm.add_excluded_object(player.get_rid())
  _collect_body_meshes(body_visual)
  _force_tactical_startup()
+ _enforce_tps_body_visibility()
 
 func _collect_body_meshes(node: Node) -> void:
  if node == null:
@@ -80,9 +81,10 @@ func _physics_process(delta: float) -> void:
  spring_arm.position.x = lerpf(spring_arm.position.x,target.x,blend)
  spring_arm.spring_length = lerpf(spring_arm.spring_length,target.z,blend)
  camera.fov = lerpf(camera.fov, hip_fov if not aiming else 64.0, blend)
- # SpringArm updates direct-child translation during physics; inspect visibility
- # only after it has had at least one chance to establish a valid boom distance.
- _update_near_camera_visibility()
+ # Camera collision may shorten the boom, but it must never erase the operator.
+ # The previous distance threshold hid every BodyVisual mesh at once and caused
+ # exactly the visual failure the SpringArm was meant to prevent.
+ _enforce_tps_body_visibility()
 
 func _camera_target(aiming: bool, shoulder: float) -> Vector3:
  var scale := float(player.camera_distance_scale()) if player.has_method("camera_distance_scale") else 1.0
@@ -90,17 +92,23 @@ func _camera_target(aiming: bool, shoulder: float) -> Vector3:
   return Vector3(ads_shoulder * shoulder,ads_pivot_height,maxf(ads_distance * scale,minimum_safe_distance))
  return Vector3(hip_shoulder * shoulder,hip_pivot_height,maxf(hip_distance * scale,minimum_safe_distance))
 
-func _update_near_camera_visibility() -> void:
- var actual_distance := get_camera_distance()
- var shell_visible := actual_distance >= minimum_safe_distance
+func _enforce_tps_body_visibility() -> void:
  for mesh in body_meshes:
   if is_instance_valid(mesh):
-   mesh.visible = shell_visible
+   mesh.visible = true
 
 func get_camera_distance() -> float:
  if camera == null or player == null or camera_rig == null:
   return 0.0
  return camera.global_position.distance_to(player.global_position + Vector3.UP * camera_rig.position.y)
+
+func is_body_render_contract_satisfied() -> bool:
+ if body_meshes.is_empty():
+  return false
+ for mesh in body_meshes:
+  if is_instance_valid(mesh) and not mesh.visible:
+   return false
+ return true
 
 func is_aiming() -> bool:
  return weapon != null and bool(weapon.get("aiming"))
