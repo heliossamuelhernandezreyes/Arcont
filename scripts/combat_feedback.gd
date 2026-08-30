@@ -17,6 +17,15 @@ var audio_player:AudioStreamPlayer
 var audio_generator:AudioStreamGenerator
 func _ready()->void:
  visual_scale=mobile_effect_scale if OS.has_feature("mobile") else 1.0;hitmarker.visible=false;muzzle.visible=false;_setup_placeholder_audio()
+func _exit_tree()->void:
+ # AudioStreamGeneratorPlayback is owned by the live AudioStreamPlayer playback.
+ # Tear that relationship down explicitly before the scene leaves the tree so
+ # headless/test shutdown cannot retain the playback through Godot's audio mix.
+ if audio_player!=null:
+  audio_player.stop()
+  audio_player.stream=null
+ audio_generator=null
+ audio_player=null
 func _process(delta:float)->void:
  if hitmarker_timer>0.0:hitmarker_timer-=delta;hitmarker.visible=hitmarker_timer>0.0
  if muzzle_timer>0.0:muzzle_timer-=delta;muzzle.visible=muzzle_timer>0.0
