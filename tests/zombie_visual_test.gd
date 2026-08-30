@@ -15,40 +15,74 @@ func _run() -> void:
 	if visual == null:
 		_fail("CC0 zombie visual adapter missing")
 		return
-	if not bool(visual.call("is_shell_active")):
-		_fail("CC0 zombie shell did not activate")
+
+	var contract := String(visual.call("get_animation_contract"))
+	if contract == "proxy_fallback":
+		# A visible segmented proxy is preferable to accepting a static/bind-pose
+		# imported shell. This is an explicit degraded state, not a false pass for
+		# the realistic candidate.
+		var proxy_body := enemy.get_node("Body") as Node3D
+		if not proxy_body.visible:
+			_fail("proxy fallback contract selected but segmented body is hidden")
+			return
+		print("ZOMBIE_RUNTIME_CONTRACT|mode=proxy_fallback|reason=%s" % String(visual.get_meta("animation_contract_failure", "")))
+		enemy.queue_free()
+		await process_frame
+		quit(0)
 		return
+
+	if contract != "semantic_native":
+		_fail("unexpected zombie animation contract: %s" % contract)
+		return
+	if not bool(visual.call("is_shell_active")):
+		_fail("semantic zombie shell did not activate")
+		return
+
 	var source := String(visual.call("get_source_asset"))
 	if source.is_empty() or not ResourceLoader.exists(source):
-		_fail("CC0 zombie source missing")
+		_fail("semantic zombie source missing")
 		return
 	var extent := float(visual.call("get_shell_extent"))
-	# Imported humanoid rigs can be Z-up before the adapter's 180-degree facing
-	# correction. Validate a human-scale shell instead of assuming the longest
-	# imported AABB axis is the final standing Y height.
 	if extent < 1.75 or extent > 2.05:
 		_fail("CC0 humanoid infected extent %.3f outside human-scale envelope" % extent)
 		return
-	if "realistic_city_candidate/InfectedCityMan.fbx" not in source:
-		_fail("humanoid infected candidate is not primary runtime shell: %s" % source)
-		return
+
 	var names: PackedStringArray = visual.call("get_animation_names")
 	if names.is_empty():
-		_fail("CC0 zombie imported without animation library")
+		_fail("semantic zombie imported without animation library")
 		return
-	# The realistic city shell currently ships its own base clip. Detailed
-	# combat clips are promoted separately; the anatomical fallback remains the
-	# gameplay truth for sever/crawl states.
+	var lowered: Array[String] = []
+	for name_variant in names:
+		lowered.append(String(name_variant).to_lower())
+	if not _contains_any(lowered, ["idle", "zombie"]):
+		_fail("active shell lacks semantic idle animation: %s" % names)
+		return
+	if not _contains_any(lowered, ["walk", "run"]):
+		_fail("active shell lacks semantic locomotion animation: %s" % names)
+		return
+	if not _contains_any(lowered, ["punch", "attack"]):
+		_fail("active shell lacks semantic attack animation: %s" % names)
+		return
+
+	var current := String(visual.call("get_current_animation")).to_lower()
+	if current.is_empty() or ("idle" not in current and "zombie" not in current):
+		_fail("semantic shell did not start in a valid idle animation: %s" % current)
+		return
+
 	var body := enemy.get_node("Body") as Node3D
 	var arm_l := enemy.get_node("ArmL") as Node3D
 	var arm_r := enemy.get_node("ArmR") as Node3D
 	if body.visible or arm_l.visible or arm_r.visible:
-		_fail("segmented proxy visible while intact humanoid shell active")
+		_fail("segmented proxy visible while semantic humanoid shell active")
 		return
+
 	enemy.call("_sever_limb", "arm_l", Vector3.FORWARD)
 	await process_frame
 	if bool(visual.call("is_shell_active")):
 		_fail("humanoid zombie shell stayed active after limb sever")
+		return
+	if String(visual.call("get_animation_contract")) != "segmented_runtime_fallback":
+		_fail("limb sever did not declare segmented_runtime_fallback")
 		return
 	if not body.visible:
 		_fail("segmented fallback body not visible after sever")
@@ -59,11 +93,19 @@ func _run() -> void:
 	if not arm_r.visible:
 		_fail("intact right arm missing in fallback")
 		return
-	print("HUMANOID INFECTED source=%s extent=%.3f animations=%s" % [source, extent, names])
-	print("ARCONT HUMANOID INFECTED: primary realistic shell + anatomical fallback OK")
+
+	print("ZOMBIE_RUNTIME_CONTRACT|mode=%s|source=%s|extent=%.3f|current=%s|animations=%s" % [contract, source, extent, current, names])
+	print("ARCONT ZOMBIE VISUAL: semantic animated shell + explicit anatomical fallback OK")
 	enemy.queue_free()
 	await process_frame
 	quit(0)
+
+func _contains_any(names: Array[String], tokens: Array[String]) -> bool:
+	for name in names:
+		for token in tokens:
+			if token in name:
+				return true
+	return false
 
 func _fail(message: String) -> void:
 	push_error(message)
