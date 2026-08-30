@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "updated": "2026-08-30",
+  "sources": [
+    {
+      "id": "polyhaven",
+      "name": "Poly Haven",
+      "tier": "A",
+      "enabled": true,
+      "license": "CC0-1.0",
+      "asset_url": "https://polyhaven.com/",
+      "api_url": "https://api.polyhaven.com",
+      "api_attribution_required": true,
+      "notes": "Primary automated source for photorealistic models, PBR textures and HDRIs. Live API requires a unique User-Agent and visible source attribution when integrated into a product/service."
+    },
+    {
+      "id": "ambientcg",
+      "name": "ambientCG",
+      "tier": "A",
+      "enabled": false,
+      "license": "CC0-1.0",
+      "asset_url": "https://ambientcg.com/",
+      "api_url": null,
+      "api_attribution_required": null,
+      "notes": "Preferred second large CC0 reservoir. Automated ingestion intentionally disabled until an official current machine-readable API contract is documented and verified in-repo. Manual/index acquisition remains allowed after provenance capture."
+    },
+    {
+      "id": "kenney",
+      "name": "Kenney",
+      "tier": "A",
+      "enabled": false,
+      "license": "CC0-1.0",
+      "asset_url": "https://kenney.nl/assets",
+      "api_url": null,
+      "notes": "Useful mobile-safe fallback/reference packs; style may be too simplified for final near-field realism."
+    },
+    {
+      "id": "quaternius",
+      "name": "Quaternius",
+      "tier": "A",
+      "enabled": false,
+      "license": "CC0-1.0",
+      "asset_url": "https://quaternius.com/",
+      "api_url": null,
+      "notes": "Existing Arcont source for animation and nature/model packs. Acquire exact packs only with creator license/provenance snapshot."
+    },
+    {
+      "id": "sketchfab_cc0",
+      "name": "Sketchfab CC0-only candidates",
+      "tier": "B",
+      "enabled": false,
+      "license": "per-asset; CC0 only",
+      "asset_url": "https://sketchfab.com/",
+      "api_url": null,
+      "notes": "No bulk ingestion. Every exact asset must pass per-item license, provenance and redistribution review."
+    }
+  ]
+}
