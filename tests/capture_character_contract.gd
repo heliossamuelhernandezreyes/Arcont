@@ -9,14 +9,9 @@ func _init() -> void:
 func _capture() -> void:
 	var main := MAIN.instantiate()
 	root.add_child(main)
-	for _i in range(8): await process_frame
-	var menu := main.get_node_or_null("MainMenu")
-	if menu == null or not menu.has_method("_start"):
-		push_error("ARCONT_CHARACTER_CAPTURE: MainMenu start path unavailable")
-		quit(1)
-		return
-	menu.call("_start")
-	for _i in range(75): await process_frame
+	# main.tscn is currently direct-to-mission. Let the actual runtime initialize;
+	# do not depend on the removed MainMenu node that made old capture helpers stale.
+	for _i in range(90): await process_frame
 
 	var player := main.get_node_or_null("Player") as CharacterBody3D
 	var weapon := main.get_node_or_null("Player/Weapon")
@@ -27,9 +22,6 @@ func _capture() -> void:
 		quit(1)
 		return
 
-	# Controlled but real mission view: keep the live player, renderer, environment,
-	# camera, animation tree and weapon stack. Reposition only to make the operator
-	# readable rather than judging TPS through a random occluding tree.
 	player.global_position = Vector3(0.0, 2.2, 28.0)
 	player.velocity = Vector3.ZERO
 	player.set("camera_yaw", 0.0)
@@ -50,15 +42,14 @@ func _capture() -> void:
 	for _i in range(18): await process_frame
 	await _save("player-moving.png")
 
-	# Controlled SpringArm-compression stress capture. This reproduces the old
-	# disappearance condition without depending on random world geometry: freeze
-	# the TPS controller for one evidence frame, shorten the live SpringArm to the
-	# exact safety distance, and verify the body render contract before capture.
+	# Deterministic compression stress: freeze only the TPS controller after its
+	# normal setup, shorten the live SpringArm to the safety distance, and require
+	# every collected body mesh to remain visible before recording evidence.
 	player.velocity = Vector3.ZERO
 	weapon.call("set_ads", false)
-	tps.process_mode = Node.PROCESS_MODE_DISABLED
+	tps.set_physics_process(false)
 	spring_arm.spring_length = float(tps.get("minimum_safe_distance"))
-	for _i in range(3): await process_frame
+	await physics_frame
 	if tps.has_method("_enforce_tps_body_visibility"):
 		tps.call("_enforce_tps_body_visibility")
 	if not bool(tps.call("is_body_render_contract_satisfied")):
@@ -66,7 +57,7 @@ func _capture() -> void:
 		quit(1)
 		return
 	await _save("player-near-camera.png")
-	tps.process_mode = Node.PROCESS_MODE_INHERIT
+	tps.set_physics_process(true)
 
 	main.queue_free()
 	await process_frame
