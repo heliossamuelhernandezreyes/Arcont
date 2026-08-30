@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "name": "arcont_realistic_broad",
+  "purpose": "Broad warehouse discovery profile; intentionally wider than runtime needs.",
+  "priority_terms": [
+    "forest", "ground", "dirt", "mud", "soil", "gravel", "rock", "stone", "boulder", "cliff",
+    "moss", "bark", "tree", "pine", "spruce", "oak", "birch", "log", "stump", "wood", "grass",
+    "fern", "leaf", "branch", "root", "ivy", "weed", "mushroom", "reed", "puddle", "river",
+    "brick", "concrete", "plaster", "stucco", "roof", "tile", "corrugated", "metal", "rust",
+    "asphalt", "road", "curb", "drain", "manhole", "wall", "door", "window", "fence", "gate",
+    "barn", "shed", "cabin", "garage", "workshop", "warehouse", "factory", "industrial", "pipe",
+    "valve", "duct", "tank", "barrel", "crate", "pallet", "debris", "rubble", "trash", "abandoned",
+    "damaged", "burned", "rural", "farm", "interior", "furniture", "appliance", "tool", "rope", "tarp",
+    "vehicle", "car", "truck", "van", "tractor", "wheel", "tire", "wreck", "fabric", "leather", "rubber",
+    "plastic", "glass", "ceramic", "paint", "grime", "wet", "stain", "crack", "overcast", "cloudy",
+    "sunset", "dusk", "night", "fog", "rain"
+  ],
+  "runtime_target": {
+    "engine": "Godot",
+    "platform": "Android",
+    "renderer": "gl_compatibility",
+    "source_master_policy": "retain high fidelity in warehouse; derive mobile runtime assets separately",
+    "preferred_runtime_texture_resolutions": ["1k", "2k"],
+    "preferred_normal_convention": "OpenGL",
+    "preferred_packed_map": "ARM/ORM when appropriate"
+  },
+  "promotion_gates": [
+    "provenance_and_license",
+    "metric_scale",
+    "visual_fit",
+    "material_correctness",
+    "lod_or_hlod_plan",
+    "collision_plan",
+    "texture_memory",
+    "draw_calls_and_material_count",
+    "android_visual_capture",
+    "android_performance_profile"
+  ]
+}
