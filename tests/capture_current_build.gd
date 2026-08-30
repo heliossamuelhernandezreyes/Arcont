@@ -13,17 +13,7 @@ func _capture() -> void:
 	var main := MAIN.instantiate()
 	root.add_child(main)
 
-	# MainMenu intentionally pauses on boot. Invoke the same start path as the PLAY button.
-	for _i in range(8):
-		await process_frame
-	var menu := main.get_node_or_null("MainMenu")
-	if menu == null or not menu.has_method("_start"):
-		push_error("ARCONT_GAMEPLAY_SCREENSHOT: MainMenu start path unavailable")
-		quit(1)
-		return
-	menu.call("_start")
-
-	# Let the actual mission, procedural environment, lighting and camera run.
+	# main.tscn is direct-to-mission; the old MainMenu bootstrap no longer exists.
 	for _i in range(90):
 		await process_frame
 
