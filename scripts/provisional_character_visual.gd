@@ -70,7 +70,18 @@ func _bind_weapon_to_hand()->void:
  var operator:=get_node_or_null("OperatorModel");if operator==null:return
  var skeleton:=_find_skeleton(operator);if skeleton==null or skeleton.find_bone(weapon_bone_name)<0:return
  var attachment:=BoneAttachment3D.new();attachment.name="WeaponHandAttachment";attachment.bone_name=weapon_bone_name;skeleton.add_child(attachment)
- weapon_mount.reparent(attachment,false);var stance:=_weapon_stance();weapon_mount.position=stance["hip_pos"];weapon_mount.rotation_degrees=stance["hip_rot"]
+ weapon_mount.reparent(attachment,false)
+ # Imported Kenney skeleton space carries a 100x basis. OperatorModel used to
+ # hide that at 0.01 scale; once the body is restored to human scale the weapon
+ # must not inherit the skeleton's residual scale. Normalize the mount locally
+ # so its global basis remains metric (~1x) independent of character import scale.
+ var inherited:=attachment.global_transform.basis.get_scale()
+ weapon_mount.scale=Vector3(
+  1.0/maxf(absf(inherited.x),0.0001),
+  1.0/maxf(absf(inherited.y),0.0001),
+  1.0/maxf(absf(inherited.z),0.0001)
+ )
+ var stance:=_weapon_stance();weapon_mount.position=stance["hip_pos"];weapon_mount.rotation_degrees=stance["hip_rot"]
 func _update_procedural(delta:float,speed:float)->void:
  var interval:=_quality_interval();update_accumulator+=delta;if interval>0.0 and update_accumulator<interval:return
  var step:=update_accumulator if interval>0.0 else delta;update_accumulator=0.0;phase+=step*(1.7+speed*0.22)
