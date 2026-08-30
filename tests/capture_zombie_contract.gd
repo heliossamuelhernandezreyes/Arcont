@@ -63,25 +63,39 @@ func _capture() -> void:
 		_fail("infected semantic shell is inactive")
 		return
 
+	# The host AI normally selects idle/move every frame. Disable only the adapter's
+	# automatic selector while preserving its AnimationPlayer child, then drive the
+	# semantic clips explicitly so each screenshot is an unambiguous deformation test.
+	visual.set_process(false)
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUTPUT_DIR))
 
 	visual.call("_play_best", ["idle", "zombie"], false, true)
 	for _i in range(12): await process_frame
-	await _save("zombie-idle.png", visual)
+	await _save("zombie-idle.png", visual, ["idle", "zombie"])
 
 	visual.call("_play_best", ["walk", "run"], true, true)
 	for _i in range(12): await process_frame
-	await _save("zombie-move.png", visual)
+	await _save("zombie-move.png", visual, ["walk", "run"])
 
 	visual.call("_play_best", ["punch", "attack"], false, true)
 	for _i in range(9): await process_frame
-	await _save("zombie-attack.png", visual)
+	await _save("zombie-attack.png", visual, ["punch", "attack"])
 
 	stage.queue_free()
 	await process_frame
 	quit(0)
 
-func _save(file_name: String, visual: Node) -> void:
+func _save(file_name: String, visual: Node, expected_tokens: Array) -> void:
+	var current := String(visual.call("get_current_animation"))
+	var lowered := current.to_lower()
+	var semantic_ok := false
+	for token_variant in expected_tokens:
+		if String(token_variant).to_lower() in lowered:
+			semantic_ok = true
+			break
+	if not semantic_ok:
+		_fail("%s selected wrong semantic animation: %s" % [file_name, current])
+		return
 	RenderingServer.force_draw(false)
 	await process_frame
 	var image := root.get_viewport().get_texture().get_image()
@@ -93,7 +107,7 @@ func _save(file_name: String, visual: Node) -> void:
 	if err != OK:
 		_fail("save_png failed for %s with code %d" % [file_name, err])
 		return
-	print("ARCONT_ZOMBIE_CAPTURE|path=%s|animation=%s|source=%s|width=%d|height=%d" % [path, String(visual.call("get_current_animation")), String(visual.call("get_source_asset")), image.get_width(), image.get_height()])
+	print("ARCONT_ZOMBIE_CAPTURE|path=%s|animation=%s|source=%s|width=%d|height=%d" % [path, current, String(visual.call("get_source_asset")), image.get_width(), image.get_height()])
 
 func _fail(message: String) -> void:
 	push_error("ARCONT_ZOMBIE_CAPTURE: %s" % message)
