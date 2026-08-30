@@ -1,0 +1,84 @@
+name: Realistic Asset Warehouse Sync
+
+on:
+  workflow_dispatch:
+    inputs:
+      download:
+        description: "Download selected source files (catalog-only when false)"
+        required: true
+        default: false
+        type: boolean
+      resolution:
+        description: "Preferred source resolution for downloaded files"
+        required: true
+        default: "4k"
+        type: choice
+        options: ["1k", "2k", "4k", "8k", "16k", "24k"]
+      file_mode:
+        description: "How broadly to download each matched asset"
+        required: true
+        default: "representative"
+        type: choice
+        options: ["single", "representative", "all"]
+      limit:
+        description: "Max matched assets; 0 catalogs all matches"
+        required: true
+        default: "0"
+        type: string
+      max_total_gb:
+        description: "Safety cap for this run's binary downloads"
+        required: true
+        default: "20"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  polyhaven:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build complete Poly Haven catalog
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXTRA=""
+          if [[ "${{ inputs.download }}" == "true" ]]; then
+            EXTRA="--download"
+          fi
+          python tools/asset_warehouse/fetch_polyhaven.py \
+            --out warehouse/polyhaven \
+            --resolution "${{ inputs.resolution }}" \
+            --file-mode "${{ inputs.file_mode }}" \
+            --limit "${{ inputs.limit }}" \
+            --max-total-gb "${{ inputs.max_total_gb }}" \
+            $EXTRA
+
+      - name: Warehouse summary
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          c=json.loads(Path('warehouse/polyhaven/catalog.json').read_text())
+          a=json.loads(Path('warehouse/polyhaven/acquisitions.json').read_text())
+          print(f"catalog_count={c['count']}")
+          print(f"download_records={a['count']}")
+          print(f"downloaded_bytes={a['downloaded_bytes']}")
+          PY
+
+      - name: Upload catalog and optional masters
+        uses: actions/upload-artifact@v4
+        with:
+          name: arcont-realistic-warehouse-polyhaven-${{ github.run_id }}
+          path: warehouse/polyhaven
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
