@@ -42,7 +42,13 @@ func _capture() -> void:
 		_fail("enemy scene did not instantiate")
 		return
 	stage.add_child(enemy)
+	# This evidence stage intentionally has no physics floor. Keep the gameplay
+	# CharacterBody fixed at the origin while allowing visual/animation processing
+	# to continue; otherwise gravity can move the subject below the render floor
+	# before the screenshot is taken.
+	enemy.set_physics_process(false)
 	enemy.global_position = Vector3.ZERO
+	enemy.velocity = Vector3.ZERO
 
 	var camera := Camera3D.new()
 	stage.add_child(camera)
@@ -52,6 +58,7 @@ func _capture() -> void:
 	camera.current = true
 
 	for _i in range(20): await process_frame
+	enemy.global_position = Vector3.ZERO
 	var visual := enemy.get_node_or_null("CC0Visual")
 	if visual == null:
 		_fail("CC0Visual adapter unavailable")
@@ -69,14 +76,17 @@ func _capture() -> void:
 	visual.set_process(false)
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUTPUT_DIR))
 
+	enemy.global_position = Vector3.ZERO
 	visual.call("_play_best", ["idle", "zombie"], false, true)
 	for _i in range(12): await process_frame
 	await _save("zombie-idle.png", visual, ["idle", "zombie"])
 
+	enemy.global_position = Vector3.ZERO
 	visual.call("_play_best", ["walk", "run"], true, true)
 	for _i in range(12): await process_frame
 	await _save("zombie-move.png", visual, ["walk", "run"])
 
+	enemy.global_position = Vector3.ZERO
 	visual.call("_play_best", ["punch", "attack"], false, true)
 	for _i in range(9): await process_frame
 	await _save("zombie-attack.png", visual, ["punch", "attack"])
