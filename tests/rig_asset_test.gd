@@ -35,7 +35,7 @@ func _init()->void:
   if operator==null:failures.append("Falta OperatorModel runtime")
   else:
    var s:=operator.scale;print("PLAYER MODEL SCALE: ",s)
-   if s.x<0.005 or s.x>0.02 or s.y<0.005 or s.y>0.02 or s.z<0.005 or s.z>0.02:failures.append("Escala del jugador fuera del contrato métrico: "+str(s))
+   if s.x<0.035 or s.x>0.06 or s.y<0.035 or s.y>0.06 or s.z<0.035 or s.z>0.06:failures.append("Escala del jugador fuera del contrato TPS humano: "+str(s))
   var rig:=main.get_node_or_null("Player/CameraRig") as Node3D
   var arm:=main.get_node_or_null("Player/CameraRig/SpringArm3D") as SpringArm3D
   var cam:=main.get_node_or_null("Player/CameraRig/SpringArm3D/Camera3D") as Camera3D
@@ -98,9 +98,9 @@ func _init()->void:
    if mounted_weapon==null:failures.append("Falta WeaponMount runtime")
    else:
     var global_scale:=mounted_weapon.global_transform.basis.get_scale();print("WEAPON GLOBAL SCALE: ",global_scale)
-    if global_scale.x<0.45 or global_scale.x>2.2:failures.append("Escala global del arma incoherente: "+str(global_scale))
+    if global_scale.x<0.45 or global_scale.x>2.2 or global_scale.y<0.45 or global_scale.y>2.2 or global_scale.z<0.45 or global_scale.z>2.2:failures.append("Escala global del arma incoherente: "+str(global_scale))
   main.queue_free();await process_frame
- if failures.is_empty():print("ARCONT RIG: compatibility + metric scale + spring-arm shoulder TPS + playing ADS AnimationTree OK");quit(0);return
+ if failures.is_empty():print("ARCONT RIG: compatibility + human TPS scale + normalized hand weapon + spring-arm shoulder TPS + playing ADS AnimationTree OK");quit(0);return
  for failure in failures:push_error("ARCONT RIG: "+failure)
  quit(1)
 func _is_lower_body_track(path:String)->bool:
