@@ -20,8 +20,10 @@ func _capture() -> void:
 
 	var player := main.get_node_or_null("Player") as CharacterBody3D
 	var weapon := main.get_node_or_null("Player/Weapon")
-	if player == null or weapon == null or not weapon.has_method("set_ads"):
-		push_error("ARCONT_CHARACTER_CAPTURE: player/weapon contract unavailable")
+	var tps := main.get_node_or_null("Player/ThirdPersonADS")
+	var spring_arm := main.get_node_or_null("Player/CameraRig/SpringArm3D") as SpringArm3D
+	if player == null or weapon == null or not weapon.has_method("set_ads") or tps == null or spring_arm == null:
+		push_error("ARCONT_CHARACTER_CAPTURE: player/weapon/TPS contract unavailable")
 		quit(1)
 		return
 
@@ -47,6 +49,24 @@ func _capture() -> void:
 	player.velocity = Vector3(4.2, 0.0, -4.2)
 	for _i in range(18): await process_frame
 	await _save("player-moving.png")
+
+	# Controlled SpringArm-compression stress capture. This reproduces the old
+	# disappearance condition without depending on random world geometry: freeze
+	# the TPS controller for one evidence frame, shorten the live SpringArm to the
+	# exact safety distance, and verify the body render contract before capture.
+	player.velocity = Vector3.ZERO
+	weapon.call("set_ads", false)
+	tps.process_mode = Node.PROCESS_MODE_DISABLED
+	spring_arm.spring_length = float(tps.get("minimum_safe_distance"))
+	for _i in range(3): await process_frame
+	if tps.has_method("_enforce_tps_body_visibility"):
+		tps.call("_enforce_tps_body_visibility")
+	if not bool(tps.call("is_body_render_contract_satisfied")):
+		push_error("ARCONT_CHARACTER_CAPTURE: TPS body hidden under SpringArm compression")
+		quit(1)
+		return
+	await _save("player-near-camera.png")
+	tps.process_mode = Node.PROCESS_MODE_INHERIT
 
 	main.queue_free()
 	await process_frame
