@@ -1,6 +1,12 @@
 name: Realistic Asset Warehouse Sync
 
 on:
+  push:
+    branches: ["research/reference-lab"]
+    paths:
+      - "tools/asset_warehouse/**"
+      - ".github/workflows/asset-warehouse-sync.yml"
+      - "research/REALISTIC_ASSET_WAREHOUSE.md"
   workflow_dispatch:
     inputs:
       download:
@@ -47,19 +53,34 @@ jobs:
 
       - name: Build complete Poly Haven catalog
         shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_DOWNLOAD: ${{ inputs.download || false }}
+          INPUT_RESOLUTION: ${{ inputs.resolution || '4k' }}
+          INPUT_FILE_MODE: ${{ inputs.file_mode || 'representative' }}
+          INPUT_LIMIT: ${{ inputs.limit || '0' }}
+          INPUT_MAX_TOTAL_GB: ${{ inputs.max_total_gb || '20' }}
         run: |
           set -euo pipefail
           EXTRA=""
-          if [[ "${{ inputs.download }}" == "true" ]]; then
+          # Push events are catalog-only. Binary acquisition is always an explicit manual action.
+          if [[ "$EVENT_NAME" == "workflow_dispatch" && "$INPUT_DOWNLOAD" == "true" ]]; then
             EXTRA="--download"
           fi
           python tools/asset_warehouse/fetch_polyhaven.py \
             --out warehouse/polyhaven \
-            --resolution "${{ inputs.resolution }}" \
-            --file-mode "${{ inputs.file_mode }}" \
-            --limit "${{ inputs.limit }}" \
-            --max-total-gb "${{ inputs.max_total_gb }}" \
+            --resolution "$INPUT_RESOLUTION" \
+            --file-mode "$INPUT_FILE_MODE" \
+            --limit "$INPUT_LIMIT" \
+            --max-total-gb "$INPUT_MAX_TOTAL_GB" \
             $EXTRA
+
+      - name: Inventory assets already present in repository checkout
+        shell: bash
+        run: |
+          python tools/asset_warehouse/inventory_repo_assets.py \
+            --root . \
+            --out warehouse/repo_inventory
 
       - name: Warehouse summary
         shell: bash
@@ -69,16 +90,19 @@ jobs:
           from pathlib import Path
           c=json.loads(Path('warehouse/polyhaven/catalog.json').read_text())
           a=json.loads(Path('warehouse/polyhaven/acquisitions.json').read_text())
-          print(f"catalog_count={c['count']}")
+          i=json.loads(Path('warehouse/repo_inventory/inventory.json').read_text())
+          print(f"polyhaven_catalog_count={c['count']}")
           print(f"download_records={a['count']}")
           print(f"downloaded_bytes={a['downloaded_bytes']}")
+          print(f"repo_asset_count={i['summary']['asset_count']}")
+          print(f"repo_asset_bytes={i['summary']['total_bytes']}")
           PY
 
-      - name: Upload catalog and optional masters
+      - name: Upload catalog, inventory and optional masters
         uses: actions/upload-artifact@v4
         with:
-          name: arcont-realistic-warehouse-polyhaven-${{ github.run_id }}
-          path: warehouse/polyhaven
+          name: arcont-realistic-warehouse-${{ github.run_id }}
+          path: warehouse
           if-no-files-found: error
           compression-level: 0
           retention-days: 30
