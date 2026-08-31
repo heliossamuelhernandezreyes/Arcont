@@ -17,6 +17,7 @@ const TREE_LOD1_END := 10.0
 const TREE_LOD2_END := 25.0
 const TREE_LOD3_END := 50.0
 const TREE_HLOD_END := 310.0
+const EXPECTED_PINE_VARIANTS := 3
 
 func _ready() -> void:
 	call_deferred("rebuild")
@@ -47,12 +48,13 @@ func _mobile_pine_lods_available() -> bool:
 	return ResourceLoader.exists(pine_lod0_path) and ResourceLoader.exists(pine_lod1_path) and ResourceLoader.exists(pine_lod2_path) and ResourceLoader.exists(pine_lod3_path) and ResourceLoader.exists(pine_hlod_path)
 
 func _build_mobile_pine_forest(ecology: ForestEcology) -> void:
-	var lod0: Mesh = _load_first_mesh(pine_lod0_path)
-	var lod1: Mesh = _load_first_mesh(pine_lod1_path)
-	var lod2: Mesh = _load_first_mesh(pine_lod2_path)
-	var lod3: Mesh = _load_first_mesh(pine_lod3_path)
-	var hlod: Mesh = _load_first_mesh(pine_hlod_path)
-	if lod0 == null or lod1 == null or lod2 == null or lod3 == null or hlod == null:
+	var lod0 := _load_meshes(pine_lod0_path)
+	var lod1 := _load_meshes(pine_lod1_path)
+	var lod2 := _load_meshes(pine_lod2_path)
+	var lod3 := _load_meshes(pine_lod3_path)
+	var hlod := _load_meshes(pine_hlod_path)
+	var variant_count: int = mini(lod0.size(), mini(lod1.size(), mini(lod2.size(), mini(lod3.size(), hlod.size()))))
+	if variant_count <= 0:
 		_build_conifer_forest(ecology)
 		return
 	var groups := _group_indices(ecology.tree_positions)
@@ -61,27 +63,44 @@ func _build_mobile_pine_forest(ecology: ForestEcology) -> void:
 		var root := Node3D.new()
 		root.name = "MobilePines_%d_%d" % [key.x, key.y]
 		add_child(root)
-		var near := _make_mm("PineLOD0_30k", lod0, indices.size(), 0.0, TREE_LOD0_END)
-		var medium := _make_mm("PineLOD1_15k", lod1, indices.size(), TREE_LOD0_END, TREE_LOD1_END)
-		var far := _make_mm("PineLOD2_6k", lod2, indices.size(), TREE_LOD1_END, TREE_LOD2_END)
-		var very_far := _make_mm("PineLOD3_2k", lod3, indices.size(), TREE_LOD2_END, TREE_LOD3_END)
-		var horizon := _make_mm("PineHLOD_96", hlod, indices.size(), TREE_LOD3_END, TREE_HLOD_END)
-		root.add_child(near)
-		root.add_child(medium)
-		root.add_child(far)
-		root.add_child(very_far)
-		root.add_child(horizon)
-		for local_i in range(indices.size()):
-			var source_i: int = int(indices[local_i])
-			var p: Vector3 = ecology.tree_positions[source_i]
-			var s: float = ecology.tree_scales[source_i]
-			var yaw: float = ecology.tree_yaws[source_i]
-			var transform := Transform3D(Basis(Vector3.UP, yaw).scaled(Vector3.ONE * s), p)
-			near.multimesh.set_instance_transform(local_i, transform)
-			medium.multimesh.set_instance_transform(local_i, transform)
-			far.multimesh.set_instance_transform(local_i, transform)
-			very_far.multimesh.set_instance_transform(local_i, transform)
-			horizon.multimesh.set_instance_transform(local_i, transform)
+		var variant_buckets: Array[Array] = []
+		for variant_i in range(variant_count):
+			variant_buckets.append([])
+		for source_variant: Variant in indices:
+			var source_i: int = int(source_variant)
+			var variant_i: int = _variant_for_tree(source_i, variant_count)
+			variant_buckets[variant_i].append(source_i)
+		for variant_i in range(variant_count):
+			var bucket: Array = variant_buckets[variant_i]
+			if bucket.is_empty():
+				continue
+			var suffix := "V%d" % variant_i
+			var near := _make_mm("PineLOD0_30k_%s" % suffix, lod0[variant_i], bucket.size(), 0.0, TREE_LOD0_END)
+			var medium := _make_mm("PineLOD1_15k_%s" % suffix, lod1[variant_i], bucket.size(), TREE_LOD0_END, TREE_LOD1_END)
+			var far := _make_mm("PineLOD2_6k_%s" % suffix, lod2[variant_i], bucket.size(), TREE_LOD1_END, TREE_LOD2_END)
+			var very_far := _make_mm("PineLOD3_2k_%s" % suffix, lod3[variant_i], bucket.size(), TREE_LOD2_END, TREE_LOD3_END)
+			var horizon := _make_mm("PineHLOD_96_%s" % suffix, hlod[variant_i], bucket.size(), TREE_LOD3_END, TREE_HLOD_END)
+			root.add_child(near)
+			root.add_child(medium)
+			root.add_child(far)
+			root.add_child(very_far)
+			root.add_child(horizon)
+			for local_i in range(bucket.size()):
+				var source_i: int = int(bucket[local_i])
+				var p: Vector3 = ecology.tree_positions[source_i]
+				var s: float = ecology.tree_scales[source_i]
+				var yaw: float = ecology.tree_yaws[source_i]
+				var transform := Transform3D(Basis(Vector3.UP, yaw).scaled(Vector3.ONE * s), p)
+				near.multimesh.set_instance_transform(local_i, transform)
+				medium.multimesh.set_instance_transform(local_i, transform)
+				far.multimesh.set_instance_transform(local_i, transform)
+				very_far.multimesh.set_instance_transform(local_i, transform)
+				horizon.multimesh.set_instance_transform(local_i, transform)
+
+func _variant_for_tree(source_i: int, variant_count: int) -> int:
+	if variant_count <= 1:
+		return 0
+	return posmod(source_i * 1103515245 + 12345, variant_count)
 
 func _build_conifer_forest(ecology: ForestEcology) -> void:
 	var trunk := CylinderMesh.new()
@@ -123,23 +142,29 @@ func _build_conifer_forest(ecology: ForestEcology) -> void:
 			top.multimesh.set_instance_transform(local_i, Transform3D(b, p + Vector3.UP * 11.3 * s))
 			distant.multimesh.set_instance_transform(local_i, Transform3D(b, p + Vector3.UP * 8.1 * s))
 
-func _load_first_mesh(path: String) -> Mesh:
-	if not ResourceLoader.exists(path): return null
+func _load_meshes(path: String) -> Array[Mesh]:
+	var meshes: Array[Mesh] = []
+	if not ResourceLoader.exists(path):
+		return meshes
 	var packed := load(path) as PackedScene
-	if packed == null: return null
+	if packed == null:
+		return meshes
 	var instance := packed.instantiate()
-	var mesh := _find_mesh(instance)
+	_collect_meshes(instance, meshes)
 	instance.free()
-	return mesh
+	return meshes
 
-func _find_mesh(node: Node) -> Mesh:
+func _collect_meshes(node: Node, meshes: Array[Mesh]) -> void:
 	if node is MeshInstance3D:
 		var mi := node as MeshInstance3D
-		if mi.mesh != null: return mi.mesh
+		if mi.mesh != null:
+			meshes.append(mi.mesh)
 	for child: Node in node.get_children():
-		var found := _find_mesh(child)
-		if found != null: return found
-	return null
+		_collect_meshes(child, meshes)
+
+func _load_first_mesh(path: String) -> Mesh:
+	var meshes := _load_meshes(path)
+	return meshes[0] if not meshes.is_empty() else null
 
 func _hide_provisional(ecology: ForestEcology, prefix: String) -> void:
 	for child: Node in ecology.get_children():
