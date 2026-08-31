@@ -171,8 +171,9 @@ func _build_mesh() -> void:
 			var b: int = _idx(x + 1, z)
 			var c: int = _idx(x, z + 1)
 			var d: int = _idx(x + 1, z + 1)
-			st.add_index(a); st.add_index(c); st.add_index(b)
-			st.add_index(b); st.add_index(c); st.add_index(d)
+			# Godot treats clockwise winding as the front face. Keep terrain normals facing +Y.
+			st.add_index(a); st.add_index(b); st.add_index(c)
+			st.add_index(b); st.add_index(d); st.add_index(c)
 	st.generate_normals()
 	st.generate_tangents()
 	mesh = st.commit()
