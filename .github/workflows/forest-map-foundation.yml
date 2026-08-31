@@ -8,8 +8,10 @@ on:
       - 'scenes/world/forest_map_foundation.tscn'
       - 'scripts/world/forest_terrain.gd'
       - 'scripts/world/forest_hydrology.gd'
+      - 'scripts/world/forest_ecology.gd'
       - 'tests/forest_terrain_contract.gd'
       - 'tests/forest_hydrology_contract.gd'
+      - 'tests/forest_ecology_contract.gd'
       - 'tests/capture_forest_map.gd'
       - '.github/workflows/forest-map-foundation.yml'
   workflow_dispatch:
@@ -60,6 +62,14 @@ jobs:
           grep -q "FOREST_HYDROLOGY_OK" hydrology.log
           ! grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" hydrology.log
 
+      - name: Validate ecology contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          timeout 120s "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/forest_ecology_contract.gd | tee ecology.log
+          grep -q "FOREST_ECOLOGY_OK" ecology.log
+          ! grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" ecology.log
+
       - name: Capture overview ground and topdown views
         shell: bash
         env:
@@ -82,6 +92,7 @@ jobs:
             build/forest-evidence/*.png
             terrain.log
             hydrology.log
+            ecology.log
             capture.log
           if-no-files-found: warn
           retention-days: 14
