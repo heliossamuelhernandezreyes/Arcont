@@ -1,8 +1,11 @@
 import bpy, math, os, sys
+from mathutils import Vector
 
 TARGETS = {"LOD0": 30000, "LOD1": 15000, "LOD2": 6000, "LOD3": 2000}
-CARD_CLUSTERS = {"LOD0": 7000, "LOD1": 3500, "LOD2": 1400}
-CARD_SCALE = {"LOD0": 1.00, "LOD1": 1.28, "LOD2": 1.75}
+BRANCH_LAYERS = {"LOD0": 48, "LOD1": 34, "LOD2": 22}
+BRANCHES_PER_LAYER = {"LOD0": 8, "LOD1": 7, "LOD2": 6}
+TWIGS_PER_BRANCH = {"LOD0": 8, "LOD1": 4, "LOD2": 2}
+BRANCH_SIDES = {"LOD0": 6, "LOD1": 6, "LOD2": 5}
 PROFILE_RINGS = 28
 LOD3_PROFILE_RINGS = 18
 LOD3_PROFILE_SIDES = 12
@@ -14,15 +17,6 @@ HLOD_MAX_TRIS = 96
 def mesh_tris(obj):
     obj.data.calc_loop_triangles()
     return len(obj.data.loop_triangles)
-
-
-def _halton(index, base):
-    f, r, i = 1.0, 0.0, index
-    while i > 0:
-        f /= base
-        r += f * (i % base)
-        i //= base
-    return r
 
 
 def _find_material(obj, token, fallback_index=0):
@@ -62,7 +56,8 @@ def _measure_profile(obj, rings_count=PROFILE_RINGS):
 
 def _interp_profile(rings, t):
     f = max(0.0, min(1.0, t)) * (len(rings) - 1)
-    i0, i1 = int(math.floor(f)), min(len(rings) - 1, int(math.floor(f)) + 1)
+    i0 = int(math.floor(f))
+    i1 = min(len(rings) - 1, i0 + 1)
     a = f - i0
     return tuple(rings[i0][j] * (1.0 - a) + rings[i1][j] * a for j in range(4))
 
@@ -99,6 +94,7 @@ def _compose_foliage_material(source):
         mean_alpha = float(alpha.mean())
         if mean_alpha > 0.72:
             alpha = 1.0 - alpha
+        alpha = np.clip((alpha - 0.30) / 0.48, 0.0, 1.0)
         rgba[:, 3] = alpha
         packed = bpy.data.images.new('ArcontPineTwigRGBA', width=width, height=height, alpha=True)
         packed.pixels.foreach_set(rgba.reshape(-1))
@@ -113,7 +109,7 @@ def _compose_foliage_material(source):
     mat.use_backface_culling = False
     try:
         mat.blend_method = 'CLIP'
-        mat.alpha_threshold = 0.38
+        mat.alpha_threshold = 0.50
     except Exception:
         pass
     nodes, links = mat.node_tree.nodes, mat.node_tree.links
@@ -132,54 +128,109 @@ def _compose_foliage_material(source):
 
 def _append_quad(verts, faces, uvs, mats, points, mat_index):
     base = len(verts)
-    verts.extend(points)
+    verts.extend(tuple(p) for p in points)
     faces.append((base, base + 1, base + 2, base + 3))
     uvs.extend(((0, 0), (1, 0), (1, 1), (0, 1)))
     mats.append(mat_index)
 
 
-def _card_tree(desc, foliage_mat, label):
+def _append_tapered_segment(verts, faces, uvs, mats, start, end, r0, r1, sides, mat_index=0):
+    start, end = Vector(start), Vector(end)
+    axis = end - start
+    if axis.length < 1e-5:
+        return
+    tangent = axis.normalized()
+    helper = Vector((0, 0, 1)) if abs(tangent.z) < 0.90 else Vector((1, 0, 0))
+    right = tangent.cross(helper).normalized()
+    up = right.cross(tangent).normalized()
+    base = len(verts)
+    for ring, (center, radius) in enumerate(((start, r0), (end, r1))):
+        for side in range(sides):
+            a = math.tau * side / sides
+            p = center + (right * math.cos(a) + up * math.sin(a)) * radius
+            verts.append(tuple(p))
+            uvs.append((side / float(sides), float(ring)))
+    for side in range(sides):
+        s1 = (side + 1) % sides
+        faces.append((base + side, base + s1, base + sides + s1, base + sides + side))
+        mats.append(mat_index)
+
+
+def _append_twig_cross(verts, faces, uvs, mats, center, tangent, width, height, mat_index=1, phase=0.0):
+    center = Vector(center)
+    tangent = Vector(tangent).normalized()
+    helper = Vector((0, 0, 1)) if abs(tangent.z) < 0.92 else Vector((1, 0, 0))
+    side = tangent.cross(helper).normalized()
+    normal = tangent.cross(side).normalized()
+    for turn in (phase, phase + math.pi * 0.5):
+        across = (side * math.cos(turn) + normal * math.sin(turn)).normalized() * width * 0.5
+        along = tangent * height * 0.5
+        _append_quad(verts, faces, uvs, mats, (
+            center - across - along,
+            center + across - along,
+            center + across + along,
+            center - across + along,
+        ), mat_index)
+
+
+def _branch_tree(desc, foliage_mat, label):
     rings = desc['rings']
     z_min, z_max = rings[0][2], rings[-1][2]
     height = z_max - z_min
-    cx0, cy0 = rings[0][0], rings[0][1]
     verts, faces, uvs, mats = [], [], [], []
-    trunk_sides = 14 if label == 'LOD0' else (12 if label == 'LOD1' else 10)
-    trunk_rings = 10 if label == 'LOD0' else 8
-    trunk_radius = max(height * 0.016, 0.08)
-    for ri in range(trunk_rings):
-        t0, t1 = ri / trunk_rings, (ri + 1) / trunk_rings
-        z0, z1 = z_min + height * t0, z_min + height * t1
-        r0, r1 = trunk_radius * (1 - 0.60 * t0), trunk_radius * (1 - 0.60 * t1)
-        for side in range(trunk_sides):
-            a0, a1 = math.tau * side / trunk_sides, math.tau * (side + 1) / trunk_sides
-            _append_quad(verts, faces, uvs, mats, (
-                (cx0 + math.cos(a0)*r0, cy0 + math.sin(a0)*r0, z0),
-                (cx0 + math.cos(a1)*r0, cy0 + math.sin(a1)*r0, z0),
-                (cx0 + math.cos(a1)*r1, cy0 + math.sin(a1)*r1, z1),
-                (cx0 + math.cos(a0)*r1, cy0 + math.sin(a0)*r1, z1)), 0)
-    count = CARD_CLUSTERS[label]
-    scale_mul = CARD_SCALE[label]
-    for n in range(1, count + 1):
-        hq = _halton(n, 2)
-        t = 0.10 + 0.86 * (1.0 - (1.0 - hq) ** 1.30)
-        cx, cy, z, radius = _interp_profile(rings, t)
-        angle = math.tau * _halton(n, 5)
-        radial = radius * 0.90 * math.sqrt(_halton(n, 3))
-        px, py = cx + math.cos(angle)*radial, cy + math.sin(angle)*radial
-        pz = z + (_halton(n, 7) - 0.5) * height * 0.018
-        width = max(height*0.022, min(height*0.070, radius*0.30)) * scale_mul
-        card_h = width * (1.10 + 0.55 * _halton(n, 11))
-        yaw = math.tau * _halton(n, 13)
-        for cross in (0.0, math.pi * 0.5):
-            a = yaw + cross
-            ux, uy = math.cos(a)*width*0.5, math.sin(a)*width*0.5
-            lean = (_halton(n + int(cross*100), 17) - 0.5) * width * 0.22
-            dx, dy = math.cos(angle)*lean, math.sin(angle)*lean
-            _append_quad(verts, faces, uvs, mats, (
-                (px-ux, py-uy, pz-card_h*0.45), (px+ux, py+uy, pz-card_h*0.45),
-                (px+ux+dx, py+uy+dy, pz+card_h*0.55), (px-ux+dx, py-uy+dy, pz+card_h*0.55)), 1)
-    mesh = bpy.data.meshes.new(desc['name'] + f'_{label}_CardMesh')
+    sides = BRANCH_SIDES[label]
+
+    trunk_steps = 14 if label == 'LOD0' else (11 if label == 'LOD1' else 8)
+    for i in range(trunk_steps):
+        t0, t1 = i / float(trunk_steps), (i + 1) / float(trunk_steps)
+        x0, y0, z0, _ = _interp_profile(rings, t0)
+        x1, y1, z1, _ = _interp_profile(rings, t1)
+        r0 = max(height * 0.0045, height * 0.018 * (1.0 - 0.72 * t0))
+        r1 = max(height * 0.0035, height * 0.018 * (1.0 - 0.72 * t1))
+        _append_tapered_segment(verts, faces, uvs, mats, (x0, y0, z0), (x1, y1, z1), r0, r1, sides, 0)
+
+    layers = BRANCH_LAYERS[label]
+    per_layer = BRANCHES_PER_LAYER[label]
+    twigs = TWIGS_PER_BRANCH[label]
+    branch_count = 0
+    card_count = 0
+    for layer in range(layers):
+        lt = layer / float(max(1, layers - 1))
+        t = 0.16 + 0.75 * lt
+        cx, cy, cz, crown_r = _interp_profile(rings, t)
+        phase = layer * 2.399963229728653
+        taper = 1.0 - max(0.0, (t - 0.70) / 0.28) * 0.55
+        branch_len = max(height * 0.035, crown_r * 0.92 * taper)
+        for branch_i in range(per_layer):
+            angle = phase + math.tau * branch_i / per_layer
+            radial = Vector((math.cos(angle), math.sin(angle), 0.0))
+            start = Vector((cx, cy, cz))
+            mid = start + radial * branch_len * 0.56 + Vector((0, 0, height * (0.012 - 0.022 * lt)))
+            end = start + radial * branch_len + Vector((0, 0, height * (0.010 - 0.040 * lt)))
+            base_r = max(height * 0.0017, crown_r * 0.030)
+            _append_tapered_segment(verts, faces, uvs, mats, start, mid, base_r, base_r * 0.58, sides, 0)
+            _append_tapered_segment(verts, faces, uvs, mats, mid, end, base_r * 0.58, base_r * 0.18, sides, 0)
+            branch_count += 1
+            tangent = (end - start).normalized()
+            for twig_i in range(twigs):
+                q = 0.28 + 0.68 * ((twig_i + 0.5) / twigs)
+                center = start.lerp(end, q)
+                center.z += math.sin((twig_i + branch_i) * 1.7) * height * 0.0025
+                width = max(height * 0.020, crown_r * (0.20 + 0.05 * ((twig_i + branch_i) % 3)))
+                card_h = width * (1.30 if label == 'LOD0' else (1.42 if label == 'LOD1' else 1.55))
+                _append_twig_cross(verts, faces, uvs, mats, center, tangent, width, card_h, 1,
+                                   phase=(branch_i * 0.37 + twig_i * 0.61))
+                card_count += 1
+
+    top_cx, top_cy, top_z, top_r = _interp_profile(rings, 0.94)
+    for i in range(10 if label == 'LOD0' else (8 if label == 'LOD1' else 6)):
+        a = math.tau * i / (10 if label == 'LOD0' else (8 if label == 'LOD1' else 6))
+        tangent = Vector((math.cos(a) * 0.35, math.sin(a) * 0.35, 0.94)).normalized()
+        center = Vector((top_cx, top_cy, top_z)) + tangent * height * 0.035
+        _append_twig_cross(verts, faces, uvs, mats, center, tangent, max(height * 0.025, top_r * 0.7), height * 0.050, 1, a * 0.5)
+        card_count += 1
+
+    mesh = bpy.data.meshes.new(desc['name'] + f'_{label}_BranchMesh')
     mesh.from_pydata(verts, [], faces)
     mesh.materials.append(desc['trunk_mat'])
     mesh.materials.append(foliage_mat)
@@ -192,7 +243,8 @@ def _card_tree(desc, foliage_mat, label):
             uv.data[li].uv = uvs[mesh.loops[li].vertex_index]
     obj = bpy.data.objects.new(desc['name'] + f'_{label}', mesh)
     bpy.context.collection.objects.link(obj)
-    print(f'ARCONT_TREE_FOLIAGE_CARDS={count} label={label} object={desc["name"]} tris={mesh_tris(obj)}')
+    print(f'ARCONT_TREE_BRANCHES={branch_count} label={label} object={desc["name"]}')
+    print(f'ARCONT_TREE_FOLIAGE_CARDS={card_count} label={label} object={desc["name"]} tris={mesh_tris(obj)}')
     return obj
 
 
@@ -284,17 +336,19 @@ def main():
     foliage_mat = _compose_foliage_material(source)
 
     for label in ('LOD0', 'LOD1', 'LOD2'):
-        generated = [_card_tree(desc, foliage_mat, label) for desc in descs]
+        generated = [_branch_tree(desc, foliage_mat, label) for desc in descs]
         _validate_and_export(out_dir, label, generated, TARGETS[label])
         _delete_objects(generated)
 
-    generated = [_profile_tree(desc, desc['twig_mat'], 'LOD3', LOD3_PROFILE_RINGS, LOD3_PROFILE_SIDES) for desc in descs]
-    _validate_and_export(out_dir, 'LOD3', generated, TARGETS['LOD3'])
-    _delete_objects(generated)
+    lod3 = [_profile_tree(desc, desc['twig_mat'], 'LOD3', LOD3_PROFILE_RINGS, LOD3_PROFILE_SIDES) for desc in descs]
+    _validate_and_export(out_dir, 'LOD3', lod3, TARGETS['LOD3'])
+    _delete_objects(lod3)
 
-    generated = [_profile_tree(desc, desc['twig_mat'], 'HLOD', HLOD_PROFILE_RINGS, HLOD_PROFILE_SIDES) for desc in descs]
-    _validate_and_export(out_dir, 'HLOD', generated, HLOD_MAX_TRIS)
-    _delete_objects(generated)
+    hlod = [_profile_tree(desc, desc['twig_mat'], 'HLOD', HLOD_PROFILE_RINGS, HLOD_PROFILE_SIDES) for desc in descs]
+    _validate_and_export(out_dir, 'HLOD', hlod, HLOD_MAX_TRIS)
+    _delete_objects(hlod)
+
+    print('ARCONT_TREE_LOD_BUILD_OK')
 
 
 if __name__ == '__main__':
