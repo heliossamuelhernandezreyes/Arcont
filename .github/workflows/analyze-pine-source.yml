@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/analyze-pine-source.yml'
       - 'tools/blender/analyze_pine_source.py'
+      - 'tools/blender/extract_pine_skeleton.py'
       - 'assets/cc0/polyhaven/forest/pine_tree_01/**'
   workflow_dispatch:
 
@@ -47,6 +48,17 @@ jobs:
             build/pine-analysis/pine_tree_01_analysis.json | tee build/pine-analysis/analyze.log
           grep -q 'ARCONT_PINE_ANALYSIS_OBJECTS=' build/pine-analysis/analyze.log
           grep -q 'ARCONT_PINE_ANALYSIS_TOTAL_TRIS=' build/pine-analysis/analyze.log
+      - name: Extract source-derived skeleton
+        run: |
+          set -euo pipefail
+          blender --background --python tools/blender/extract_pine_skeleton.py -- \
+            /tmp/pine_tree_01/pine_tree_01_1k.gltf \
+            build/pine-analysis/pine_tree_01_skeleton.json \
+            build/pine-analysis/pine_tree_01_skeleton_preview.glb | tee build/pine-analysis/skeleton.log
+          grep -q 'ARCONT_PINE_SKELETON_VARIANTS=' build/pine-analysis/skeleton.log
+          grep -q 'ARCONT_PINE_SKELETON_PREVIEW=' build/pine-analysis/skeleton.log
+          test -s build/pine-analysis/pine_tree_01_skeleton.json
+          test -s build/pine-analysis/pine_tree_01_skeleton_preview.glb
       - name: Upload analysis
         uses: actions/upload-artifact@v4
         with:
