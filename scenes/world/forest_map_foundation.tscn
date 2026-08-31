@@ -4,13 +4,13 @@
 [ext_resource type="Script" path="res://scripts/world/forest_hydrology.gd" id="2_hydrology"]
 
 [sub_resource type="Shader" id="TerrainShader"]
-code = "shader_type spatial;\nrender_mode cull_back, diffuse_burley, specular_schlick_ggx;\n\nvarying vec4 terrain_mask;\n\nvoid vertex() {\n    terrain_mask = COLOR;\n}\n\nvoid fragment() {\n    float slope = clamp(terrain_mask.r, 0.0, 1.0);\n    float moisture = clamp(terrain_mask.g, 0.0, 1.0);\n    float flow = clamp(terrain_mask.b, 0.0, 1.0);\n    vec3 dry_soil = vec3(0.31, 0.255, 0.14);\n    vec3 forest_floor = vec3(0.17, 0.285, 0.105);\n    vec3 damp_ground = vec3(0.095, 0.205, 0.125);\n    vec3 rock = vec3(0.43, 0.44, 0.40);\n    vec3 channel = vec3(0.075, 0.24, 0.27);\n    vec3 base = mix(dry_soil, forest_floor, smoothstep(0.18, 0.62, moisture));\n    base = mix(base, damp_ground, smoothstep(0.45, 0.80, moisture));\n    base = mix(base, rock, smoothstep(0.48, 0.82, slope));\n    base = mix(base, channel, smoothstep(0.66, 0.94, flow) * (1.0 - smoothstep(0.62, 0.9, slope)));\n    ALBEDO = base;\n    ROUGHNESS = mix(0.98, 0.78, flow * 0.35);\n}\n"
+code = "shader_type spatial;\nrender_mode cull_back, diffuse_burley, specular_schlick_ggx;\n\nvarying vec4 terrain_mask;\n\nvoid vertex() {\n    terrain_mask = COLOR;\n}\n\nvoid fragment() {\n    float slope = clamp(terrain_mask.r, 0.0, 1.0);\n    float moisture = clamp(terrain_mask.g, 0.0, 1.0);\n    float flow = clamp(terrain_mask.b, 0.0, 1.0);\n    float composition = clamp(terrain_mask.a, 0.0, 1.0);\n    vec3 dry_soil = vec3(0.31, 0.255, 0.14);\n    vec3 forest_floor = vec3(0.17, 0.285, 0.105);\n    vec3 damp_ground = vec3(0.095, 0.205, 0.125);\n    vec3 rock = vec3(0.43, 0.44, 0.40);\n    vec3 channel = vec3(0.075, 0.24, 0.27);\n    vec3 route_soil = vec3(0.285, 0.20, 0.105);\n    vec3 base = mix(dry_soil, forest_floor, smoothstep(0.18, 0.62, moisture));\n    base = mix(base, damp_ground, smoothstep(0.45, 0.80, moisture));\n    base = mix(base, rock, smoothstep(0.48, 0.82, slope));\n    base = mix(base, channel, smoothstep(0.66, 0.94, flow) * (1.0 - smoothstep(0.62, 0.9, slope)));\n    base = mix(base, route_soil, composition * 0.72);\n    ALBEDO = base;\n    ROUGHNESS = mix(0.98, 0.78, flow * 0.35);\n}\n"
 
 [sub_resource type="ShaderMaterial" id="TerrainMaterial"]
 shader = SubResource("TerrainShader")
 
 [sub_resource type="Shader" id="WaterShader"]
-code = "shader_type spatial;\nrender_mode cull_disabled, depth_draw_opaque, diffuse_burley, specular_schlick_ggx;\n\nvoid fragment() {\n    vec3 shallow = vec3(0.075, 0.20, 0.19);\n    vec3 deep = vec3(0.035, 0.11, 0.13);\n    float stripe = sin(UV.y * 12.0) * 0.5 + 0.5;\n    ALBEDO = mix(deep, shallow, 0.55 + stripe * 0.12);\n    ROUGHNESS = 0.2;\n    METALLIC = 0.0;\n}\n"
+code = "shader_type spatial;\nrender_mode cull_disabled, depth_draw_opaque, diffuse_burley, specular_schlick_ggx;\n\nvoid fragment() {\n    vec3 shallow = vec3(0.075, 0.20, 0.19);\n    vec3 deep = vec3(0.035, 0.11, 0.13);\n    float stripe = sin(UV.y * 12.0) * 0.5 + 0.5;\n    ALBEDO = mix(deep, shallow, 0.55 + stripe * 0.12);\n    ROUGHNESS = 0.18;\n    METALLIC = 0.0;\n}\n"
 
 [sub_resource type="ShaderMaterial" id="WaterMaterial"]
 shader = SubResource("WaterShader")
@@ -48,6 +48,7 @@ base_width = 8.0
 water_offset = 0.26
 flow_threshold = 0.48
 longitudinal_samples = 96
+smooth_passes = 5
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_forest")
