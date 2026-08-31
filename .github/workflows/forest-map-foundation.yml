@@ -11,9 +11,11 @@ on:
       - 'scripts/world/forest_ecology.gd'
       - 'scripts/world/forest_asset_bridge.gd'
       - 'assets/cc0/polyhaven/forest/**'
+      - 'assets/runtime/forest/pine_tree_01/**'
       - 'tests/forest_terrain_contract.gd'
       - 'tests/forest_hydrology_contract.gd'
       - 'tests/forest_ecology_contract.gd'
+      - 'tests/forest_asset_bridge_contract.gd'
       - 'tests/capture_forest_map.gd'
       - '.github/workflows/forest-map-foundation.yml'
   workflow_dispatch:
@@ -72,6 +74,14 @@ jobs:
           grep -q "FOREST_ECOLOGY_OK" ecology.log
           ! grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" ecology.log
 
+      - name: Validate asset bridge contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          timeout 120s "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/forest_asset_bridge_contract.gd | tee asset_bridge.log
+          grep -q "FOREST_ASSET_BRIDGE_OK" asset_bridge.log
+          ! grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" asset_bridge.log
+
       - name: Capture overview ground and topdown views
         shell: bash
         env:
@@ -92,9 +102,11 @@ jobs:
           name: forest-map-foundation-evidence
           path: |
             build/forest-evidence/*.png
+            import.log
             terrain.log
             hydrology.log
             ecology.log
+            asset_bridge.log
             capture.log
           if-no-files-found: warn
           retention-days: 14
