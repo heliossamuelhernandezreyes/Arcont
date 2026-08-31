@@ -2,17 +2,19 @@ import bpy, json, math, os, sys
 from collections import defaultdict
 from mathutils import Vector
 
-BANDS = 28
-SECTORS = 24
+BANDS = 32
+SECTORS = 32
 MIN_BRANCH_T = 0.18
 MAX_BRANCH_T = 0.94
-MAX_BRANCHES_PER_BAND = 6
+MAX_BRANCHES_PER_BAND = 8
 MIN_EXTENT_FRAC = 0.025
-TRUNK_RADIUS_FRAC = 0.022
-
-
-def tri_count(poly):
-    return max(0, len(poly.vertices) - 2)
+TRUNK_RADIUS_FRAC = 0.020
+RADIAL_SHELLS = 7
+MIN_PATH_POINTS = 4
+TRACK_MAX_BAND_GAP = 2
+TRACK_MAX_ANGLE_DEG = 24.0
+TRACK_MAX_TIP_FRAC = 0.12
+TRACK_MAX_EXTENT_RATIO = 1.65
 
 
 def material_name(obj, index):
@@ -33,6 +35,11 @@ def quantile(values, q):
         return 0.0
     s = sorted(values)
     return s[min(len(s) - 1, max(0, int(round(q * (len(s) - 1)))))]
+
+
+def angle_delta(a, b):
+    d = abs(a - b) % 360.0
+    return min(d, 360.0 - d)
 
 
 def structural_vertices(obj):
@@ -64,7 +71,11 @@ def robust_center(points):
     my = quantile([p.y for p in points], 0.5)
     ranked = sorted(points, key=lambda p: math.hypot(p.x - mx, p.y - my))
     core = ranked[:max(12, len(ranked) // 4)]
-    return Vector((sum(p.x for p in core) / len(core), sum(p.y for p in core) / len(core), sum(p.z for p in core) / len(core)))
+    return Vector((
+        sum(p.x for p in core) / len(core),
+        sum(p.y for p in core) / len(core),
+        sum(p.z for p in core) / len(core),
+    ))
 
 
 def crown_radius(points, center):
@@ -73,13 +84,214 @@ def crown_radius(points, center):
     return quantile([math.hypot(p.x-center.x, p.y-center.y) for p in points], 0.98)
 
 
+def shell_center(points):
+    if not points:
+        return None
+    # Median coordinates resist twig/dead-branch outliers better than a raw mean.
+    return Vector((
+        quantile([p.x for p in points], 0.5),
+        quantile([p.y for p in points], 0.5),
+        quantile([p.z for p in points], 0.5),
+    ))
+
+
+def trace_candidate_path(center, pts, extent, trunk_radius):
+    """Approximate a branch centerline from the actual structural vertices in one angular sector.
+
+    Instead of drawing a single radial stick from trunk to the sector's farthest sample, we split
+    the source vertices into radial shells and take a robust center in each shell. The result is a
+    short polyline that follows bends/elevation changes present in the original Poly Haven mesh.
+    """
+    if extent <= trunk_radius:
+        return []
+    shells = []
+    inner = max(trunk_radius, extent * 0.06)
+    span = max(1e-6, extent - inner)
+    for si in range(RADIAL_SHELLS):
+        r0 = inner + span * (si / RADIAL_SHELLS)
+        r1 = inner + span * ((si + 1) / RADIAL_SHELLS)
+        shell = [p for r, p in pts if r0 <= r <= r1]
+        c = shell_center(shell)
+        if c is not None:
+            shells.append((si, c, len(shell)))
+    if len(shells) < MIN_PATH_POINTS - 1:
+        return []
+
+    path = [center.copy()]
+    last = center
+    for _si, p, support in shells:
+        # Reject pathological jumps caused by unrelated geometry sharing a sector.
+        if (p-last).length > max(extent * 0.48, trunk_radius * 5.0):
+            continue
+        if (p-last).length > trunk_radius * 0.30:
+            path.append(p)
+            last = p
+    if len(path) < MIN_PATH_POINTS:
+        return []
+    return path
+
+
+def candidate_from_sector(obj_height, bi, t, center, crown_r, si, pts):
+    rs = [rp[0] for rp in pts]
+    extent = quantile(rs, 0.98)
+    min_extent = obj_height * MIN_EXTENT_FRAC
+    if extent < min_extent or t < MIN_BRANCH_T or t > MAX_BRANCH_T:
+        return None
+    trunk_radius = obj_height * TRUNK_RADIUS_FRAC
+    path = trace_candidate_path(center, pts, extent, trunk_radius)
+    if not path:
+        return None
+    tip = path[-1]
+    direction = tip-center
+    if direction.length < 1e-5:
+        return None
+    angle = (math.degrees(math.atan2(direction.y, direction.x)) + 360.0) % 360.0
+    support = len(pts)
+    curvature = 0.0
+    for i in range(1, len(path)-1):
+        a = (path[i]-path[i-1]).normalized()
+        b = (path[i+1]-path[i]).normalized()
+        curvature += math.degrees(a.angle(b)) if a.length and b.length else 0.0
+    score = extent * math.log2(2.0 + support) * (0.70 + 0.30*min(1.0, crown_r/max(extent, 1e-6)))
+    return {
+        "band": bi,
+        "t": t,
+        "sector": si,
+        "angle_deg": angle,
+        "extent": extent,
+        "support": support,
+        "score": score,
+        "curvature_deg": curvature,
+        "start": list(path[0]),
+        "end": list(path[-1]),
+        "direction": list(direction.normalized()),
+        "crown_r98": crown_r,
+        "path": [list(p) for p in path],
+    }
+
+
+def track_cost(a, b, height):
+    gap = b["band"] - a["band"]
+    if gap < 1 or gap > TRACK_MAX_BAND_GAP:
+        return None
+    da = angle_delta(a["angle_deg"], b["angle_deg"])
+    if da > TRACK_MAX_ANGLE_DEG:
+        return None
+    ratio = max(a["extent"], b["extent"]) / max(1e-6, min(a["extent"], b["extent"]))
+    if ratio > TRACK_MAX_EXTENT_RATIO:
+        return None
+    ta, tb = Vector(a["end"]), Vector(b["end"])
+    tip_dist = (ta-tb).length
+    if tip_dist > height * TRACK_MAX_TIP_FRAC:
+        return None
+    return da / TRACK_MAX_ANGLE_DEG + tip_dist / (height*TRACK_MAX_TIP_FRAC) + (ratio-1.0)*0.7 + (gap-1)*0.25
+
+
+def merge_track(track, track_id):
+    obs = sorted(track, key=lambda c: c["band"])
+    strongest = max(obs, key=lambda c: c["score"])
+    weights = [max(1e-6, c["score"]) for c in obs]
+    sw = sum(weights)
+
+    # Start at the weighted trunk attachment, then average equivalent radial samples from all
+    # observations. This converts repeated vertical slices of one source branch into one curve.
+    start = Vector((0,0,0))
+    for c,w in zip(obs,weights):
+        start += Vector(c["start"]) * (w/sw)
+    max_nodes = max(len(c["path"]) for c in obs)
+    merged = [start]
+    for ni in range(1, max_nodes):
+        acc = Vector((0,0,0)); ww = 0.0
+        for c,w in zip(obs,weights):
+            path = c["path"]
+            if len(path) <= 1:
+                continue
+            src_i = min(len(path)-1, int(round(ni * (len(path)-1) / max(1, max_nodes-1))))
+            acc += Vector(path[src_i]) * w
+            ww += w
+        if ww:
+            p = acc / ww
+            if (p-merged[-1]).length > 1e-4:
+                merged.append(p)
+    if len(merged) < 2:
+        merged = [Vector(strongest["start"]), Vector(strongest["end"])]
+
+    vec = merged[-1]-merged[0]
+    return {
+        "id": track_id,
+        "observations": len(obs),
+        "band_start": obs[0]["band"],
+        "band_end": obs[-1]["band"],
+        "t": sum(c["t"]*w for c,w in zip(obs,weights))/sw,
+        "angle_deg": (math.degrees(math.atan2(vec.y,vec.x))+360.0)%360.0 if vec.length else strongest["angle_deg"],
+        "extent": max((Vector(p)-merged[0]).length for p in merged),
+        "support": sum(c["support"] for c in obs),
+        "score": sum(c["score"] for c in obs) * (1.0 + 0.18*(len(obs)-1)),
+        "crown_r98": max(c["crown_r98"] for c in obs),
+        "path": [list(p) for p in merged],
+        "start": list(merged[0]),
+        "end": list(merged[-1]),
+        "source_observations": [{"band":c["band"],"angle_deg":c["angle_deg"],"extent":c["extent"],"score":c["score"]} for c in obs],
+    }
+
+
+def build_tracks(candidates, height):
+    by_band = defaultdict(list)
+    for c in candidates:
+        by_band[c["band"]].append(c)
+    tracks = []
+    assigned = set()
+    ordered = sorted(candidates, key=lambda c: (-c["score"], c["band"]))
+    for seed in ordered:
+        sid = id(seed)
+        if sid in assigned:
+            continue
+        track = [seed]
+        assigned.add(sid)
+        current = seed
+        while True:
+            choices = []
+            for gap in range(1, TRACK_MAX_BAND_GAP+1):
+                for nxt in by_band.get(current["band"]+gap, []):
+                    if id(nxt) in assigned:
+                        continue
+                    cost = track_cost(current, nxt, height)
+                    if cost is not None:
+                        choices.append((cost, -nxt["score"], nxt))
+            if not choices:
+                break
+            choices.sort(key=lambda x: (x[0], x[1]))
+            nxt = choices[0][2]
+            track.append(nxt)
+            assigned.add(id(nxt))
+            current = nxt
+        tracks.append(track)
+
+    merged = [merge_track(t, i) for i,t in enumerate(tracks)]
+    # Remove single-slice weak duplicates around stronger continuous tracks.
+    merged.sort(key=lambda b: b["score"], reverse=True)
+    kept = []
+    for b in merged:
+        duplicate = False
+        for k in kept:
+            if abs(b["t"]-k["t"]) <= 1.5/BANDS and angle_delta(b["angle_deg"], k["angle_deg"]) <= 360.0/SECTORS*1.25:
+                if b["observations"] <= k["observations"]:
+                    duplicate = True
+                    break
+        if not duplicate:
+            kept.append(b)
+    kept.sort(key=lambda b: b["t"])
+    for i,b in enumerate(kept):
+        b["id"] = i
+    return kept
+
+
 def extract_variant(obj):
     structure, structural_mats = structural_vertices(obj)
     source = all_vertices(obj)
     zmin = min(p.z for p in source)
     zmax = max(p.z for p in source)
     height = max(1e-6, zmax-zmin)
-    min_extent = height * MIN_EXTENT_FRAC
     bands = []
     candidates = []
 
@@ -107,49 +319,17 @@ def extract_variant(obj):
             sector_points[si].append((r,p))
         ranked = []
         for si, pts in sector_points.items():
-            rs = [rp[0] for rp in pts]
-            extent = quantile(rs, 0.98)
-            if extent < min_extent or t < MIN_BRANCH_T or t > MAX_BRANCH_T:
-                continue
-            outer = [p for r,p in pts if r >= quantile(rs,0.75)]
-            if not outer:
-                continue
-            tip = Vector((sum(p.x for p in outer)/len(outer), sum(p.y for p in outer)/len(outer), sum(p.z for p in outer)/len(outer)))
-            direction = tip-center
-            if direction.length < 1e-5:
-                continue
-            angle = (si+0.5)*360.0/SECTORS
-            support = len(pts)
-            score = extent * math.log2(2.0 + support) * (0.65 + 0.35*min(1.0, cr/max(extent,1e-6)))
-            ranked.append({
-                "band": bi, "t": t, "angle_deg": angle, "extent": extent,
-                "support": support, "score": score,
-                "start": [center.x, center.y, center.z],
-                "end": [tip.x, tip.y, tip.z],
-                "direction": list(direction.normalized()),
-                "crown_r98": cr,
-            })
+            c = candidate_from_sector(height, bi, t, center, cr, si, pts)
+            if c is not None:
+                ranked.append(c)
         ranked.sort(key=lambda x: x["score"], reverse=True)
         selected = ranked[:MAX_BRANCHES_PER_BAND]
-        bands.append({"t": t, "count": len(sb), "center": [center.x,center.y,center.z], "crown_r98": cr, "branches": selected})
+        bands.append({"t": t, "count": len(sb), "center": list(center), "crown_r98": cr, "branches": selected})
         candidates.extend(selected)
 
-    # Suppress near-duplicates across adjacent height bands while preserving strong silhouette branches.
-    candidates.sort(key=lambda x: x["score"], reverse=True)
-    kept = []
-    for c in candidates:
-        duplicate = False
-        for k in kept:
-            if abs(c["t"]-k["t"]) <= 1.5/BANDS:
-                da = abs(c["angle_deg"]-k["angle_deg"])
-                da = min(da, 360.0-da)
-                if da <= 360.0/SECTORS*1.25:
-                    duplicate = True
-                    break
-        if not duplicate:
-            kept.append(c)
-    kept.sort(key=lambda x: x["t"])
-
+    branches = build_tracks(candidates, height)
+    continuous = sum(1 for b in branches if b["observations"] >= 2)
+    mean_nodes = sum(len(b["path"]) for b in branches) / max(1, len(branches))
     return {
         "name": obj.name,
         "height": height,
@@ -157,8 +337,11 @@ def extract_variant(obj):
         "zmax": zmax,
         "structural_materials": [{"index": i, "name": material_name(obj,i)} for i in structural_mats],
         "bands": bands,
-        "branches": kept,
-        "branch_count": len(kept),
+        "candidate_count": len(candidates),
+        "branches": branches,
+        "branch_count": len(branches),
+        "continuous_branch_count": continuous,
+        "mean_path_nodes": mean_nodes,
     }
 
 
@@ -186,10 +369,13 @@ def build_preview(extracted, out_glb):
         trunk_end = Vector((xoff,0,data["zmax"]))
         cylinder_between(trunk_start,trunk_end,h*0.012,f'{data["name"]}_trunk')
         for bi,b in enumerate(data["branches"]):
-            s = Vector(b["start"]); e = Vector(b["end"])
-            s.x += xoff; e.x += xoff
-            rad = max(h*0.0015, h*0.0045*(1.0-b["t"]*0.55))
-            cylinder_between(s,e,rad,f'{data["name"]}_branch_{bi:03d}')
+            path = [Vector(p) for p in b["path"]]
+            for p in path:
+                p.x += xoff
+            base_rad = max(h*0.00125, h*0.0046*(1.0-b["t"]*0.58))
+            for si in range(len(path)-1):
+                taper = max(0.34, 1.0 - 0.60*(si/max(1,len(path)-2)))
+                cylinder_between(path[si], path[si+1], base_rad*taper, f'{data["name"]}_branch_{bi:03d}_{si:02d}')
     os.makedirs(os.path.dirname(out_glb) or '.',exist_ok=True)
     bpy.ops.export_scene.gltf(filepath=out_glb, export_format='GLB')
 
@@ -203,12 +389,19 @@ def main():
     bpy.ops.import_scene.gltf(filepath=source)
     objects = [o for o in bpy.context.scene.objects if o.type == 'MESH']
     extracted = [extract_variant(o) for o in objects]
-    report = {"source": os.path.basename(source), "variants": extracted}
+    report = {
+        "source": os.path.basename(source),
+        "method": "radial-shell centerline tracing plus cross-band continuity tracking",
+        "variants": extracted,
+    }
     os.makedirs(os.path.dirname(out_json) or '.',exist_ok=True)
     with open(out_json,'w',encoding='utf-8') as f:
         json.dump(report,f,indent=2)
     for v in extracted:
-        print(f'ARCONT_PINE_SKELETON_VARIANT={v["name"]} branches={v["branch_count"]} height={v["height"]:.3f}')
+        print(
+            f'ARCONT_PINE_SKELETON_VARIANT={v["name"]} branches={v["branch_count"]} '
+            f'continuous={v["continuous_branch_count"]} mean_nodes={v["mean_path_nodes"]:.2f} height={v["height"]:.3f}'
+        )
     print('ARCONT_PINE_SKELETON_VARIANTS=',len(extracted))
     build_preview(extracted,out_glb)
     print('ARCONT_PINE_SKELETON_PREVIEW=',out_glb)
