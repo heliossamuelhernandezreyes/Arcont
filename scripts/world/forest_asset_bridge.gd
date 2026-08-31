@@ -100,7 +100,7 @@ func _build_mobile_pine_forest(ecology: ForestEcology) -> void:
 func _variant_for_tree(source_i: int, variant_count: int) -> int:
 	if variant_count <= 1:
 		return 0
-	return posmod(source_i * 1103515245 + 12345, variant_count)
+	return posmod(source_i, variant_count)
 
 func _build_conifer_forest(ecology: ForestEcology) -> void:
 	var trunk := CylinderMesh.new()
