@@ -1,14 +1,20 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/forest_terrain.gd" id="1_terrain"]
 [ext_resource type="Script" path="res://scripts/world/forest_hydrology.gd" id="2_hydrology"]
 [ext_resource type="Script" path="res://scripts/world/forest_ecology.gd" id="3_ecology"]
+[ext_resource type="Texture2D" path="res://assets/cc0/polyhaven/forest/forrest_ground_01/forrest_ground_01_diff_1k.jpg" id="4_ground_diff"]
+[ext_resource type="Texture2D" path="res://assets/cc0/polyhaven/forest/forrest_ground_01/forrest_ground_01_nor_gl_1k.jpg" id="5_ground_normal"]
+[ext_resource type="Texture2D" path="res://assets/cc0/polyhaven/forest/forrest_ground_01/forrest_ground_01_rough_1k.jpg" id="6_ground_rough"]
 
 [sub_resource type="Shader" id="TerrainShader"]
-code = "shader_type spatial;\nrender_mode cull_back, diffuse_burley, specular_schlick_ggx;\n\nvarying vec4 terrain_mask;\n\nvoid vertex() {\n    terrain_mask = COLOR;\n}\n\nvoid fragment() {\n    float slope = clamp(terrain_mask.r, 0.0, 1.0);\n    float moisture = clamp(terrain_mask.g, 0.0, 1.0);\n    float flow = clamp(terrain_mask.b, 0.0, 1.0);\n    float composition = clamp(terrain_mask.a, 0.0, 1.0);\n    vec3 dry_soil = vec3(0.31, 0.255, 0.14);\n    vec3 forest_floor = vec3(0.17, 0.285, 0.105);\n    vec3 damp_ground = vec3(0.095, 0.205, 0.125);\n    vec3 rock = vec3(0.43, 0.44, 0.40);\n    vec3 channel = vec3(0.075, 0.24, 0.27);\n    vec3 route_soil = vec3(0.285, 0.20, 0.105);\n    vec3 base = mix(dry_soil, forest_floor, smoothstep(0.18, 0.62, moisture));\n    base = mix(base, damp_ground, smoothstep(0.45, 0.80, moisture));\n    base = mix(base, rock, smoothstep(0.48, 0.82, slope));\n    base = mix(base, channel, smoothstep(0.66, 0.94, flow) * (1.0 - smoothstep(0.62, 0.9, slope)));\n    base = mix(base, route_soil, composition * 0.72);\n    ALBEDO = base;\n    ROUGHNESS = mix(0.98, 0.78, flow * 0.35);\n}\n"
+code = "shader_type spatial;\nrender_mode cull_back, diffuse_burley, specular_schlick_ggx;\n\nuniform sampler2D forest_diff : source_color, filter_linear_mipmap_anisotropic, repeat_enable;\nuniform sampler2D forest_normal : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;\nuniform sampler2D forest_rough : hint_default_white, filter_linear_mipmap_anisotropic, repeat_enable;\nvarying vec4 terrain_mask;\n\nvoid vertex() {\n    terrain_mask = COLOR;\n}\n\nvoid fragment() {\n    float slope = clamp(terrain_mask.r, 0.0, 1.0);\n    float moisture = clamp(terrain_mask.g, 0.0, 1.0);\n    float flow = clamp(terrain_mask.b, 0.0, 1.0);\n    float composition = clamp(terrain_mask.a, 0.0, 1.0);\n    vec3 pbr_floor = texture(forest_diff, UV).rgb;\n    vec3 dry_soil = pbr_floor * vec3(0.93, 0.86, 0.72);\n    vec3 damp_ground = pbr_floor * vec3(0.48, 0.66, 0.53);\n    vec3 rock = vec3(0.30, 0.31, 0.285);\n    vec3 channel = vec3(0.055, 0.145, 0.15);\n    vec3 route_soil = pbr_floor * vec3(0.76, 0.62, 0.45);\n    vec3 base = mix(dry_soil, pbr_floor, smoothstep(0.18, 0.58, moisture));\n    base = mix(base, damp_ground, smoothstep(0.52, 0.86, moisture) * 0.55);\n    base = mix(base, rock, smoothstep(0.52, 0.86, slope) * 0.78);\n    base = mix(base, channel, smoothstep(0.70, 0.96, flow) * (1.0 - smoothstep(0.60, 0.88, slope)));\n    base = mix(base, route_soil, composition * 0.78);\n    ALBEDO = base;\n    vec3 n = texture(forest_normal, UV).rgb;\n    NORMAL_MAP = mix(vec3(0.5, 0.5, 1.0), n, 1.0 - slope * 0.72);\n    NORMAL_MAP_DEPTH = 0.72;\n    float tex_rough = texture(forest_rough, UV).r;\n    ROUGHNESS = clamp(mix(tex_rough, 0.98, flow * 0.18), 0.72, 1.0);\n}\n"
 
 [sub_resource type="ShaderMaterial" id="TerrainMaterial"]
 shader = SubResource("TerrainShader")
+shader_parameter/forest_diff = ExtResource("4_ground_diff")
+shader_parameter/forest_normal = ExtResource("5_ground_normal")
+shader_parameter/forest_rough = ExtResource("6_ground_rough")
 
 [sub_resource type="Shader" id="WaterShader"]
 code = "shader_type spatial;\nrender_mode cull_disabled, depth_draw_opaque, diffuse_burley, specular_schlick_ggx;\n\nvoid fragment() {\n    vec3 shallow = vec3(0.075, 0.20, 0.19);\n    vec3 deep = vec3(0.035, 0.11, 0.13);\n    float stripe = sin(UV.y * 12.0) * 0.5 + 0.5;\n    ALBEDO = mix(deep, shallow, 0.55 + stripe * 0.12);\n    ROUGHNESS = 0.18;\n    METALLIC = 0.0;\n}\n"
