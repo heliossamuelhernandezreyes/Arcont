@@ -496,62 +496,62 @@
     {
       "mimeType": "image/jpeg",
       "name": "pine_tree_01_bark_nor_gl",
-      "uri": "textures/pine_tree_01_bark_nor_gl_1k.jpg"
+      "uri": "pine_tree_01_bark_nor_gl_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "pine_tree_01_bark_diff",
-      "uri": "textures/pine_tree_01_bark_diff_1k.jpg"
+      "uri": "pine_tree_01_bark_diff_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "pine_tree_01_bark_rough",
-      "uri": "textures/pine_tree_01_bark_arm_1k.jpg"
+      "uri": "pine_tree_01_bark_arm_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "pine_tree_01_trunk_a_nor_gl",
-      "uri": "textures/pine_tree_01_trunk_a_nor_gl_1k.jpg"
+      "uri": "pine_tree_01_trunk_a_nor_gl_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "pine_tree_01_trunk_a_diff",
-      "uri": "textures/pine_tree_01_trunk_a_diff_1k.jpg"
+      "uri": "pine_tree_01_trunk_a_diff_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "pine_tree_01_trunk_a_rough",
-      "uri": "textures/pine_tree_01_trunk_a_arm_1k.jpg"
+      "uri": "pine_tree_01_trunk_a_arm_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "pine_tree_01_twig_nor_gl",
-      "uri": "textures/pine_tree_01_twig_nor_gl_1k.jpg"
+      "uri": "pine_tree_01_twig_nor_gl_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "pine_tree_01_twig_diff",
-      "uri": "textures/pine_tree_01_twig_diff_1k.jpg"
+      "uri": "pine_tree_01_twig_diff_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "pine_tree_01_twig_rough",
-      "uri": "textures/pine_tree_01_twig_arm_1k.jpg"
+      "uri": "pine_tree_01_twig_arm_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "pine_tree_01_trunk_b_nor_gl",
-      "uri": "textures/pine_tree_01_trunk_b_nor_gl_1k.jpg"
+      "uri": "pine_tree_01_trunk_b_nor_gl_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "pine_tree_01_trunk_b_diff",
-      "uri": "textures/pine_tree_01_trunk_b_diff_1k.jpg"
+      "uri": "pine_tree_01_trunk_b_diff_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "pine_tree_01_trunk_b_rough",
-      "uri": "textures/pine_tree_01_trunk_b_arm_1k.jpg"
+      "uri": "pine_tree_01_trunk_b_arm_1k.jpg"
     }
   ],
   "accessors": [

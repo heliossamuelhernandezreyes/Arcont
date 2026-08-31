@@ -3,7 +3,7 @@
   "source_api": "https://api.polyhaven.com",
   "api_credit": "Powered by Poly Haven",
   "runtime_dependency": false,
-  "policy": "1K/mobile authoring derivatives; per-file and pack size capped",
+  "policy": "1K/mobile authoring derivatives; EXR duplicates excluded; per-file and pack size capped",
   "assets": [
     {
       "asset_id": "forrest_ground_01",
@@ -29,12 +29,6 @@
           "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/1k/forrest_ground_01/forrest_ground_01_diff_1k.png"
         },
         {
-          "file": "forrest_ground_01_diff_1k.exr",
-          "bytes": 1993753,
-          "sha256": "3e5ec50d9179d7fb4823c3535e19309fb058ac3bac0d3ce149ec4852b557b1e1",
-          "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/exr/1k/forrest_ground_01/forrest_ground_01_diff_1k.exr"
-        },
-        {
           "file": "forrest_ground_01_nor_gl_1k.jpg",
           "bytes": 1428763,
           "sha256": "32528a7cdee962cc0b248ee4023a74d0df175737ea90e1eb425122351e0bdab4",
@@ -45,12 +39,6 @@
           "bytes": 6787606,
           "sha256": "879a84565d016743583421a644bae72df26f4031ea8852fc6d6275feb967353e",
           "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/1k/forrest_ground_01/forrest_ground_01_nor_gl_1k.png"
-        },
-        {
-          "file": "forrest_ground_01_nor_gl_1k.exr",
-          "bytes": 2594674,
-          "sha256": "45094e02cc685c1b97cf615061685781abdbde133076f6b144078550cfed7f8d",
-          "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/exr/1k/forrest_ground_01/forrest_ground_01_nor_gl_1k.exr"
         },
         {
           "file": "forrest_ground_01_rough_ao_1k.jpg",
@@ -65,12 +53,6 @@
           "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/1k/forrest_ground_01/forrest_ground_01_rough_ao_1k.png"
         },
         {
-          "file": "forrest_ground_01_rough_ao_1k.exr",
-          "bytes": 2450321,
-          "sha256": "e4e7a99b56d808585919833981c3aab166dfaa00ba9a635cd4f31514312e23ff",
-          "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/exr/1k/forrest_ground_01/forrest_ground_01_rough_ao_1k.exr"
-        },
-        {
           "file": "forrest_ground_01_arm_1k.jpg",
           "bytes": 296969,
           "sha256": "22eb09a2ed951377f339c08be9f1665f0db7391ed9ba0b0e91e55aea2dbef315",
@@ -81,12 +63,6 @@
           "bytes": 4650954,
           "sha256": "f4a137f68021a6e84495ea990323bdc471d4e34dad3f393bdf608a211aebe772",
           "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/1k/forrest_ground_01/forrest_ground_01_arm_1k.png"
-        },
-        {
-          "file": "forrest_ground_01_arm_1k.exr",
-          "bytes": 2060846,
-          "sha256": "021806ffbb41cbe4dfdd7f360d7f47faedce4e6d8747b1a6e777b9d27711b9e6",
-          "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/exr/1k/forrest_ground_01/forrest_ground_01_arm_1k.exr"
         },
         {
           "file": "forrest_ground_01_ao_1k.jpg",
@@ -101,12 +77,6 @@
           "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/1k/forrest_ground_01/forrest_ground_01_ao_1k.png"
         },
         {
-          "file": "forrest_ground_01_ao_1k.exr",
-          "bytes": 1030676,
-          "sha256": "91a3e3f3307fb4e7d401d79387eb83882e5bb0416fcaeb43c4ce3f703a16287b",
-          "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/exr/1k/forrest_ground_01/forrest_ground_01_ao_1k.exr"
-        },
-        {
           "file": "forrest_ground_01_rough_1k.jpg",
           "bytes": 257165,
           "sha256": "30d8b56a03d7b12da16f58011b675662a40e58e1cdc768119a5f03968140058c",
@@ -117,12 +87,6 @@
           "bytes": 1822813,
           "sha256": "bc781d206a7f1b346b41ef8e0d2deee3b11ede7a64a6cd25da3a5d3aeef5d84d",
           "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/1k/forrest_ground_01/forrest_ground_01_rough_1k.png"
-        },
-        {
-          "file": "forrest_ground_01_rough_1k.exr",
-          "bytes": 944340,
-          "sha256": "d68a97ca94cad01177b215c5a3bf25e07b40eab4fa11adca9c127f264c94a895",
-          "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/exr/1k/forrest_ground_01/forrest_ground_01_rough_1k.exr"
         }
       ]
     },
@@ -305,5 +269,5 @@
       ]
     }
   ],
-  "total_bytes": 58904254
+  "total_bytes": 47829644
 }
