@@ -10,11 +10,13 @@ extends Node3D
 @export var pine_lod1_path: String = "res://assets/runtime/forest/pine_tree_01/pine_tree_01_lod1.glb"
 @export var pine_lod2_path: String = "res://assets/runtime/forest/pine_tree_01/pine_tree_01_lod2.glb"
 @export var pine_lod3_path: String = "res://assets/runtime/forest/pine_tree_01/pine_tree_01_lod3.glb"
+@export var pine_hlod_path: String = "res://assets/runtime/forest/pine_tree_01/pine_tree_01_hlod.glb"
 
 const TREE_LOD0_END := 3.0
 const TREE_LOD1_END := 10.0
 const TREE_LOD2_END := 25.0
 const TREE_LOD3_END := 50.0
+const TREE_HLOD_END := 310.0
 
 func _ready() -> void:
 	call_deferred("rebuild")
@@ -42,14 +44,15 @@ func rebuild() -> void:
 		_build_asset_layer("StumpCC0", ecology.deadwood_positions, stump_mesh, 92.0, Vector3.ONE * 0.82, 12011)
 
 func _mobile_pine_lods_available() -> bool:
-	return ResourceLoader.exists(pine_lod0_path) and ResourceLoader.exists(pine_lod1_path) and ResourceLoader.exists(pine_lod2_path) and ResourceLoader.exists(pine_lod3_path)
+	return ResourceLoader.exists(pine_lod0_path) and ResourceLoader.exists(pine_lod1_path) and ResourceLoader.exists(pine_lod2_path) and ResourceLoader.exists(pine_lod3_path) and ResourceLoader.exists(pine_hlod_path)
 
 func _build_mobile_pine_forest(ecology: ForestEcology) -> void:
 	var lod0: Mesh = _load_first_mesh(pine_lod0_path)
 	var lod1: Mesh = _load_first_mesh(pine_lod1_path)
 	var lod2: Mesh = _load_first_mesh(pine_lod2_path)
 	var lod3: Mesh = _load_first_mesh(pine_lod3_path)
-	if lod0 == null or lod1 == null or lod2 == null or lod3 == null:
+	var hlod: Mesh = _load_first_mesh(pine_hlod_path)
+	if lod0 == null or lod1 == null or lod2 == null or lod3 == null or hlod == null:
 		_build_conifer_forest(ecology)
 		return
 	var groups := _group_indices(ecology.tree_positions)
@@ -62,10 +65,12 @@ func _build_mobile_pine_forest(ecology: ForestEcology) -> void:
 		var medium := _make_mm("PineLOD1_15k", lod1, indices.size(), TREE_LOD0_END, TREE_LOD1_END)
 		var far := _make_mm("PineLOD2_6k", lod2, indices.size(), TREE_LOD1_END, TREE_LOD2_END)
 		var very_far := _make_mm("PineLOD3_2k", lod3, indices.size(), TREE_LOD2_END, TREE_LOD3_END)
+		var horizon := _make_mm("PineHLOD_96", hlod, indices.size(), TREE_LOD3_END, TREE_HLOD_END)
 		root.add_child(near)
 		root.add_child(medium)
 		root.add_child(far)
 		root.add_child(very_far)
+		root.add_child(horizon)
 		for local_i in range(indices.size()):
 			var source_i: int = int(indices[local_i])
 			var p: Vector3 = ecology.tree_positions[source_i]
@@ -76,6 +81,7 @@ func _build_mobile_pine_forest(ecology: ForestEcology) -> void:
 			medium.multimesh.set_instance_transform(local_i, transform)
 			far.multimesh.set_instance_transform(local_i, transform)
 			very_far.multimesh.set_instance_transform(local_i, transform)
+			horizon.multimesh.set_instance_transform(local_i, transform)
 
 func _build_conifer_forest(ecology: ForestEcology) -> void:
 	var trunk := CylinderMesh.new()
