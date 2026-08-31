@@ -15,7 +15,7 @@ import sys
 import urllib.request
 
 API = "https://api.polyhaven.com"
-UA = "ArcontForestAssetIngest/0.2 (github.com/heliossamuelhernandezreyes/Arcont)"
+UA = "ArcontForestAssetIngest/0.3 (github.com/heliossamuelhernandezreyes/Arcont)"
 ROOT = Path("assets/cc0/polyhaven/forest")
 MAX_FILE_BYTES = 48 * 1024 * 1024
 MAX_PACK_BYTES = 150 * 1024 * 1024
@@ -72,6 +72,21 @@ def find_resolution_branch(files: dict, kind: str):
     return selected or files
 
 
+def pine_foliage_extras(files: dict) -> list[dict]:
+    """Find bounded twig opacity/mask maps omitted by some model GLTF branches."""
+    extras: list[dict] = []
+    for obj in file_objects(files):
+        url = obj.get("url", "")
+        low = url.lower()
+        if "twig" not in low or not ("alpha" in low or "mask" in low or "opacity" in low):
+            continue
+        if not any(token in low for token in ("1k", "1024")):
+            continue
+        if low.endswith((".jpg", ".jpeg", ".png")):
+            extras.append(obj)
+    return extras
+
+
 def download(obj: dict, dest: Path) -> dict | None:
     url = obj["url"]
     if dest.suffix.lower() == ".exr":
@@ -119,7 +134,6 @@ def rewrite_flat_gltf_uris(out: Path) -> None:
 
 
 def clean_stale_runtime_unsafe_files(out: Path) -> None:
-    """Remove stale files excluded by current policy so old ingests cannot poison Godot CI."""
     out.mkdir(parents=True, exist_ok=True)
     for stale in out.glob("*.exr"):
         stale.unlink()
@@ -130,17 +144,20 @@ def ingest(asset_id: str, kind: str) -> dict:
     info = request_json(f"/info/{asset_id}")
     files = request_json(f"/files/{asset_id}")
     branch = find_resolution_branch(files, kind)
-    candidates = []
+    candidates = list(file_objects(branch))
+    if asset_id == "pine_tree_01":
+        candidates.extend(pine_foliage_extras(files))
+    unique = []
     seen = set()
-    for obj in file_objects(branch):
+    for obj in candidates:
         url = obj["url"]
         if url not in seen:
             seen.add(url)
-            candidates.append(obj)
+            unique.append(obj)
     out = ROOT / asset_id
     clean_stale_runtime_unsafe_files(out)
     records = []
-    for obj in candidates:
+    for obj in unique:
         record = download(obj, out / safe_name(obj["url"]))
         if record:
             records.append(record)
@@ -151,6 +168,8 @@ def ingest(asset_id: str, kind: str) -> dict:
             "# Authoring source only; runtime uses generated GLB LOD derivatives.\n",
             encoding="utf-8",
         )
+        foliage_maps = [r["file"] for r in records if "twig" in r["file"].lower() and any(t in r["file"].lower() for t in ("alpha", "mask", "opacity"))]
+        print("ARCONT_PINE_FOLIAGE_MAPS=" + ",".join(foliage_maps))
     return {
         "asset_id": asset_id,
         "name": info.get("name", asset_id),
@@ -170,7 +189,7 @@ def main() -> int:
         "source_api": API,
         "api_credit": "Powered by Poly Haven",
         "runtime_dependency": False,
-        "policy": "1K/mobile authoring derivatives; stale/duplicate EXR removed; per-file and pack size capped",
+        "policy": "1K/mobile authoring derivatives; stale/duplicate EXR removed; pine twig opacity maps retained when available; per-file and pack size capped",
         "assets": [],
     }
     for asset_id, kind in ASSETS.items():
@@ -190,8 +209,8 @@ def main() -> int:
         "Selected source assets are CC0. The live API is used only by the ingest tool; "
         "the game has no runtime network dependency. Powered by Poly Haven.\n\n"
         "The committed derivatives are intentionally bounded for mobile evaluation. "
-        "Godot-incompatible EXR duplicates are removed and Pine Tree 01 source is authoring-only. "
-        "See `MANIFEST.json` for source URLs, authorship metadata and SHA-256 hashes.\n",
+        "Godot-incompatible EXR duplicates are removed, optional pine twig opacity maps are retained, "
+        "and Pine Tree 01 source is authoring-only. See `MANIFEST.json` for provenance and hashes.\n",
         encoding="utf-8",
     )
     print(f"POLYHAVEN_FOREST_INGEST_OK bytes={total}")
