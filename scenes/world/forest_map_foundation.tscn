@@ -1,0 +1,49 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/forest_terrain.gd" id="1_terrain"]
+
+[sub_resource type="StandardMaterial3D" id="TerrainMaterial"]
+albedo_color = Color(0.19, 0.235, 0.135, 1)
+roughness = 0.96
+vertex_color_use_as_albedo = false
+
+[sub_resource type="Environment" id="Environment_forest"]
+background_mode = 1
+background_color = Color(0.39, 0.48, 0.55, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.54, 0.61, 0.58, 1)
+ambient_light_energy = 0.62
+fog_enabled = true
+fog_light_color = Color(0.62, 0.68, 0.66, 1)
+fog_light_energy = 0.72
+fog_density = 0.0018
+
+[sub_resource type="CameraAttributesPractical" id="CameraAttributes"]
+auto_exposure_enabled = true
+
+[node name="ForestMapFoundation" type="Node3D"]
+
+[node name="Terrain" type="MeshInstance3D" parent="."]
+material_override = SubResource("TerrainMaterial")
+script = ExtResource("1_terrain")
+seed = 731942
+world_size = 512.0
+resolution = 128
+relief = 34.0
+valley_depth = 8.0
+ridge_gain = 5.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_forest")
+camera_attributes = SubResource("CameraAttributes")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-48, -32, 0)
+light_energy = 1.05
+shadow_enabled = true
+directional_shadow_max_distance = 140.0
+
+[node name="OverviewCamera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 128, 190)
+current = true
+far = 1200.0
