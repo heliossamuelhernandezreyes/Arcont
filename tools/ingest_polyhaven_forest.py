@@ -9,14 +9,13 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 from pathlib import Path
 import re
 import sys
 import urllib.request
 
 API = "https://api.polyhaven.com"
-UA = "ArcontForestAssetIngest/0.1 (github.com/heliossamuelhernandezreyes/Arcont)"
+UA = "ArcontForestAssetIngest/0.2 (github.com/heliossamuelhernandezreyes/Arcont)"
 ROOT = Path("assets/cc0/polyhaven/forest")
 MAX_FILE_BYTES = 48 * 1024 * 1024
 MAX_PACK_BYTES = 150 * 1024 * 1024
@@ -51,8 +50,6 @@ def file_objects(node):
 
 
 def find_resolution_branch(files: dict, kind: str):
-    # Poly Haven's file tree changes shape by asset type. Prefer a 1K glTF
-    # branch for models, then any glTF branch carrying a 1K descendant.
     if kind == "model":
         gltf = files.get("gltf")
         if isinstance(gltf, dict):
@@ -62,7 +59,6 @@ def find_resolution_branch(files: dict, kind: str):
                 if str(key).lower() in {"1k", "1024"}:
                     return value
         return gltf
-    # Textures: retain only 1K material maps useful on mobile.
     selected = {}
     wanted = ("diff", "albedo", "nor_gl", "normal_gl", "rough", "arm", "ao")
     for key, value in files.items():
@@ -78,6 +74,9 @@ def find_resolution_branch(files: dict, kind: str):
 
 def download(obj: dict, dest: Path) -> dict | None:
     url = obj["url"]
+    if dest.suffix.lower() == ".exr":
+        print(f"SKIP EXR runtime duplicate: {url}")
+        return None
     declared = int(obj.get("size") or 0)
     if declared and declared > MAX_FILE_BYTES:
         print(f"SKIP oversize {declared / 1048576:.1f} MiB: {url}")
@@ -98,6 +97,29 @@ def download(obj: dict, dest: Path) -> dict | None:
     return {"file": dest.name, "bytes": len(data), "sha256": digest, "source_url": url}
 
 
+def rewrite_flat_gltf_uris(out: Path) -> None:
+    """Poly Haven GLTFs often reference textures/foo.jpg while ingest stores bounded files flat.
+    Rewrite only references whose flattened target is present, preserving the binary URI unchanged.
+    """
+    for gltf_path in out.glob("*.gltf"):
+        try:
+            doc = json.loads(gltf_path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        changed = False
+        for image in doc.get("images", []):
+            uri = image.get("uri")
+            if not isinstance(uri, str) or "/" not in uri:
+                continue
+            basename = uri.rsplit("/", 1)[-1]
+            if (out / basename).is_file():
+                image["uri"] = basename
+                changed = True
+        if changed:
+            gltf_path.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+            print(f"REWRITE flattened texture URIs: {gltf_path}")
+
+
 def ingest(asset_id: str, kind: str) -> dict:
     info = request_json(f"/info/{asset_id}")
     files = request_json(f"/files/{asset_id}")
@@ -115,6 +137,13 @@ def ingest(asset_id: str, kind: str) -> dict:
         record = download(obj, out / safe_name(obj["url"]))
         if record:
             records.append(record)
+    if kind == "model":
+        rewrite_flat_gltf_uris(out)
+    if asset_id == "pine_tree_01":
+        (out / ".gdignore").write_text(
+            "# Authoring source only; runtime uses generated GLB LOD derivatives.\n",
+            encoding="utf-8",
+        )
     return {
         "asset_id": asset_id,
         "name": info.get("name", asset_id),
@@ -134,7 +163,7 @@ def main() -> int:
         "source_api": API,
         "api_credit": "Powered by Poly Haven",
         "runtime_dependency": False,
-        "policy": "1K/mobile authoring derivatives; per-file and pack size capped",
+        "policy": "1K/mobile authoring derivatives; EXR duplicates excluded; per-file and pack size capped",
         "assets": [],
     }
     for asset_id, kind in ASSETS.items():
@@ -154,6 +183,7 @@ def main() -> int:
         "Selected source assets are CC0. The live API is used only by the ingest tool; "
         "the game has no runtime network dependency. Powered by Poly Haven.\n\n"
         "The committed derivatives are intentionally bounded for mobile evaluation. "
+        "Godot-incompatible EXR duplicates are excluded and Pine Tree 01 source is authoring-only. "
         "See `MANIFEST.json` for source URLs, authorship metadata and SHA-256 hashes.\n",
         encoding="utf-8",
     )
