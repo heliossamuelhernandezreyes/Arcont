@@ -3,7 +3,7 @@
   "source_api": "https://api.polyhaven.com",
   "api_credit": "Powered by Poly Haven",
   "runtime_dependency": false,
-  "policy": "1K/mobile authoring derivatives; stale/duplicate EXR removed; per-file and pack size capped",
+  "policy": "1K/mobile authoring derivatives; stale/duplicate EXR removed; pine twig opacity maps retained when available; per-file and pack size capped",
   "assets": [
     {
       "asset_id": "forrest_ground_01",
@@ -265,9 +265,33 @@
           "bytes": 732269,
           "sha256": "8141cd57969269604351e366400354e47e7f25294881387e1ea307b48c37b033",
           "source_url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/pine_tree_01/pine_tree_01_trunk_b_arm_1k.jpg"
+        },
+        {
+          "file": "pine_tree_01_twig_alpha_1k.png",
+          "bytes": 351928,
+          "sha256": "6f91aa99f2c27108d6f817f874954aa7df8bfbb4dea2673e9322555a6ae79d99",
+          "source_url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/pine_tree_01/pine_tree_01_twig_alpha_1k.png"
+        },
+        {
+          "file": "pine_tree_01_twig_mask_1k.png",
+          "bytes": 226541,
+          "sha256": "75724986737faf6ea4d03eccce896eb59fb42636e12dfa72c0ed16f13a37e277",
+          "source_url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/pine_tree_01/pine_tree_01_twig_mask_1k.png"
+        },
+        {
+          "file": "pine_tree_01_twig_alpha_1k.jpg",
+          "bytes": 195206,
+          "sha256": "bee10734c529a874570da6e4091758de5cc7dee17a359eeacd9c67fde1cb0947",
+          "source_url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/pine_tree_01/pine_tree_01_twig_alpha_1k.jpg"
+        },
+        {
+          "file": "pine_tree_01_twig_mask_1k.jpg",
+          "bytes": 121552,
+          "sha256": "780336d808718212890ae857fc66a0d1acbbf48c744877527ef195827f2c9fe7",
+          "source_url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/pine_tree_01/pine_tree_01_twig_mask_1k.jpg"
         }
       ]
     }
   ],
-  "total_bytes": 47829644
+  "total_bytes": 48724871
 }
