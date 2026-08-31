@@ -38,10 +38,12 @@ jobs:
           SRC=/tmp/pine_tree_01
           mkdir -p "$SRC/textures"
           cp assets/cc0/polyhaven/forest/pine_tree_01/pine_tree_01_1k.gltf "$SRC/pine_tree_01_1k.gltf"
+          cp assets/cc0/polyhaven/forest/pine_tree_01/*.jpg "$SRC/"
           cp assets/cc0/polyhaven/forest/pine_tree_01/*.jpg "$SRC/textures/"
+          cp assets/cc0/polyhaven/forest/pine_tree_01/*.png "$SRC/" || true
           cp assets/cc0/polyhaven/forest/pine_tree_01/*.png "$SRC/textures/" || true
-          test -s "$SRC/textures/pine_tree_01_twig_alpha_1k.png"
-          test -s "$SRC/textures/pine_tree_01_twig_mask_1k.png"
+          test -s "$SRC/pine_tree_01_twig_alpha_1k.png"
+          test -s "$SRC/pine_tree_01_twig_mask_1k.png"
           curl -L --fail --retry 4 --retry-delay 3 \
             -o "$SRC/pine_tree_01.bin" \
             'https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/pine_tree_01/pine_tree_01.bin'
