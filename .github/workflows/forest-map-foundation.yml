@@ -47,14 +47,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          timeout 120s "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --editor --quit | tee import.log
+          timeout 120s "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --editor --quit 2>&1 | tee import.log
           ! grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" import.log
 
       - name: Validate terrain contract
         shell: bash
         run: |
           set -euo pipefail
-          timeout 120s "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/forest_terrain_contract.gd | tee terrain.log
+          timeout 120s "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/forest_terrain_contract.gd 2>&1 | tee terrain.log
           grep -q "FOREST_TERRAIN_OK" terrain.log
           ! grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" terrain.log
 
@@ -62,7 +62,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          timeout 120s "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/forest_hydrology_contract.gd | tee hydrology.log
+          timeout 120s "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/forest_hydrology_contract.gd 2>&1 | tee hydrology.log
           grep -q "FOREST_HYDROLOGY_OK" hydrology.log
           ! grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" hydrology.log
 
@@ -70,7 +70,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          timeout 120s "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/forest_ecology_contract.gd | tee ecology.log
+          timeout 120s "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/forest_ecology_contract.gd 2>&1 | tee ecology.log
           grep -q "FOREST_ECOLOGY_OK" ecology.log
           ! grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" ecology.log
 
@@ -78,21 +78,21 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          timeout 120s "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/forest_asset_bridge_contract.gd | tee asset_bridge.log
+          timeout 120s "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/forest_asset_bridge_contract.gd 2>&1 | tee asset_bridge.log
           grep -q "FOREST_ASSET_BRIDGE_OK" asset_bridge.log
           ! grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" asset_bridge.log
 
-      - name: Capture overview ground and topdown views
+      - name: Capture overview ground topdown and LOD views
         shell: bash
         env:
           LIBGL_ALWAYS_SOFTWARE: '1'
         run: |
           set -euo pipefail
-          timeout 120s xvfb-run -a "$GODOT_BIN" --path "$GITHUB_WORKSPACE" --rendering-method gl_compatibility --resolution 1280x720 --script res://tests/capture_forest_map.gd | tee capture.log
+          timeout 120s xvfb-run -a "$GODOT_BIN" --path "$GITHUB_WORKSPACE" --rendering-method gl_compatibility --resolution 1280x720 --script res://tests/capture_forest_map.gd 2>&1 | tee capture.log
           grep -q "FOREST_CAPTURE_OK" capture.log
-          test -s build/forest-evidence/forest_overview.png
-          test -s build/forest-evidence/forest_ground.png
-          test -s build/forest-evidence/forest_topdown.png
+          for image in forest_overview.png forest_ground.png forest_topdown.png forest_lod_03m.png forest_lod_09m.png forest_lod_20m.png forest_lod_35m.png forest_lod_80m.png; do
+            test -s "build/forest-evidence/$image"
+          done
           file build/forest-evidence/*.png
 
       - name: Upload visual evidence
