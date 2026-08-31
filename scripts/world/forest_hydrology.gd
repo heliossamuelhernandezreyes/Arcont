@@ -8,6 +8,7 @@ extends MeshInstance3D
 @export_range(0.0, 1.0, 0.01) var flow_threshold: float = 0.48
 @export_range(16, 256, 1) var longitudinal_samples: int = 96
 @export_range(0, 12, 1) var smooth_passes: int = 5
+@export_range(0.0, 0.35, 0.01) var max_surface_rise_per_sample: float = 0.12
 @export var regenerate: bool = false:
 	set(value):
 		regenerate = false
@@ -60,17 +61,39 @@ func _build_centerline(terrain: ForestTerrain) -> void:
 			filtered[s] = (raw_z[s - 2] + raw_z[s - 1] * 2.0 + raw_z[s] * 4.0 + raw_z[s + 1] * 2.0 + raw_z[s + 2]) / 10.0
 		raw_z = filtered
 
+	var points := PackedVector3Array()
+	var point_flows := PackedFloat32Array()
+	points.resize(longitudinal_samples + 1)
+	point_flows.resize(longitudinal_samples + 1)
 	for s in range(longitudinal_samples + 1):
 		var u: float = float(s) / float(longitudinal_samples)
 		var wx: float = lerpf(-half, half, u)
 		var wz: float = raw_z[s]
-		var y: float = terrain.sample_height(wx, wz) + water_offset
-		centerline.append(Vector3(wx, y, wz))
-		var width_factor: float = clampf((raw_flow[s] - flow_threshold) / maxf(0.001, 1.0 - flow_threshold), 0.0, 1.0)
+		points[s] = Vector3(wx, terrain.sample_height(wx, wz) + water_offset, wz)
+		point_flows[s] = raw_flow[s]
+
+	var start_mean: float = 0.0
+	var end_mean: float = 0.0
+	var sample_window: int = mini(5, points.size())
+	for i in range(sample_window):
+		start_mean += points[i].y
+		end_mean += points[points.size() - 1 - i].y
+	start_mean /= float(sample_window)
+	end_mean /= float(sample_window)
+	if start_mean < end_mean:
+		points.reverse()
+		point_flows.reverse()
+
+	for i in range(points.size()):
+		var p: Vector3 = points[i]
+		if i > 0:
+			p.y = minf(p.y, centerline[i - 1].y + max_surface_rise_per_sample)
+		centerline.append(p)
+		var width_factor: float = clampf((point_flows[i] - flow_threshold) / maxf(0.001, 1.0 - flow_threshold), 0.0, 1.0)
 		widths.append(base_width * lerpf(0.72, 1.38, width_factor))
 
 func _build_water_mesh(terrain: ForestTerrain) -> void:
-	mesh = _build_ribbon(terrain, 1.0, 0.0)
+	mesh = _build_ribbon(terrain, 1.0, 0.0, true)
 
 func _build_bank_mesh(terrain: ForestTerrain) -> void:
 	var bank := get_node_or_null("Banks") as MeshInstance3D
@@ -78,13 +101,13 @@ func _build_bank_mesh(terrain: ForestTerrain) -> void:
 		bank = MeshInstance3D.new()
 		bank.name = "Banks"
 		add_child(bank)
-	bank.mesh = _build_ribbon(terrain, 1.9, -0.055)
+	bank.mesh = _build_ribbon(terrain, 1.9, -0.055, false)
 	var bank_material := StandardMaterial3D.new()
 	bank_material.albedo_color = Color(0.13, 0.095, 0.055, 1.0)
 	bank_material.roughness = 1.0
 	bank.material_override = bank_material
 
-func _build_ribbon(terrain: ForestTerrain, width_scale: float, height_bias: float) -> ArrayMesh:
+func _build_ribbon(terrain: ForestTerrain, width_scale: float, height_bias: float, use_centerline_height: bool) -> ArrayMesh:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	if centerline.size() < 2:
@@ -101,8 +124,12 @@ func _build_ribbon(terrain: ForestTerrain, width_scale: float, height_bias: floa
 		var half_width: float = widths[i] * 0.5 * width_scale
 		var left: Vector3 = centerline[i] - side_vec * half_width
 		var right: Vector3 = centerline[i] + side_vec * half_width
-		left.y = terrain.sample_height(left.x, left.z) + water_offset + height_bias
-		right.y = terrain.sample_height(right.x, right.z) + water_offset + height_bias
+		if use_centerline_height:
+			left.y = centerline[i].y + height_bias
+			right.y = centerline[i].y + height_bias
+		else:
+			left.y = terrain.sample_height(left.x, left.z) + water_offset + height_bias
+			right.y = terrain.sample_height(right.x, right.z) + water_offset + height_bias
 		st.set_uv(Vector2(0.0, float(i) / 8.0))
 		st.add_vertex(left)
 		st.set_uv(Vector2(1.0, float(i) / 8.0))
