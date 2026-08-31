@@ -1,4 +1,4 @@
-import bpy, os, sys, math
+import bpy, os, sys
 
 TARGETS = {
     "LOD0": 30000,
@@ -13,16 +13,25 @@ def mesh_tris(obj):
     return len(mesh.loop_triangles)
 
 
+def mesh_objects():
+    return [o for o in bpy.context.scene.objects if o.type == 'MESH']
+
+
 def total_tris():
-    return sum(mesh_tris(o) for o in bpy.context.scene.objects if o.type == 'MESH')
+    return sum(mesh_tris(o) for o in mesh_objects())
 
 
-def apply_decimate(target_tris: int):
-    current = total_tris()
-    if current <= target_tris:
-        return
-    ratio = max(0.001, min(1.0, target_tris / float(current)))
-    for obj in [o for o in bpy.context.scene.objects if o.type == 'MESH']:
+def max_object_tris():
+    meshes = mesh_objects()
+    return max((mesh_tris(o) for o in meshes), default=0)
+
+
+def apply_decimate_per_tree(target_tris: int):
+    for obj in mesh_objects():
+        current = mesh_tris(obj)
+        if current <= target_tris:
+            continue
+        ratio = max(0.0005, min(1.0, target_tris / float(current)))
         bpy.context.view_layer.objects.active = obj
         obj.select_set(True)
         mod = obj.modifiers.new(name='ArcontMobileDecimate', type='DECIMATE')
@@ -54,18 +63,21 @@ def main():
     source, out_dir = argv
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.gltf(filepath=source)
-    base = total_tris()
-    print(f'ARCONT_TREE_SOURCE_TRIS={base}')
+    print(f'ARCONT_TREE_SOURCE_TOTAL_TRIS={total_tris()}')
+    print(f'ARCONT_TREE_SOURCE_MAX_PER_TREE={max_object_tris()}')
+    print(f'ARCONT_TREE_VARIANTS={len(mesh_objects())}')
     for name, target in TARGETS.items():
         bpy.ops.wm.read_factory_settings(use_empty=True)
         bpy.ops.import_scene.gltf(filepath=source)
-        apply_decimate(target)
-        tris = total_tris()
+        apply_decimate_per_tree(target)
+        total = total_tris()
+        max_per_tree = max_object_tris()
         out = os.path.join(out_dir, f'pine_tree_01_{name.lower()}.glb')
         export_glb(out)
-        print(f'ARCONT_TREE_{name}_TRIS={tris}')
-        if tris > int(target * 1.15):
-            raise SystemExit(f'{name} exceeds triangle target: {tris} > {target}')
+        print(f'ARCONT_TREE_{name}_TOTAL_TRIS={total}')
+        print(f'ARCONT_TREE_{name}_MAX_PER_TREE={max_per_tree}')
+        if max_per_tree > int(target * 1.15):
+            raise SystemExit(f'{name} exceeds per-tree triangle target: {max_per_tree} > {target}')
 
 if __name__ == '__main__':
     main()
