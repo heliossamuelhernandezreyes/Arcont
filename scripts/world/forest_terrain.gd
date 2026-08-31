@@ -31,7 +31,7 @@ const CLEARING_CENTERS: Array[Vector2] = [
 	Vector2(22.0, -48.0),
 	Vector2(146.0, 70.0)
 ]
-const CLEARING_RADII: PackedFloat32Array = PackedFloat32Array([30.0, 43.0, 27.0])
+const CLEARING_RADII = [30.0, 43.0, 27.0]
 const ROUTE_POINTS: Array[Vector2] = [
 	Vector2(-238.0, 122.0),
 	Vector2(-126.0, 72.0),
