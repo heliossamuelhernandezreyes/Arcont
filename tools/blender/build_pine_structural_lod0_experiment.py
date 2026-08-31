@@ -1,4 +1,4 @@
-import bpy, json, math, os, sys
+import bpy, bmesh, json, math, os, sys
 from mathutils import Vector
 
 TRUNK_SIDES = 8
@@ -32,8 +32,27 @@ def cylinder_between(start, end, r0, r1, sides, name):
         faces.append((2*i, 2*ni, 2*ni+1, 2*i+1))
     faces.append(tuple(2*i for i in range(sides)))
     faces.append(tuple(2*i+1 for i in reversed(range(sides))))
+
+    # Build through bmesh rather than Mesh.from_pydata. This is stable across
+    # the Blender package/API used by GitHub Actions and avoids the runtime
+    # AttributeError seen in the structural experiment job.
     mesh = bpy.data.meshes.new(name + '_mesh')
-    mesh.from_pydata([tuple(v) for v in verts], [], faces)
+    bm = bmesh.new()
+    try:
+        bm_verts = [bm.verts.new(tuple(v)) for v in verts]
+        bm.verts.ensure_lookup_table()
+        for face in faces:
+            try:
+                bm.faces.new([bm_verts[i] for i in face])
+            except ValueError:
+                # A duplicate face would only be a malformed primitive; keep
+                # the rest of the diagnostic mesh exportable instead of
+                # crashing the whole analysis workflow.
+                pass
+        bm.normal_update()
+        bm.to_mesh(mesh)
+    finally:
+        bm.free()
     mesh.update()
     obj = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(obj)
