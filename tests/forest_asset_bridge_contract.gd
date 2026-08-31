@@ -1,5 +1,6 @@
 extends SceneTree
 
+# Contract revision: branch-whorl close/mid pine derivatives must remain runtime-loadable.
 func _init() -> void:
 	call_deferred("_run")
 
