@@ -6,6 +6,15 @@ extends Node3D
 @export var chunk_size: float = 48.0
 @export var rock_scene_path: String = "res://assets/cc0/polyhaven/forest/rock_moss_set_01/rock_moss_set_01_1k.gltf"
 @export var stump_scene_path: String = "res://assets/cc0/polyhaven/forest/tree_stump_01/tree_stump_01_1k.gltf"
+@export var pine_lod0_path: String = "res://assets/runtime/forest/pine_tree_01/pine_tree_01_lod0.glb"
+@export var pine_lod1_path: String = "res://assets/runtime/forest/pine_tree_01/pine_tree_01_lod1.glb"
+@export var pine_lod2_path: String = "res://assets/runtime/forest/pine_tree_01/pine_tree_01_lod2.glb"
+@export var pine_lod3_path: String = "res://assets/runtime/forest/pine_tree_01/pine_tree_01_lod3.glb"
+
+const TREE_LOD0_END := 3.0
+const TREE_LOD1_END := 10.0
+const TREE_LOD2_END := 25.0
+const TREE_LOD3_END := 50.0
 
 func _ready() -> void:
 	call_deferred("rebuild")
@@ -19,7 +28,10 @@ func rebuild() -> void:
 		ecology.generate()
 	await get_tree().process_frame
 	_hide_provisional(ecology, "Trees_")
-	_build_conifer_forest(ecology)
+	if _mobile_pine_lods_available():
+		_build_mobile_pine_forest(ecology)
+	else:
+		_build_conifer_forest(ecology)
 	var rock_mesh: Mesh = _load_first_mesh(rock_scene_path)
 	var stump_mesh: Mesh = _load_first_mesh(stump_scene_path)
 	if rock_mesh != null:
@@ -28,6 +40,42 @@ func rebuild() -> void:
 	if stump_mesh != null:
 		_hide_provisional(ecology, "Deadwood_")
 		_build_asset_layer("StumpCC0", ecology.deadwood_positions, stump_mesh, 92.0, Vector3.ONE * 0.82, 12011)
+
+func _mobile_pine_lods_available() -> bool:
+	return ResourceLoader.exists(pine_lod0_path) and ResourceLoader.exists(pine_lod1_path) and ResourceLoader.exists(pine_lod2_path) and ResourceLoader.exists(pine_lod3_path)
+
+func _build_mobile_pine_forest(ecology: ForestEcology) -> void:
+	var lod0: Mesh = _load_first_mesh(pine_lod0_path)
+	var lod1: Mesh = _load_first_mesh(pine_lod1_path)
+	var lod2: Mesh = _load_first_mesh(pine_lod2_path)
+	var lod3: Mesh = _load_first_mesh(pine_lod3_path)
+	if lod0 == null or lod1 == null or lod2 == null or lod3 == null:
+		_build_conifer_forest(ecology)
+		return
+	var groups := _group_indices(ecology.tree_positions)
+	for key: Vector2i in groups.keys():
+		var indices: Array = groups[key]
+		var root := Node3D.new()
+		root.name = "MobilePines_%d_%d" % [key.x, key.y]
+		add_child(root)
+		var near := _make_mm("PineLOD0_30k", lod0, indices.size(), 0.0, TREE_LOD0_END)
+		var medium := _make_mm("PineLOD1_15k", lod1, indices.size(), TREE_LOD0_END, TREE_LOD1_END)
+		var far := _make_mm("PineLOD2_6k", lod2, indices.size(), TREE_LOD1_END, TREE_LOD2_END)
+		var very_far := _make_mm("PineLOD3_2k", lod3, indices.size(), TREE_LOD2_END, TREE_LOD3_END)
+		root.add_child(near)
+		root.add_child(medium)
+		root.add_child(far)
+		root.add_child(very_far)
+		for local_i in range(indices.size()):
+			var source_i: int = int(indices[local_i])
+			var p: Vector3 = ecology.tree_positions[source_i]
+			var s: float = ecology.tree_scales[source_i]
+			var yaw: float = ecology.tree_yaws[source_i]
+			var transform := Transform3D(Basis(Vector3.UP, yaw).scaled(Vector3.ONE * s), p)
+			near.multimesh.set_instance_transform(local_i, transform)
+			medium.multimesh.set_instance_transform(local_i, transform)
+			far.multimesh.set_instance_transform(local_i, transform)
+			very_far.multimesh.set_instance_transform(local_i, transform)
 
 func _build_conifer_forest(ecology: ForestEcology) -> void:
 	var trunk := CylinderMesh.new()
