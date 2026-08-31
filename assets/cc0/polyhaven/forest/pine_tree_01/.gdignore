@@ -1,0 +1,1 @@
+# Authoring source only. Blender/GitHub Actions may read this directory, but Godot must not import the incomplete ~905 MiB source glTF buffer dependency.
