@@ -39,30 +39,37 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --editor --quit | tee import.log
+          timeout 120s "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --editor --quit | tee import.log
           ! grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" import.log
 
       - name: Validate terrain contract
         shell: bash
         run: |
           set -euo pipefail
-          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/forest_terrain_contract.gd | tee terrain.log
+          timeout 120s "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/forest_terrain_contract.gd | tee terrain.log
           grep -q "FOREST_TERRAIN_OK" terrain.log
           ! grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" terrain.log
 
       - name: Capture overview and ground views
         shell: bash
+        env:
+          LIBGL_ALWAYS_SOFTWARE: '1'
         run: |
           set -euo pipefail
-          xvfb-run -a "$GODOT_BIN" --path "$GITHUB_WORKSPACE" --rendering-method mobile --resolution 1280x720 --script res://tests/capture_forest_map.gd | tee capture.log
+          timeout 120s xvfb-run -a "$GODOT_BIN" --path "$GITHUB_WORKSPACE" --rendering-method gl_compatibility --resolution 1280x720 --script res://tests/capture_forest_map.gd | tee capture.log
           grep -q "FOREST_CAPTURE_OK" capture.log
           test -s build/forest-evidence/forest_overview.png
           test -s build/forest-evidence/forest_ground.png
+          file build/forest-evidence/*.png
 
       - name: Upload visual evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: forest-map-foundation-evidence
-          path: build/forest-evidence/*.png
-          if-no-files-found: error
+          path: |
+            build/forest-evidence/*.png
+            terrain.log
+            capture.log
+          if-no-files-found: warn
           retention-days: 14
