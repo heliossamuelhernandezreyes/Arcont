@@ -8,6 +8,7 @@ on:
       - '.github/workflows/analyze-pine-source.yml'
       - 'tools/blender/analyze_pine_source.py'
       - 'tools/blender/extract_pine_skeleton.py'
+      - 'tools/blender/build_pine_structural_lod0_experiment.py'
       - 'assets/cc0/polyhaven/forest/pine_tree_01/**'
   workflow_dispatch:
 
@@ -59,6 +60,19 @@ jobs:
           grep -q 'ARCONT_PINE_SKELETON_PREVIEW=' build/pine-analysis/skeleton.log
           test -s build/pine-analysis/pine_tree_01_skeleton.json
           test -s build/pine-analysis/pine_tree_01_skeleton_preview.glb
+      - name: Build structural LOD0 experiment
+        run: |
+          set -euo pipefail
+          blender --background --python tools/blender/build_pine_structural_lod0_experiment.py -- \
+            build/pine-analysis/pine_tree_01_skeleton.json \
+            build/pine-analysis/pine_tree_01_structural_lod0.glb \
+            build/pine-analysis/pine_tree_01_structural_lod0.json \
+            build/pine-analysis/pine_tree_01_structural_lod0.png | tee build/pine-analysis/structural_lod0.log
+          grep -q 'ARCONT_PINE_STRUCTURAL_EXPERIMENT=' build/pine-analysis/structural_lod0.log
+          grep -q 'ARCONT_PINE_STRUCTURAL_PREVIEW=' build/pine-analysis/structural_lod0.log
+          test -s build/pine-analysis/pine_tree_01_structural_lod0.glb
+          test -s build/pine-analysis/pine_tree_01_structural_lod0.json
+          test -s build/pine-analysis/pine_tree_01_structural_lod0.png
       - name: Upload analysis
         uses: actions/upload-artifact@v4
         with:
