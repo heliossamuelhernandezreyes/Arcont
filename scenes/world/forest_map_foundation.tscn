@@ -1,11 +1,12 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/forest_terrain.gd" id="1_terrain"]
 
-[sub_resource type="StandardMaterial3D" id="TerrainMaterial"]
-albedo_color = Color(0.19, 0.235, 0.135, 1)
-roughness = 0.96
-vertex_color_use_as_albedo = false
+[sub_resource type="Shader" id="TerrainShader"]
+code = "shader_type spatial;\nrender_mode cull_back, diffuse_burley, specular_schlick_ggx;\n\nvarying vec4 terrain_mask;\n\nvoid vertex() {\n    terrain_mask = COLOR;\n}\n\nvoid fragment() {\n    float slope = clamp(terrain_mask.r, 0.0, 1.0);\n    float moisture = clamp(terrain_mask.g, 0.0, 1.0);\n    float flow = clamp(terrain_mask.b, 0.0, 1.0);\n    vec3 dry_soil = vec3(0.20, 0.17, 0.105);\n    vec3 forest_floor = vec3(0.105, 0.16, 0.075);\n    vec3 damp_ground = vec3(0.065, 0.125, 0.09);\n    vec3 rock = vec3(0.30, 0.31, 0.285);\n    vec3 channel = vec3(0.075, 0.155, 0.17);\n    vec3 base = mix(dry_soil, forest_floor, smoothstep(0.18, 0.62, moisture));\n    base = mix(base, damp_ground, smoothstep(0.45, 0.80, moisture));\n    base = mix(base, rock, smoothstep(0.48, 0.82, slope));\n    base = mix(base, channel, smoothstep(0.66, 0.94, flow) * (1.0 - smoothstep(0.62, 0.9, slope)));\n    ALBEDO = base;\n    ROUGHNESS = mix(0.98, 0.76, flow * 0.35);\n}\n"
+
+[sub_resource type="ShaderMaterial" id="TerrainMaterial"]
+shader = SubResource("TerrainShader")
 
 [sub_resource type="Environment" id="Environment_forest"]
 background_mode = 1
@@ -32,6 +33,7 @@ resolution = 128
 relief = 34.0
 valley_depth = 8.0
 ridge_gain = 5.0
+generate_collision = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_forest")
@@ -44,6 +46,12 @@ shadow_enabled = true
 directional_shadow_max_distance = 140.0
 
 [node name="OverviewCamera" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 128, 190)
+transform = Transform3D(1, 0, 0, 0, 0.819152, 0.573576, 0, -0.573576, 0.819152, 0, 165, 245)
 current = true
+fov = 58.0
 far = 1200.0
+
+[node name="GroundPreviewCamera" type="Camera3D" parent="."]
+transform = Transform3D(0.866025, -0.0868241, 0.492404, 0, 0.984808, 0.173648, -0.5, -0.150384, 0.852869, -96, 22, 118)
+fov = 68.0
+far = 700.0
