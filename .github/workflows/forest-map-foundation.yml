@@ -1,0 +1,68 @@
+name: Forest map foundation
+
+on:
+  push:
+    branches:
+      - rebuild/forest-map-foundation
+    paths:
+      - 'scenes/world/forest_map_foundation.tscn'
+      - 'scripts/world/forest_terrain.gd'
+      - 'tests/forest_terrain_contract.gd'
+      - 'tests/capture_forest_map.gd'
+      - '.github/workflows/forest-map-foundation.yml'
+  workflow_dispatch:
+
+jobs:
+  terrain-foundation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GODOT_VERSION: 4.7.2-stable
+      GODOT_BIN: /tmp/godot/Godot_v4.7.2-stable_linux.x86_64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Godot and virtual display
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y xvfb libgl1
+          mkdir -p /tmp/godot
+          curl -L --fail --retry 3 -o /tmp/godot/godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v4.7.2-stable_linux.x86_64.zip"
+          unzip -q /tmp/godot/godot.zip -d /tmp/godot
+          chmod +x "$GODOT_BIN"
+          "$GODOT_BIN" --version
+
+      - name: Import project
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --editor --quit | tee import.log
+          ! grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" import.log
+
+      - name: Validate terrain contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/forest_terrain_contract.gd | tee terrain.log
+          grep -q "FOREST_TERRAIN_OK" terrain.log
+          ! grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" terrain.log
+
+      - name: Capture overview and ground views
+        shell: bash
+        run: |
+          set -euo pipefail
+          xvfb-run -a "$GODOT_BIN" --path "$GITHUB_WORKSPACE" --rendering-method mobile --resolution 1280x720 --script res://tests/capture_forest_map.gd | tee capture.log
+          grep -q "FOREST_CAPTURE_OK" capture.log
+          test -s build/forest-evidence/forest_overview.png
+          test -s build/forest-evidence/forest_ground.png
+
+      - name: Upload visual evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: forest-map-foundation-evidence
+          path: build/forest-evidence/*.png
+          if-no-files-found: error
+          retention-days: 14
