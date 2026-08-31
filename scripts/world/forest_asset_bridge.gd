@@ -15,24 +15,64 @@ func rebuild() -> void:
 	var ecology := get_node_or_null(ecology_path) as ForestEcology
 	if ecology == null:
 		return
-	if ecology.rock_positions.is_empty() and ecology.deadwood_positions.is_empty():
+	if ecology.tree_positions.is_empty():
 		ecology.generate()
 	await get_tree().process_frame
+	_hide_provisional(ecology, "Trees_")
+	_build_conifer_forest(ecology)
 	var rock_mesh: Mesh = _load_first_mesh(rock_scene_path)
 	var stump_mesh: Mesh = _load_first_mesh(stump_scene_path)
 	if rock_mesh != null:
 		_hide_provisional(ecology, "Rocks_")
-		_build_layer("RockCC0", ecology.rock_positions, rock_mesh, 130.0, Vector3.ONE * 0.72, 9101)
+		_build_asset_layer("RockCC0", ecology.rock_positions, rock_mesh, 130.0, Vector3.ONE * 0.72, 9101)
 	if stump_mesh != null:
 		_hide_provisional(ecology, "Deadwood_")
-		_build_layer("StumpCC0", ecology.deadwood_positions, stump_mesh, 92.0, Vector3.ONE * 0.82, 12011)
+		_build_asset_layer("StumpCC0", ecology.deadwood_positions, stump_mesh, 92.0, Vector3.ONE * 0.82, 12011)
+
+func _build_conifer_forest(ecology: ForestEcology) -> void:
+	var trunk := CylinderMesh.new()
+	trunk.top_radius = 0.22; trunk.bottom_radius = 0.42; trunk.height = 8.8; trunk.radial_segments = 7; trunk.rings = 1
+	trunk.material = _material(Color(0.155, 0.085, 0.038, 1.0), 0.96)
+	var lower := CylinderMesh.new()
+	lower.top_radius = 0.18; lower.bottom_radius = 3.25; lower.height = 5.0; lower.radial_segments = 9; lower.rings = 1
+	lower.material = _material(Color(0.055, 0.18, 0.055, 1.0), 0.98)
+	var middle := CylinderMesh.new()
+	middle.top_radius = 0.12; middle.bottom_radius = 2.65; middle.height = 4.4; middle.radial_segments = 9; middle.rings = 1
+	middle.material = _material(Color(0.06, 0.205, 0.062, 1.0), 0.98)
+	var upper := CylinderMesh.new()
+	upper.top_radius = 0.05; upper.bottom_radius = 1.95; upper.height = 3.8; upper.radial_segments = 8; upper.rings = 1
+	upper.material = _material(Color(0.07, 0.23, 0.07, 1.0), 0.98)
+	var far := CylinderMesh.new()
+	far.top_radius = 0.05; far.bottom_radius = 3.05; far.height = 9.6; far.radial_segments = 6; far.rings = 1
+	far.material = _material(Color(0.045, 0.145, 0.045, 1.0), 1.0)
+	var groups := _group_indices(ecology.tree_positions)
+	for key: Vector2i in groups.keys():
+		var indices: Array = groups[key]
+		var root := Node3D.new()
+		root.name = "Conifers_%d_%d" % [key.x, key.y]
+		add_child(root)
+		var trunks := _make_mm("Trunks", trunk, indices.size(), 0.0, 145.0)
+		var low := _make_mm("LowerCrown", lower, indices.size(), 0.0, 128.0)
+		var mid := _make_mm("MiddleCrown", middle, indices.size(), 0.0, 128.0)
+		var top := _make_mm("UpperCrown", upper, indices.size(), 0.0, 128.0)
+		var distant := _make_mm("FarCrown", far, indices.size(), 112.0, 310.0)
+		root.add_child(trunks); root.add_child(low); root.add_child(mid); root.add_child(top); root.add_child(distant)
+		for local_i in range(indices.size()):
+			var source_i: int = int(indices[local_i])
+			var p: Vector3 = ecology.tree_positions[source_i]
+			var s: float = ecology.tree_scales[source_i]
+			var yaw: float = ecology.tree_yaws[source_i]
+			var b := Basis(Vector3.UP, yaw).scaled(Vector3.ONE * s)
+			trunks.multimesh.set_instance_transform(local_i, Transform3D(b, p + Vector3.UP * 4.4 * s))
+			low.multimesh.set_instance_transform(local_i, Transform3D(b, p + Vector3.UP * 7.2 * s))
+			mid.multimesh.set_instance_transform(local_i, Transform3D(b, p + Vector3.UP * 9.4 * s))
+			top.multimesh.set_instance_transform(local_i, Transform3D(b, p + Vector3.UP * 11.3 * s))
+			distant.multimesh.set_instance_transform(local_i, Transform3D(b, p + Vector3.UP * 8.1 * s))
 
 func _load_first_mesh(path: String) -> Mesh:
-	if not ResourceLoader.exists(path):
-		return null
+	if not ResourceLoader.exists(path): return null
 	var packed := load(path) as PackedScene
-	if packed == null:
-		return null
+	if packed == null: return null
 	var instance := packed.instantiate()
 	var mesh := _find_mesh(instance)
 	instance.free()
@@ -41,12 +81,10 @@ func _load_first_mesh(path: String) -> Mesh:
 func _find_mesh(node: Node) -> Mesh:
 	if node is MeshInstance3D:
 		var mi := node as MeshInstance3D
-		if mi.mesh != null:
-			return mi.mesh
+		if mi.mesh != null: return mi.mesh
 	for child: Node in node.get_children():
 		var found := _find_mesh(child)
-		if found != null:
-			return found
+		if found != null: return found
 	return null
 
 func _hide_provisional(ecology: ForestEcology, prefix: String) -> void:
@@ -54,36 +92,41 @@ func _hide_provisional(ecology: ForestEcology, prefix: String) -> void:
 		if child.name.begins_with(prefix) and child is Node3D:
 			(child as Node3D).visible = false
 
-func _build_layer(prefix: String, positions: Array[Vector3], mesh: Mesh, visibility_end: float, base_scale: Vector3, salt: int) -> void:
-	var groups: Dictionary = {}
-	for p: Vector3 in positions:
-		var key := Vector2i(int(floor(p.x / chunk_size)), int(floor(p.z / chunk_size)))
-		if not groups.has(key):
-			groups[key] = []
-		var bucket: Array = groups[key]
-		bucket.append(p)
-		groups[key] = bucket
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 842113 + salt
+func _build_asset_layer(prefix: String, positions: Array[Vector3], mesh: Mesh, visibility_end: float, base_scale: Vector3, salt: int) -> void:
+	var groups := _group_indices(positions)
+	var rng := RandomNumberGenerator.new(); rng.seed = 842113 + salt
 	for key: Vector2i in groups.keys():
-		var bucket: Array = groups[key]
-		var node := MultiMeshInstance3D.new()
+		var indices: Array = groups[key]
+		var node := _make_mm(prefix, mesh, indices.size(), 0.0, visibility_end)
 		node.name = "%s_%d_%d" % [prefix, key.x, key.y]
-		node.visibility_range_end = visibility_end
-		node.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
-		var mm := MultiMesh.new()
-		mm.transform_format = MultiMesh.TRANSFORM_3D
-		mm.mesh = mesh
-		mm.instance_count = bucket.size()
-		node.multimesh = mm
 		add_child(node)
-		for i in range(bucket.size()):
-			var p: Vector3 = bucket[i]
+		for i in range(indices.size()):
+			var p: Vector3 = positions[int(indices[i])]
 			var yaw: float = rng.randf_range(-PI, PI)
 			var s: float = rng.randf_range(0.72, 1.18)
 			var basis := Basis(Vector3.UP, yaw).scaled(base_scale * s)
-			mm.set_instance_transform(i, Transform3D(basis, p))
+			node.multimesh.set_instance_transform(i, Transform3D(basis, p))
+
+func _group_indices(positions: Array[Vector3]) -> Dictionary:
+	var groups: Dictionary = {}
+	for i in range(positions.size()):
+		var p: Vector3 = positions[i]
+		var key := Vector2i(int(floor(p.x / chunk_size)), int(floor(p.z / chunk_size)))
+		if not groups.has(key): groups[key] = []
+		var bucket: Array = groups[key]; bucket.append(i); groups[key] = bucket
+	return groups
+
+func _make_mm(node_name: String, mesh: Mesh, count: int, begin: float, end: float) -> MultiMeshInstance3D:
+	var node := MultiMeshInstance3D.new(); node.name = node_name
+	node.visibility_range_begin = begin; node.visibility_range_end = end
+	node.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
+	var mm := MultiMesh.new(); mm.transform_format = MultiMesh.TRANSFORM_3D; mm.mesh = mesh; mm.instance_count = count
+	node.multimesh = mm
+	return node
+
+func _material(color: Color, roughness: float) -> StandardMaterial3D:
+	var material := StandardMaterial3D.new(); material.albedo_color = color; material.roughness = roughness
+	return material
 
 func _clear_generated() -> void:
-	for child: Node in get_children():
-		child.queue_free()
+	for child: Node in get_children(): child.queue_free()
