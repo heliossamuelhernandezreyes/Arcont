@@ -145,7 +145,11 @@ def setup_camera_and_light(variants):
     light = bpy.data.objects.new('Sun', light_data)
     bpy.context.collection.objects.link(light)
     light.rotation_euler = (math.radians(35), math.radians(-20), math.radians(30))
-    world = bpy.context.scene.world
+    scene = bpy.context.scene
+    world = scene.world
+    if world is None:
+        world = bpy.data.worlds.new('World')
+        scene.world = world
     world.color = (0.08,0.08,0.08)
 
 
