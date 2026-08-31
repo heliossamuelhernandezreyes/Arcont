@@ -10,6 +10,7 @@ extends MeshInstance3D
 @export_range(0.0, 24.0, 0.25) var valley_depth: float = 8.0
 @export_range(0.0, 16.0, 0.25) var ridge_gain: float = 5.0
 @export_range(0.0, 1.0, 0.01) var edge_falloff: float = 0.18
+@export var generate_collision: bool = true
 @export var regenerate: bool = false:
 	set(value):
 		regenerate = false
@@ -31,6 +32,8 @@ func generate() -> void:
 	_generate_height_field()
 	_compute_derived_fields()
 	_build_mesh()
+	if generate_collision:
+		_build_collision()
 
 func _setup_noise() -> void:
 	_noise_macro.seed = seed
@@ -65,14 +68,14 @@ func _generate_height_field() -> void:
 			var wz := (v - 0.5) * world_size
 			var macro := _noise_macro.get_noise_2d(wx, wz)
 			var detail := _noise_detail.get_noise_2d(wx, wz)
-			# Broad diagonal drainage basin: low ground bends with noise rather than forming a straight trench.
+			# Establish one broad catchment before local detail. It bends with macro terrain,
+			# so later flow accumulation converges naturally rather than following a straight trench.
 			var river_axis := (v - 0.52) - 0.16 * sin(u * TAU * 1.35 + macro * 1.6)
 			var valley := exp(-pow(abs(river_axis) / 0.075, 2.0))
 			var ridge := pow(abs(detail), 1.7)
 			var border := min(min(u, 1.0 - u), min(v, 1.0 - v))
 			var edge := smoothstep(0.0, edge_falloff, border)
 			var h := macro * relief + ridge * ridge_gain - valley * valley_depth
-			# Keep map borders somewhat elevated to create a contained forest basin and useful occlusion.
 			h += (1.0 - edge) * relief * 0.22
 			heights[_idx(x, z)] = h
 
@@ -90,15 +93,67 @@ func _compute_derived_fields() -> void:
 			var zu := mini(resolution, z + 1)
 			var dx := (heights[_idx(xr, z)] - heights[_idx(xl, z)]) / (maxf(1.0, float(xr - xl)) * spacing)
 			var dz := (heights[_idx(x, zu)] - heights[_idx(x, zd)]) / (maxf(1.0, float(zu - zd)) * spacing)
-			var slope := clampf(Vector2(dx, dz).length(), 0.0, 1.0)
-			slopes[_idx(x, z)] = slope
-			var u := float(x) / float(resolution)
-			var v := float(z) / float(resolution)
-			var macro := _noise_macro.get_noise_2d((u - 0.5) * world_size, (v - 0.5) * world_size)
-			var river_axis := (v - 0.52) - 0.16 * sin(u * TAU * 1.35 + macro * 1.6)
-			var channel := exp(-pow(abs(river_axis) / 0.085, 2.0))
-			flow[_idx(x, z)] = channel
-			moisture[_idx(x, z)] = clampf(channel * 0.75 + (1.0 - slope) * 0.18 + (macro * 0.5 + 0.5) * 0.16, 0.0, 1.0)
+			# Store normalized slope angle rather than raw gradient magnitude.
+			slopes[_idx(x, z)] = clampf(atan(Vector2(dx, dz).length()) / deg_to_rad(55.0), 0.0, 1.0)
+
+	_compute_flow_accumulation()
+
+	var min_h := INF
+	var max_h := -INF
+	for h in heights:
+		min_h = minf(min_h, h)
+		max_h = maxf(max_h, h)
+	var height_span := maxf(0.001, max_h - min_h)
+	for i in range(heights.size()):
+		var lowland := 1.0 - clampf((heights[i] - min_h) / height_span, 0.0, 1.0)
+		moisture[i] = clampf(flow[i] * 0.72 + lowland * 0.18 + (1.0 - slopes[i]) * 0.10, 0.0, 1.0)
+
+func _compute_flow_accumulation() -> void:
+	var side := resolution + 1
+	var count := side * side
+	var downstream := PackedInt32Array()
+	downstream.resize(count)
+	var accumulation := PackedFloat32Array()
+	accumulation.resize(count)
+	var order: Array[int] = []
+	order.resize(count)
+
+	for i in range(count):
+		downstream[i] = -1
+		accumulation[i] = 1.0
+		order[i] = i
+
+	for z in range(side):
+		for x in range(side):
+			var here := _idx(x, z)
+			var best := here
+			var best_h := heights[here]
+			for oz in range(-1, 2):
+				for ox in range(-1, 2):
+					if ox == 0 and oz == 0:
+						continue
+					var nx := x + ox
+					var nz := z + oz
+					if nx < 0 or nx >= side or nz < 0 or nz >= side:
+						continue
+					var ni := _idx(nx, nz)
+					if heights[ni] < best_h:
+						best_h = heights[ni]
+						best = ni
+			if best != here:
+				downstream[here] = best
+
+	order.sort_custom(func(a: int, b: int) -> bool: return heights[a] > heights[b])
+	for i in order:
+		var target := downstream[i]
+		if target >= 0:
+			accumulation[target] += accumulation[i]
+
+	var max_log := 0.0
+	for value in accumulation:
+		max_log = maxf(max_log, log(1.0 + value))
+	for i in range(count):
+		flow[i] = clampf(log(1.0 + accumulation[i]) / maxf(max_log, 0.001), 0.0, 1.0)
 
 func _build_mesh() -> void:
 	var side := resolution + 1
@@ -111,7 +166,7 @@ func _build_mesh() -> void:
 			var wx := -world_size * 0.5 + x * spacing
 			var wz := -world_size * 0.5 + z * spacing
 			st.set_uv(Vector2(float(x) / resolution, float(z) / resolution) * 16.0)
-			# Vertex color carries derived terrain data for later material/scatter passes: R slope, G moisture, B flow.
+			# R=slope, G=moisture, B=flow. These become scatter/material masks later.
 			st.set_color(Color(slopes[i], moisture[i], flow[i], 1.0))
 			st.add_vertex(Vector3(wx, heights[i], wz))
 	for z in range(resolution):
@@ -125,6 +180,22 @@ func _build_mesh() -> void:
 	st.generate_normals()
 	st.generate_tangents()
 	mesh = st.commit()
+
+func _build_collision() -> void:
+	var old := get_node_or_null("TerrainBody")
+	if old != null:
+		old.queue_free()
+	if mesh == null:
+		return
+	var body := StaticBody3D.new()
+	body.name = "TerrainBody"
+	var collision := CollisionShape3D.new()
+	collision.name = "TerrainCollision"
+	var shape := ConcavePolygonShape3D.new()
+	shape.set_faces(mesh.get_faces())
+	collision.shape = shape
+	body.add_child(collision)
+	add_child(body)
 
 func sample_height(world_x: float, world_z: float) -> float:
 	if heights.is_empty():
