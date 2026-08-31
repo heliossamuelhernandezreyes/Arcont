@@ -77,6 +77,16 @@ func _setup_noise() -> void:
 func _idx(x: int, z: int) -> int:
 	return z * (resolution + 1) + x
 
+func channel_z_at_world_x(world_x: float) -> float:
+	var u: float = clampf(world_x / world_size + 0.5, 0.0, 1.0)
+	var bend: float = sin(u * TAU * 1.18 + 0.52 * sin(u * TAU * 0.43 + 0.7))
+	var secondary: float = 0.32 * sin(u * TAU * 2.35 - 0.4)
+	return world_size * (0.025 + 0.145 * bend + 0.028 * secondary)
+
+func channel_floor_height(world_x: float) -> float:
+	var u: float = clampf(world_x / world_size + 0.5, 0.0, 1.0)
+	return lerpf(7.0, -9.0, u) - valley_depth
+
 func _generate_height_field() -> void:
 	var side: int = resolution + 1
 	heights.resize(side * side)
@@ -88,14 +98,16 @@ func _generate_height_field() -> void:
 			var wz: float = (v - 0.5) * world_size
 			var macro: float = _noise_macro.get_noise_2d(wx, wz)
 			var detail: float = _noise_detail.get_noise_2d(wx, wz)
-			var river_axis: float = (v - 0.52) - 0.16 * sin(u * TAU * 1.35 + macro * 1.6)
-			var valley: float = exp(-pow(absf(river_axis) / 0.075, 2.0))
 			var ridge: float = pow(absf(detail), 1.7)
+			var base_land: float = macro * relief + ridge * ridge_gain
+			var channel_z: float = channel_z_at_world_x(wx)
+			var channel_distance: float = absf(wz - channel_z)
+			var valley: float = exp(-pow(channel_distance / 38.0, 2.0))
+			var floor_blend: float = exp(-pow(channel_distance / 15.0, 2.0))
+			var h: float = lerpf(base_land, channel_floor_height(wx), floor_blend * 0.96)
+			h -= valley * valley_depth * 0.22
 			var border: float = minf(minf(u, 1.0 - u), minf(v, 1.0 - v))
 			var edge: float = smoothstep(0.0, edge_falloff, border)
-			var broad_relief: float = macro * relief * lerpf(1.0, 0.42, valley)
-			var channel_grade: float = lerpf(5.5, -5.5, u) * valley
-			var h: float = broad_relief + ridge * ridge_gain - valley * valley_depth + channel_grade
 			h += (1.0 - edge) * relief * 0.22
 			heights[_idx(x, z)] = h
 
