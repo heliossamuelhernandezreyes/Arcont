@@ -9,6 +9,8 @@ on:
       - 'scripts/world/forest_terrain.gd'
       - 'scripts/world/forest_hydrology.gd'
       - 'scripts/world/forest_ecology.gd'
+      - 'scripts/world/forest_asset_bridge.gd'
+      - 'assets/cc0/polyhaven/forest/**'
       - 'tests/forest_terrain_contract.gd'
       - 'tests/forest_hydrology_contract.gd'
       - 'tests/forest_ecology_contract.gd'
