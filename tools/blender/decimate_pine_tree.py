@@ -2,8 +2,9 @@ import bpy, os, sys
 
 TARGETS = {
     "LOD0": 30000,
-    "LOD1": 10000,
-    "LOD2": 3000,
+    "LOD1": 15000,
+    "LOD2": 6000,
+    "LOD3": 2000,
 }
 
 
