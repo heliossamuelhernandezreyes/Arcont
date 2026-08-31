@@ -11,6 +11,10 @@ extends Node3D
 @export_range(0.0, 1.0, 0.01) var clearing_exclusion: float = 0.18
 @export_range(0.0, 1.0, 0.01) var water_exclusion: float = 0.66
 @export_range(0.0, 1.0, 0.01) var steep_slope_limit: float = 0.78
+@export_range(0.0, 1.0, 0.01) var understory_density: float = 0.58
+@export_range(0.0, 1.0, 0.01) var rock_density: float = 0.32
+@export_range(0.0, 1.0, 0.01) var deadwood_density: float = 0.13
+@export_range(0.0, 1.0, 0.01) var riparian_density: float = 0.50
 @export var regenerate: bool = false:
 	set(value):
 		regenerate = false
@@ -20,6 +24,10 @@ extends Node3D
 var tree_positions: Array[Vector3] = []
 var tree_scales := PackedFloat32Array()
 var tree_yaws := PackedFloat32Array()
+var rock_positions: Array[Vector3] = []
+var understory_positions: Array[Vector3] = []
+var deadwood_positions: Array[Vector3] = []
+var riparian_positions: Array[Vector3] = []
 var chunk_tree_counts: Dictionary = {}
 var rejected_route: int = 0
 var rejected_clearing: int = 0
@@ -28,6 +36,7 @@ var rejected_slope: int = 0
 
 var _cluster_noise := FastNoiseLite.new()
 var _species_noise := FastNoiseLite.new()
+var _micro_noise := FastNoiseLite.new()
 var _rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
@@ -41,8 +50,16 @@ func generate() -> void:
 	if terrain.heights.is_empty():
 		terrain.generate()
 	_setup_noise()
-	_scatter_candidates(terrain)
-	_build_chunked_multimeshes(terrain)
+	_scatter_trees(terrain)
+	_scatter_understory(terrain)
+	_scatter_rocks(terrain)
+	_scatter_deadwood(terrain)
+	_scatter_riparian(terrain)
+	_build_chunked_forest()
+	_build_chunked_understory()
+	_build_chunked_rocks()
+	_build_chunked_deadwood()
+	_build_chunked_riparian()
 
 func _setup_noise() -> void:
 	_cluster_noise.seed = seed
@@ -54,9 +71,12 @@ func _setup_noise() -> void:
 	_species_noise.seed = seed + 1907
 	_species_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
 	_species_noise.frequency = 0.018
+	_micro_noise.seed = seed + 5119
+	_micro_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
+	_micro_noise.frequency = 0.035
 	_rng.seed = seed
 
-func _scatter_candidates(terrain: ForestTerrain) -> void:
+func _scatter_trees(terrain: ForestTerrain) -> void:
 	tree_positions.clear()
 	tree_scales.clear()
 	tree_yaws.clear()
@@ -92,7 +112,6 @@ func _scatter_candidates(terrain: ForestTerrain) -> void:
 			if masks.r > steep_slope_limit:
 				rejected_slope += 1
 				continue
-			# Moist lowlands can support denser trees, but preserve a narrow riparian gap immediately at the stream.
 			var moisture_bonus: float = lerpf(0.86, 1.12, masks.g)
 			if _rng.randf() > clampf(moisture_bonus, 0.0, 1.0):
 				continue
@@ -109,82 +128,224 @@ func _scatter_candidates(terrain: ForestTerrain) -> void:
 			var chunk: Vector2i = _chunk_for(wx, wz)
 			chunk_tree_counts[chunk] = int(chunk_tree_counts.get(chunk, 0)) + 1
 
-func _build_chunked_multimeshes(terrain: ForestTerrain) -> void:
-	var transforms_by_chunk: Dictionary = {}
-	for i in range(tree_positions.size()):
-		var p: Vector3 = tree_positions[i]
-		var chunk: Vector2i = _chunk_for(p.x, p.z)
-		if not transforms_by_chunk.has(chunk):
-			transforms_by_chunk[chunk] = []
-		var transforms: Array = transforms_by_chunk[chunk]
-		transforms.append(_tree_transform(p, tree_scales[i], tree_yaws[i]))
-		transforms_by_chunk[chunk] = transforms
+func _scatter_understory(terrain: ForestTerrain) -> void:
+	understory_positions.clear()
+	_rng.seed = seed + 10001
+	var sample_spacing: float = 6.0
+	var half: float = terrain.world_size * 0.5
+	var cells: int = int(floor(terrain.world_size / sample_spacing))
+	for gz in range(cells):
+		for gx in range(cells):
+			if _rng.randf() > understory_density:
+				continue
+			var wx: float = -half + (float(gx) + _rng.randf_range(0.18, 0.82)) * sample_spacing
+			var wz: float = -half + (float(gz) + _rng.randf_range(0.18, 0.82)) * sample_spacing
+			var masks: Color = _sample_masks(terrain, wx, wz)
+			var clearing: float = _sample_field(terrain, terrain.clearing_mask, wx, wz)
+			var patch: float = _micro_noise.get_noise_2d(wx, wz) * 0.5 + 0.5
+			if masks.a > 0.10 or clearing > 0.24 or masks.b > 0.74 or masks.r > 0.70 or patch < 0.30:
+				continue
+			understory_positions.append(Vector3(wx, terrain.sample_height(wx, wz), wz))
 
+func _scatter_rocks(terrain: ForestTerrain) -> void:
+	rock_positions.clear()
+	_rng.seed = seed + 20003
+	var sample_spacing: float = 11.0
+	var half: float = terrain.world_size * 0.5
+	var cells: int = int(floor(terrain.world_size / sample_spacing))
+	for gz in range(cells):
+		for gx in range(cells):
+			if _rng.randf() > rock_density:
+				continue
+			var wx: float = -half + (float(gx) + _rng.randf()) * sample_spacing
+			var wz: float = -half + (float(gz) + _rng.randf()) * sample_spacing
+			var masks: Color = _sample_masks(terrain, wx, wz)
+			var clearing: float = _sample_field(terrain, terrain.clearing_mask, wx, wz)
+			var geology: float = _cluster_noise.get_noise_2d(wx + 490.0, wz - 320.0) * 0.5 + 0.5
+			if masks.a > 0.12 or clearing > 0.34 or masks.b > 0.80:
+				continue
+			if masks.r < 0.26 and geology < 0.66:
+				continue
+			rock_positions.append(Vector3(wx, terrain.sample_height(wx, wz), wz))
+
+func _scatter_deadwood(terrain: ForestTerrain) -> void:
+	deadwood_positions.clear()
+	_rng.seed = seed + 30011
+	var sample_spacing: float = 17.0
+	var half: float = terrain.world_size * 0.5
+	var cells: int = int(floor(terrain.world_size / sample_spacing))
+	for gz in range(cells):
+		for gx in range(cells):
+			if _rng.randf() > deadwood_density:
+				continue
+			var wx: float = -half + (float(gx) + _rng.randf()) * sample_spacing
+			var wz: float = -half + (float(gz) + _rng.randf()) * sample_spacing
+			var masks: Color = _sample_masks(terrain, wx, wz)
+			if masks.a > 0.11 or masks.b > 0.76 or masks.r > 0.64:
+				continue
+			deadwood_positions.append(Vector3(wx, terrain.sample_height(wx, wz), wz))
+
+func _scatter_riparian(terrain: ForestTerrain) -> void:
+	riparian_positions.clear()
+	_rng.seed = seed + 40009
+	var sample_spacing: float = 5.5
+	var half: float = terrain.world_size * 0.5
+	var cells: int = int(floor(terrain.world_size / sample_spacing))
+	for gz in range(cells):
+		for gx in range(cells):
+			if _rng.randf() > riparian_density:
+				continue
+			var wx: float = -half + (float(gx) + _rng.randf()) * sample_spacing
+			var wz: float = -half + (float(gz) + _rng.randf()) * sample_spacing
+			var masks: Color = _sample_masks(terrain, wx, wz)
+			if masks.a > 0.12 or masks.r > 0.48:
+				continue
+			if masks.g < 0.56 or masks.b < 0.16 or masks.b > 0.72:
+				continue
+			riparian_positions.append(Vector3(wx, terrain.sample_height(wx, wz), wz))
+
+func _build_chunked_forest() -> void:
+	var by_chunk := _group_positions(tree_positions)
 	var trunk_mesh := CylinderMesh.new()
 	trunk_mesh.top_radius = 0.34
 	trunk_mesh.bottom_radius = 0.48
 	trunk_mesh.height = 7.2
 	trunk_mesh.radial_segments = 7
 	trunk_mesh.rings = 1
-	var trunk_material := StandardMaterial3D.new()
-	trunk_material.albedo_color = Color(0.19, 0.105, 0.055, 1.0)
-	trunk_material.roughness = 0.96
-	trunk_mesh.material = trunk_material
-
+	trunk_mesh.material = _material(Color(0.19, 0.105, 0.055, 1.0), 0.96)
 	var canopy_mesh := SphereMesh.new()
 	canopy_mesh.radius = 3.0
 	canopy_mesh.height = 6.0
 	canopy_mesh.radial_segments = 8
 	canopy_mesh.rings = 5
-	var canopy_material := StandardMaterial3D.new()
-	canopy_material.albedo_color = Color(0.075, 0.22, 0.065, 1.0)
-	canopy_material.roughness = 0.94
-	canopy_mesh.material = canopy_material
+	canopy_mesh.material = _material(Color(0.075, 0.22, 0.065, 1.0), 0.94)
+	var far_canopy := SphereMesh.new()
+	far_canopy.radius = 2.8
+	far_canopy.height = 5.6
+	far_canopy.radial_segments = 5
+	far_canopy.rings = 3
+	far_canopy.material = _material(Color(0.065, 0.17, 0.055, 1.0), 1.0)
+	for key: Vector2i in by_chunk.keys():
+		var indices: Array = by_chunk[key]
+		var root := _chunk_root("Trees", key)
+		var trunks := _make_multimesh("Trunks", trunk_mesh, indices.size(), 0.0, 155.0)
+		var crowns := _make_multimesh("Canopies", canopy_mesh, indices.size(), 0.0, 140.0)
+		var far := _make_multimesh("FarCanopies", far_canopy, indices.size(), 118.0, 310.0)
+		root.add_child(trunks)
+		root.add_child(crowns)
+		root.add_child(far)
+		for local_i in range(indices.size()):
+			var source_i: int = int(indices[local_i])
+			var p: Vector3 = tree_positions[source_i]
+			var scale_value: float = tree_scales[source_i]
+			var yaw: float = tree_yaws[source_i]
+			var basis := Basis(Vector3.UP, yaw).scaled(Vector3.ONE * scale_value)
+			trunks.multimesh.set_instance_transform(local_i, Transform3D(basis, p + Vector3.UP * 3.6 * scale_value))
+			var crown_scale := Vector3(scale_value * 0.94, scale_value * (0.94 + 0.08 * sin(float(source_i))), scale_value * 0.94)
+			crowns.multimesh.set_instance_transform(local_i, Transform3D(Basis(Vector3.UP, yaw).scaled(crown_scale), p + Vector3.UP * 8.2 * scale_value))
+			far.multimesh.set_instance_transform(local_i, Transform3D(Basis(Vector3.UP, yaw).scaled(Vector3.ONE * scale_value), p + Vector3.UP * 8.0 * scale_value))
 
-	for key: Vector2i in transforms_by_chunk.keys():
-		var transforms: Array = transforms_by_chunk[key]
-		var chunk_root := Node3D.new()
-		chunk_root.name = "Chunk_%d_%d" % [key.x, key.y]
-		chunk_root.set_meta("tree_count", transforms.size())
-		add_child(chunk_root)
+func _build_chunked_understory() -> void:
+	var mesh := SphereMesh.new()
+	mesh.radius = 0.78
+	mesh.height = 1.25
+	mesh.radial_segments = 5
+	mesh.rings = 3
+	mesh.material = _material(Color(0.11, 0.27, 0.075, 1.0), 1.0)
+	_build_simple_layer("Understory", understory_positions, mesh, 86.0, Vector3(1.0, 0.72, 1.0))
 
-		var trunks := MultiMeshInstance3D.new()
-		trunks.name = "Trunks"
-		trunks.visibility_range_end = 170.0
-		trunks.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
-		var trunk_mm := MultiMesh.new()
-		trunk_mm.transform_format = MultiMesh.TRANSFORM_3D
-		trunk_mm.mesh = trunk_mesh
-		trunk_mm.instance_count = transforms.size()
-		trunks.multimesh = trunk_mm
-		chunk_root.add_child(trunks)
+func _build_chunked_rocks() -> void:
+	var mesh := SphereMesh.new()
+	mesh.radius = 0.95
+	mesh.height = 1.45
+	mesh.radial_segments = 6
+	mesh.rings = 4
+	mesh.material = _material(Color(0.31, 0.32, 0.285, 1.0), 1.0)
+	_build_simple_layer("Rocks", rock_positions, mesh, 125.0, Vector3(1.35, 0.58, 1.0))
 
-		var canopies := MultiMeshInstance3D.new()
-		canopies.name = "Canopies"
-		canopies.visibility_range_end = 150.0
-		canopies.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
-		var canopy_mm := MultiMesh.new()
-		canopy_mm.transform_format = MultiMesh.TRANSFORM_3D
-		canopy_mm.mesh = canopy_mesh
-		canopy_mm.instance_count = transforms.size()
-		canopies.multimesh = canopy_mm
-		chunk_root.add_child(canopies)
+func _build_chunked_deadwood() -> void:
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = 0.18
+	mesh.bottom_radius = 0.28
+	mesh.height = 4.2
+	mesh.radial_segments = 6
+	mesh.rings = 1
+	mesh.material = _material(Color(0.17, 0.105, 0.055, 1.0), 1.0)
+	var by_chunk := _group_positions(deadwood_positions)
+	_rng.seed = seed + 70001
+	for key: Vector2i in by_chunk.keys():
+		var indices: Array = by_chunk[key]
+		var root := _chunk_root("Deadwood", key)
+		var inst := _make_multimesh("Logs", mesh, indices.size(), 0.0, 95.0)
+		root.add_child(inst)
+		for local_i in range(indices.size()):
+			var p: Vector3 = deadwood_positions[int(indices[local_i])]
+			var yaw: float = _rng.randf_range(-PI, PI)
+			var basis := Basis(Vector3.UP, yaw) * Basis(Vector3.RIGHT, PI * 0.5)
+			basis = basis.scaled(Vector3(_rng.randf_range(0.8, 1.3), _rng.randf_range(0.8, 1.2), _rng.randf_range(0.8, 1.2)))
+			inst.multimesh.set_instance_transform(local_i, Transform3D(basis, p + Vector3.UP * 0.24))
 
-		for i in range(transforms.size()):
-			var base_transform: Transform3D = transforms[i]
-			var scale_value: float = base_transform.basis.get_scale().x
-			var yaw: float = base_transform.basis.get_euler().y
-			var base: Vector3 = base_transform.origin
-			var trunk_basis := Basis(Vector3.UP, yaw).scaled(Vector3(scale_value, scale_value, scale_value))
-			var trunk_transform := Transform3D(trunk_basis, base + Vector3.UP * 3.6 * scale_value)
-			trunk_mm.set_instance_transform(i, trunk_transform)
-			var canopy_scale := Vector3(scale_value * 0.94, scale_value * _rng.randf_range(0.88, 1.12), scale_value * 0.94)
-			var canopy_basis := Basis(Vector3.UP, yaw).scaled(canopy_scale)
-			var canopy_transform := Transform3D(canopy_basis, base + Vector3.UP * 8.2 * scale_value)
-			canopy_mm.set_instance_transform(i, canopy_transform)
+func _build_chunked_riparian() -> void:
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = 0.035
+	mesh.bottom_radius = 0.065
+	mesh.height = 1.55
+	mesh.radial_segments = 4
+	mesh.rings = 1
+	mesh.material = _material(Color(0.16, 0.34, 0.10, 1.0), 1.0)
+	_build_simple_layer("Riparian", riparian_positions, mesh, 75.0, Vector3(1.0, 1.0, 1.0), 0.78)
 
-func _tree_transform(position: Vector3, scale_value: float, yaw: float) -> Transform3D:
-	return Transform3D(Basis(Vector3.UP, yaw).scaled(Vector3.ONE * scale_value), position)
+func _build_simple_layer(prefix: String, positions: Array[Vector3], mesh: Mesh, visibility_end: float, scale_bias: Vector3, y_offset: float = 0.0) -> void:
+	var by_chunk := _group_positions(positions)
+	_rng.seed = seed + prefix.hash()
+	for key: Vector2i in by_chunk.keys():
+		var indices: Array = by_chunk[key]
+		var root := _chunk_root(prefix, key)
+		var inst := _make_multimesh(prefix, mesh, indices.size(), 0.0, visibility_end)
+		root.add_child(inst)
+		for local_i in range(indices.size()):
+			var p: Vector3 = positions[int(indices[local_i])]
+			var yaw: float = _rng.randf_range(-PI, PI)
+			var s: float = _rng.randf_range(0.72, 1.32)
+			var basis := Basis(Vector3.UP, yaw).scaled(scale_bias * s)
+			inst.multimesh.set_instance_transform(local_i, Transform3D(basis, p + Vector3.UP * y_offset * s))
+
+func _make_multimesh(node_name: String, mesh: Mesh, count: int, visibility_begin: float, visibility_end: float) -> MultiMeshInstance3D:
+	var node := MultiMeshInstance3D.new()
+	node.name = node_name
+	node.visibility_range_begin = visibility_begin
+	node.visibility_range_end = visibility_end
+	node.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.mesh = mesh
+	mm.instance_count = count
+	node.multimesh = mm
+	return node
+
+func _material(color: Color, roughness: float) -> StandardMaterial3D:
+	var material := StandardMaterial3D.new()
+	material.albedo_color = color
+	material.roughness = roughness
+	return material
+
+func _group_positions(positions: Array[Vector3]) -> Dictionary:
+	var result: Dictionary = {}
+	for i in range(positions.size()):
+		var p: Vector3 = positions[i]
+		var key: Vector2i = _chunk_for(p.x, p.z)
+		if not result.has(key):
+			result[key] = []
+		var indices: Array = result[key]
+		indices.append(i)
+		result[key] = indices
+	return result
+
+func _chunk_root(prefix: String, key: Vector2i) -> Node3D:
+	var root := Node3D.new()
+	root.name = "%s_%d_%d" % [prefix, key.x, key.y]
+	add_child(root)
+	return root
 
 func _chunk_for(wx: float, wz: float) -> Vector2i:
 	return Vector2i(int(floor(wx / chunk_size)), int(floor(wz / chunk_size)))
