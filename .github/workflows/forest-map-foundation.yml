@@ -7,7 +7,9 @@ on:
     paths:
       - 'scenes/world/forest_map_foundation.tscn'
       - 'scripts/world/forest_terrain.gd'
+      - 'scripts/world/forest_hydrology.gd'
       - 'tests/forest_terrain_contract.gd'
+      - 'tests/forest_hydrology_contract.gd'
       - 'tests/capture_forest_map.gd'
       - '.github/workflows/forest-map-foundation.yml'
   workflow_dispatch:
@@ -50,7 +52,15 @@ jobs:
           grep -q "FOREST_TERRAIN_OK" terrain.log
           ! grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" terrain.log
 
-      - name: Capture overview and ground views
+      - name: Validate hydrology contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          timeout 120s "$GODOT_BIN" --headless --path "$GITHUB_WORKSPACE" --script res://tests/forest_hydrology_contract.gd | tee hydrology.log
+          grep -q "FOREST_HYDROLOGY_OK" hydrology.log
+          ! grep -Eq "SCRIPT ERROR:|(^|[[:space:]])ERROR:" hydrology.log
+
+      - name: Capture overview ground and topdown views
         shell: bash
         env:
           LIBGL_ALWAYS_SOFTWARE: '1'
@@ -60,6 +70,7 @@ jobs:
           grep -q "FOREST_CAPTURE_OK" capture.log
           test -s build/forest-evidence/forest_overview.png
           test -s build/forest-evidence/forest_ground.png
+          test -s build/forest-evidence/forest_topdown.png
           file build/forest-evidence/*.png
 
       - name: Upload visual evidence
@@ -70,6 +81,7 @@ jobs:
           path: |
             build/forest-evidence/*.png
             terrain.log
+            hydrology.log
             capture.log
           if-no-files-found: warn
           retention-days: 14
