@@ -98,9 +98,7 @@ def download(obj: dict, dest: Path) -> dict | None:
 
 
 def rewrite_flat_gltf_uris(out: Path) -> None:
-    """Poly Haven GLTFs often reference textures/foo.jpg while ingest stores bounded files flat.
-    Rewrite only references whose flattened target is present, preserving the binary URI unchanged.
-    """
+    """Rewrite Poly Haven texture subpaths when bounded files are stored flat."""
     for gltf_path in out.glob("*.gltf"):
         try:
             doc = json.loads(gltf_path.read_text(encoding="utf-8"))
@@ -120,6 +118,14 @@ def rewrite_flat_gltf_uris(out: Path) -> None:
             print(f"REWRITE flattened texture URIs: {gltf_path}")
 
 
+def clean_stale_runtime_unsafe_files(out: Path) -> None:
+    """Remove stale files excluded by current policy so old ingests cannot poison Godot CI."""
+    out.mkdir(parents=True, exist_ok=True)
+    for stale in out.glob("*.exr"):
+        stale.unlink()
+        print(f"REMOVE stale runtime-incompatible file: {stale}")
+
+
 def ingest(asset_id: str, kind: str) -> dict:
     info = request_json(f"/info/{asset_id}")
     files = request_json(f"/files/{asset_id}")
@@ -132,6 +138,7 @@ def ingest(asset_id: str, kind: str) -> dict:
             seen.add(url)
             candidates.append(obj)
     out = ROOT / asset_id
+    clean_stale_runtime_unsafe_files(out)
     records = []
     for obj in candidates:
         record = download(obj, out / safe_name(obj["url"]))
@@ -163,7 +170,7 @@ def main() -> int:
         "source_api": API,
         "api_credit": "Powered by Poly Haven",
         "runtime_dependency": False,
-        "policy": "1K/mobile authoring derivatives; EXR duplicates excluded; per-file and pack size capped",
+        "policy": "1K/mobile authoring derivatives; stale/duplicate EXR removed; per-file and pack size capped",
         "assets": [],
     }
     for asset_id, kind in ASSETS.items():
@@ -183,7 +190,7 @@ def main() -> int:
         "Selected source assets are CC0. The live API is used only by the ingest tool; "
         "the game has no runtime network dependency. Powered by Poly Haven.\n\n"
         "The committed derivatives are intentionally bounded for mobile evaluation. "
-        "Godot-incompatible EXR duplicates are excluded and Pine Tree 01 source is authoring-only. "
+        "Godot-incompatible EXR duplicates are removed and Pine Tree 01 source is authoring-only. "
         "See `MANIFEST.json` for source URLs, authorship metadata and SHA-256 hashes.\n",
         encoding="utf-8",
     )
