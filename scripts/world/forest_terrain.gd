@@ -21,8 +21,26 @@ var heights := PackedFloat32Array()
 var slopes := PackedFloat32Array()
 var moisture := PackedFloat32Array()
 var flow := PackedFloat32Array()
+var route_mask := PackedFloat32Array()
+var clearing_mask := PackedFloat32Array()
 var _noise_macro := FastNoiseLite.new()
 var _noise_detail := FastNoiseLite.new()
+
+const CLEARING_CENTERS: Array[Vector2] = [
+	Vector2(-126.0, 72.0),
+	Vector2(22.0, -48.0),
+	Vector2(146.0, 70.0)
+]
+const CLEARING_RADII: PackedFloat32Array = PackedFloat32Array([30.0, 43.0, 27.0])
+const ROUTE_POINTS: Array[Vector2] = [
+	Vector2(-238.0, 122.0),
+	Vector2(-126.0, 72.0),
+	Vector2(-34.0, 2.0),
+	Vector2(22.0, -48.0),
+	Vector2(86.0, 12.0),
+	Vector2(146.0, 70.0),
+	Vector2(232.0, 28.0)
+]
 
 func _ready() -> void:
 	generate()
@@ -30,7 +48,9 @@ func _ready() -> void:
 func generate() -> void:
 	_setup_noise()
 	_generate_height_field()
+	_apply_clearings()
 	_compute_derived_fields()
+	_compute_composition_masks()
 	_build_mesh()
 	if generate_collision:
 		_build_collision()
@@ -73,9 +93,35 @@ func _generate_height_field() -> void:
 			var ridge: float = pow(absf(detail), 1.7)
 			var border: float = minf(minf(u, 1.0 - u), minf(v, 1.0 - v))
 			var edge: float = smoothstep(0.0, edge_falloff, border)
-			var h: float = macro * relief + ridge * ridge_gain - valley * valley_depth
+			var broad_relief: float = macro * relief * lerpf(1.0, 0.42, valley)
+			var channel_grade: float = lerpf(5.5, -5.5, u) * valley
+			var h: float = broad_relief + ridge * ridge_gain - valley * valley_depth + channel_grade
 			h += (1.0 - edge) * relief * 0.22
 			heights[_idx(x, z)] = h
+
+func _apply_clearings() -> void:
+	var side: int = resolution + 1
+	var spacing: float = world_size / float(resolution)
+	var target_heights: PackedFloat32Array = PackedFloat32Array()
+	target_heights.resize(CLEARING_CENTERS.size())
+	for c in range(CLEARING_CENTERS.size()):
+		var center: Vector2 = CLEARING_CENTERS[c]
+		var cx: int = clampi(int(round((center.x / world_size + 0.5) * resolution)), 0, resolution)
+		var cz: int = clampi(int(round((center.y / world_size + 0.5) * resolution)), 0, resolution)
+		target_heights[c] = heights[_idx(cx, cz)]
+
+	for z in range(side):
+		for x in range(side):
+			var wx: float = -world_size * 0.5 + float(x) * spacing
+			var wz: float = -world_size * 0.5 + float(z) * spacing
+			var p := Vector2(wx, wz)
+			var i: int = _idx(x, z)
+			for c in range(CLEARING_CENTERS.size()):
+				var radius: float = CLEARING_RADII[c]
+				var d: float = p.distance_to(CLEARING_CENTERS[c])
+				if d < radius:
+					var blend: float = 1.0 - smoothstep(radius * 0.48, radius, d)
+					heights[i] = lerpf(heights[i], target_heights[c], blend * 0.72)
 
 func _compute_derived_fields() -> void:
 	var side: int = resolution + 1
@@ -152,6 +198,35 @@ func _compute_flow_accumulation() -> void:
 	for i in range(count):
 		flow[i] = clampf(log(1.0 + accumulation[i]) / maxf(max_log, 0.001), 0.0, 1.0)
 
+func _compute_composition_masks() -> void:
+	var side: int = resolution + 1
+	var spacing: float = world_size / float(resolution)
+	route_mask.resize(side * side)
+	clearing_mask.resize(side * side)
+	for z in range(side):
+		for x in range(side):
+			var wx: float = -world_size * 0.5 + float(x) * spacing
+			var wz: float = -world_size * 0.5 + float(z) * spacing
+			var p := Vector2(wx, wz)
+			var nearest_route: float = INF
+			for s in range(ROUTE_POINTS.size() - 1):
+				nearest_route = minf(nearest_route, _distance_to_segment(p, ROUTE_POINTS[s], ROUTE_POINTS[s + 1]))
+			var route: float = 1.0 - smoothstep(3.8, 8.5, nearest_route)
+			var clearing: float = 0.0
+			for c in range(CLEARING_CENTERS.size()):
+				var radius: float = CLEARING_RADII[c]
+				var d: float = p.distance_to(CLEARING_CENTERS[c])
+				clearing = maxf(clearing, 1.0 - smoothstep(radius * 0.72, radius, d))
+			var i: int = _idx(x, z)
+			route_mask[i] = route
+			clearing_mask[i] = clearing
+
+func _distance_to_segment(p: Vector2, a: Vector2, b: Vector2) -> float:
+	var ab: Vector2 = b - a
+	var denom: float = maxf(ab.length_squared(), 0.0001)
+	var t: float = clampf((p - a).dot(ab) / denom, 0.0, 1.0)
+	return p.distance_to(a + ab * t)
+
 func _build_mesh() -> void:
 	var side: int = resolution + 1
 	var spacing: float = world_size / float(resolution)
@@ -163,7 +238,8 @@ func _build_mesh() -> void:
 			var wx: float = -world_size * 0.5 + x * spacing
 			var wz: float = -world_size * 0.5 + z * spacing
 			st.set_uv(Vector2(float(x) / resolution, float(z) / resolution) * 16.0)
-			st.set_color(Color(slopes[i], moisture[i], flow[i], 1.0))
+			var composition: float = maxf(route_mask[i], clearing_mask[i] * 0.68)
+			st.set_color(Color(slopes[i], moisture[i], flow[i], composition))
 			st.add_vertex(Vector3(wx, heights[i], wz))
 	for z in range(resolution):
 		for x in range(resolution):
@@ -171,7 +247,6 @@ func _build_mesh() -> void:
 			var b: int = _idx(x + 1, z)
 			var c: int = _idx(x, z + 1)
 			var d: int = _idx(x + 1, z + 1)
-			# Godot treats clockwise winding as the front face. Keep terrain normals facing +Y.
 			st.add_index(a); st.add_index(b); st.add_index(c)
 			st.add_index(b); st.add_index(d); st.add_index(c)
 	st.generate_normals()
