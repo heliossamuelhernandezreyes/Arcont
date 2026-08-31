@@ -1,0 +1,47 @@
+name: Poly Haven forest ingest
+
+on:
+  push:
+    branches:
+      - rebuild/forest-map-foundation
+    paths:
+      - 'tools/ingest_polyhaven_forest.py'
+      - '.github/workflows/polyhaven-forest-ingest.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: rebuild/forest-map-foundation
+
+      - name: Download bounded CC0 authoring derivatives
+        run: python3 tools/ingest_polyhaven_forest.py
+
+      - name: Validate provenance and size
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s assets/cc0/polyhaven/forest/MANIFEST.json
+          grep -q '"license": "CC0-1.0"' assets/cc0/polyhaven/forest/MANIFEST.json
+          du -sh assets/cc0/polyhaven/forest
+
+      - name: Commit ingested pack
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/cc0/polyhaven/forest
+          if git diff --cached --quiet; then
+            echo 'No asset changes.'
+            exit 0
+          fi
+          git commit -m 'assets(forest): ingest bounded Poly Haven CC0 pack'
+          git push origin HEAD:rebuild/forest-map-foundation
