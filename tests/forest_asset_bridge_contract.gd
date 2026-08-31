@@ -27,6 +27,19 @@ func _run() -> void:
 		if meshes.size() != ForestAssetBridge.EXPECTED_PINE_VARIANTS:
 			_fail("pine resource must expose 3 variants: %s got=%d" % [str(path_variant), meshes.size()])
 			return
+	for close_path: String in [bridge.pine_lod0_path, bridge.pine_lod1_path, bridge.pine_lod2_path]:
+		var close_meshes := bridge._load_meshes(close_path)
+		for mesh: Mesh in close_meshes:
+			if mesh.get_surface_count() < 2:
+				_fail("close/mid pine must preserve separate trunk+foliage surfaces: %s surfaces=%d" % [close_path, mesh.get_surface_count()])
+				return
+			var material_count := 0
+			for surface_i in range(mesh.get_surface_count()):
+				if mesh.surface_get_material(surface_i) != null:
+					material_count += 1
+			if material_count < 2:
+				_fail("close/mid pine must preserve trunk+foliage materials: %s materials=%d" % [close_path, material_count])
+				return
 	if bridge._load_first_mesh(bridge.rock_scene_path) == null:
 		_fail("real rock mesh unavailable")
 		return
