@@ -1,0 +1,55 @@
+name: Analyze Pine Tree source
+
+on:
+  push:
+    branches:
+      - rebuild/forest-map-foundation
+    paths:
+      - '.github/workflows/analyze-pine-source.yml'
+      - 'tools/blender/analyze_pine_source.py'
+      - 'assets/cc0/polyhaven/forest/pine_tree_01/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: rebuild/forest-map-foundation
+      - name: Install Blender
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y blender python3-numpy
+          blender --version | head -n 1
+      - name: Prepare Poly Haven source
+        run: |
+          set -euo pipefail
+          SRC=/tmp/pine_tree_01
+          mkdir -p "$SRC/textures"
+          cp assets/cc0/polyhaven/forest/pine_tree_01/pine_tree_01_1k.gltf "$SRC/pine_tree_01_1k.gltf"
+          cp assets/cc0/polyhaven/forest/pine_tree_01/*.jpg "$SRC/" || true
+          cp assets/cc0/polyhaven/forest/pine_tree_01/*.png "$SRC/" || true
+          curl -L --fail --retry 4 --retry-delay 3 \
+            -o "$SRC/pine_tree_01.bin" \
+            'https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/pine_tree_01/pine_tree_01.bin'
+          test -s "$SRC/pine_tree_01.bin"
+      - name: Analyze source geometry
+        run: |
+          set -euo pipefail
+          mkdir -p build/pine-analysis
+          blender --background --python tools/blender/analyze_pine_source.py -- \
+            /tmp/pine_tree_01/pine_tree_01_1k.gltf \
+            build/pine-analysis/pine_tree_01_analysis.json | tee build/pine-analysis/analyze.log
+          grep -q 'ARCONT_PINE_ANALYSIS_OBJECTS=' build/pine-analysis/analyze.log
+          grep -q 'ARCONT_PINE_ANALYSIS_TOTAL_TRIS=' build/pine-analysis/analyze.log
+      - name: Upload analysis
+        uses: actions/upload-artifact@v4
+        with:
+          name: pine-tree-source-analysis
+          path: build/pine-analysis/
+          retention-days: 14
