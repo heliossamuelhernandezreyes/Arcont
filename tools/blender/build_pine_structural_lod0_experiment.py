@@ -5,7 +5,14 @@ TRUNK_SIDES = 8
 BRANCH_SIDES = 6
 TARGET_STRUCTURE_TRIS = 10000
 MIN_OBSERVATIONS = 2
-MAX_BRANCHES = 36
+MAX_BRANCHES = 52
+MIN_BRANCH_PATH_NODES = 3
+MIN_HORIZONTAL_SPAN_RATIO = 0.012
+MAX_VERTICAL_TO_HORIZONTAL = 2.8
+MAX_CONNECTOR_RATIO = 0.18
+SECONDARY_MIN_SUPPORT = 20
+SECONDARY_MIN_SCORE = 3.0
+SECONDARY_MIN_EXTENT_RATIO = 0.022
 
 
 def cylinder_between(start, end, r0, r1, sides, name):
@@ -53,34 +60,145 @@ def cylinder_between(start, end, r0, r1, sides, name):
     return sides * 2 + (sides - 2) * 2
 
 
+def radial(p):
+    return math.hypot(p.x, p.y)
+
+
+def normalize_branch_path(branch):
+    pts = [Vector(p) for p in branch.get('path', [])]
+    if len(pts) < MIN_BRANCH_PATH_NODES:
+        return []
+    # Skeleton tracks do not guarantee a trunk-to-tip ordering. Start from the
+    # endpoint closest to the trunk so every reconstructed branch grows outward.
+    if radial(pts[-1]) < radial(pts[0]):
+        pts.reverse()
+    return pts
+
+
+def branch_geometry_metrics(branch, height):
+    pts = normalize_branch_path(branch)
+    if len(pts) < MIN_BRANCH_PATH_NODES:
+        return None
+    horizontal_path = 0.0
+    vertical_path = 0.0
+    for a, b in zip(pts, pts[1:]):
+        d = b - a
+        horizontal_path += math.hypot(d.x, d.y)
+        vertical_path += abs(d.z)
+    radial_span = max(radial(p) for p in pts) - min(radial(p) for p in pts)
+    horizontal_displacement = math.hypot(pts[-1].x - pts[0].x, pts[-1].y - pts[0].y)
+    horizontal_span = max(horizontal_path, horizontal_displacement, radial_span)
+    verticality = vertical_path / max(horizontal_path, height * 0.001)
+    return {
+        'points': pts,
+        'horizontal_path': horizontal_path,
+        'vertical_path': vertical_path,
+        'radial_span': radial_span,
+        'horizontal_span': horizontal_span,
+        'verticality': verticality,
+    }
+
+
+def branch_is_plausible(branch, height, allow_secondary=False):
+    m = branch_geometry_metrics(branch, height)
+    if not m:
+        return False
+    if m['horizontal_span'] < height * MIN_HORIZONTAL_SPAN_RATIO:
+        return False
+    # Reject tracks dominated by vertical motion: these are usually pieces of
+    # trunk or occupancy-column artifacts, not lateral pine branches.
+    if m['verticality'] > MAX_VERTICAL_TO_HORIZONTAL and m['radial_span'] < height * 0.03:
+        return False
+    if allow_secondary:
+        return (
+            branch.get('support', 0) >= SECONDARY_MIN_SUPPORT
+            and branch.get('score', 0.0) >= SECONDARY_MIN_SCORE
+            and branch.get('extent', 0.0) >= height * SECONDARY_MIN_EXTENT_RATIO
+        )
+    return branch.get('observations', 1) >= MIN_OBSERVATIONS
+
+
+def smooth_path(pts):
+    if len(pts) < 3:
+        return pts
+    out = [pts[0].copy()]
+    for i in range(1, len(pts)-1):
+        out.append(pts[i-1] * 0.20 + pts[i] * 0.60 + pts[i+1] * 0.20)
+    out.append(pts[-1].copy())
+    return out
+
+
+def attach_path_to_trunk(branch, height):
+    pts = normalize_branch_path(branch)
+    if not pts:
+        return [], 0.0
+    pts = smooth_path(pts)
+    root = pts[0]
+    trunk_root = Vector((0.0, 0.0, root.z))
+    connector = (root - trunk_root).length
+    # Do not accept a huge synthetic connector; such a path is too detached to
+    # be trustworthy as source-derived structure.
+    if connector > height * MAX_CONNECTOR_RATIO:
+        return [], connector
+    if connector > height * 0.004:
+        # Two-piece curved attachment avoids the old straight floating ray look.
+        mid = trunk_root.lerp(root, 0.52)
+        mid.z += min(height * 0.006, connector * 0.10)
+        pts = [trunk_root, mid] + pts
+    else:
+        pts = [trunk_root] + pts
+    return pts, connector
+
+
 def branch_priority(b):
     obs = b.get('observations', 1)
     extent = b.get('extent', 0.0)
     score = b.get('score', 0.0)
+    support = b.get('support', 0)
     path = b.get('path', [])
     curvature_bonus = 1.0 + min(0.4, max(0, len(path)-4) * 0.04)
-    return score * max(0.25, extent) * math.log2(1.0 + obs) * curvature_bonus
+    support_bonus = 1.0 + min(0.35, math.log2(1.0 + support) * 0.035)
+    return score * max(0.25, extent) * math.log2(1.0 + obs) * curvature_bonus * support_bonus
 
 
-def estimate_branch_tris(branch, sides=BRANCH_SIDES):
-    segs = max(0, len(branch.get('path', [])) - 1)
+def estimate_branch_tris(branch, height, sides=BRANCH_SIDES):
+    pts, _ = attach_path_to_trunk(branch, height)
+    segs = max(0, len(pts) - 1)
     return segs * (sides * 2 + (sides - 2) * 2)
 
 
 def select_branches(variant, trunk_tris):
-    candidates = [b for b in variant.get('branches', []) if b.get('observations', 1) >= MIN_OBSERVATIONS and len(b.get('path', [])) >= 3]
-    candidates.sort(key=branch_priority, reverse=True)
+    height = variant['height']
+    primary = [b for b in variant.get('branches', []) if branch_is_plausible(b, height, False)]
+    secondary = [
+        b for b in variant.get('branches', [])
+        if b.get('observations', 1) < MIN_OBSERVATIONS and branch_is_plausible(b, height, True)
+    ]
+    primary.sort(key=branch_priority, reverse=True)
+    secondary.sort(key=branch_priority, reverse=True)
+
     selected = []
     used = trunk_tris
-    for b in candidates:
-        cost = estimate_branch_tris(b)
-        if selected and used + cost > TARGET_STRUCTURE_TRIS:
-            continue
-        selected.append(b)
-        used += cost
+    primary_selected = 0
+    secondary_selected = 0
+    # Preserve all reliable continuous paths first, then spend remaining budget
+    # on only the strongest singleton fragments to recover useful bifurcations.
+    for pool, is_secondary in ((primary, False), (secondary, True)):
+        for b in pool:
+            cost = estimate_branch_tris(b, height)
+            if cost <= 0 or used + cost > TARGET_STRUCTURE_TRIS:
+                continue
+            selected.append(b)
+            used += cost
+            if is_secondary:
+                secondary_selected += 1
+            else:
+                primary_selected += 1
+            if len(selected) >= MAX_BRANCHES:
+                break
         if len(selected) >= MAX_BRANCHES:
             break
-    return selected, used, len(candidates)
+    return selected, used, len(primary), len(secondary), primary_selected, secondary_selected
 
 
 def build_variant(variant, xoff):
@@ -90,25 +208,48 @@ def build_variant(variant, xoff):
     trunk_center = Vector((xoff, 0, zmin))
     trunk_top = Vector((xoff, 0, zmax))
     trunk_tris = cylinder_between(trunk_center, trunk_top, h*0.018, h*0.006, TRUNK_SIDES, variant['name'] + '_trunk')
-    selected, estimated, candidate_count = select_branches(variant, trunk_tris)
+    selected, estimated, primary_candidates, secondary_candidates, primary_selected, secondary_selected = select_branches(variant, trunk_tris)
     actual = trunk_tris
+    connected = 0
+    max_connector = 0.0
+    rejected_detached = 0
+    selected_ids = []
     for bi, b in enumerate(selected):
-        pts = [Vector(p) for p in b['path']]
+        pts, connector = attach_path_to_trunk(b, h)
+        if not pts:
+            rejected_detached += 1
+            continue
+        max_connector = max(max_connector, connector)
+        connected += 1
+        selected_ids.append(b.get('id'))
         for p in pts:
             p.x += xoff
         base = h * (0.0048 * (1.0 - min(0.85, b.get('t', 0.5))*0.5))
-        for si in range(len(pts)-1):
-            f0 = 1.0 - 0.68 * (si / max(1, len(pts)-1))
-            f1 = 1.0 - 0.68 * ((si+1) / max(1, len(pts)-1))
-            actual += cylinder_between(pts[si], pts[si+1], max(h*0.0012, base*f0), max(h*0.0009, base*f1), BRANCH_SIDES, f"{variant['name']}_b{bi:02d}_s{si:02d}")
+        seg_count = max(1, len(pts)-1)
+        for si in range(seg_count):
+            f0 = 1.0 - 0.72 * (si / seg_count)
+            f1 = 1.0 - 0.72 * ((si+1) / seg_count)
+            actual += cylinder_between(
+                pts[si], pts[si+1],
+                max(h*0.00115, base*f0),
+                max(h*0.00075, base*f1),
+                BRANCH_SIDES,
+                f"{variant['name']}_b{bi:02d}_s{si:02d}"
+            )
     return {
         'name': variant['name'],
         'height': h,
-        'continuous_candidates': candidate_count,
+        'primary_candidates': primary_candidates,
+        'secondary_candidates': secondary_candidates,
+        'primary_selected': primary_selected,
+        'secondary_selected': secondary_selected,
         'selected_branches': len(selected),
+        'connected_branches': connected,
+        'rejected_detached': rejected_detached,
+        'max_connector': max_connector,
         'estimated_tris': estimated,
         'actual_tris': actual,
-        'selected_ids': [b.get('id') for b in selected],
+        'selected_ids': selected_ids,
         'mean_observations': sum(b.get('observations',1) for b in selected)/max(1,len(selected)),
     }
 
@@ -149,8 +290,6 @@ def setup_camera_and_light(variants):
 
 def render_png(path):
     scene = bpy.context.scene
-    # Blender renamed the Eevee engine in newer releases; prefer the modern
-    # identifier while retaining compatibility with the Actions package.
     try:
         scene.render.engine = 'BLENDER_EEVEE_NEXT'
     except TypeError:
@@ -186,12 +325,25 @@ def main():
         'target_structure_tris': TARGET_STRUCTURE_TRIS,
         'min_observations': MIN_OBSERVATIONS,
         'max_branches': MAX_BRANCHES,
+        'filters': {
+            'min_horizontal_span_ratio': MIN_HORIZONTAL_SPAN_RATIO,
+            'max_vertical_to_horizontal': MAX_VERTICAL_TO_HORIZONTAL,
+            'max_connector_ratio': MAX_CONNECTOR_RATIO,
+            'secondary_min_support': SECONDARY_MIN_SUPPORT,
+            'secondary_min_score': SECONDARY_MIN_SCORE,
+            'secondary_min_extent_ratio': SECONDARY_MIN_EXTENT_RATIO,
+        },
         'variants': reports,
     }
     with open(out_json,'w',encoding='utf-8') as f:
         json.dump(report,f,indent=2)
     for r in reports:
-        print(f"ARCONT_PINE_STRUCTURAL_EXPERIMENT={r['name']} selected={r['selected_branches']} candidates={r['continuous_candidates']} tris={r['actual_tris']} mean_obs={r['mean_observations']:.2f}")
+        print(
+            f"ARCONT_PINE_STRUCTURAL_EXPERIMENT={r['name']} "
+            f"connected={r['connected_branches']} primary={r['primary_selected']} secondary={r['secondary_selected']} "
+            f"candidates={r['primary_candidates']}+{r['secondary_candidates']} tris={r['actual_tris']} "
+            f"max_connector={r['max_connector']:.3f} mean_obs={r['mean_observations']:.2f}"
+        )
     print('ARCONT_PINE_STRUCTURAL_PREVIEW=', out_png)
     print('ARCONT_PINE_STRUCTURAL_GLB=', out_glb)
 
