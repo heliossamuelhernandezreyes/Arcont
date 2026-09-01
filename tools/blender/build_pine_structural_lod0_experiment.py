@@ -33,9 +33,6 @@ def cylinder_between(start, end, r0, r1, sides, name):
     faces.append(tuple(2*i for i in range(sides)))
     faces.append(tuple(2*i+1 for i in reversed(range(sides))))
 
-    # Build through bmesh rather than Mesh.from_pydata. This is stable across
-    # the Blender package/API used by GitHub Actions and avoids the runtime
-    # AttributeError seen in the structural experiment job.
     mesh = bpy.data.meshes.new(name + '_mesh')
     bm = bmesh.new()
     try:
@@ -45,9 +42,6 @@ def cylinder_between(start, end, r0, r1, sides, name):
             try:
                 bm.faces.new([bm_verts[i] for i in face])
             except ValueError:
-                # A duplicate face would only be a malformed primitive; keep
-                # the rest of the diagnostic mesh exportable instead of
-                # crashing the whole analysis workflow.
                 pass
         bm.normal_update()
         bm.to_mesh(mesh)
@@ -135,7 +129,6 @@ def setup_camera_and_light(variants):
     bpy.context.collection.objects.link(cam)
     bpy.context.scene.camera = cam
     cam.location = (span*0.45, -max_h*2.25, max_h*0.50)
-    cam.rotation_euler = (math.radians(90), 0, 0)
     direction = Vector((span*0.45, 0, max_h*0.50)) - cam.location
     cam.rotation_euler = direction.to_track_quat('-Z','Y').to_euler()
     cam.data.type = 'ORTHO'
@@ -148,14 +141,20 @@ def setup_camera_and_light(variants):
     scene = bpy.context.scene
     world = scene.world
     if world is None:
-        world = bpy.data.worlds.new('World')
+        world = bpy.data.worlds.new('ArcontStructuralPreviewWorld')
         scene.world = world
-    world.color = (0.08,0.08,0.08)
+    world.use_nodes = False
+    world.color = (0.08, 0.08, 0.08)
 
 
 def render_png(path):
     scene = bpy.context.scene
-    scene.render.engine = 'BLENDER_EEVEE'
+    # Blender renamed the Eevee engine in newer releases; prefer the modern
+    # identifier while retaining compatibility with the Actions package.
+    try:
+        scene.render.engine = 'BLENDER_EEVEE_NEXT'
+    except TypeError:
+        scene.render.engine = 'BLENDER_EEVEE'
     scene.render.resolution_x = 1400
     scene.render.resolution_y = 900
     scene.render.resolution_percentage = 100
