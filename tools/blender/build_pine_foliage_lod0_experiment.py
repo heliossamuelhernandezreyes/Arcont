@@ -14,13 +14,24 @@ POSITION_JITTER = 0.085
 DENSE_SCALE_MIN = 0.94
 DENSE_SCALE_MAX = 1.34
 
+# Overlapping crops from the original Poly Haven Twig diffuse/alpha atlas.
+# The purpose is not to invent foliage: each crop reuses the original Pine Tree 01 texture,
+# but avoids stamping the exact same full-atlas rectangle onto every micro-spray.
+UV_VARIANTS = (
+    (0.02, 0.02, 0.98, 0.98),
+    (0.03, 0.08, 0.70, 0.92),
+    (0.30, 0.08, 0.97, 0.92),
+    (0.12, 0.02, 0.88, 0.72),
+    (0.12, 0.28, 0.88, 0.98),
+)
+
 
 def hash01(a, b, c=0.0):
     x = math.sin(a * 12.9898 + b * 78.233 + c * 37.719) * 43758.5453
     return x - math.floor(x)
 
 
-def add_card(bm, uv_layer, center, along, width_axis, length, width):
+def add_card(bm, uv_layer, center, along, width_axis, length, width, uv_rect, flip_u=False, flip_v=False):
     along = along.normalized()
     width_axis = width_axis.normalized()
     hl = length * 0.5
@@ -33,7 +44,13 @@ def add_card(bm, uv_layer, center, along, width_axis, length, width):
     ]
     verts = [bm.verts.new(tuple(v)) for v in corners]
     face = bm.faces.new(verts)
-    for loop, uv in zip(face.loops, ((0, 0), (1, 0), (1, 1), (0, 1))):
+    u0, v0, u1, v1 = uv_rect
+    if flip_u:
+        u0, u1 = u1, u0
+    if flip_v:
+        v0, v1 = v1, v0
+    uvs = ((u0, v0), (u1, v0), (u1, v1), (u0, v1))
+    for loop, uv in zip(face.loops, uvs):
         loop[uv_layer].uv = uv
     return 2
 
@@ -82,6 +99,7 @@ def build_foliage_mesh(variant, xoff):
     uv_layer = bm.loops.layers.uv.new('UVMap')
     tris = 0
     points_out = []
+    crop_histogram = [0] * len(UV_VARIANTS)
     try:
         for i, src in enumerate(selected):
             h0 = hash01(i + 1, len(selected), variant.get('height', 1.0))
@@ -89,6 +107,7 @@ def build_foliage_mesh(variant, xoff):
             h2 = hash01(i + 41, 7, variant.get('height', 1.0))
             h3 = hash01(i + 83, 11, variant.get('height', 1.0))
             h4 = hash01(i + 131, 13, variant.get('height', 1.0))
+            h5 = hash01(i + 197, 17, variant.get('height', 1.0))
 
             center = Vector(src['position'])
             center.x += xoff
@@ -102,7 +121,7 @@ def build_foliage_mesh(variant, xoff):
             center += tangential * ((h1 - 0.5) * POSITION_JITTER)
             center.z += (h2 - 0.5) * POSITION_JITTER
 
-            # Broader orientation fan prevents source points from reading as repeated dark needles.
+            # Broad orientation fan prevents source points from reading as repeated dark needles.
             along = (radial * (0.48 + 0.24 * h3) +
                      tangential * ((h4 - 0.5) * 0.58) +
                      Vector((0, 0, 0.12 + 0.46 * (h2 - 0.5)))).normalized()
@@ -113,10 +132,22 @@ def build_foliage_mesh(variant, xoff):
             width = (SPRAY_WIDTH_MIN + (SPRAY_WIDTH_MAX - SPRAY_WIDTH_MIN) * h3) * density_scale
             roll = (h0 - 0.5) * math.radians(86.0)
 
+            crop_index = min(len(UV_VARIANTS) - 1, int(h5 * len(UV_VARIANTS)))
+            crop_histogram[crop_index] += 1
             for qi in range(QUADS_PER_SPRAY):
                 ang = math.tau * qi / QUADS_PER_SPRAY + roll
                 width_axis = side * math.cos(ang) + up * math.sin(ang)
-                tris += add_card(bm, uv_layer, center, along, width_axis, length, width)
+                # Adjacent cards can use neighboring atlas crops and mirror them. This breaks the
+                # repeated rectangular 'scale' pattern while keeping one material/texture batch.
+                qi_crop = (crop_index + qi) % len(UV_VARIANTS)
+                qlen = length * (0.90 + 0.16 * hash01(i + qi * 23, 29, h2))
+                qwidth = width * (0.88 + 0.18 * hash01(i + qi * 31, 37, h3))
+                tris += add_card(
+                    bm, uv_layer, center, along, width_axis, qlen, qwidth,
+                    UV_VARIANTS[qi_crop],
+                    flip_u=hash01(i, qi + 101, h4) > 0.5,
+                    flip_v=hash01(i, qi + 151, h1) > 0.72,
+                )
 
             points_out.append({
                 'source_voxel': src.get('voxel'),
@@ -127,6 +158,7 @@ def build_foliage_mesh(variant, xoff):
                 'length': round(length, 5),
                 'width': round(width, 5),
                 'roll': round(roll, 5),
+                'uv_variant': crop_index,
                 'tint_seed': [round(h2, 4), round(h3, 4), round(h4, 4)],
             })
         bm.normal_update()
@@ -136,11 +168,18 @@ def build_foliage_mesh(variant, xoff):
     mesh.update()
     obj = bpy.data.objects.new(variant['name'] + '_source_volume_foliage', mesh)
     bpy.context.collection.objects.link(obj)
-    return obj, {'name': variant['name'], 'source_points': len(source_points), 'sprays': len(selected), 'tris': tris, 'points': points_out}
+    return obj, {
+        'name': variant['name'],
+        'source_points': len(source_points),
+        'sprays': len(selected),
+        'tris': tris,
+        'uv_variant_histogram': crop_histogram,
+        'points': points_out,
+    }
 
 
 def make_foliage_material(diff_path, alpha_path):
-    mat = bpy.data.materials.new('pine_twig_source_volume_micro_sprite')
+    mat = bpy.data.materials.new('pine_twig_source_volume_atlas_sprites')
     mat.use_nodes = True
     if hasattr(mat, 'surface_render_method'):
         mat.surface_render_method = 'DITHERED'
@@ -236,18 +275,19 @@ def main():
     setup_preview(structural_objects + foliage_objects)
     render_png(out_png)
     payload = {
-        'representation': 'source_twig_volume_foliage_points_broad_micro_sprites',
+        'representation': 'source_twig_volume_foliage_cropped_atlas_sprays',
         'source_representation': volume.get('representation'),
         'target_foliage_tris': TARGET_FOLIAGE_TRIS,
         'quads_per_spray': QUADS_PER_SPRAY,
+        'uv_variants': [list(v) for v in UV_VARIANTS],
         'sprite_size_m': {'length': [SPRAY_LENGTH_MIN, SPRAY_LENGTH_MAX], 'width': [SPRAY_WIDTH_MIN, SPRAY_WIDTH_MAX]},
-        'runtime_intent': 'Godot MultiMesh; source-volume foliage points with broader crossed spray mesh, deterministic transform/tint variation, same triangle budget',
+        'runtime_intent': 'Godot MultiMesh; one material/atlas, source-volume points, cropped/mirrored twig variants via per-instance atlas selector and deterministic transform/tint',
         'variants': stats,
     }
     with open(out_json, 'w', encoding='utf-8') as f:
         json.dump(payload, f, indent=2)
     for st in stats:
-        print(f"ARCONT_PINE_FOLIAGE_EXPERIMENT={st['name']} source_points={st['source_points']} sprays={st['sprays']} tris={st['tris']}")
+        print(f"ARCONT_PINE_FOLIAGE_EXPERIMENT={st['name']} source_points={st['source_points']} sprays={st['sprays']} tris={st['tris']} uv_variants={st['uv_variant_histogram']}")
     print('ARCONT_PINE_FOLIAGE_POINTS_TOTAL=', sum(st['sprays'] for st in stats))
     print('ARCONT_PINE_FOLIAGE_PREVIEW=', out_png)
     print('ARCONT_PINE_FOLIAGE_GLB=', out_glb)
