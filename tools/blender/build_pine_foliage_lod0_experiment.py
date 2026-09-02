@@ -6,15 +6,16 @@ QUADS_PER_SPRAY = 3
 TRIS_PER_SPRAY = QUADS_PER_SPRAY * 2
 MIN_SPRAYS_PER_BRANCH = 12
 MAX_SPRAYS_PER_BRANCH = 96
-SPRAY_LENGTH_MIN = 0.085
-SPRAY_LENGTH_MAX = 0.18
-SPRAY_WIDTH_MIN = 0.032
-SPRAY_WIDTH_MAX = 0.068
-FOLIAGE_START_T = 0.30
-TIP_BIAS_POWER = 0.88
-VIRTUAL_TWIG_RADIUS_MIN = 0.025
-VIRTUAL_TWIG_RADIUS_MAX = 0.19
-VIRTUAL_TWIG_LANES = 5
+SPRAY_LENGTH_MIN = 0.095
+SPRAY_LENGTH_MAX = 0.205
+SPRAY_WIDTH_MIN = 0.036
+SPRAY_WIDTH_MAX = 0.078
+FOLIAGE_START_T = 0.24
+TIP_BIAS_POWER = 0.96
+VIRTUAL_TWIG_RADIUS_MIN = 0.035
+VIRTUAL_TWIG_RADIUS_MAX = 0.34
+VIRTUAL_TWIG_LANES = 7
+OUTER_SHELL_SHARE = 0.42
 
 
 def radial(p):
@@ -108,6 +109,13 @@ def local_frame(tangent, radial_dir):
     return side, up
 
 
+def crown_envelope(terminal):
+    # Pine foliage is fullest before the extreme tip, then tapers again.
+    middle = math.sin(math.pi * max(0.0, min(1.0, terminal))) ** 0.58
+    tip = terminal ** 2.2
+    return max(0.18, min(1.0, middle * 0.86 + tip * 0.22))
+
+
 def build_foliage_mesh(variant, report, xoff):
     selected_ids = set(report.get('selected_ids', []))
     branches = [b for b in variant.get('branches', []) if b.get('id') in selected_ids]
@@ -135,18 +143,20 @@ def build_foliage_mesh(variant, report, xoff):
             count = int(max(MIN_SPRAYS_PER_BRANCH, min(MAX_SPRAYS_PER_BRANCH, round(share))))
             for si in range(count):
                 q = (si + 0.5) / count
-                # Populate the whole terminal portion instead of placing a tuft only at the tip.
-                t = FOLIAGE_START_T + (1.0 - FOLIAGE_START_T) * (q ** TIP_BIAS_POWER)
-                center, tangent = interpolate_polyline(pts, t)
-                if tangent.length < 1e-5:
-                    continue
-                center.x += xoff
-
                 h0 = hash01(bi + 1, si + 3, variant['height'])
                 h1 = hash01(si + 11, bi + 7, variant['height'] * 0.37)
                 h2 = hash01(si + 29, bi + 17, variant['height'] * 0.73)
                 h3 = hash01(si + 43, bi + 23, variant['height'] * 1.13)
                 h4 = hash01(si + 61, bi + 31, variant['height'] * 1.71)
+                h5 = hash01(si + 79, bi + 47, variant['height'] * 2.03)
+
+                # Slight longitudinal jitter breaks visible rings while retaining the source branch layout.
+                qj = max(0.0, min(1.0, q + (h5 - 0.5) / max(8.0, count * 0.72)))
+                t = FOLIAGE_START_T + (1.0 - FOLIAGE_START_T) * (qj ** TIP_BIAS_POWER)
+                center, tangent = interpolate_polyline(pts, t)
+                if tangent.length < 1e-5:
+                    continue
+                center.x += xoff
 
                 radial_dir = Vector((center.x - xoff, center.y, 0.0))
                 if radial_dir.length < 1e-5:
@@ -155,24 +165,42 @@ def build_foliage_mesh(variant, report, xoff):
                 side, up = local_frame(tangent, radial_dir)
 
                 terminal = max(0.0, min(1.0, (t - FOLIAGE_START_T) / max(1e-6, 1.0 - FOLIAGE_START_T)))
+                envelope = crown_envelope(terminal)
                 lane = si % VIRTUAL_TWIG_LANES
                 lane_phase = math.tau * lane / VIRTUAL_TWIG_LANES
-                phase = lane_phase + (h0 - 0.5) * 0.95 + terminal * 1.15
-                twig_radius = (VIRTUAL_TWIG_RADIUS_MIN +
-                               (VIRTUAL_TWIG_RADIUS_MAX - VIRTUAL_TWIG_RADIUS_MIN) *
-                               (0.18 + 0.82 * terminal) * (0.65 + 0.35 * h4))
-                # Virtual secondary twigs create crown volume around the measured source branch.
-                offset_dir = side * math.cos(phase) + up * math.sin(phase)
-                center += offset_dir * twig_radius
-                center += tangent * ((h2 - 0.5) * min(0.11, reach * 0.06))
-                center += radial_dir * ((h1 - 0.5) * 0.035)
 
-                length = SPRAY_LENGTH_MIN + (SPRAY_LENGTH_MAX - SPRAY_LENGTH_MIN) * (0.25 + 0.75 * h2)
-                width = SPRAY_WIDTH_MIN + (SPRAY_WIDTH_MAX - SPRAY_WIDTH_MIN) * h3
-                # Sprays follow the branch but fan slightly along their virtual twig direction.
-                spray_axis = (tangent * 0.70 + offset_dir * (0.18 + 0.10 * h4) + radial_dir * 0.08).normalized()
-                roll = (h0 - 0.5) * math.radians(38.0)
-                tint = [0.84 + 0.16 * h1, 0.89 + 0.11 * h2, 0.82 + 0.18 * h3]
+                # Give each lane a smooth branchlet trajectory instead of independent radial noise.
+                branchlet_phase = lane_phase + terminal * (1.35 + 0.45 * h1) + (h0 - 0.5) * 0.58
+                offset_dir = side * math.cos(branchlet_phase) + up * math.sin(branchlet_phase)
+
+                branch_radius_cap = min(VIRTUAL_TWIG_RADIUS_MAX, 0.10 + reach * 0.16)
+                shell_mix = 0.52 + 0.48 * h4
+                if h5 < OUTER_SHELL_SHARE:
+                    shell_mix = 0.78 + 0.22 * h4
+                twig_radius = (VIRTUAL_TWIG_RADIUS_MIN +
+                               (branch_radius_cap - VIRTUAL_TWIG_RADIUS_MIN) *
+                               envelope * shell_mix)
+
+                # A second, smaller perpendicular component gives the crown real thickness.
+                cross_dir = tangent.cross(offset_dir)
+                if cross_dir.length < 1e-5:
+                    cross_dir = side.copy()
+                cross_dir.normalize()
+                cross_radius = twig_radius * (0.18 + 0.30 * h2)
+
+                center += offset_dir * twig_radius
+                center += cross_dir * ((h3 - 0.5) * 2.0 * cross_radius)
+                center += tangent * ((h2 - 0.5) * min(0.14, reach * 0.075))
+                center += radial_dir * ((h1 - 0.5) * 0.045)
+
+                length = SPRAY_LENGTH_MIN + (SPRAY_LENGTH_MAX - SPRAY_LENGTH_MIN) * (0.22 + 0.78 * h2)
+                width = SPRAY_WIDTH_MIN + (SPRAY_WIDTH_MAX - SPRAY_WIDTH_MIN) * (0.20 + 0.80 * h3)
+
+                # Point sprays along the virtual branchlet, with a modest outward/upward fan.
+                branchlet_dir = (tangent * 0.56 + offset_dir * (0.30 + 0.10 * h4) + radial_dir * 0.10 + up * 0.06).normalized()
+                spray_axis = (branchlet_dir * 0.88 + cross_dir * ((h5 - 0.5) * 0.18)).normalized()
+                roll = (h0 - 0.5) * math.radians(46.0)
+                tint = [0.82 + 0.18 * h1, 0.88 + 0.12 * h2, 0.80 + 0.20 * h3]
 
                 for qi in range(QUADS_PER_SPRAY):
                     ang = math.tau * qi / QUADS_PER_SPRAY + roll
@@ -183,6 +211,8 @@ def build_foliage_mesh(variant, report, xoff):
                     'branch_id': branch.get('id'),
                     'terminal_t': round(t, 5),
                     'virtual_twig_lane': lane,
+                    'crown_envelope': round(envelope, 5),
+                    'shell_radius': round(twig_radius, 5),
                     'position': [round(center.x, 5), round(center.y, 5), round(center.z, 5)],
                     'direction': [round(spray_axis.x, 5), round(spray_axis.y, 5), round(spray_axis.z, 5)],
                     'length': round(length, 5),
@@ -308,14 +338,15 @@ def main():
     setup_preview(structural_objects + foliage_objects)
     render_png(out_png)
     payload = {
-        'representation': 'terminal_branch_volume_foliage_points_micro_sprites',
+        'representation': 'layered_virtual_branchlet_foliage_points_micro_sprites',
         'target_foliage_tris': TARGET_FOLIAGE_TRIS,
         'quads_per_spray': QUADS_PER_SPRAY,
         'sprite_size_m': {'length': [SPRAY_LENGTH_MIN, SPRAY_LENGTH_MAX], 'width': [SPRAY_WIDTH_MIN, SPRAY_WIDTH_MAX]},
         'foliage_start_t': FOLIAGE_START_T,
         'virtual_twig_radius_m': [VIRTUAL_TWIG_RADIUS_MIN, VIRTUAL_TWIG_RADIUS_MAX],
         'virtual_twig_lanes': VIRTUAL_TWIG_LANES,
-        'runtime_intent': 'Godot MultiMesh; one tiny crossed-sprite mesh instanced through the terminal branch volume with per-instance transform/tint variation',
+        'outer_shell_share': OUTER_SHELL_SHARE,
+        'runtime_intent': 'Godot MultiMesh; one tiny crossed-sprite mesh instanced on layered virtual branchlets with per-instance transform/tint variation',
         'variants': stats,
     }
     with open(out_json, 'w', encoding='utf-8') as f:
