@@ -9,6 +9,7 @@ on:
       - 'tools/blender/analyze_pine_source.py'
       - 'tools/blender/extract_pine_skeleton.py'
       - 'tools/blender/build_pine_structural_lod0_experiment.py'
+      - 'tools/blender/build_pine_foliage_lod0_experiment.py'
       - 'assets/cc0/polyhaven/forest/pine_tree_01/**'
   workflow_dispatch:
 
@@ -73,6 +74,23 @@ jobs:
           test -s build/pine-analysis/pine_tree_01_structural_lod0.glb
           test -s build/pine-analysis/pine_tree_01_structural_lod0.json
           test -s build/pine-analysis/pine_tree_01_structural_lod0.png
+      - name: Build compact foliage LOD0 experiment
+        run: |
+          set -euo pipefail
+          blender --background --python tools/blender/build_pine_foliage_lod0_experiment.py -- \
+            build/pine-analysis/pine_tree_01_skeleton.json \
+            build/pine-analysis/pine_tree_01_structural_lod0.json \
+            build/pine-analysis/pine_tree_01_structural_lod0.glb \
+            /tmp/pine_tree_01/pine_tree_01_twig_diff_1k.jpg \
+            /tmp/pine_tree_01/pine_tree_01_twig_alpha_1k.png \
+            build/pine-analysis/pine_tree_01_foliage_lod0.glb \
+            build/pine-analysis/pine_tree_01_foliage_lod0.json \
+            build/pine-analysis/pine_tree_01_foliage_lod0.png | tee build/pine-analysis/foliage_lod0.log
+          grep -q 'ARCONT_PINE_FOLIAGE_EXPERIMENT=' build/pine-analysis/foliage_lod0.log
+          grep -q 'ARCONT_PINE_FOLIAGE_PREVIEW=' build/pine-analysis/foliage_lod0.log
+          test -s build/pine-analysis/pine_tree_01_foliage_lod0.glb
+          test -s build/pine-analysis/pine_tree_01_foliage_lod0.json
+          test -s build/pine-analysis/pine_tree_01_foliage_lod0.png
       - name: Upload analysis
         uses: actions/upload-artifact@v4
         with:
