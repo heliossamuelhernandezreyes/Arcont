@@ -4,74 +4,15 @@ from mathutils import Vector
 TARGET_FOLIAGE_TRIS = 14400
 QUADS_PER_SPRAY = 3
 TRIS_PER_SPRAY = QUADS_PER_SPRAY * 2
-MIN_SPRAYS_PER_BRANCH = 12
-MAX_SPRAYS_PER_BRANCH = 96
-SPRAY_LENGTH_MIN = 0.095
-SPRAY_LENGTH_MAX = 0.205
-SPRAY_WIDTH_MIN = 0.036
-SPRAY_WIDTH_MAX = 0.078
-FOLIAGE_START_T = 0.24
-TIP_BIAS_POWER = 0.96
-VIRTUAL_TWIG_RADIUS_MIN = 0.035
-VIRTUAL_TWIG_RADIUS_MAX = 0.34
-VIRTUAL_TWIG_LANES = 7
-OUTER_SHELL_SHARE = 0.42
+TARGET_SPRAYS = TARGET_FOLIAGE_TRIS // TRIS_PER_SPRAY
+SPRAY_LENGTH_MIN = 0.10
+SPRAY_LENGTH_MAX = 0.22
+SPRAY_WIDTH_MIN = 0.038
+SPRAY_WIDTH_MAX = 0.082
+POSITION_JITTER = 0.055
 
 
-def radial(p):
-    return math.hypot(p.x, p.y)
-
-
-def azimuth(p):
-    return math.atan2(p.y, p.x)
-
-
-def angular_distance(a, b):
-    d = abs(a - b) % math.tau
-    return min(d, math.tau - d)
-
-
-def clean_path(branch):
-    pts = [Vector(p) for p in branch.get('path', [])]
-    if len(pts) < 2:
-        return []
-    if radial(pts[-1]) < radial(pts[0]):
-        pts.reverse()
-    farthest = max(pts, key=radial)
-    dom = azimuth(farthest)
-    pts = [p for p in pts if angular_distance(azimuth(p), dom) <= math.radians(42.0)]
-    if len(pts) < 2:
-        return []
-    pts.sort(key=radial)
-    out = [pts[0].copy()]
-    for p in pts[1:]:
-        if radial(p) > radial(out[-1]) + 0.025:
-            out.append(p.copy())
-    return out if len(out) >= 2 else []
-
-
-def interpolate_polyline(pts, t):
-    lengths = []
-    total = 0.0
-    for a, b in zip(pts, pts[1:]):
-        seg = (b - a).length
-        lengths.append(seg)
-        total += seg
-    if total <= 1e-6:
-        return pts[-1].copy(), Vector((1, 0, 0))
-    target = max(0.0, min(1.0, t)) * total
-    acc = 0.0
-    for i, seg in enumerate(lengths):
-        if acc + seg >= target:
-            u = (target - acc) / max(seg, 1e-6)
-            p = pts[i].lerp(pts[i + 1], u)
-            tangent = (pts[i + 1] - pts[i]).normalized()
-            return p, tangent
-        acc += seg
-    return pts[-1].copy(), (pts[-1] - pts[-2]).normalized()
-
-
-def hash01(a, b, c):
+def hash01(a, b, c=0.0):
     x = math.sin(a * 12.9898 + b * 78.233 + c * 37.719) * 43758.5453
     return x - math.floor(x)
 
@@ -94,145 +35,118 @@ def add_card(bm, uv_layer, center, along, width_axis, length, width):
     return 2
 
 
-def local_frame(tangent, radial_dir):
-    tangent = tangent.normalized()
-    side = tangent.cross(Vector((0, 0, 1)))
-    if side.length < 1e-5:
-        side = radial_dir.cross(tangent)
+def local_frame(direction):
+    along = direction.normalized() if direction.length > 1e-6 else Vector((1, 0, 0))
+    side = along.cross(Vector((0, 0, 1)))
     if side.length < 1e-5:
         side = Vector((1, 0, 0))
     side.normalize()
-    up = side.cross(tangent)
+    up = side.cross(along)
     if up.length < 1e-5:
         up = Vector((0, 0, 1))
     up.normalize()
-    return side, up
+    return along, side, up
 
 
-def crown_envelope(terminal):
-    # Pine foliage is fullest before the extreme tip, then tapers again.
-    middle = math.sin(math.pi * max(0.0, min(1.0, terminal))) ** 0.58
-    tip = terminal ** 2.2
-    return max(0.18, min(1.0, middle * 0.86 + tip * 0.22))
+def choose_points(points, target):
+    if len(points) <= target:
+        return list(points)
+    # Density-aware stratified selection: keep source shape instead of simply taking the densest cells.
+    weighted = sorted(
+        enumerate(points),
+        key=lambda kv: (
+            -float(kv[1].get('density', 0.0)),
+            kv[1]['position'][2],
+            math.atan2(kv[1]['position'][1], kv[1]['position'][0]),
+        ),
+    )
+    dense_n = min(target // 2, len(weighted))
+    chosen = [p for _, p in weighted[:dense_n]]
+    remainder = [p for _, p in weighted[dense_n:]]
+    need = target - len(chosen)
+    if need > 0 and remainder:
+        stride = len(remainder) / float(need)
+        for i in range(need):
+            idx = min(len(remainder) - 1, int((i + 0.5) * stride))
+            chosen.append(remainder[idx])
+    return chosen[:target]
 
 
-def build_foliage_mesh(variant, report, xoff):
-    selected_ids = set(report.get('selected_ids', []))
-    branches = [b for b in variant.get('branches', []) if b.get('id') in selected_ids]
-    prepared = []
-    total_weight = 0.0
-    for branch in branches:
-        pts = clean_path(branch)
-        if len(pts) < 2:
-            continue
-        reach = max(0.08, radial(pts[-1]) - radial(pts[0]))
-        weight = math.sqrt(reach)
-        prepared.append((branch, pts, reach, weight))
-        total_weight += weight
-
-    target_sprays = max(1, TARGET_FOLIAGE_TRIS // TRIS_PER_SPRAY)
-    mesh = bpy.data.meshes.new(variant['name'] + '_foliage_points_mesh')
+def build_foliage_mesh(variant, xoff):
+    source_points = variant.get('points', [])
+    selected = choose_points(source_points, TARGET_SPRAYS)
+    mesh = bpy.data.meshes.new(variant['name'] + '_source_volume_foliage_mesh')
     bm = bmesh.new()
     uv_layer = bm.loops.layers.uv.new('UVMap')
     tris = 0
-    sprays = 0
-    points = []
+    points_out = []
     try:
-        for bi, (branch, pts, reach, weight) in enumerate(prepared):
-            share = target_sprays * weight / max(total_weight, 1e-6)
-            count = int(max(MIN_SPRAYS_PER_BRANCH, min(MAX_SPRAYS_PER_BRANCH, round(share))))
-            for si in range(count):
-                q = (si + 0.5) / count
-                h0 = hash01(bi + 1, si + 3, variant['height'])
-                h1 = hash01(si + 11, bi + 7, variant['height'] * 0.37)
-                h2 = hash01(si + 29, bi + 17, variant['height'] * 0.73)
-                h3 = hash01(si + 43, bi + 23, variant['height'] * 1.13)
-                h4 = hash01(si + 61, bi + 31, variant['height'] * 1.71)
-                h5 = hash01(si + 79, bi + 47, variant['height'] * 2.03)
+        for i, src in enumerate(selected):
+            h0 = hash01(i + 1, len(selected), variant.get('height', 1.0))
+            h1 = hash01(i + 17, 3, variant.get('height', 1.0))
+            h2 = hash01(i + 41, 7, variant.get('height', 1.0))
+            h3 = hash01(i + 83, 11, variant.get('height', 1.0))
+            h4 = hash01(i + 131, 13, variant.get('height', 1.0))
 
-                # Slight longitudinal jitter breaks visible rings while retaining the source branch layout.
-                qj = max(0.0, min(1.0, q + (h5 - 0.5) / max(8.0, count * 0.72)))
-                t = FOLIAGE_START_T + (1.0 - FOLIAGE_START_T) * (qj ** TIP_BIAS_POWER)
-                center, tangent = interpolate_polyline(pts, t)
-                if tangent.length < 1e-5:
-                    continue
-                center.x += xoff
+            center = Vector(src['position'])
+            center.x += xoff
+            density = max(0.0, min(1.0, float(src.get('density', 0.5))))
+            radial = Vector((src['direction'][0], src['direction'][1], 0.0))
+            if radial.length < 1e-5:
+                radial = Vector((1, 0, 0))
+            radial.normalize()
 
-                radial_dir = Vector((center.x - xoff, center.y, 0.0))
-                if radial_dir.length < 1e-5:
-                    radial_dir = Vector((1, 0, 0))
-                radial_dir.normalize()
-                side, up = local_frame(tangent, radial_dir)
+            # The source voxel gives crown position. Add only tiny deterministic sub-voxel variation.
+            tangential = Vector((-radial.y, radial.x, 0.0))
+            center += radial * ((h0 - 0.5) * POSITION_JITTER)
+            center += tangential * ((h1 - 0.5) * POSITION_JITTER)
+            center.z += (h2 - 0.5) * POSITION_JITTER
 
-                terminal = max(0.0, min(1.0, (t - FOLIAGE_START_T) / max(1e-6, 1.0 - FOLIAGE_START_T)))
-                envelope = crown_envelope(terminal)
-                lane = si % VIRTUAL_TWIG_LANES
-                lane_phase = math.tau * lane / VIRTUAL_TWIG_LANES
+            # Needle spray direction follows the source radial lobe but avoids the rigid horizontal look.
+            along = (radial * (0.68 + 0.16 * h3) +
+                     tangential * ((h4 - 0.5) * 0.34) +
+                     Vector((0, 0, 0.18 + 0.30 * (h2 - 0.5)))).normalized()
+            along, side, up = local_frame(along)
 
-                # Give each lane a smooth branchlet trajectory instead of independent radial noise.
-                branchlet_phase = lane_phase + terminal * (1.35 + 0.45 * h1) + (h0 - 0.5) * 0.58
-                offset_dir = side * math.cos(branchlet_phase) + up * math.sin(branchlet_phase)
+            density_scale = 0.82 + 0.34 * math.sqrt(max(0.0, density))
+            length = (SPRAY_LENGTH_MIN + (SPRAY_LENGTH_MAX - SPRAY_LENGTH_MIN) * h1) * density_scale
+            width = (SPRAY_WIDTH_MIN + (SPRAY_WIDTH_MAX - SPRAY_WIDTH_MIN) * h3) * density_scale
+            roll = (h0 - 0.5) * math.radians(54.0)
 
-                branch_radius_cap = min(VIRTUAL_TWIG_RADIUS_MAX, 0.10 + reach * 0.16)
-                shell_mix = 0.52 + 0.48 * h4
-                if h5 < OUTER_SHELL_SHARE:
-                    shell_mix = 0.78 + 0.22 * h4
-                twig_radius = (VIRTUAL_TWIG_RADIUS_MIN +
-                               (branch_radius_cap - VIRTUAL_TWIG_RADIUS_MIN) *
-                               envelope * shell_mix)
+            for qi in range(QUADS_PER_SPRAY):
+                ang = math.tau * qi / QUADS_PER_SPRAY + roll
+                width_axis = side * math.cos(ang) + up * math.sin(ang)
+                tris += add_card(bm, uv_layer, center, along, width_axis, length, width)
 
-                # A second, smaller perpendicular component gives the crown real thickness.
-                cross_dir = tangent.cross(offset_dir)
-                if cross_dir.length < 1e-5:
-                    cross_dir = side.copy()
-                cross_dir.normalize()
-                cross_radius = twig_radius * (0.18 + 0.30 * h2)
-
-                center += offset_dir * twig_radius
-                center += cross_dir * ((h3 - 0.5) * 2.0 * cross_radius)
-                center += tangent * ((h2 - 0.5) * min(0.14, reach * 0.075))
-                center += radial_dir * ((h1 - 0.5) * 0.045)
-
-                length = SPRAY_LENGTH_MIN + (SPRAY_LENGTH_MAX - SPRAY_LENGTH_MIN) * (0.22 + 0.78 * h2)
-                width = SPRAY_WIDTH_MIN + (SPRAY_WIDTH_MAX - SPRAY_WIDTH_MIN) * (0.20 + 0.80 * h3)
-
-                # Point sprays along the virtual branchlet, with a modest outward/upward fan.
-                branchlet_dir = (tangent * 0.56 + offset_dir * (0.30 + 0.10 * h4) + radial_dir * 0.10 + up * 0.06).normalized()
-                spray_axis = (branchlet_dir * 0.88 + cross_dir * ((h5 - 0.5) * 0.18)).normalized()
-                roll = (h0 - 0.5) * math.radians(46.0)
-                tint = [0.82 + 0.18 * h1, 0.88 + 0.12 * h2, 0.80 + 0.20 * h3]
-
-                for qi in range(QUADS_PER_SPRAY):
-                    ang = math.tau * qi / QUADS_PER_SPRAY + roll
-                    width_axis = side * math.cos(ang) + up * math.sin(ang)
-                    tris += add_card(bm, uv_layer, center, spray_axis, width_axis, length, width)
-
-                points.append({
-                    'branch_id': branch.get('id'),
-                    'terminal_t': round(t, 5),
-                    'virtual_twig_lane': lane,
-                    'crown_envelope': round(envelope, 5),
-                    'shell_radius': round(twig_radius, 5),
-                    'position': [round(center.x, 5), round(center.y, 5), round(center.z, 5)],
-                    'direction': [round(spray_axis.x, 5), round(spray_axis.y, 5), round(spray_axis.z, 5)],
-                    'length': round(length, 5),
-                    'width': round(width, 5),
-                    'roll': round(roll, 5),
-                    'tint': [round(v, 4) for v in tint],
-                })
-                sprays += 1
+            points_out.append({
+                'source_voxel': src.get('voxel'),
+                'source_samples': src.get('samples', 0),
+                'density': round(density, 5),
+                'position': [round(center.x, 5), round(center.y, 5), round(center.z, 5)],
+                'direction': [round(along.x, 5), round(along.y, 5), round(along.z, 5)],
+                'length': round(length, 5),
+                'width': round(width, 5),
+                'roll': round(roll, 5),
+                'tint_seed': [round(h2, 4), round(h3, 4), round(h4, 4)],
+            })
         bm.normal_update()
         bm.to_mesh(mesh)
     finally:
         bm.free()
     mesh.update()
-    obj = bpy.data.objects.new(variant['name'] + '_foliage_points', mesh)
+    obj = bpy.data.objects.new(variant['name'] + '_source_volume_foliage', mesh)
     bpy.context.collection.objects.link(obj)
-    return obj, {'sprays': sprays, 'tris': tris, 'branches': len(prepared), 'points': points}
+    return obj, {
+        'name': variant['name'],
+        'source_points': len(source_points),
+        'sprays': len(selected),
+        'tris': tris,
+        'points': points_out,
+    }
 
 
 def make_foliage_material(diff_path, alpha_path):
-    mat = bpy.data.materials.new('pine_twig_micro_sprite')
+    mat = bpy.data.materials.new('pine_twig_source_volume_micro_sprite')
     mat.use_nodes = True
     if hasattr(mat, 'surface_render_method'):
         mat.surface_render_method = 'DITHERED'
@@ -260,10 +174,6 @@ def make_foliage_material(diff_path, alpha_path):
     return mat
 
 
-def assign_material(obj, mat):
-    obj.data.materials.append(mat)
-
-
 def setup_preview(objects):
     coords = []
     for obj in objects:
@@ -277,11 +187,11 @@ def setup_preview(objects):
     cam = bpy.data.objects.new('Camera', cam_data)
     bpy.context.collection.objects.link(cam)
     bpy.context.scene.camera = cam
-    cam.location = (center.x, center.y - max(extent.z * 2.2, extent.x * 1.7), center.z)
+    cam.location = (center.x, center.y - max(extent.z * 2.25, extent.x * 1.7), center.z)
     cam.rotation_euler = (center - cam.location).to_track_quat('-Z', 'Y').to_euler()
     cam.data.type = 'ORTHO'
     aspect = 1500.0 / 900.0
-    cam.data.ortho_scale = max(extent.z * 1.16, extent.x / aspect * 1.16)
+    cam.data.ortho_scale = max(extent.z * 1.18, extent.x / aspect * 1.18)
     sun_data = bpy.data.lights.new('Sun', 'SUN')
     sun_data.energy = 2.3
     sun = bpy.data.objects.new('Sun', sun_data)
@@ -309,13 +219,11 @@ def render_png(path):
 
 def main():
     argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
-    if len(argv) != 8:
-        raise SystemExit('usage: blender --background --python build_pine_foliage_lod0_experiment.py -- skeleton.json structural.json structural.glb twig_diff twig_alpha out.glb out.json out.png')
-    skeleton_path, report_path, structural_glb, diff_path, alpha_path, out_glb, out_json, out_png = argv
-    skeleton = json.load(open(skeleton_path, 'r', encoding='utf-8'))
-    report = json.load(open(report_path, 'r', encoding='utf-8'))
-    variants = skeleton['variants']
-    reports = {r['name']: r for r in report['variants']}
+    if len(argv) != 7:
+        raise SystemExit('usage: blender --background --python build_pine_foliage_lod0_experiment.py -- foliage_volume.json structural.glb twig_diff twig_alpha out.glb out.json out.png')
+    volume_path, structural_glb, diff_path, alpha_path, out_glb, out_json, out_png = argv
+    volume = json.load(open(volume_path, 'r', encoding='utf-8'))
+    variants = volume['variants']
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.gltf(filepath=structural_glb)
@@ -326,10 +234,9 @@ def main():
     stats = []
     foliage_objects = []
     for variant in variants:
-        obj, st = build_foliage_mesh(variant, reports[variant['name']], xoff)
-        assign_material(obj, mat)
+        obj, st = build_foliage_mesh(variant, xoff)
+        obj.data.materials.append(mat)
         foliage_objects.append(obj)
-        st['name'] = variant['name']
         stats.append(st)
         xoff += variant['height'] * 0.72
 
@@ -338,21 +245,18 @@ def main():
     setup_preview(structural_objects + foliage_objects)
     render_png(out_png)
     payload = {
-        'representation': 'layered_virtual_branchlet_foliage_points_micro_sprites',
+        'representation': 'source_twig_volume_foliage_points_micro_sprites',
+        'source_representation': volume.get('representation'),
         'target_foliage_tris': TARGET_FOLIAGE_TRIS,
         'quads_per_spray': QUADS_PER_SPRAY,
         'sprite_size_m': {'length': [SPRAY_LENGTH_MIN, SPRAY_LENGTH_MAX], 'width': [SPRAY_WIDTH_MIN, SPRAY_WIDTH_MAX]},
-        'foliage_start_t': FOLIAGE_START_T,
-        'virtual_twig_radius_m': [VIRTUAL_TWIG_RADIUS_MIN, VIRTUAL_TWIG_RADIUS_MAX],
-        'virtual_twig_lanes': VIRTUAL_TWIG_LANES,
-        'outer_shell_share': OUTER_SHELL_SHARE,
-        'runtime_intent': 'Godot MultiMesh; one tiny crossed-sprite mesh instanced on layered virtual branchlets with per-instance transform/tint variation',
+        'runtime_intent': 'Godot MultiMesh; compact crossed-sprite spray mesh instanced at source-derived twig-volume points with deterministic transform/tint variation',
         'variants': stats,
     }
     with open(out_json, 'w', encoding='utf-8') as f:
         json.dump(payload, f, indent=2)
     for st in stats:
-        print(f"ARCONT_PINE_FOLIAGE_EXPERIMENT={st['name']} branches={st['branches']} sprays={st['sprays']} tris={st['tris']}")
+        print(f"ARCONT_PINE_FOLIAGE_EXPERIMENT={st['name']} source_points={st['source_points']} sprays={st['sprays']} tris={st['tris']}")
     print('ARCONT_PINE_FOLIAGE_POINTS_TOTAL=', sum(st['sprays'] for st in stats))
     print('ARCONT_PINE_FOLIAGE_PREVIEW=', out_png)
     print('ARCONT_PINE_FOLIAGE_GLB=', out_glb)
