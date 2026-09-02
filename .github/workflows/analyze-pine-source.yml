@@ -8,6 +8,7 @@ on:
       - '.github/workflows/analyze-pine-source.yml'
       - 'tools/blender/analyze_pine_source.py'
       - 'tools/blender/extract_pine_skeleton.py'
+      - 'tools/blender/extract_pine_foliage_volume.py'
       - 'tools/blender/build_pine_structural_lod0_experiment.py'
       - 'tools/blender/build_pine_foliage_lod0_experiment.py'
       - 'assets/cc0/polyhaven/forest/pine_tree_01/**'
@@ -63,6 +64,14 @@ jobs:
             build/pine-analysis/pine_tree_01_analysis.json | tee build/pine-analysis/analyze.log
           grep -q 'ARCONT_PINE_ANALYSIS_OBJECTS=' build/pine-analysis/analyze.log
           grep -q 'ARCONT_PINE_ANALYSIS_TOTAL_TRIS=' build/pine-analysis/analyze.log
+      - name: Extract source foliage volume
+        run: |
+          set -euo pipefail
+          blender --background --python tools/blender/extract_pine_foliage_volume.py -- \
+            /tmp/pine_tree_01/pine_tree_01_1k.gltf \
+            build/pine-analysis/pine_tree_01_foliage_volume.json | tee build/pine-analysis/foliage_volume.log
+          grep -q 'ARCONT_PINE_FOLIAGE_VOLUME_VARIANTS=' build/pine-analysis/foliage_volume.log
+          test -s build/pine-analysis/pine_tree_01_foliage_volume.json
       - name: Extract source-derived skeleton
         run: |
           set -euo pipefail
