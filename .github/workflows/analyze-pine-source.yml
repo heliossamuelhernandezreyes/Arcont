@@ -37,10 +37,23 @@ jobs:
           cp assets/cc0/polyhaven/forest/pine_tree_01/pine_tree_01_1k.gltf "$SRC/pine_tree_01_1k.gltf"
           cp assets/cc0/polyhaven/forest/pine_tree_01/*.jpg "$SRC/" || true
           cp assets/cc0/polyhaven/forest/pine_tree_01/*.png "$SRC/" || true
-          curl -L --fail --retry 4 --retry-delay 3 \
-            -o "$SRC/pine_tree_01.bin" \
-            'https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/pine_tree_01/pine_tree_01.bin'
+          URL='https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/pine_tree_01/pine_tree_01.bin'
+          rm -f "$SRC/pine_tree_01.bin"
+          for attempt in 1 2 3 4 5 6; do
+            echo "Poly Haven source download attempt ${attempt}/6"
+            if curl -L --fail --retry 5 --retry-all-errors --retry-delay 5 \
+              --connect-timeout 30 --max-time 1200 \
+              -o "$SRC/pine_tree_01.bin.part" "$URL"; then
+              mv "$SRC/pine_tree_01.bin.part" "$SRC/pine_tree_01.bin"
+              break
+            fi
+            rm -f "$SRC/pine_tree_01.bin.part"
+            sleep $((attempt * 10))
+          done
           test -s "$SRC/pine_tree_01.bin"
+          SOURCE_BYTES=$(stat -c%s "$SRC/pine_tree_01.bin")
+          echo "ARCONT_PINE_SOURCE_BYTES=$SOURCE_BYTES"
+          test "$SOURCE_BYTES" -gt 900000000
       - name: Analyze source geometry
         run: |
           set -euo pipefail
