@@ -5,11 +5,14 @@ TARGET_FOLIAGE_TRIS = 14400
 QUADS_PER_SPRAY = 3
 TRIS_PER_SPRAY = QUADS_PER_SPRAY * 2
 TARGET_SPRAYS = TARGET_FOLIAGE_TRIS // TRIS_PER_SPRAY
-SPRAY_LENGTH_MIN = 0.10
-SPRAY_LENGTH_MAX = 0.22
-SPRAY_WIDTH_MIN = 0.038
-SPRAY_WIDTH_MAX = 0.082
-POSITION_JITTER = 0.055
+# Keep the same triangle budget; make each source-derived point carry more visible crown area.
+SPRAY_LENGTH_MIN = 0.18
+SPRAY_LENGTH_MAX = 0.38
+SPRAY_WIDTH_MIN = 0.075
+SPRAY_WIDTH_MAX = 0.16
+POSITION_JITTER = 0.085
+DENSE_SCALE_MIN = 0.94
+DENSE_SCALE_MAX = 1.34
 
 
 def hash01(a, b, c=0.0):
@@ -51,7 +54,6 @@ def local_frame(direction):
 def choose_points(points, target):
     if len(points) <= target:
         return list(points)
-    # Density-aware stratified selection: keep source shape instead of simply taking the densest cells.
     weighted = sorted(
         enumerate(points),
         key=lambda kv: (
@@ -95,23 +97,21 @@ def build_foliage_mesh(variant, xoff):
             if radial.length < 1e-5:
                 radial = Vector((1, 0, 0))
             radial.normalize()
-
-            # The source voxel gives crown position. Add only tiny deterministic sub-voxel variation.
             tangential = Vector((-radial.y, radial.x, 0.0))
             center += radial * ((h0 - 0.5) * POSITION_JITTER)
             center += tangential * ((h1 - 0.5) * POSITION_JITTER)
             center.z += (h2 - 0.5) * POSITION_JITTER
 
-            # Needle spray direction follows the source radial lobe but avoids the rigid horizontal look.
-            along = (radial * (0.68 + 0.16 * h3) +
-                     tangential * ((h4 - 0.5) * 0.34) +
-                     Vector((0, 0, 0.18 + 0.30 * (h2 - 0.5)))).normalized()
+            # Broader orientation fan prevents source points from reading as repeated dark needles.
+            along = (radial * (0.48 + 0.24 * h3) +
+                     tangential * ((h4 - 0.5) * 0.58) +
+                     Vector((0, 0, 0.12 + 0.46 * (h2 - 0.5)))).normalized()
             along, side, up = local_frame(along)
 
-            density_scale = 0.82 + 0.34 * math.sqrt(max(0.0, density))
+            density_scale = DENSE_SCALE_MIN + (DENSE_SCALE_MAX - DENSE_SCALE_MIN) * math.sqrt(density)
             length = (SPRAY_LENGTH_MIN + (SPRAY_LENGTH_MAX - SPRAY_LENGTH_MIN) * h1) * density_scale
             width = (SPRAY_WIDTH_MIN + (SPRAY_WIDTH_MAX - SPRAY_WIDTH_MIN) * h3) * density_scale
-            roll = (h0 - 0.5) * math.radians(54.0)
+            roll = (h0 - 0.5) * math.radians(86.0)
 
             for qi in range(QUADS_PER_SPRAY):
                 ang = math.tau * qi / QUADS_PER_SPRAY + roll
@@ -136,13 +136,7 @@ def build_foliage_mesh(variant, xoff):
     mesh.update()
     obj = bpy.data.objects.new(variant['name'] + '_source_volume_foliage', mesh)
     bpy.context.collection.objects.link(obj)
-    return obj, {
-        'name': variant['name'],
-        'source_points': len(source_points),
-        'sprays': len(selected),
-        'tris': tris,
-        'points': points_out,
-    }
+    return obj, {'name': variant['name'], 'source_points': len(source_points), 'sprays': len(selected), 'tris': tris, 'points': points_out}
 
 
 def make_foliage_material(diff_path, alpha_path):
@@ -153,7 +147,7 @@ def make_foliage_material(diff_path, alpha_path):
     elif hasattr(mat, 'blend_method'):
         mat.blend_method = 'CLIP'
         if hasattr(mat, 'alpha_threshold'):
-            mat.alpha_threshold = 0.35
+            mat.alpha_threshold = 0.28
     if hasattr(mat, 'use_transparency_overlap'):
         mat.use_transparency_overlap = False
     nodes = mat.node_tree.nodes
@@ -169,7 +163,7 @@ def make_foliage_material(diff_path, alpha_path):
     alpha.image.colorspace_settings.name = 'Non-Color'
     links.new(tex.outputs['Color'], bsdf.inputs['Base Color'])
     links.new(alpha.outputs['Color'], bsdf.inputs['Alpha'])
-    bsdf.inputs['Roughness'].default_value = 0.78
+    bsdf.inputs['Roughness'].default_value = 0.74
     links.new(bsdf.outputs['BSDF'], out.inputs['Surface'])
     return mat
 
@@ -224,12 +218,10 @@ def main():
     volume_path, structural_glb, diff_path, alpha_path, out_glb, out_json, out_png = argv
     volume = json.load(open(volume_path, 'r', encoding='utf-8'))
     variants = volume['variants']
-
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.gltf(filepath=structural_glb)
     structural_objects = [o for o in bpy.context.scene.objects if o.type == 'MESH']
     mat = make_foliage_material(diff_path, alpha_path)
-
     xoff = 0.0
     stats = []
     foliage_objects = []
@@ -239,18 +231,17 @@ def main():
         foliage_objects.append(obj)
         stats.append(st)
         xoff += variant['height'] * 0.72
-
     os.makedirs(os.path.dirname(out_glb) or '.', exist_ok=True)
     bpy.ops.export_scene.gltf(filepath=out_glb, export_format='GLB')
     setup_preview(structural_objects + foliage_objects)
     render_png(out_png)
     payload = {
-        'representation': 'source_twig_volume_foliage_points_micro_sprites',
+        'representation': 'source_twig_volume_foliage_points_broad_micro_sprites',
         'source_representation': volume.get('representation'),
         'target_foliage_tris': TARGET_FOLIAGE_TRIS,
         'quads_per_spray': QUADS_PER_SPRAY,
         'sprite_size_m': {'length': [SPRAY_LENGTH_MIN, SPRAY_LENGTH_MAX], 'width': [SPRAY_WIDTH_MIN, SPRAY_WIDTH_MAX]},
-        'runtime_intent': 'Godot MultiMesh; compact crossed-sprite spray mesh instanced at source-derived twig-volume points with deterministic transform/tint variation',
+        'runtime_intent': 'Godot MultiMesh; source-volume foliage points with broader crossed spray mesh, deterministic transform/tint variation, same triangle budget',
         'variants': stats,
     }
     with open(out_json, 'w', encoding='utf-8') as f:
