@@ -96,12 +96,11 @@ jobs:
           test -s build/pine-analysis/pine_tree_01_structural_lod0.glb
           test -s build/pine-analysis/pine_tree_01_structural_lod0.json
           test -s build/pine-analysis/pine_tree_01_structural_lod0.png
-      - name: Build compact foliage LOD0 experiment
+      - name: Build source-volume foliage LOD0 experiment
         run: |
           set -euo pipefail
           blender --background --python tools/blender/build_pine_foliage_lod0_experiment.py -- \
-            build/pine-analysis/pine_tree_01_skeleton.json \
-            build/pine-analysis/pine_tree_01_structural_lod0.json \
+            build/pine-analysis/pine_tree_01_foliage_volume.json \
             build/pine-analysis/pine_tree_01_structural_lod0.glb \
             /tmp/pine_tree_01/pine_tree_01_twig_diff_1k.jpg \
             /tmp/pine_tree_01/pine_tree_01_twig_alpha_1k.png \
