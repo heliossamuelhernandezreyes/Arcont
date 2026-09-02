@@ -4,14 +4,17 @@ from mathutils import Vector
 TARGET_FOLIAGE_TRIS = 14400
 QUADS_PER_SPRAY = 3
 TRIS_PER_SPRAY = QUADS_PER_SPRAY * 2
-MIN_SPRAYS_PER_BRANCH = 10
-MAX_SPRAYS_PER_BRANCH = 88
-SPRAY_LENGTH_MIN = 0.09
-SPRAY_LENGTH_MAX = 0.20
-SPRAY_WIDTH_MIN = 0.035
-SPRAY_WIDTH_MAX = 0.075
-FOLIAGE_START_T = 0.56
-TIP_BIAS_POWER = 0.48
+MIN_SPRAYS_PER_BRANCH = 12
+MAX_SPRAYS_PER_BRANCH = 96
+SPRAY_LENGTH_MIN = 0.085
+SPRAY_LENGTH_MAX = 0.18
+SPRAY_WIDTH_MIN = 0.032
+SPRAY_WIDTH_MAX = 0.068
+FOLIAGE_START_T = 0.30
+TIP_BIAS_POWER = 0.88
+VIRTUAL_TWIG_RADIUS_MIN = 0.025
+VIRTUAL_TWIG_RADIUS_MAX = 0.19
+VIRTUAL_TWIG_LANES = 5
 
 
 def radial(p):
@@ -90,6 +93,21 @@ def add_card(bm, uv_layer, center, along, width_axis, length, width):
     return 2
 
 
+def local_frame(tangent, radial_dir):
+    tangent = tangent.normalized()
+    side = tangent.cross(Vector((0, 0, 1)))
+    if side.length < 1e-5:
+        side = radial_dir.cross(tangent)
+    if side.length < 1e-5:
+        side = Vector((1, 0, 0))
+    side.normalize()
+    up = side.cross(tangent)
+    if up.length < 1e-5:
+        up = Vector((0, 0, 1))
+    up.normalize()
+    return side, up
+
+
 def build_foliage_mesh(variant, report, xoff):
     selected_ids = set(report.get('selected_ids', []))
     branches = [b for b in variant.get('branches', []) if b.get('id') in selected_ids]
@@ -100,9 +118,8 @@ def build_foliage_mesh(variant, report, xoff):
         if len(pts) < 2:
             continue
         reach = max(0.08, radial(pts[-1]) - radial(pts[0]))
-        # Longer source-guided terminal branches receive more foliage, but only mildly.
         weight = math.sqrt(reach)
-        prepared.append((branch, pts, weight))
+        prepared.append((branch, pts, reach, weight))
         total_weight += weight
 
     target_sprays = max(1, TARGET_FOLIAGE_TRIS // TRIS_PER_SPRAY)
@@ -113,12 +130,12 @@ def build_foliage_mesh(variant, report, xoff):
     sprays = 0
     points = []
     try:
-        for bi, (branch, pts, weight) in enumerate(prepared):
+        for bi, (branch, pts, reach, weight) in enumerate(prepared):
             share = target_sprays * weight / max(total_weight, 1e-6)
             count = int(max(MIN_SPRAYS_PER_BRANCH, min(MAX_SPRAYS_PER_BRANCH, round(share))))
             for si in range(count):
                 q = (si + 0.5) / count
-                # Strong terminal bias: preserve trunk/crown gaps and concentrate needles near tips.
+                # Populate the whole terminal portion instead of placing a tuft only at the tip.
                 t = FOLIAGE_START_T + (1.0 - FOLIAGE_START_T) * (q ** TIP_BIAS_POWER)
                 center, tangent = interpolate_polyline(pts, t)
                 if tangent.length < 1e-5:
@@ -129,34 +146,43 @@ def build_foliage_mesh(variant, report, xoff):
                 h1 = hash01(si + 11, bi + 7, variant['height'] * 0.37)
                 h2 = hash01(si + 29, bi + 17, variant['height'] * 0.73)
                 h3 = hash01(si + 43, bi + 23, variant['height'] * 1.13)
+                h4 = hash01(si + 61, bi + 31, variant['height'] * 1.71)
 
                 radial_dir = Vector((center.x - xoff, center.y, 0.0))
                 if radial_dir.length < 1e-5:
                     radial_dir = Vector((1, 0, 0))
                 radial_dir.normalize()
-                side = tangent.cross(Vector((0, 0, 1)))
-                if side.length < 1e-5:
-                    side = Vector((1, 0, 0))
-                side.normalize()
+                side, up = local_frame(tangent, radial_dir)
 
-                # Small deterministic jitter prevents repeating grids without destroying branch shape.
-                center += side * ((h0 - 0.5) * 0.075)
-                center += Vector((0, 0, (h1 - 0.5) * 0.065))
-                center += tangent * ((h2 - 0.5) * 0.045)
+                terminal = max(0.0, min(1.0, (t - FOLIAGE_START_T) / max(1e-6, 1.0 - FOLIAGE_START_T)))
+                lane = si % VIRTUAL_TWIG_LANES
+                lane_phase = math.tau * lane / VIRTUAL_TWIG_LANES
+                phase = lane_phase + (h0 - 0.5) * 0.95 + terminal * 1.15
+                twig_radius = (VIRTUAL_TWIG_RADIUS_MIN +
+                               (VIRTUAL_TWIG_RADIUS_MAX - VIRTUAL_TWIG_RADIUS_MIN) *
+                               (0.18 + 0.82 * terminal) * (0.65 + 0.35 * h4))
+                # Virtual secondary twigs create crown volume around the measured source branch.
+                offset_dir = side * math.cos(phase) + up * math.sin(phase)
+                center += offset_dir * twig_radius
+                center += tangent * ((h2 - 0.5) * min(0.11, reach * 0.06))
+                center += radial_dir * ((h1 - 0.5) * 0.035)
 
-                length = SPRAY_LENGTH_MIN + (SPRAY_LENGTH_MAX - SPRAY_LENGTH_MIN) * (0.30 + 0.70 * h2)
+                length = SPRAY_LENGTH_MIN + (SPRAY_LENGTH_MAX - SPRAY_LENGTH_MIN) * (0.25 + 0.75 * h2)
                 width = SPRAY_WIDTH_MIN + (SPRAY_WIDTH_MAX - SPRAY_WIDTH_MIN) * h3
-                spray_axis = (tangent * 0.78 + radial_dir * 0.14 + Vector((0, 0, 0.08 + 0.05 * h1))).normalized()
-                roll = (h0 - 0.5) * math.radians(26.0)
-                tint = [0.88 + 0.12 * h1, 0.92 + 0.08 * h2, 0.86 + 0.14 * h3]
+                # Sprays follow the branch but fan slightly along their virtual twig direction.
+                spray_axis = (tangent * 0.70 + offset_dir * (0.18 + 0.10 * h4) + radial_dir * 0.08).normalized()
+                roll = (h0 - 0.5) * math.radians(38.0)
+                tint = [0.84 + 0.16 * h1, 0.89 + 0.11 * h2, 0.82 + 0.18 * h3]
 
                 for qi in range(QUADS_PER_SPRAY):
                     ang = math.tau * qi / QUADS_PER_SPRAY + roll
-                    width_axis = side * math.cos(ang) + Vector((0, 0, 1)) * math.sin(ang)
+                    width_axis = side * math.cos(ang) + up * math.sin(ang)
                     tris += add_card(bm, uv_layer, center, spray_axis, width_axis, length, width)
 
                 points.append({
                     'branch_id': branch.get('id'),
+                    'terminal_t': round(t, 5),
+                    'virtual_twig_lane': lane,
                     'position': [round(center.x, 5), round(center.y, 5), round(center.z, 5)],
                     'direction': [round(spray_axis.x, 5), round(spray_axis.y, 5), round(spray_axis.z, 5)],
                     'length': round(length, 5),
@@ -282,12 +308,14 @@ def main():
     setup_preview(structural_objects + foliage_objects)
     render_png(out_png)
     payload = {
-        'representation': 'terminal_branch_foliage_points_micro_sprites',
+        'representation': 'terminal_branch_volume_foliage_points_micro_sprites',
         'target_foliage_tris': TARGET_FOLIAGE_TRIS,
         'quads_per_spray': QUADS_PER_SPRAY,
         'sprite_size_m': {'length': [SPRAY_LENGTH_MIN, SPRAY_LENGTH_MAX], 'width': [SPRAY_WIDTH_MIN, SPRAY_WIDTH_MAX]},
         'foliage_start_t': FOLIAGE_START_T,
-        'runtime_intent': 'Godot MultiMesh; one tiny crossed-sprite mesh instanced at these points with per-instance scale/rotation/tint variation',
+        'virtual_twig_radius_m': [VIRTUAL_TWIG_RADIUS_MIN, VIRTUAL_TWIG_RADIUS_MAX],
+        'virtual_twig_lanes': VIRTUAL_TWIG_LANES,
+        'runtime_intent': 'Godot MultiMesh; one tiny crossed-sprite mesh instanced through the terminal branch volume with per-instance transform/tint variation',
         'variants': stats,
     }
     with open(out_json, 'w', encoding='utf-8') as f:
