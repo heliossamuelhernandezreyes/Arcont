@@ -1,15 +1,17 @@
 import bpy, bmesh, json, math, os, sys
 from mathutils import Vector
 
-TARGET_FOLIAGE_TRIS = 15000
-QUADS_PER_CLUSTER = 3
-TRIS_PER_CLUSTER = QUADS_PER_CLUSTER * 2
-MIN_CLUSTERS_PER_BRANCH = 12
-MAX_CLUSTERS_PER_BRANCH = 96
-CARD_LENGTH_MIN = 0.18
-CARD_LENGTH_MAX = 0.34
-CARD_WIDTH_MIN = 0.065
-CARD_WIDTH_MAX = 0.12
+TARGET_FOLIAGE_TRIS = 14400
+QUADS_PER_SPRAY = 3
+TRIS_PER_SPRAY = QUADS_PER_SPRAY * 2
+MIN_SPRAYS_PER_BRANCH = 10
+MAX_SPRAYS_PER_BRANCH = 88
+SPRAY_LENGTH_MIN = 0.09
+SPRAY_LENGTH_MAX = 0.20
+SPRAY_WIDTH_MIN = 0.035
+SPRAY_WIDTH_MAX = 0.075
+FOLIAGE_START_T = 0.56
+TIP_BIAS_POWER = 0.48
 
 
 def radial(p):
@@ -33,22 +35,18 @@ def clean_path(branch):
         pts.reverse()
     farthest = max(pts, key=radial)
     dom = azimuth(farthest)
-    pts = [p for p in pts if angular_distance(azimuth(p), dom) <= math.radians(45.0)]
+    pts = [p for p in pts if angular_distance(azimuth(p), dom) <= math.radians(42.0)]
     if len(pts) < 2:
         return []
     pts.sort(key=radial)
     out = [pts[0].copy()]
     for p in pts[1:]:
-        if radial(p) > radial(out[-1]) + 0.03:
+        if radial(p) > radial(out[-1]) + 0.025:
             out.append(p.copy())
     return out if len(out) >= 2 else []
 
 
 def interpolate_polyline(pts, t):
-    if not pts:
-        return Vector((0, 0, 0)), Vector((1, 0, 0))
-    if len(pts) == 1:
-        return pts[0].copy(), Vector((1, 0, 0))
     lengths = []
     total = 0.0
     for a, b in zip(pts, pts[1:]):
@@ -87,8 +85,7 @@ def add_card(bm, uv_layer, center, along, width_axis, length, width):
     ]
     verts = [bm.verts.new(tuple(v)) for v in corners]
     face = bm.faces.new(verts)
-    uvs = ((0, 0), (1, 0), (1, 1), (0, 1))
-    for loop, uv in zip(face.loops, uvs):
+    for loop, uv in zip(face.loops, ((0, 0), (1, 0), (1, 1), (0, 1))):
         loop[uv_layer].uv = uv
     return 2
 
@@ -102,31 +99,37 @@ def build_foliage_mesh(variant, report, xoff):
         pts = clean_path(branch)
         if len(pts) < 2:
             continue
-        reach = max(0.1, radial(pts[-1]) - radial(pts[0]))
-        prepared.append((branch, pts, reach))
-        total_weight += reach
+        reach = max(0.08, radial(pts[-1]) - radial(pts[0]))
+        # Longer source-guided terminal branches receive more foliage, but only mildly.
+        weight = math.sqrt(reach)
+        prepared.append((branch, pts, weight))
+        total_weight += weight
 
-    target_clusters = max(1, TARGET_FOLIAGE_TRIS // TRIS_PER_CLUSTER)
-    mesh = bpy.data.meshes.new(variant['name'] + '_foliage_mesh')
+    target_sprays = max(1, TARGET_FOLIAGE_TRIS // TRIS_PER_SPRAY)
+    mesh = bpy.data.meshes.new(variant['name'] + '_foliage_points_mesh')
     bm = bmesh.new()
     uv_layer = bm.loops.layers.uv.new('UVMap')
     tris = 0
-    clusters = 0
+    sprays = 0
+    points = []
     try:
-        for bi, (branch, pts, reach) in enumerate(prepared):
-            share = target_clusters * reach / max(total_weight, 1e-6)
-            count = int(max(MIN_CLUSTERS_PER_BRANCH, min(MAX_CLUSTERS_PER_BRANCH, round(share))))
-            for ci in range(count):
-                # Foliage begins away from the trunk and becomes denser toward the tip.
-                q = (ci + 0.55) / count
-                t = 0.32 + 0.66 * (q ** 0.82)
+        for bi, (branch, pts, weight) in enumerate(prepared):
+            share = target_sprays * weight / max(total_weight, 1e-6)
+            count = int(max(MIN_SPRAYS_PER_BRANCH, min(MAX_SPRAYS_PER_BRANCH, round(share))))
+            for si in range(count):
+                q = (si + 0.5) / count
+                # Strong terminal bias: preserve trunk/crown gaps and concentrate needles near tips.
+                t = FOLIAGE_START_T + (1.0 - FOLIAGE_START_T) * (q ** TIP_BIAS_POWER)
                 center, tangent = interpolate_polyline(pts, t)
                 if tangent.length < 1e-5:
                     continue
                 center.x += xoff
-                phase = hash01(bi + 1, ci + 3, variant['height'])
-                phase2 = hash01(ci + 11, bi + 7, variant['height'] * 0.37)
-                # Compact needle spray around the actual branch, not a crown-filling billboard.
+
+                h0 = hash01(bi + 1, si + 3, variant['height'])
+                h1 = hash01(si + 11, bi + 7, variant['height'] * 0.37)
+                h2 = hash01(si + 29, bi + 17, variant['height'] * 0.73)
+                h3 = hash01(si + 43, bi + 23, variant['height'] * 1.13)
+
                 radial_dir = Vector((center.x - xoff, center.y, 0.0))
                 if radial_dir.length < 1e-5:
                     radial_dir = Vector((1, 0, 0))
@@ -135,29 +138,52 @@ def build_foliage_mesh(variant, report, xoff):
                 if side.length < 1e-5:
                     side = Vector((1, 0, 0))
                 side.normalize()
-                center += side * ((phase - 0.5) * 0.12) + Vector((0, 0, (phase2 - 0.5) * 0.10))
-                length = CARD_LENGTH_MIN + (CARD_LENGTH_MAX - CARD_LENGTH_MIN) * (0.35 + 0.65 * phase)
-                width = CARD_WIDTH_MIN + (CARD_WIDTH_MAX - CARD_WIDTH_MIN) * phase2
-                spray_axis = (tangent * 0.72 + radial_dir * 0.20 + Vector((0, 0, 0.08))).normalized()
-                for qi in range(QUADS_PER_CLUSTER):
-                    ang = math.tau * qi / QUADS_PER_CLUSTER + phase * 0.45
-                    w = side * math.cos(ang) + Vector((0, 0, 1)) * math.sin(ang)
-                    tris += add_card(bm, uv_layer, center, spray_axis, w, length, width)
-                clusters += 1
+
+                # Small deterministic jitter prevents repeating grids without destroying branch shape.
+                center += side * ((h0 - 0.5) * 0.075)
+                center += Vector((0, 0, (h1 - 0.5) * 0.065))
+                center += tangent * ((h2 - 0.5) * 0.045)
+
+                length = SPRAY_LENGTH_MIN + (SPRAY_LENGTH_MAX - SPRAY_LENGTH_MIN) * (0.30 + 0.70 * h2)
+                width = SPRAY_WIDTH_MIN + (SPRAY_WIDTH_MAX - SPRAY_WIDTH_MIN) * h3
+                spray_axis = (tangent * 0.78 + radial_dir * 0.14 + Vector((0, 0, 0.08 + 0.05 * h1))).normalized()
+                roll = (h0 - 0.5) * math.radians(26.0)
+                tint = [0.88 + 0.12 * h1, 0.92 + 0.08 * h2, 0.86 + 0.14 * h3]
+
+                for qi in range(QUADS_PER_SPRAY):
+                    ang = math.tau * qi / QUADS_PER_SPRAY + roll
+                    width_axis = side * math.cos(ang) + Vector((0, 0, 1)) * math.sin(ang)
+                    tris += add_card(bm, uv_layer, center, spray_axis, width_axis, length, width)
+
+                points.append({
+                    'branch_id': branch.get('id'),
+                    'position': [round(center.x, 5), round(center.y, 5), round(center.z, 5)],
+                    'direction': [round(spray_axis.x, 5), round(spray_axis.y, 5), round(spray_axis.z, 5)],
+                    'length': round(length, 5),
+                    'width': round(width, 5),
+                    'roll': round(roll, 5),
+                    'tint': [round(v, 4) for v in tint],
+                })
+                sprays += 1
         bm.normal_update()
         bm.to_mesh(mesh)
     finally:
         bm.free()
     mesh.update()
-    obj = bpy.data.objects.new(variant['name'] + '_foliage', mesh)
+    obj = bpy.data.objects.new(variant['name'] + '_foliage_points', mesh)
     bpy.context.collection.objects.link(obj)
-    return obj, {'clusters': clusters, 'tris': tris, 'branches': len(prepared)}
+    return obj, {'sprays': sprays, 'tris': tris, 'branches': len(prepared), 'points': points}
 
 
 def make_foliage_material(diff_path, alpha_path):
-    mat = bpy.data.materials.new('pine_twig_compact')
+    mat = bpy.data.materials.new('pine_twig_micro_sprite')
     mat.use_nodes = True
-    mat.surface_render_method = 'DITHERED' if hasattr(mat, 'surface_render_method') else mat.blend_method
+    if hasattr(mat, 'surface_render_method'):
+        mat.surface_render_method = 'DITHERED'
+    elif hasattr(mat, 'blend_method'):
+        mat.blend_method = 'CLIP'
+        if hasattr(mat, 'alpha_threshold'):
+            mat.alpha_threshold = 0.35
     if hasattr(mat, 'use_transparency_overlap'):
         mat.use_transparency_overlap = False
     nodes = mat.node_tree.nodes
@@ -182,30 +208,33 @@ def assign_material(obj, mat):
     obj.data.materials.append(mat)
 
 
-def setup_preview(variants, total_span):
-    max_h = max(v['height'] for v in variants)
+def setup_preview(objects):
+    coords = []
+    for obj in objects:
+        for corner in obj.bound_box:
+            coords.append(obj.matrix_world @ Vector(corner))
+    mins = Vector((min(p.x for p in coords), min(p.y for p in coords), min(p.z for p in coords)))
+    maxs = Vector((max(p.x for p in coords), max(p.y for p in coords), max(p.z for p in coords)))
+    center = (mins + maxs) * 0.5
+    extent = maxs - mins
     cam_data = bpy.data.cameras.new('Camera')
     cam = bpy.data.objects.new('Camera', cam_data)
     bpy.context.collection.objects.link(cam)
     bpy.context.scene.camera = cam
-    target = Vector((total_span * 0.5, 0, max_h * 0.50))
-    cam.location = (target.x, -max_h * 2.6, target.z)
-    cam.rotation_euler = (target - cam.location).to_track_quat('-Z', 'Y').to_euler()
+    cam.location = (center.x, center.y - max(extent.z * 2.2, extent.x * 1.7), center.z)
+    cam.rotation_euler = (center - cam.location).to_track_quat('-Z', 'Y').to_euler()
     cam.data.type = 'ORTHO'
-    # Width-aware framing so A/B/C are all visible, unlike structural run #12.
     aspect = 1500.0 / 900.0
-    cam.data.ortho_scale = max(max_h * 1.18, total_span / aspect * 1.18)
+    cam.data.ortho_scale = max(extent.z * 1.16, extent.x / aspect * 1.16)
     sun_data = bpy.data.lights.new('Sun', 'SUN')
-    sun_data.energy = 2.5
+    sun_data.energy = 2.3
     sun = bpy.data.objects.new('Sun', sun_data)
     bpy.context.collection.objects.link(sun)
     sun.rotation_euler = (math.radians(35), math.radians(-25), math.radians(25))
-    world = bpy.context.scene.world
-    if world is None:
-        world = bpy.data.worlds.new('ArcontPineFoliagePreviewWorld')
-        bpy.context.scene.world = world
+    world = bpy.context.scene.world or bpy.data.worlds.new('ArcontPineFoliagePreviewWorld')
+    bpy.context.scene.world = world
     world.use_nodes = False
-    world.color = (0.06, 0.07, 0.06)
+    world.color = (0.055, 0.065, 0.055)
 
 
 def render_png(path):
@@ -234,26 +263,38 @@ def main():
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.gltf(filepath=structural_glb)
+    structural_objects = [o for o in bpy.context.scene.objects if o.type == 'MESH']
     mat = make_foliage_material(diff_path, alpha_path)
+
     xoff = 0.0
     stats = []
+    foliage_objects = []
     for variant in variants:
         obj, st = build_foliage_mesh(variant, reports[variant['name']], xoff)
         assign_material(obj, mat)
+        foliage_objects.append(obj)
         st['name'] = variant['name']
         stats.append(st)
         xoff += variant['height'] * 0.72
-    total_span = xoff + variants[-1]['height'] * 0.20
 
     os.makedirs(os.path.dirname(out_glb) or '.', exist_ok=True)
     bpy.ops.export_scene.gltf(filepath=out_glb, export_format='GLB')
-    setup_preview(variants, total_span)
+    setup_preview(structural_objects + foliage_objects)
     render_png(out_png)
-    payload = {'target_foliage_tris': TARGET_FOLIAGE_TRIS, 'quads_per_cluster': QUADS_PER_CLUSTER, 'variants': stats}
+    payload = {
+        'representation': 'terminal_branch_foliage_points_micro_sprites',
+        'target_foliage_tris': TARGET_FOLIAGE_TRIS,
+        'quads_per_spray': QUADS_PER_SPRAY,
+        'sprite_size_m': {'length': [SPRAY_LENGTH_MIN, SPRAY_LENGTH_MAX], 'width': [SPRAY_WIDTH_MIN, SPRAY_WIDTH_MAX]},
+        'foliage_start_t': FOLIAGE_START_T,
+        'runtime_intent': 'Godot MultiMesh; one tiny crossed-sprite mesh instanced at these points with per-instance scale/rotation/tint variation',
+        'variants': stats,
+    }
     with open(out_json, 'w', encoding='utf-8') as f:
         json.dump(payload, f, indent=2)
     for st in stats:
-        print(f"ARCONT_PINE_FOLIAGE_EXPERIMENT={st['name']} branches={st['branches']} clusters={st['clusters']} tris={st['tris']}")
+        print(f"ARCONT_PINE_FOLIAGE_EXPERIMENT={st['name']} branches={st['branches']} sprays={st['sprays']} tris={st['tris']}")
+    print('ARCONT_PINE_FOLIAGE_POINTS_TOTAL=', sum(st['sprays'] for st in stats))
     print('ARCONT_PINE_FOLIAGE_PREVIEW=', out_png)
     print('ARCONT_PINE_FOLIAGE_GLB=', out_glb)
 
