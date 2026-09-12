@@ -14,6 +14,14 @@ ARCONT se organiza por conocimientos reutilizables, no por un juego concreto.
 - [`DECISION_ENGINE.md`](DECISION_ENGINE.md) — transformación de evidencia en recomendaciones condicionadas y revalidables.
 - [`VALIDATOR_SPEC.md`](VALIDATOR_SPEC.md) — especificación del validador de trazabilidad, evidencia, vigencia y coherencia del grafo.
 
+## Herramientas operativas
+
+- [`../tools/arcont_lab.py`](../tools/arcont_lab.py) — CLI ejecutable para validación de integridad, análisis de impacto, índice heurístico de confianza y comparación de resultados.
+- [`../tools/README.md`](../tools/README.md) — uso, límites y principio canónico de las herramientas.
+- [`.github/workflows/knowledge-integrity.yml`](../.github/workflows/knowledge-integrity.yml) — auditoría automática del banco de conocimiento en `push` y `pull_request`.
+
+Estas herramientas automatizan comprobaciones mecánicas; no convierten una inferencia en evidencia ni una observación aislada en regla.
+
 ## Benchmarks y evidencia runtime
 
 - [`benchmarks/EXTERNAL_SUITE_SPEC.md`](benchmarks/EXTERNAL_SUITE_SPEC.md) — contrato de la suite externa de microbenchmarks; ARCONT no contiene el proyecto Godot ejecutable.
