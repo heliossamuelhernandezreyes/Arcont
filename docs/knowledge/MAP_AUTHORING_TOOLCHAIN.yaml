@@ -13,6 +13,7 @@ tools:
   - id: ARC-TOOL-TERRAIN3D
     name: Terrain3D
     upstream: https://github.com/TokisanGames/Terrain3D
+    reviewed_commit: e03412444ac3ccb9834292a675f4bebb21474c00
     license: MIT
     license_status: permissive_code_license_verified
     role: terrain_authoring
@@ -33,6 +34,7 @@ tools:
   - id: ARC-TOOL-CYCLOPS
     name: Cyclops Level Builder
     upstream: https://github.com/blackears/cyclopsLevelBuilder
+    reviewed_commit: fca8640e3d5e38b1649d503ac62b6dabcbf7b64f
     license: MIT
     license_status: permissive_code_license_verified
     role: structural_blockout_and_brush_geometry
@@ -50,7 +52,8 @@ tools:
 
   - id: ARC-TOOL-PROTONSCATTER
     name: ProtonScatter
-    upstream: https://github.com/deakcor/proton_scatter
+    upstream: https://github.com/HungryProton/scatter
+    reviewed_commit: 2ced25f1ebef13648e94d3cc6a643da92a7e33d8
     license: MIT
     license_status: permissive_code_license_verified
     role: procedural_environment_scatter
@@ -63,13 +66,15 @@ tools:
     adoption: recommended_with_asset_caveat
     maturity: L1_source_traced
     caveats:
+      - reviewed revision includes a Godot 4.7 compatibility fix
+      - upstream GitHub repository is documented as a mirror; canonical hosting may move
       - demo assets are not uniformly equivalent to addon code licensing
-      - some bundled/demo textures may carry additional terms
       - mobile density and draw-call budgets require runtime validation
 
   - id: ARC-TOOL-FUNCGODOT
     name: FuncGodot
     upstream: https://github.com/func-godot/func_godot_plugin
+    reviewed_commit: cdf27e3cd8369b405a0ac48649e141238f5cfad5
     license: MIT
     license_status: permissive_code_license_verified
     role: external_brush_map_interchange
