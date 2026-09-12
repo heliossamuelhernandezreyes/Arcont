@@ -1,6 +1,8 @@
 {
   "schema_version": 1,
   "provider": "OpenGameArt",
+  "policy": "green-only-default",
+  "bootstrap_count": 8,
   "notes": "Curated discovery seeds only. The adapter re-fetches every official page and refuses ingestion unless the page itself explicitly states a GREEN license under tools/license_policy.py.",
   "assets": [
     "https://opengameart.org/content/maps-0",
