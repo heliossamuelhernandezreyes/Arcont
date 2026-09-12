@@ -1,9 +1,8 @@
-import json
 import tempfile
 import unittest
 from pathlib import Path
 
-from tools.arcont_hardening import check_maturity, sha256, validate_result
+from tools.arcont_hardening import check_maturity, max_maturity, maturity_missing, sha256, validate_result
 
 
 class HardeningTests(unittest.TestCase):
@@ -29,6 +28,21 @@ class HardeningTests(unittest.TestCase):
             "abort_reason": None,
         }
 
+    def l7_evidence(self):
+        return {
+            "source_traced": True,
+            "hypothesis": True,
+            "observations": 3,
+            "reproductions": 3,
+            "hardware_profiles": 2,
+            "engine_versions": 2,
+            "validated_rule": True,
+            "limits_explicit": True,
+            "contradictions_reviewed": True,
+            "falsifiable": True,
+            "decision_usefulness": True,
+        }
+
     def test_valid_result_passes(self):
         self.assertEqual(validate_result(self.valid_result()), [])
 
@@ -47,7 +61,19 @@ class HardeningTests(unittest.TestCase):
         obj["provenance"]["raw_data_sha256"] = "1234"
         self.assertTrue(any("raw_data_sha256" in e for e in validate_result(obj)))
 
-    def test_maturity_cannot_overclaim(self):
+    def test_l3_requires_cumulative_source_and_hypothesis(self):
+        evidence = {
+            "source_traced": False,
+            "hypothesis": False,
+            "observations": 1,
+        }
+        errors = check_maturity("L3_OBSERVED", evidence)
+        self.assertTrue(errors)
+        self.assertIn("source_traced", errors[0])
+        self.assertIn("hypothesis", errors[0])
+        self.assertEqual(max_maturity(evidence), 0)
+
+    def test_l7_cannot_be_reached_by_summary_flag_alone(self):
         evidence = {
             "source_traced": True,
             "hypothesis": True,
@@ -55,10 +81,24 @@ class HardeningTests(unittest.TestCase):
             "reproductions": 0,
             "hardware_profiles": 1,
             "engine_versions": 1,
-            "validated_rule": False,
+            "validated_rule": True,
         }
-        self.assertTrue(check_maturity("L7_VALIDATED_RULE", evidence))
-        self.assertFalse(check_maturity("L3_OBSERVED", evidence))
+        errors = check_maturity("L7_VALIDATED_RULE", evidence)
+        self.assertTrue(errors)
+        self.assertLess(max_maturity(evidence), 7)
+        self.assertIn("reproductions>=2", maturity_missing("L7_VALIDATED_RULE", evidence))
+        self.assertIn("limits_explicit", maturity_missing("L7_VALIDATED_RULE", evidence))
+
+    def test_complete_l7_evidence_passes(self):
+        evidence = self.l7_evidence()
+        self.assertEqual(check_maturity("L7_VALIDATED_RULE", evidence), [])
+        self.assertEqual(max_maturity(evidence), 7)
+
+    def test_cross_version_requires_cross_hardware_first(self):
+        evidence = self.l7_evidence()
+        evidence["hardware_profiles"] = 1
+        self.assertTrue(check_maturity("L6_CROSS_VERSION", evidence))
+        self.assertEqual(max_maturity(evidence), 4)
 
     def test_sha256_is_byte_stable(self):
         with tempfile.TemporaryDirectory() as td:

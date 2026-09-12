@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ARCONT 1.0 hardening checks. Stdlib-only."""
+"""ARCONT 1.1 hardening checks. Stdlib-only."""
 from __future__ import annotations
 
 import argparse
@@ -95,30 +95,96 @@ def validate_result(obj: dict[str, Any]) -> list[str]:
     return errors
 
 
+def _requirements(evidence: dict[str, Any]) -> dict[int, bool]:
+    """Return cumulative evidence gates for L0-L7.
+
+    Levels are intentionally cumulative. A higher level cannot be reached by
+    toggling a single summary flag while omitting the lower-level evidence that
+    the maturity model requires.
+    """
+    source = bool(evidence.get("source_traced"))
+    hypothesis = bool(evidence.get("hypothesis"))
+    observations = int(evidence.get("observations", 0) or 0)
+    reproductions = int(evidence.get("reproductions", 0) or 0)
+    hardware = int(evidence.get("hardware_profiles", 0) or 0)
+    versions = int(evidence.get("engine_versions", 0) or 0)
+    validated_rule = bool(evidence.get("validated_rule"))
+    limits_explicit = bool(evidence.get("limits_explicit"))
+    contradictions_reviewed = bool(evidence.get("contradictions_reviewed"))
+    falsifiable = bool(evidence.get("falsifiable"))
+    decision_usefulness = bool(evidence.get("decision_usefulness"))
+
+    gates: dict[int, bool] = {0: True}
+    gates[1] = source
+    gates[2] = gates[1] and hypothesis
+    gates[3] = gates[2] and observations >= 1
+    gates[4] = gates[3] and reproductions >= 2
+    gates[5] = gates[4] and hardware >= 2
+    gates[6] = gates[5] and versions >= 2
+    gates[7] = (
+        gates[6]
+        and validated_rule
+        and limits_explicit
+        and contradictions_reviewed
+        and falsifiable
+        and decision_usefulness
+    )
+    return gates
+
+
 def max_maturity(evidence: dict[str, Any]) -> int:
-    if evidence.get("validated_rule"):
-        return 7
-    if evidence.get("engine_versions", 0) >= 2 and evidence.get("reproductions", 0) >= 2:
-        return 6
-    if evidence.get("hardware_profiles", 0) >= 2 and evidence.get("reproductions", 0) >= 2:
-        return 5
-    if evidence.get("reproductions", 0) >= 2:
-        return 4
-    if evidence.get("observations", 0) >= 1:
-        return 3
-    if evidence.get("hypothesis"):
-        return 2
-    if evidence.get("source_traced"):
-        return 1
-    return 0
+    gates = _requirements(evidence)
+    allowed = 0
+    for level in range(1, 8):
+        if gates[level]:
+            allowed = level
+        else:
+            break
+    return allowed
+
+
+def maturity_missing(level: str, evidence: dict[str, Any]) -> list[str]:
+    if level not in MATURITY:
+        return [f"unknown level {level}"]
+    target = MATURITY[level]
+    if target == 0:
+        return []
+
+    missing: list[str] = []
+    if target >= 1 and not evidence.get("source_traced"):
+        missing.append("source_traced")
+    if target >= 2 and not evidence.get("hypothesis"):
+        missing.append("hypothesis")
+    if target >= 3 and int(evidence.get("observations", 0) or 0) < 1:
+        missing.append("observations>=1")
+    if target >= 4 and int(evidence.get("reproductions", 0) or 0) < 2:
+        missing.append("reproductions>=2")
+    if target >= 5 and int(evidence.get("hardware_profiles", 0) or 0) < 2:
+        missing.append("hardware_profiles>=2")
+    if target >= 6 and int(evidence.get("engine_versions", 0) or 0) < 2:
+        missing.append("engine_versions>=2")
+    if target >= 7:
+        for field in [
+            "validated_rule",
+            "limits_explicit",
+            "contradictions_reviewed",
+            "falsifiable",
+            "decision_usefulness",
+        ]:
+            if not evidence.get(field):
+                missing.append(field)
+    return missing
 
 
 def check_maturity(level: str, evidence: dict[str, Any]) -> list[str]:
     if level not in MATURITY:
         return [f"maturity: unknown level {level}"]
-    allowed = max_maturity(evidence)
-    actual = MATURITY[level]
-    return [] if actual <= allowed else [f"maturity: {level} exceeds evidence ceiling L{allowed}"]
+    missing = maturity_missing(level, evidence)
+    if not missing:
+        return []
+    return [
+        f"maturity: {level} exceeds evidence ceiling L{max_maturity(evidence)}; missing: {', '.join(missing)}"
+    ]
 
 
 def cmd_validate(args: argparse.Namespace) -> int:
@@ -154,9 +220,18 @@ def cmd_maturity(args: argparse.Namespace) -> int:
         "hardware_profiles": args.hardware_profiles,
         "engine_versions": args.engine_versions,
         "validated_rule": args.validated_rule,
+        "limits_explicit": args.limits_explicit,
+        "contradictions_reviewed": args.contradictions_reviewed,
+        "falsifiable": args.falsifiable,
+        "decision_usefulness": args.decision_usefulness,
     }
     errors = check_maturity(args.level, evidence)
-    print(json.dumps({"ok": not errors, "errors": errors, "evidence_ceiling": max_maturity(evidence)}, indent=2))
+    print(json.dumps({
+        "ok": not errors,
+        "errors": errors,
+        "evidence_ceiling": max_maturity(evidence),
+        "missing_for_requested_level": maturity_missing(args.level, evidence),
+    }, indent=2))
     return 1 if errors else 0
 
 
@@ -181,6 +256,10 @@ def parser() -> argparse.ArgumentParser:
     m.add_argument("--hardware-profiles", type=int, default=0)
     m.add_argument("--engine-versions", type=int, default=0)
     m.add_argument("--validated-rule", action="store_true")
+    m.add_argument("--limits-explicit", action="store_true")
+    m.add_argument("--contradictions-reviewed", action="store_true")
+    m.add_argument("--falsifiable", action="store_true")
+    m.add_argument("--decision-usefulness", action="store_true")
     m.set_defaults(func=cmd_maturity)
     return p
 

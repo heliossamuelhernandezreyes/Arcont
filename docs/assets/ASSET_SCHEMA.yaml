@@ -43,6 +43,12 @@ asset_record:
     unity: null
     web: null
     android: null
+  compatibility_evidence:
+    godot:
+      level: null
+      basis: null
+      tested_at: null
+      evidence_ref: null
   archive:
     mirrored_in_arcont: false
     local_path: null
@@ -54,6 +60,11 @@ asset_record:
     last_checked: null
     notes: null
 
+compatibility_levels:
+  inferred: expected compatibility based on metadata or general platform knowledge; not runtime proof
+  format: format/import-path compatibility has a concrete technical basis; still not runtime proof
+  runtime: asset was actually tested on the target and must carry tested_at plus evidence_ref
+
 rules:
   - unknown values are null, never guessed
   - asset-level license overrides provider-level assumptions
@@ -61,3 +72,6 @@ rules:
   - preserve license evidence and acquisition date
   - commercial_use and redistribution_allowed are separate concepts
   - attribution obligations must be machine-readable
+  - compatibility true does not by itself mean runtime verified
+  - legacy compatibility claims without compatibility_evidence are legacy-unverified
+  - runtime compatibility requires tested_at and evidence_ref
