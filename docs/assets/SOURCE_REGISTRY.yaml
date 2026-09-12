@@ -1,0 +1,107 @@
+schema_version: 1
+registry_id: ARC-ASSET-SOURCES-0001
+policy: catalog-first; mirror only when redistribution rights are verified
+
+sources:
+  - id: ARC-ASSET-SRC-KENNEY
+    provider: Kenney
+    url: https://kenney.nl/assets
+    asset_types: [2d, 3d, ui, textures, prototype]
+    license_model: provider_asset_pages_cc0
+    commercial_use: true
+    attribution_required: false
+    redistribution_review: required_before_mirroring
+    priority: highest
+    notes: Kenney support states game assets on asset pages are CC0; preserve per-pack license evidence.
+
+  - id: ARC-ASSET-SRC-POLYHAVEN
+    provider: Poly Haven
+    url: https://polyhaven.com/
+    asset_types: [hdri, textures, pbr_materials, 3d_models]
+    license_model: cc0
+    commercial_use: true
+    attribution_required: false
+    redistribution_allowed: true
+    priority: highest
+    notes: Asset license explicitly covers HDRIs, textures and 3D models. Website logos/example renders are not automatically CC0.
+
+  - id: ARC-ASSET-SRC-QUATERNIUS
+    provider: Quaternius
+    url: https://quaternius.com/
+    asset_types: [3d_models, characters, animation, environments, modular_kits]
+    license_model: mixed_by_acquisition_date_or_asset
+    commercial_use: true
+    attribution_required: false
+    redistribution_allowed: false
+    priority: high
+    notes: Current QAL v1.0 (2026-08-28) prohibits redistributing assets themselves. Some asset pages/FAQ identify CC0; record exact governing license for each acquisition rather than assuming globally.
+
+  - id: ARC-ASSET-SRC-OPENGAMEART
+    provider: OpenGameArt
+    url: https://opengameart.org/
+    asset_types: [2d, 3d, textures, audio, music, ui]
+    license_model: per_asset_multiple_open_licenses
+    commercial_use: conditional
+    attribution_required: conditional
+    redistribution_allowed: conditional
+    priority: high
+    notes: Inspect each asset; CC0, CC-BY, CC-BY-SA, GPL and other accepted licenses have different obligations.
+
+  - id: ARC-ASSET-SRC-FREESOUND
+    provider: Freesound
+    url: https://freesound.org/
+    asset_types: [sfx, ambience, foley, field_recording]
+    license_model: per_sound_cc0_ccby_ccbync
+    commercial_use: conditional
+    attribution_required: conditional
+    redistribution_allowed: conditional
+    priority: high
+    notes: Prefer CC0 for frictionless game reuse; never treat all Freesound audio as commercially unrestricted.
+
+  - id: ARC-ASSET-SRC-SONNISS-GDC
+    provider: Sonniss GameAudioGDC
+    url: https://gdc.sonniss.com/
+    asset_types: [sfx, ambience, foley, cinematic_audio]
+    license_model: custom_royalty_free_media_license
+    commercial_use: true
+    attribution_required: false
+    redistribution_allowed: false
+    ai_training_allowed: false
+    priority: high
+    notes: Use in games/media is allowed under current bundle license, but supplying sounds as an asset library is prohibited. Keep upstream references, not mirrored packs.
+
+  - id: ARC-ASSET-SRC-GOOGLE-FONTS
+    provider: Google Fonts
+    url: https://fonts.google.com/
+    asset_types: [fonts, ui_typography]
+    license_model: sil_ofl_for_current_submissions
+    commercial_use: true
+    attribution_required: license_notice_conditions
+    redistribution_allowed: conditional
+    priority: high
+    notes: Preserve OFL copyright/license material and check Reserved Font Name conditions for modifications.
+
+collections_to_seed:
+  - 2d_general
+  - pixel_art
+  - ui_icons
+  - prototype_debug
+  - low_poly_mobile
+  - stylized_3d
+  - realistic_3d
+  - characters_creatures
+  - animation_rigs
+  - architecture_interiors
+  - nature_vegetation
+  - vehicles
+  - sci_fi
+  - fantasy_medieval
+  - modern_city
+  - horror
+  - pbr_materials
+  - hdri_lighting
+  - vfx
+  - sfx
+  - ambience
+  - music
+  - fonts
