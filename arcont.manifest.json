@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "arcont_version": "1.0.0",
+  "repository_role": "technical knowledge bank and reproducible game-engine laboratory",
+  "canonical_branch": "main",
+  "production_game_code_allowed": false,
+  "embedded_godot_project_allowed": false,
+  "engines": {
+    "godot": {
+      "version": "4.7.2-stable",
+      "commit": "ed1daf0bf001b61586d9930840f2f1394092c079",
+      "upstream": "https://github.com/godotengine/godot"
+    }
+  },
+  "knowledge": {
+    "graph_root": "docs/godot/knowledge",
+    "evidence_ledger": "docs/EVIDENCE_LEDGER.md",
+    "maturity_model": "docs/MATURITY_MODEL.md"
+  },
+  "benchmarks": {
+    "runtime_location": "external repository",
+    "result_schema": "schemas/benchmark-result.schema.json",
+    "raw_evidence_immutable": true,
+    "raw_evidence_hash": "sha256"
+  },
+  "integrity": {
+    "validator": "tools/arcont_lab.py",
+    "hardening_validator": "tools/arcont_hardening.py",
+    "tests": "tests",
+    "ci": ".github/workflows/knowledge-integrity.yml"
+  }
+}
