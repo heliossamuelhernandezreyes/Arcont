@@ -13,6 +13,38 @@
     "unreal": true,
     "web": true
   },
+  "compatibility_evidence": {
+    "android": {
+      "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+      "evidence_ref": null,
+      "level": "inferred",
+      "tested_at": null
+    },
+    "godot": {
+      "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+      "evidence_ref": null,
+      "level": "inferred",
+      "tested_at": null
+    },
+    "unity": {
+      "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+      "evidence_ref": null,
+      "level": "inferred",
+      "tested_at": null
+    },
+    "unreal": {
+      "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+      "evidence_ref": null,
+      "level": "inferred",
+      "tested_at": null
+    },
+    "web": {
+      "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+      "evidence_ref": null,
+      "level": "inferred",
+      "tested_at": null
+    }
+  },
   "dimensions": [
     "shared",
     "2d",
@@ -33,7 +65,7 @@
     "version": "1.0"
   },
   "review": {
-    "last_checked": "2026-09-12T09:45:20Z",
+    "last_checked": "2026-09-12T11:02:08Z",
     "license_verified": true,
     "metadata_verified": false,
     "notes": "Imported from Poly Haven public API metadata."
