@@ -26,9 +26,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - name: Checkout ARCONT
+      - name: Checkout latest main
         uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
 
       - name: Set up Python
@@ -74,9 +75,16 @@ jobs:
             echo 'No Asset Vault changes.'
             exit 0
           fi
+
+          git fetch origin main
+          if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
+            echo 'main advanced while this sync was running; skipping stale publication.'
+            echo 'A newer Asset Vault run will regenerate from the newer main.'
+            exit 0
+          fi
+
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add assets
           git commit -m 'chore(assets): synchronize open asset metadata'
-          git pull --rebase origin main
           git push origin HEAD:main
