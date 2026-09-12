@@ -1,0 +1,17 @@
+{
+  "archive": {"local_path": null, "mirrored_in_arcont": false, "sha256": null, "size_bytes": null},
+  "asset_type": "2d_asset",
+  "compatibility": {"android": true, "godot": true, "unity": true, "unreal": true, "web": true},
+  "dimensions": ["2d", "2_5d"],
+  "id": "ARC-ASSET-OPENGAMEART-F1DCDB8ABDAEF654",
+  "license": {"ai_training_allowed": null, "attribution_required": false, "commercial_use": true, "drm_risk": false, "license_url": "https://creativecommons.org/publicdomain/zero/1.0/", "modification": true, "name": "CC0-1.0", "notes": "Official OpenGameArt page declares CC0. GREEN under ARCONT license policy.", "policy_tier": "green", "portable_commercial_default": true, "redistribution_allowed": true, "share_alike": false, "source_label": "CC0", "version": "1.0"},
+  "opengameart_metadata": {"art_type": "2D Art", "file_count": 2, "license_raw": "CC0"},
+  "review": {"last_checked": "2026-09-12T10:12:00Z", "license_verified": true, "metadata_verified": true, "notes": "Bootstrap from the official asset page; automated adapter revalidates this page on sync."},
+  "schema_version": 1,
+  "source": {"acquired_at": "2026-09-12T10:12:00Z", "asset_url": "https://opengameart.org/content/game-jam-assets", "author": "Proto Man", "download_url": null, "external_id": "game-jam-assets", "provider": "OpenGameArt"},
+  "styles": ["pixel art"],
+  "tags": ["pixel art", "16x16", "db32", "pixel font", "ttf", "tileset", "topdown shooter"],
+  "technical": {"animated": null, "animation_count": null, "art_type_raw": "2D Art", "audio_channels": null, "audio_sample_rate": null, "collision": null, "font_formats": ["ttf"], "formats": [], "lods": null, "pack_file_count": 2, "pbr": null, "rigged": null, "texture_resolution": null, "triangle_count": null},
+  "themes": ["2D Art"],
+  "title": "Game Jam Assets"
+}
