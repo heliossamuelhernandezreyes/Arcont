@@ -8,6 +8,10 @@ ARCONT se organiza por conocimientos reutilizables, no por un juego concreto.
 - [`EXPERIMENT_TEMPLATE.md`](EXPERIMENT_TEMPLATE.md) — plantilla canónica para experimentos mínimos.
 - [`BENCHMARK_STANDARD.md`](BENCHMARK_STANDARD.md) — protocolo de benchmarks comparables.
 - [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md) — decisiones técnicas trazables.
+- [`EVIDENCE_LEDGER.md`](EVIDENCE_LEDGER.md) — registro de afirmaciones, evidencia, confianza, límites y falsaciones.
+- [`KNOWLEDGE_SCHEMA.md`](KNOWLEDGE_SCHEMA.md) — esquema legible por humanos y herramientas.
+- [`KNOWLEDGE_GRAPH.md`](KNOWLEDGE_GRAPH.md) — relaciones explícitas entre fuentes, subsistemas, experimentos, reglas y decisiones.
+- [`DECISION_ENGINE.md`](DECISION_ENGINE.md) — transformación de evidencia en recomendaciones condicionadas y revalidables.
 
 ## Motor — Godot
 
@@ -15,6 +19,11 @@ ARCONT se organiza por conocimientos reutilizables, no por un juego concreto.
 - [`godot/ANALYSIS_MAP.md`](godot/ANALYSIS_MAP.md) — mapa inicial de estudio.
 - [`godot/ENGINE_ATLAS.md`](godot/ENGINE_ATLAS.md) — atlas de subsistemas internos del motor.
 - [`godot/RESEARCH_ROADMAP.md`](godot/RESEARCH_ROADMAP.md) — programa de investigación y validación.
+- [`godot/COST_MODEL.md`](godot/COST_MODEL.md) — marco para obtener curvas empíricas de coste del motor.
+- [`godot/FIRST_CAMPAIGN.md`](godot/FIRST_CAMPAIGN.md) — primera campaña experimental sobre costes fundamentales.
+- [`godot/SOURCE_TRACE_PROTOCOL.md`](godot/SOURCE_TRACE_PROTOCOL.md) — trazabilidad desde API pública hasta implementación y backend.
+- [`godot/SENTINEL_SUITE.md`](godot/SENTINEL_SUITE.md) — batería mínima para detectar regresiones entre versiones y plataformas.
+- [`godot/UPGRADE_PROTOCOL.md`](godot/UPGRADE_PROTOCOL.md) — protocolo para actualizar la versión canónica sin perder conocimiento previo.
 
 Godot se conserva aquí como **objeto de estudio del motor**, no como un videojuego. El código fuente upstream se fija por versión y commit; ARCONT conserva análisis y experimentos mínimos sin duplicar innecesariamente todo el repositorio oficial.
 
