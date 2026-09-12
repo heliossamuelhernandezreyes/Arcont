@@ -19,6 +19,9 @@
   },
   "benchmarks": {
     "runtime_location": "external repository",
+    "plan_schema": "schemas/benchmark-plan.schema.json",
+    "canonical_campaign": "docs/benchmarks/FIRST_RUNTIME_MATRIX.json",
+    "runtime_bridge": "tools/runtime_evidence.py",
     "result_schema": "schemas/benchmark-result.schema.json",
     "raw_evidence_immutable": true,
     "raw_evidence_hash": "sha256"
