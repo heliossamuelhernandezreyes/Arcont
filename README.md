@@ -1,27 +1,22 @@
-# Arcont
+# ARCONT
 
-Prototipo de videojuego construido con **Godot 4.7.x** y gestionado desde GitHub como fuente de verdad.
+ARCONT ya no es un videojuego.
 
-## Flujo de trabajo
+Desde septiembre de 2026, este repositorio funciona como **banco de información para el desarrollo de videojuegos**: investigación técnica, patrones de arquitectura, experimentos, decisiones, errores, aprendizajes y referencias reutilizables.
 
-- `main` contiene el estado estable del proyecto.
-- Godot consume directamente los archivos del repositorio.
-- Replit puede sincronizarse mediante Git para edición, herramientas y automatización.
-- Los cambios deben validarse antes de integrarse a `main` cuando el proyecto crezca.
+## Propósito
 
-## Arranque
+- Conservar conocimiento técnico útil para futuros juegos.
+- Documentar soluciones probadas y resultados negativos.
+- Servir como laboratorio de diseño, rendimiento móvil, IA, combate, generación procedural y pipelines 3D.
+- Evitar que prototipos específicos se conviertan accidentalmente en dependencias canónicas.
 
-1. Instala Godot 4.7.2 o una versión 4.7.x compatible.
-2. Clona este repositorio.
-3. Abre `project.godot`.
-4. Ejecuta el proyecto con F6/F5.
+## Qué ya no vive aquí
 
-## Estructura inicial
+El antiguo juego/prototipo ejecutable de ARCONT fue retirado del estado actual del repositorio. No se mantienen aquí escenas de Godot, código jugable, assets del prototipo, presets de exportación ni CI destinado a compilar aquel juego.
 
-- `scenes/`: escenas del juego.
-- `scripts/`: lógica GDScript.
-- `assets/`: arte, audio y recursos importados.
-- `data/`: datos y balance.
-- `tools/`: utilidades de desarrollo.
+El historial de Git permanece como registro técnico histórico, pero **HEAD/main representa únicamente el banco de conocimiento**.
 
-Arcont está actualmente en fase de prototipo; la arquitectura se irá especializando cuando se defina el núcleo jugable.
+## Índice
+
+Consulta [`docs/INDEX.md`](docs/INDEX.md).
