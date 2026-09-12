@@ -22,6 +22,8 @@ jobs:
         run: python tools/arcont_lab.py validate
       - name: Validate ARCONT 1.0 manifest and evidence contracts
         run: python tools/arcont_hardening.py validate
+      - name: Validate unified observability layer
+        run: python tools/observability_integrity.py
       - name: Validate preregistered runtime campaign
         run: python tools/runtime_evidence.py validate-plan
       - name: Validate Asset Vault catalog
@@ -50,6 +52,16 @@ jobs:
           JSON
           if python tools/runtime_evidence.py validate-result /tmp/unregistered.result.json; then
             echo "Runtime evidence validator accepted an unregistered benchmark"
+            exit 1
+          fi
+      - name: Negative control - evidence bundle cannot auto-promote
+        shell: bash
+        run: |
+          cat > /tmp/bad-bundle.json <<'JSON'
+          {"schema_version":1,"bundle_type":"arcont-evidence-bundle","provider":"godot-benchmarks","source_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","record_count":1,"semantic_equivalence_assumed":false,"auto_promotion_allowed":true,"records":[{"schema_version":1,"evidence_id":"bad","claim_ref":null,"provider":{"name":"godot-benchmarks","kind":"benchmark-suite","version":null,"commit":null},"source":{"repository":"godotengine/godot-benchmarks","immutable_ref":null,"path":null},"engine":{"version":null,"commit":null},"metric":{"original_name":"time","original_unit":"ms","normalized_name":"wall_time_ms","normalized_unit":"ms","value":1.0},"provenance":{"platform":null,"hardware":null,"build_type":null,"raw_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},"context":{},"limitations":["negative control"],"maturity_ceiling":"L1_SOURCE_TRACED"}]}
+          JSON
+          if python tools/evidence_ingest.py validate /tmp/bad-bundle.json; then
+            echo "Unified evidence validator accepted automatic maturity promotion"
             exit 1
           fi
       - name: Negative control - maturity overclaim must fail
