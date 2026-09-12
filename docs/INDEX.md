@@ -2,6 +2,15 @@
 
 ARCONT se organiza por conocimientos reutilizables, no por un juego concreto.
 
+## ARCONT 1.0
+
+- [`../arcont.manifest.json`](../arcont.manifest.json) — manifiesto canónico de versión, rol del repositorio, motor fijado y contratos de integridad.
+- [`MATURITY_MODEL.md`](MATURITY_MODEL.md) — niveles L0–L7 y reglas de promoción/degradación del conocimiento.
+- [`PROVENANCE_AND_IMMUTABILITY.md`](PROVENANCE_AND_IMMUTABILITY.md) — procedencia, SHA-256 e inmutabilidad de evidencia publicada.
+- [`../schemas/benchmark-result.schema.json`](../schemas/benchmark-result.schema.json) — contrato machine-readable de resultados de benchmark.
+
+ARCONT 1.0 fija que no se admite código de juego de producción ni un proyecto Godot embebido. La evidencia runtime se produce externamente y se incorpora con procedencia verificable.
+
 ## Laboratorio técnico
 
 - [`LAB_STANDARD.md`](LAB_STANDARD.md) — estándar del laboratorio: SOURCE → EXPERIMENT → RULE, reproducibilidad y estados de validez.
@@ -16,19 +25,22 @@ ARCONT se organiza por conocimientos reutilizables, no por un juego concreto.
 
 ## Herramientas operativas
 
-- [`../tools/arcont_lab.py`](../tools/arcont_lab.py) — CLI ejecutable para validación de integridad, análisis de impacto, índice heurístico de confianza y comparación de resultados.
-- [`../tools/README.md`](../tools/README.md) — uso, límites y principio canónico de las herramientas.
-- [`.github/workflows/knowledge-integrity.yml`](../.github/workflows/knowledge-integrity.yml) — auditoría automática del banco de conocimiento en `push` y `pull_request`.
+- [`../tools/arcont_lab.py`](../tools/arcont_lab.py) — CLI para integridad, análisis de impacto, confianza heurística y comparación de resultados.
+- [`../tools/arcont_hardening.py`](../tools/arcont_hardening.py) — validador ARCONT 1.0 para manifiesto, contratos de evidencia, SHA-256 y madurez.
+- [`../tools/README.md`](../tools/README.md) — uso y límites de las herramientas.
+- [`../tests/test_arcont_hardening.py`](../tests/test_arcont_hardening.py) — pruebas unitarias y controles negativos del hardening.
+- [`.github/workflows/knowledge-integrity.yml`](../.github/workflows/knowledge-integrity.yml) — CI automática en `push` y `pull_request`.
 
 Estas herramientas automatizan comprobaciones mecánicas; no convierten una inferencia en evidencia ni una observación aislada en regla.
 
 ## Benchmarks y evidencia runtime
 
-- [`benchmarks/EXTERNAL_SUITE_SPEC.md`](benchmarks/EXTERNAL_SUITE_SPEC.md) — contrato de la suite externa de microbenchmarks; ARCONT no contiene el proyecto Godot ejecutable.
-- [`benchmarks/RESULT_SCHEMA.md`](benchmarks/RESULT_SCHEMA.md) — formato canónico e inmutable de resultados.
-- [`benchmarks/INGESTION_AND_COMPARISON.md`](benchmarks/INGESTION_AND_COMPARISON.md) — ingesta, comparabilidad, detección de regresiones y promoción de evidencia.
+- [`benchmarks/EXTERNAL_SUITE_SPEC.md`](benchmarks/EXTERNAL_SUITE_SPEC.md) — contrato de la suite externa de microbenchmarks.
+- [`benchmarks/RESULT_SCHEMA.md`](benchmarks/RESULT_SCHEMA.md) — formato documental de resultados.
+- [`benchmarks/INGESTION_AND_COMPARISON.md`](benchmarks/INGESTION_AND_COMPARISON.md) — ingesta, comparabilidad, regresiones y promoción de evidencia.
+- [`../schemas/benchmark-result.schema.json`](../schemas/benchmark-result.schema.json) — schema formal para validación automática.
 
-La suite runtime debe permanecer separada del banco de conocimiento. Produce datos; ARCONT conserva evidencia, relaciones, interpretaciones y decisiones.
+La suite runtime permanece separada del banco de conocimiento. Produce datos; ARCONT conserva hashes, evidencia, relaciones, interpretaciones y decisiones.
 
 ## Motor — Godot
 
@@ -44,7 +56,7 @@ La suite runtime debe permanecer separada del banco de conocimiento. Produce dat
 - [`godot/SENTINEL_SUITE.md`](godot/SENTINEL_SUITE.md) — batería mínima para detectar regresiones entre versiones y plataformas.
 - [`godot/UPGRADE_PROTOCOL.md`](godot/UPGRADE_PROTOCOL.md) — protocolo para actualizar la versión canónica sin perder conocimiento previo.
 
-Godot se conserva aquí como **objeto de estudio del motor**, no como un videojuego. El código fuente upstream se fija por versión y commit; ARCONT conserva análisis y experimentos mínimos sin duplicar innecesariamente todo el repositorio oficial.
+Godot se conserva como **objeto de estudio del motor**, no como videojuego. El upstream se fija por versión y commit; ARCONT conserva análisis y evidencia sin duplicar innecesariamente el repositorio oficial.
 
 ## Ingeniería
 
@@ -63,4 +75,4 @@ Godot se conserva aquí como **objeto de estudio del motor**, no como un videoju
 
 Este repositorio no debe volver a contener un juego completo. Los proyectos futuros pueden consultar ARCONT y reutilizar conocimiento, pero su código de producción debe vivir en repositorios propios.
 
-Los experimentos de ARCONT deben permanecer mínimos, aislados y reproducibles. El runtime ejecutable de benchmarks debe vivir fuera de ARCONT y entregar resultados mediante el esquema canónico.
+Los experimentos de ARCONT deben permanecer mínimos, aislados y reproducibles. El runtime ejecutable de benchmarks vive fuera de ARCONT y entrega resultados mediante el esquema canónico con procedencia y hashes verificables.
