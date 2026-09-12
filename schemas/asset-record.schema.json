@@ -45,6 +45,20 @@
     },
     "technical": {"type": "object"},
     "compatibility": {"type": "object"},
+    "compatibility_evidence": {
+      "type": "object",
+      "description": "Per-target evidence strength for compatibility claims. Missing legacy entries are not runtime proof.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["level"],
+        "properties": {
+          "level": {"type": "string", "enum": ["inferred", "format", "runtime"]},
+          "basis": {"type": ["string", "null"]},
+          "tested_at": {"type": ["string", "null"]},
+          "evidence_ref": {"type": ["string", "null"]}
+        }
+      }
+    },
     "archive": {
       "type": "object",
       "required": ["mirrored_in_arcont", "sha256"],
