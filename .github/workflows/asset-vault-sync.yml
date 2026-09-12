@@ -11,6 +11,7 @@ on:
       - 'tools/asset_vault_indexer.py'
       - 'tools/asset_vault_bulk_sync.py'
       - 'tools/google_fonts_adapter.py'
+      - 'tools/kenney_adapter.py'
       - 'schemas/asset-record.schema.json'
 
 permissions:
@@ -44,6 +45,12 @@ jobs:
           rm -rf /tmp/google-fonts
           git clone --depth 1 --filter=blob:limit=16384 --no-checkout https://github.com/google/fonts.git /tmp/google-fonts
           python tools/google_fonts_adapter.py /tmp/google-fonts --root . || status=$?
+          if [ "${status:-0}" -gt 2 ]; then exit "$status"; fi
+
+      - name: Sync Kenney CC0 metadata
+        shell: bash
+        run: |
+          python tools/kenney_adapter.py --root . || status=$?
           if [ "${status:-0}" -gt 2 ]; then exit "$status"; fi
 
       - name: Rebuild stable Asset Vault index
