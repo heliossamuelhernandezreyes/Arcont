@@ -24,7 +24,7 @@ nodes:
     claim: a controlled empty-scene baseline is required before attributing incremental runtime cost to SceneTree primitives
   - id: ARC-GODOT-HYP-SCENE-0001
     kind: inference
-    status: proposed
+    status: observed
     claim: inactive nodes should have lower per-frame incremental cost than nodes registered for process callbacks
   - id: ARC-GODOT-HYP-SCENE-0002
     kind: inference
@@ -34,6 +34,10 @@ nodes:
     kind: inference
     status: proposed
     claim: frequent process-group membership or order changes may add invalidation and sorting cost
+  - id: ARC-GODOT-OBS-SCENE-0001
+    kind: observation
+    status: observed
+    claim: at N 3000 on one Linux VM, empty process callbacks consumed more measured process CPU time than plain inactive Nodes
   - id: ARC-BENCH-BASELINE-EMPTY-001
     kind: benchmark
     status: preregistered
@@ -94,3 +98,12 @@ edges:
   - from: ARC-GODOT-HYP-SCENE-0003
     relation: measured_by
     to: ARC-BENCH-SCENETREE-PRIORITY-CHURN-001
+  - from: ARC-GODOT-OBS-SCENE-0001
+    relation: supports
+    to: ARC-GODOT-HYP-SCENE-0001
+  - from: ARC-GODOT-OBS-SCENE-0001
+    relation: derived_from
+    to: ARC-BENCH-SCENETREE-INACTIVE-NODE-001
+  - from: ARC-GODOT-OBS-SCENE-0001
+    relation: derived_from
+    to: ARC-BENCH-SCENETREE-PROCESS-NODE-001
