@@ -12,7 +12,11 @@ on:
       - 'tools/asset_vault_bulk_sync.py'
       - 'tools/google_fonts_adapter.py'
       - 'tools/kenney_adapter.py'
+      - 'tools/license_policy.py'
+      - 'tools/opengameart_adapter.py'
+      - 'assets/sources/opengameart-seeds.json'
       - 'schemas/asset-record.schema.json'
+      - 'tests/test_license_policy.py'
 
 permissions:
   contents: write
@@ -56,6 +60,15 @@ jobs:
         run: |
           status=0
           python tools/kenney_adapter.py --root . || status=$?
+          if [ "$status" -ne 0 ] && [ "$status" -ne 2 ]; then
+            exit "$status"
+          fi
+
+      - name: Sync OpenGameArt GREEN metadata
+        shell: bash
+        run: |
+          status=0
+          python tools/opengameart_adapter.py --root . || status=$?
           if [ "$status" -ne 0 ] && [ "$status" -ne 2 ]; then
             exit "$status"
           fi
