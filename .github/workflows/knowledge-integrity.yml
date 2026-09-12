@@ -22,6 +22,10 @@ jobs:
         run: python tools/arcont_lab.py validate
       - name: Validate ARCONT 1.0 manifest and evidence contracts
         run: python tools/arcont_hardening.py validate
+      - name: Validate Asset Vault catalog
+        run: python tools/asset_vault_indexer.py validate
+      - name: Build Asset Vault index
+        run: python tools/asset_vault_indexer.py build --output /tmp/arcont-asset-index.json
       - name: Run unit tests
         run: python -m unittest discover -s tests -v
       - name: Negative control - invalid benchmark result must fail
@@ -39,5 +43,16 @@ jobs:
         run: |
           if python tools/arcont_hardening.py maturity L7_VALIDATED_RULE --source-traced --hypothesis --observations 1; then
             echo "Maturity validator accepted an unsupported L7 claim"
+            exit 1
+          fi
+      - name: Negative control - illegal mirrored asset must fail
+        shell: bash
+        run: |
+          mkdir -p /tmp/arcont-vault/assets/catalog/test
+          cat > /tmp/arcont-vault/assets/catalog/test/bad.asset.json <<'JSON'
+          {"schema_version":1,"id":"ARC-ASSET-BAD-001","title":"Bad","asset_type":"3d","source":{"provider":"Test","asset_url":"https://example.invalid/bad"},"license":{"name":"TEST","redistribution_allowed":false},"technical":{},"compatibility":{},"archive":{"mirrored_in_arcont":true,"sha256":null},"review":{"license_verified":true}}
+          JSON
+          if python tools/asset_vault_indexer.py validate --root /tmp/arcont-vault; then
+            echo "Asset validator accepted illegal mirroring"
             exit 1
           fi
