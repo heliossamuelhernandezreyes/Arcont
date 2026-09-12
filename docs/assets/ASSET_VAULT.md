@@ -12,6 +12,31 @@ ARCONT mantiene un catálogo trazable de recursos reutilizables para prototipos 
 - Audio: SFX, ambience, Foley, UI, impacts, vehicles, creatures, music when licensing permits.
 - Technical: shaders, VFX, prototype primitives, debug/UI assets.
 
+## Indexador automático
+
+La herramienta canónica es `tools/asset_vault_indexer.py`.
+
+Flujo:
+
+`SOURCE -> ADAPTER/MANIFEST -> NORMALIZED RECORD -> VALIDATION -> DEDUPLICATION -> INDEX -> QUERY`
+
+Capacidades actuales:
+
+- sincronización real de metadatos desde la API pública de Poly Haven;
+- ingesta de manifiestos JSON verificados para proveedores sin API estable;
+- validación del contrato de cada asset;
+- rechazo de mirroring cuando la licencia no permite redistribución;
+- deduplicación por ID de ARCONT, identidad externa del proveedor y SHA-256 de binarios archivados;
+- generación de `assets/index.json`;
+- consultas por texto, tipo, uso comercial, atribución y compatibilidad Android;
+- pruebas automáticas y controles negativos en CI.
+
+Especificación completa: [`INDEXER_SPEC.md`](INDEXER_SPEC.md).
+
+Contrato formal: [`../../schemas/asset-record.schema.json`](../../schemas/asset-record.schema.json).
+
+Catálogo normalizado: [`../../assets/catalog/`](../../assets/catalog/).
+
 ## Política de almacenamiento
 
 1. CC0/public-domain assets are preferred for maximum reuse.
@@ -40,11 +65,18 @@ ARCONT mantiene un catálogo trazable de recursos reutilizables para prototipos 
 
 ## Query contract
 
-A future project should be able to ask:
+Un proyecto puede consultar conceptualmente:
 
 `dimension=3d theme=forest style=low_poly platform=android commercial=true attribution=false engine=godot`
 
-and receive only compatible candidates.
+La CLI ya soporta una primera versión práctica:
+
+```bash
+python tools/asset_vault_indexer.py build
+python tools/asset_vault_indexer.py query "forest low poly" --commercial --no-attribution --android
+```
+
+El resultado solo contiene candidatos que cumplen los filtros machine-readable disponibles; campos desconocidos permanecen `null` y no se adivinan.
 
 ## Safety rails
 
