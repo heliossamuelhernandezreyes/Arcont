@@ -1,0 +1,96 @@
+{
+  "archive": {
+    "local_path": null,
+    "mirrored_in_arcont": false,
+    "sha256": null,
+    "size_bytes": null
+  },
+  "asset_type": "font",
+  "compatibility": {
+    "android": true,
+    "godot": true,
+    "unity": true,
+    "unreal": true,
+    "web": true
+  },
+  "dimensions": [
+    "shared",
+    "2d",
+    "2_5d",
+    "3d"
+  ],
+  "font_metadata": {
+    "copyright": [
+      "Copyright (c) 2011, 2011 Johan Kallas (johankallas@gmail.com), Copyright (c) 2011, 2011 Mihkel Virkus (mihkelvirkus@gmail.com), with Reserved Font Name Concert."
+    ],
+    "metadata_path": "ofl/concertone/METADATA.pb",
+    "subsets": [
+      "menu",
+      "latin",
+      "latin-ext"
+    ]
+  },
+  "id": "ARC-ASSET-GOOGLEFONTS-63D90FBA4BFB7C26",
+  "license": {
+    "ai_training_allowed": null,
+    "attribution_required": false,
+    "commercial_use": true,
+    "license_url": "https://openfontlicense.org/",
+    "modification": true,
+    "name": "OFL-1.1",
+    "notes": "SIL Open Font License. Redistribution/modification must preserve the applicable copyright/license terms; Reserved Font Names may apply per family.",
+    "redistribution_allowed": true,
+    "share_alike": true,
+    "version": "1.1"
+  },
+  "review": {
+    "last_checked": "2026-09-12T09:45:23Z",
+    "license_verified": true,
+    "metadata_verified": true,
+    "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
+  },
+  "schema_version": 1,
+  "source": {
+    "acquired_at": "2026-09-12T09:45:23Z",
+    "asset_url": "https://github.com/google/fonts/tree/main/ofl/concertone",
+    "author": "Johan Kallas, Mihkel Virkus",
+    "download_url": null,
+    "external_id": "ofl/concertone",
+    "provider": "Google Fonts"
+  },
+  "styles": [],
+  "tags": [
+    "font",
+    "latin",
+    "latin-ext",
+    "menu",
+    "ofl",
+    "typography"
+  ],
+  "technical": {
+    "animated": null,
+    "animation_count": null,
+    "audio_channels": null,
+    "audio_sample_rate": null,
+    "collision": null,
+    "font_files": [
+      "ConcertOne-Regular.ttf"
+    ],
+    "font_formats": [
+      "ttf"
+    ],
+    "font_variable": false,
+    "formats": [
+      "ttf"
+    ],
+    "lods": null,
+    "pbr": null,
+    "rigged": null,
+    "texture_resolution": null,
+    "triangle_count": null
+  },
+  "themes": [
+    "DISPLAY"
+  ],
+  "title": "Concert One"
+}

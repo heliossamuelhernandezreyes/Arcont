@@ -1,0 +1,86 @@
+{
+  "archive": {
+    "local_path": null,
+    "mirrored_in_arcont": false,
+    "sha256": null,
+    "size_bytes": null
+  },
+  "asset_type": "2",
+  "compatibility": {
+    "android": true,
+    "godot": true,
+    "unity": true,
+    "unreal": true,
+    "web": true
+  },
+  "dimensions": [
+    "shared",
+    "2d",
+    "2_5d",
+    "3d"
+  ],
+  "id": "ARC-ASSET-POLYHAVEN-9AEBA3010C19E8FA",
+  "license": {
+    "ai_training_allowed": true,
+    "attribution_required": false,
+    "commercial_use": true,
+    "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "modification": true,
+    "name": "CC0-1.0",
+    "notes": "Asset license is CC0. Live API usage has separate service attribution/User-Agent terms.",
+    "redistribution_allowed": true,
+    "share_alike": false,
+    "version": "1.0"
+  },
+  "review": {
+    "last_checked": "2026-09-12T09:45:21Z",
+    "license_verified": true,
+    "metadata_verified": false,
+    "notes": "Imported from Poly Haven public API metadata."
+  },
+  "schema_version": 1,
+  "source": {
+    "acquired_at": "2026-09-12T09:45:21Z",
+    "asset_url": "https://polyhaven.com/a/ocean_buoy",
+    "author": "All",
+    "download_url": null,
+    "external_id": "ocean_buoy",
+    "provider": "Poly Haven"
+  },
+  "styles": [],
+  "tags": [
+    "marine buoy",
+    "light beacon",
+    "maritime",
+    "ship",
+    "dock",
+    "jetty",
+    "sea",
+    "ocean",
+    "pier",
+    "harbor",
+    "nautical",
+    "channel marker",
+    "offshore marker",
+    "marine navigation"
+  ],
+  "technical": {
+    "animated": null,
+    "animation_count": null,
+    "audio_channels": null,
+    "audio_sample_rate": null,
+    "collision": null,
+    "font_formats": [],
+    "formats": [],
+    "lods": null,
+    "pbr": false,
+    "rigged": null,
+    "texture_resolution": null,
+    "triangle_count": 12240
+  },
+  "themes": [
+    "collection: project_lighthouse",
+    "props"
+  ],
+  "title": "Ocean Buoy"
+}

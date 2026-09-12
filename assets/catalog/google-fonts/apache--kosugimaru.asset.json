@@ -1,0 +1,100 @@
+{
+  "archive": {
+    "local_path": null,
+    "mirrored_in_arcont": false,
+    "sha256": null,
+    "size_bytes": null
+  },
+  "asset_type": "font",
+  "compatibility": {
+    "android": true,
+    "godot": true,
+    "unity": true,
+    "unreal": true,
+    "web": true
+  },
+  "dimensions": [
+    "shared",
+    "2d",
+    "2_5d",
+    "3d"
+  ],
+  "font_metadata": {
+    "copyright": [
+      "Copyright 2010 The Kosugi Maru Project Authors (https://github.com/googlefonts/kosugi-maru)"
+    ],
+    "metadata_path": "apache/kosugimaru/METADATA.pb",
+    "subsets": [
+      "cyrillic",
+      "japanese",
+      "latin",
+      "latin-ext",
+      "menu"
+    ]
+  },
+  "id": "ARC-ASSET-GOOGLEFONTS-55094EEFA625A82C",
+  "license": {
+    "ai_training_allowed": null,
+    "attribution_required": false,
+    "commercial_use": true,
+    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+    "modification": true,
+    "name": "Apache-2.0",
+    "notes": "Apache-2.0 notice and attribution obligations apply on redistribution as specified by the license.",
+    "redistribution_allowed": true,
+    "share_alike": false,
+    "version": "2.0"
+  },
+  "review": {
+    "last_checked": "2026-09-12T09:45:22Z",
+    "license_verified": true,
+    "metadata_verified": true,
+    "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
+  },
+  "schema_version": 1,
+  "source": {
+    "acquired_at": "2026-09-12T09:45:22Z",
+    "asset_url": "https://github.com/google/fonts/tree/main/apache/kosugimaru",
+    "author": "MOTOYA",
+    "download_url": null,
+    "external_id": "apache/kosugimaru",
+    "provider": "Google Fonts"
+  },
+  "styles": [],
+  "tags": [
+    "apache",
+    "cyrillic",
+    "font",
+    "japanese",
+    "latin",
+    "latin-ext",
+    "menu",
+    "typography"
+  ],
+  "technical": {
+    "animated": null,
+    "animation_count": null,
+    "audio_channels": null,
+    "audio_sample_rate": null,
+    "collision": null,
+    "font_files": [
+      "KosugiMaru-Regular.ttf"
+    ],
+    "font_formats": [
+      "ttf"
+    ],
+    "font_variable": false,
+    "formats": [
+      "ttf"
+    ],
+    "lods": null,
+    "pbr": null,
+    "rigged": null,
+    "texture_resolution": null,
+    "triangle_count": null
+  },
+  "themes": [
+    "SANS_SERIF"
+  ],
+  "title": "Kosugi Maru"
+}

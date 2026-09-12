@@ -1,0 +1,83 @@
+{
+  "archive": {
+    "local_path": null,
+    "mirrored_in_arcont": false,
+    "sha256": null,
+    "size_bytes": null
+  },
+  "asset_type": "1",
+  "compatibility": {
+    "android": true,
+    "godot": true,
+    "unity": true,
+    "unreal": true,
+    "web": true
+  },
+  "dimensions": [
+    "shared",
+    "2d",
+    "2_5d",
+    "3d"
+  ],
+  "id": "ARC-ASSET-POLYHAVEN-E1A6C25D4443703D",
+  "license": {
+    "ai_training_allowed": true,
+    "attribution_required": false,
+    "commercial_use": true,
+    "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "modification": true,
+    "name": "CC0-1.0",
+    "notes": "Asset license is CC0. Live API usage has separate service attribution/User-Agent terms.",
+    "redistribution_allowed": true,
+    "share_alike": false,
+    "version": "1.0"
+  },
+  "review": {
+    "last_checked": "2026-09-12T09:45:21Z",
+    "license_verified": true,
+    "metadata_verified": false,
+    "notes": "Imported from Poly Haven public API metadata."
+  },
+  "schema_version": 1,
+  "source": {
+    "acquired_at": "2026-09-12T09:45:21Z",
+    "asset_url": "https://polyhaven.com/a/brick_wall_02",
+    "author": "All",
+    "download_url": null,
+    "external_id": "brick_wall_02",
+    "provider": "Poly Haven"
+  },
+  "styles": [],
+  "tags": [
+    "weathered",
+    "cracked",
+    "concrete",
+    "scratched",
+    "brick",
+    "bricks",
+    "wall",
+    "exterior",
+    "red brick"
+  ],
+  "technical": {
+    "animated": null,
+    "animation_count": null,
+    "audio_channels": null,
+    "audio_sample_rate": null,
+    "collision": null,
+    "font_formats": [],
+    "formats": [],
+    "lods": null,
+    "pbr": false,
+    "rigged": null,
+    "texture_resolution": null,
+    "triangle_count": null
+  },
+  "themes": [
+    "wall",
+    "brick",
+    "outdoor",
+    "man made"
+  ],
+  "title": "Brick Wall 02"
+}

@@ -1,0 +1,94 @@
+{
+  "archive": {
+    "local_path": null,
+    "mirrored_in_arcont": false,
+    "sha256": null,
+    "size_bytes": null
+  },
+  "asset_type": "font",
+  "compatibility": {
+    "android": true,
+    "godot": true,
+    "unity": true,
+    "unreal": true,
+    "web": true
+  },
+  "dimensions": [
+    "shared",
+    "2d",
+    "2_5d",
+    "3d"
+  ],
+  "font_metadata": {
+    "copyright": [
+      "Copyright (c) 2011, Matthew Desmond (http://www.madtype.com | mattdesmond@gmail.com), with Reserved Font Name Abel."
+    ],
+    "metadata_path": "ofl/abel/METADATA.pb",
+    "subsets": [
+      "latin",
+      "menu"
+    ]
+  },
+  "id": "ARC-ASSET-GOOGLEFONTS-3495482921F0339B",
+  "license": {
+    "ai_training_allowed": null,
+    "attribution_required": false,
+    "commercial_use": true,
+    "license_url": "https://openfontlicense.org/",
+    "modification": true,
+    "name": "OFL-1.1",
+    "notes": "SIL Open Font License. Redistribution/modification must preserve the applicable copyright/license terms; Reserved Font Names may apply per family.",
+    "redistribution_allowed": true,
+    "share_alike": true,
+    "version": "1.1"
+  },
+  "review": {
+    "last_checked": "2026-09-12T09:45:22Z",
+    "license_verified": true,
+    "metadata_verified": true,
+    "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
+  },
+  "schema_version": 1,
+  "source": {
+    "acquired_at": "2026-09-12T09:45:22Z",
+    "asset_url": "https://github.com/google/fonts/tree/main/ofl/abel",
+    "author": "MADType",
+    "download_url": null,
+    "external_id": "ofl/abel",
+    "provider": "Google Fonts"
+  },
+  "styles": [],
+  "tags": [
+    "font",
+    "latin",
+    "menu",
+    "ofl",
+    "typography"
+  ],
+  "technical": {
+    "animated": null,
+    "animation_count": null,
+    "audio_channels": null,
+    "audio_sample_rate": null,
+    "collision": null,
+    "font_files": [
+      "Abel-Regular.ttf"
+    ],
+    "font_formats": [
+      "ttf"
+    ],
+    "font_variable": false,
+    "formats": [
+      "ttf"
+    ],
+    "lods": null,
+    "pbr": null,
+    "rigged": null,
+    "texture_resolution": null,
+    "triangle_count": null
+  },
+  "themes": [
+    "SANS_SERIF"
+  ],
+  "title": "Abel"
+}

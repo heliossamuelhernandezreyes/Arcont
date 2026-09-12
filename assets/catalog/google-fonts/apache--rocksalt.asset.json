@@ -1,0 +1,94 @@
+{
+  "archive": {
+    "local_path": null,
+    "mirrored_in_arcont": false,
+    "sha256": null,
+    "size_bytes": null
+  },
+  "asset_type": "font",
+  "compatibility": {
+    "android": true,
+    "godot": true,
+    "unity": true,
+    "unreal": true,
+    "web": true
+  },
+  "dimensions": [
+    "shared",
+    "2d",
+    "2_5d",
+    "3d"
+  ],
+  "font_metadata": {
+    "copyright": [
+      "Copyright (c) 2010 by Font Diner, Inc DBA Sideshow. All rights reserved."
+    ],
+    "metadata_path": "apache/rocksalt/METADATA.pb",
+    "subsets": [
+      "latin",
+      "menu"
+    ]
+  },
+  "id": "ARC-ASSET-GOOGLEFONTS-8FE4EF09D54C813E",
+  "license": {
+    "ai_training_allowed": null,
+    "attribution_required": false,
+    "commercial_use": true,
+    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+    "modification": true,
+    "name": "Apache-2.0",
+    "notes": "Apache-2.0 notice and attribution obligations apply on redistribution as specified by the license.",
+    "redistribution_allowed": true,
+    "share_alike": false,
+    "version": "2.0"
+  },
+  "review": {
+    "last_checked": "2026-09-12T09:45:22Z",
+    "license_verified": true,
+    "metadata_verified": true,
+    "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
+  },
+  "schema_version": 1,
+  "source": {
+    "acquired_at": "2026-09-12T09:45:22Z",
+    "asset_url": "https://github.com/google/fonts/tree/main/apache/rocksalt",
+    "author": "Sideshow",
+    "download_url": null,
+    "external_id": "apache/rocksalt",
+    "provider": "Google Fonts"
+  },
+  "styles": [],
+  "tags": [
+    "apache",
+    "font",
+    "latin",
+    "menu",
+    "typography"
+  ],
+  "technical": {
+    "animated": null,
+    "animation_count": null,
+    "audio_channels": null,
+    "audio_sample_rate": null,
+    "collision": null,
+    "font_files": [
+      "RockSalt-Regular.ttf"
+    ],
+    "font_formats": [
+      "ttf"
+    ],
+    "font_variable": false,
+    "formats": [
+      "ttf"
+    ],
+    "lods": null,
+    "pbr": null,
+    "rigged": null,
+    "texture_resolution": null,
+    "triangle_count": null
+  },
+  "themes": [
+    "HANDWRITING"
+  ],
+  "title": "Rock Salt"
+}

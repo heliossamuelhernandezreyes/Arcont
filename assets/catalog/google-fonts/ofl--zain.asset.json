@@ -1,0 +1,110 @@
+{
+  "archive": {
+    "local_path": null,
+    "mirrored_in_arcont": false,
+    "sha256": null,
+    "size_bytes": null
+  },
+  "asset_type": "font",
+  "compatibility": {
+    "android": true,
+    "godot": true,
+    "unity": true,
+    "unreal": true,
+    "web": true
+  },
+  "dimensions": [
+    "shared",
+    "2d",
+    "2_5d",
+    "3d"
+  ],
+  "font_metadata": {
+    "copyright": [
+      "Copyright 2024 The Zain Project Authors (https://github.com/googlefonts/zain)",
+      "Copyright 2024 The Zain Project Authors (https://github.com/googlefonts/zain)",
+      "Copyright 2024 The Zain Project Authors (https://github.com/googlefonts/zain)",
+      "Copyright 2024 The Zain Project Authors (https://github.com/googlefonts/zain)",
+      "Copyright 2024 The Zain Project Authors (https://github.com/googlefonts/zain)",
+      "Copyright 2024 The Zain Project Authors (https://github.com/googlefonts/zain)",
+      "Copyright 2024 The Zain Project Authors (https://github.com/googlefonts/zain)",
+      "Copyright 2024 The Zain Project Authors (https://github.com/googlefonts/zain)"
+    ],
+    "metadata_path": "ofl/zain/METADATA.pb",
+    "subsets": [
+      "arabic",
+      "latin",
+      "menu"
+    ]
+  },
+  "id": "ARC-ASSET-GOOGLEFONTS-D422698F0F74C38F",
+  "license": {
+    "ai_training_allowed": null,
+    "attribution_required": false,
+    "commercial_use": true,
+    "license_url": "https://openfontlicense.org/",
+    "modification": true,
+    "name": "OFL-1.1",
+    "notes": "SIL Open Font License. Redistribution/modification must preserve the applicable copyright/license terms; Reserved Font Names may apply per family.",
+    "redistribution_allowed": true,
+    "share_alike": true,
+    "version": "1.1"
+  },
+  "review": {
+    "last_checked": "2026-09-12T09:45:29Z",
+    "license_verified": true,
+    "metadata_verified": true,
+    "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
+  },
+  "schema_version": 1,
+  "source": {
+    "acquired_at": "2026-09-12T09:45:29Z",
+    "asset_url": "https://github.com/google/fonts/tree/main/ofl/zain",
+    "author": "Boutros Fonts",
+    "download_url": null,
+    "external_id": "ofl/zain",
+    "provider": "Google Fonts"
+  },
+  "styles": [],
+  "tags": [
+    "arabic",
+    "font",
+    "latin",
+    "menu",
+    "ofl",
+    "typography"
+  ],
+  "technical": {
+    "animated": null,
+    "animation_count": null,
+    "audio_channels": null,
+    "audio_sample_rate": null,
+    "collision": null,
+    "font_files": [
+      "Zain-ExtraLight.ttf",
+      "Zain-Light.ttf",
+      "Zain-LightItalic.ttf",
+      "Zain-Regular.ttf",
+      "Zain-Italic.ttf",
+      "Zain-Bold.ttf",
+      "Zain-ExtraBold.ttf",
+      "Zain-Black.ttf"
+    ],
+    "font_formats": [
+      "ttf"
+    ],
+    "font_variable": false,
+    "formats": [
+      "ttf"
+    ],
+    "lods": null,
+    "pbr": null,
+    "rigged": null,
+    "texture_resolution": null,
+    "triangle_count": null
+  },
+  "themes": [
+    "SANS_SERIF"
+  ],
+  "title": "Zain"
+}

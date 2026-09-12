@@ -1,0 +1,100 @@
+{
+  "archive": {
+    "local_path": null,
+    "mirrored_in_arcont": false,
+    "sha256": null,
+    "size_bytes": null
+  },
+  "asset_type": "font",
+  "compatibility": {
+    "android": true,
+    "godot": true,
+    "unity": true,
+    "unreal": true,
+    "web": true
+  },
+  "dimensions": [
+    "shared",
+    "2d",
+    "2_5d",
+    "3d"
+  ],
+  "font_metadata": {
+    "copyright": [
+      "Copyright 2022 The Noto Project Authors (https://github.com/notofonts/myanmar)"
+    ],
+    "metadata_path": "ofl/notosansmyanmar/METADATA.pb",
+    "subsets": [
+      "latin",
+      "latin-ext",
+      "menu",
+      "myanmar"
+    ]
+  },
+  "id": "ARC-ASSET-GOOGLEFONTS-C787114173428C0B",
+  "license": {
+    "ai_training_allowed": null,
+    "attribution_required": false,
+    "commercial_use": true,
+    "license_url": "https://openfontlicense.org/",
+    "modification": true,
+    "name": "OFL-1.1",
+    "notes": "SIL Open Font License. Redistribution/modification must preserve the applicable copyright/license terms; Reserved Font Names may apply per family.",
+    "redistribution_allowed": true,
+    "share_alike": true,
+    "version": "1.1"
+  },
+  "review": {
+    "last_checked": "2026-09-12T09:45:26Z",
+    "license_verified": true,
+    "metadata_verified": true,
+    "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
+  },
+  "schema_version": 1,
+  "source": {
+    "acquired_at": "2026-09-12T09:45:26Z",
+    "asset_url": "https://github.com/google/fonts/tree/main/ofl/notosansmyanmar",
+    "author": "Google",
+    "download_url": null,
+    "external_id": "ofl/notosansmyanmar",
+    "provider": "Google Fonts"
+  },
+  "styles": [
+    "variable"
+  ],
+  "tags": [
+    "font",
+    "latin",
+    "latin-ext",
+    "menu",
+    "myanmar",
+    "ofl",
+    "typography"
+  ],
+  "technical": {
+    "animated": null,
+    "animation_count": null,
+    "audio_channels": null,
+    "audio_sample_rate": null,
+    "collision": null,
+    "font_files": [
+      "NotoSansMyanmar[wdth,wght].ttf"
+    ],
+    "font_formats": [
+      "ttf"
+    ],
+    "font_variable": true,
+    "formats": [
+      "ttf"
+    ],
+    "lods": null,
+    "pbr": null,
+    "rigged": null,
+    "texture_resolution": null,
+    "triangle_count": null
+  },
+  "themes": [
+    "SANS_SERIF"
+  ],
+  "title": "Noto Sans Myanmar"
+}

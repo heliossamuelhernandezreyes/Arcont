@@ -1,0 +1,132 @@
+{
+  "archive": {
+    "local_path": null,
+    "mirrored_in_arcont": false,
+    "sha256": null,
+    "size_bytes": null
+  },
+  "asset_type": "font",
+  "compatibility": {
+    "android": true,
+    "godot": true,
+    "unity": true,
+    "unreal": true,
+    "web": true
+  },
+  "dimensions": [
+    "shared",
+    "2d",
+    "2_5d",
+    "3d"
+  ],
+  "font_metadata": {
+    "copyright": [
+      "Copyright 2013 The Alegreya Sans Project Authors (https://github.com/huertatipografica/Alegreya-Sans)",
+      "Copyright 2013 The Alegreya Sans Project Authors (https://github.com/huertatipografica/Alegreya-Sans)",
+      "Copyright 2013 The Alegreya Sans Project Authors (https://github.com/huertatipografica/Alegreya-Sans)",
+      "Copyright 2013 The Alegreya Sans Project Authors (https://github.com/huertatipografica/Alegreya-Sans)",
+      "Copyright 2013 The Alegreya Sans Project Authors (https://github.com/huertatipografica/Alegreya-Sans)",
+      "Copyright 2013 The Alegreya Sans Project Authors (https://github.com/huertatipografica/Alegreya-Sans)",
+      "Copyright 2013 The Alegreya Sans Project Authors (https://github.com/huertatipografica/Alegreya-Sans)",
+      "Copyright 2013 The Alegreya Sans Project Authors (https://github.com/huertatipografica/Alegreya-Sans)",
+      "Copyright 2013 The Alegreya Sans Project Authors (https://github.com/huertatipografica/Alegreya-Sans)",
+      "Copyright 2013 The Alegreya Sans Project Authors (https://github.com/huertatipografica/Alegreya-Sans)",
+      "Copyright 2013 The Alegreya Sans Project Authors (https://github.com/huertatipografica/Alegreya-Sans)",
+      "Copyright 2013 The Alegreya Sans Project Authors (https://github.com/huertatipografica/Alegreya-Sans)",
+      "Copyright 2013 The Alegreya Sans Project Authors (https://github.com/huertatipografica/Alegreya-Sans)",
+      "Copyright 2013 The Alegreya Sans Project Authors (https://github.com/huertatipografica/Alegreya-Sans)"
+    ],
+    "metadata_path": "ofl/alegreyasans/METADATA.pb",
+    "subsets": [
+      "cyrillic",
+      "cyrillic-ext",
+      "greek",
+      "greek-ext",
+      "latin",
+      "latin-ext",
+      "menu",
+      "vietnamese"
+    ]
+  },
+  "id": "ARC-ASSET-GOOGLEFONTS-3335426040F51BA6",
+  "license": {
+    "ai_training_allowed": null,
+    "attribution_required": false,
+    "commercial_use": true,
+    "license_url": "https://openfontlicense.org/",
+    "modification": true,
+    "name": "OFL-1.1",
+    "notes": "SIL Open Font License. Redistribution/modification must preserve the applicable copyright/license terms; Reserved Font Names may apply per family.",
+    "redistribution_allowed": true,
+    "share_alike": true,
+    "version": "1.1"
+  },
+  "review": {
+    "last_checked": "2026-09-12T09:45:23Z",
+    "license_verified": true,
+    "metadata_verified": true,
+    "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
+  },
+  "schema_version": 1,
+  "source": {
+    "acquired_at": "2026-09-12T09:45:23Z",
+    "asset_url": "https://github.com/google/fonts/tree/main/ofl/alegreyasans",
+    "author": "Juan Pablo del Peral, HT Fonts",
+    "download_url": null,
+    "external_id": "ofl/alegreyasans",
+    "provider": "Google Fonts"
+  },
+  "styles": [],
+  "tags": [
+    "cyrillic",
+    "cyrillic-ext",
+    "font",
+    "greek",
+    "greek-ext",
+    "latin",
+    "latin-ext",
+    "menu",
+    "ofl",
+    "typography",
+    "vietnamese"
+  ],
+  "technical": {
+    "animated": null,
+    "animation_count": null,
+    "audio_channels": null,
+    "audio_sample_rate": null,
+    "collision": null,
+    "font_files": [
+      "AlegreyaSans-Thin.ttf",
+      "AlegreyaSans-ThinItalic.ttf",
+      "AlegreyaSans-Light.ttf",
+      "AlegreyaSans-LightItalic.ttf",
+      "AlegreyaSans-Regular.ttf",
+      "AlegreyaSans-Italic.ttf",
+      "AlegreyaSans-Medium.ttf",
+      "AlegreyaSans-MediumItalic.ttf",
+      "AlegreyaSans-Bold.ttf",
+      "AlegreyaSans-BoldItalic.ttf",
+      "AlegreyaSans-ExtraBold.ttf",
+      "AlegreyaSans-ExtraBoldItalic.ttf",
+      "AlegreyaSans-Black.ttf",
+      "AlegreyaSans-BlackItalic.ttf"
+    ],
+    "font_formats": [
+      "ttf"
+    ],
+    "font_variable": false,
+    "formats": [
+      "ttf"
+    ],
+    "lods": null,
+    "pbr": null,
+    "rigged": null,
+    "texture_resolution": null,
+    "triangle_count": null
+  },
+  "themes": [
+    "SANS_SERIF"
+  ],
+  "title": "Alegreya Sans"
+}

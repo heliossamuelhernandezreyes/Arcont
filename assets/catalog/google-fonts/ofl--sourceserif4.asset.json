@@ -1,0 +1,108 @@
+{
+  "archive": {
+    "local_path": null,
+    "mirrored_in_arcont": false,
+    "sha256": null,
+    "size_bytes": null
+  },
+  "asset_type": "font",
+  "compatibility": {
+    "android": true,
+    "godot": true,
+    "unity": true,
+    "unreal": true,
+    "web": true
+  },
+  "dimensions": [
+    "shared",
+    "2d",
+    "2_5d",
+    "3d"
+  ],
+  "font_metadata": {
+    "copyright": [
+      "© 2014 - 2021 Adobe Systems Incorporated (http://www.adobe.com/), with Reserved Font Name ‘Source’.",
+      "© 2014 - 2021 Adobe Systems Incorporated (http://www.adobe.com/), with Reserved Font Name ‘Source’."
+    ],
+    "metadata_path": "ofl/sourceserif4/METADATA.pb",
+    "subsets": [
+      "cyrillic",
+      "cyrillic-ext",
+      "greek",
+      "latin",
+      "latin-ext",
+      "menu",
+      "vietnamese"
+    ]
+  },
+  "id": "ARC-ASSET-GOOGLEFONTS-D48C8427DE7BFC73",
+  "license": {
+    "ai_training_allowed": null,
+    "attribution_required": false,
+    "commercial_use": true,
+    "license_url": "https://openfontlicense.org/",
+    "modification": true,
+    "name": "OFL-1.1",
+    "notes": "SIL Open Font License. Redistribution/modification must preserve the applicable copyright/license terms; Reserved Font Names may apply per family.",
+    "redistribution_allowed": true,
+    "share_alike": true,
+    "version": "1.1"
+  },
+  "review": {
+    "last_checked": "2026-09-12T09:45:28Z",
+    "license_verified": true,
+    "metadata_verified": true,
+    "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
+  },
+  "schema_version": 1,
+  "source": {
+    "acquired_at": "2026-09-12T09:45:28Z",
+    "asset_url": "https://github.com/google/fonts/tree/main/ofl/sourceserif4",
+    "author": "Frank Grießhammer",
+    "download_url": null,
+    "external_id": "ofl/sourceserif4",
+    "provider": "Google Fonts"
+  },
+  "styles": [
+    "variable"
+  ],
+  "tags": [
+    "cyrillic",
+    "cyrillic-ext",
+    "font",
+    "greek",
+    "latin",
+    "latin-ext",
+    "menu",
+    "ofl",
+    "typography",
+    "vietnamese"
+  ],
+  "technical": {
+    "animated": null,
+    "animation_count": null,
+    "audio_channels": null,
+    "audio_sample_rate": null,
+    "collision": null,
+    "font_files": [
+      "SourceSerif4[opsz,wght].ttf",
+      "SourceSerif4-Italic[opsz,wght].ttf"
+    ],
+    "font_formats": [
+      "ttf"
+    ],
+    "font_variable": true,
+    "formats": [
+      "ttf"
+    ],
+    "lods": null,
+    "pbr": null,
+    "rigged": null,
+    "texture_resolution": null,
+    "triangle_count": null
+  },
+  "themes": [
+    "SERIF"
+  ],
+  "title": "Source Serif 4"
+}

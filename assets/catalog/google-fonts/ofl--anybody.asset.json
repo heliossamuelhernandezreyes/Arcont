@@ -1,0 +1,103 @@
+{
+  "archive": {
+    "local_path": null,
+    "mirrored_in_arcont": false,
+    "sha256": null,
+    "size_bytes": null
+  },
+  "asset_type": "font",
+  "compatibility": {
+    "android": true,
+    "godot": true,
+    "unity": true,
+    "unreal": true,
+    "web": true
+  },
+  "dimensions": [
+    "shared",
+    "2d",
+    "2_5d",
+    "3d"
+  ],
+  "font_metadata": {
+    "copyright": [
+      "Copyright 2020 The Anybody Project Authors (https://github.com/Etcetera-Type-Co/Anybody)",
+      "Copyright 2020 The Anybody Project Authors (https://github.com/Etcetera-Type-Co/Anybody)"
+    ],
+    "metadata_path": "ofl/anybody/METADATA.pb",
+    "subsets": [
+      "latin",
+      "latin-ext",
+      "menu",
+      "vietnamese"
+    ]
+  },
+  "id": "ARC-ASSET-GOOGLEFONTS-DA9A73E0AB1E484E",
+  "license": {
+    "ai_training_allowed": null,
+    "attribution_required": false,
+    "commercial_use": true,
+    "license_url": "https://openfontlicense.org/",
+    "modification": true,
+    "name": "OFL-1.1",
+    "notes": "SIL Open Font License. Redistribution/modification must preserve the applicable copyright/license terms; Reserved Font Names may apply per family.",
+    "redistribution_allowed": true,
+    "share_alike": true,
+    "version": "1.1"
+  },
+  "review": {
+    "last_checked": "2026-09-12T09:45:23Z",
+    "license_verified": true,
+    "metadata_verified": true,
+    "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
+  },
+  "schema_version": 1,
+  "source": {
+    "acquired_at": "2026-09-12T09:45:23Z",
+    "asset_url": "https://github.com/google/fonts/tree/main/ofl/anybody",
+    "author": "Tyler Finck",
+    "download_url": null,
+    "external_id": "ofl/anybody",
+    "provider": "Google Fonts"
+  },
+  "styles": [
+    "variable"
+  ],
+  "tags": [
+    "font",
+    "latin",
+    "latin-ext",
+    "menu",
+    "ofl",
+    "typography",
+    "vietnamese"
+  ],
+  "technical": {
+    "animated": null,
+    "animation_count": null,
+    "audio_channels": null,
+    "audio_sample_rate": null,
+    "collision": null,
+    "font_files": [
+      "Anybody[wdth,wght].ttf",
+      "Anybody-Italic[wdth,wght].ttf"
+    ],
+    "font_formats": [
+      "ttf"
+    ],
+    "font_variable": true,
+    "formats": [
+      "ttf"
+    ],
+    "lods": null,
+    "pbr": null,
+    "rigged": null,
+    "texture_resolution": null,
+    "triangle_count": null
+  },
+  "themes": [
+    "SANS_SERIF",
+    "DISPLAY"
+  ],
+  "title": "Anybody"
+}

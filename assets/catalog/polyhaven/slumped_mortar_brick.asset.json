@@ -1,0 +1,90 @@
+{
+  "archive": {
+    "local_path": null,
+    "mirrored_in_arcont": false,
+    "sha256": null,
+    "size_bytes": null
+  },
+  "asset_type": "1",
+  "compatibility": {
+    "android": true,
+    "godot": true,
+    "unity": true,
+    "unreal": true,
+    "web": true
+  },
+  "dimensions": [
+    "shared",
+    "2d",
+    "2_5d",
+    "3d"
+  ],
+  "id": "ARC-ASSET-POLYHAVEN-1FCF4D3AFBA143BE",
+  "license": {
+    "ai_training_allowed": true,
+    "attribution_required": false,
+    "commercial_use": true,
+    "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "modification": true,
+    "name": "CC0-1.0",
+    "notes": "Asset license is CC0. Live API usage has separate service attribution/User-Agent terms.",
+    "redistribution_allowed": true,
+    "share_alike": false,
+    "version": "1.0"
+  },
+  "review": {
+    "last_checked": "2026-09-12T09:45:21Z",
+    "license_verified": true,
+    "metadata_verified": false,
+    "notes": "Imported from Poly Haven public API metadata."
+  },
+  "schema_version": 1,
+  "source": {
+    "acquired_at": "2026-09-12T09:45:21Z",
+    "asset_url": "https://polyhaven.com/a/slumped_mortar_brick",
+    "author": "All",
+    "download_url": null,
+    "external_id": "slumped_mortar_brick",
+    "provider": "Poly Haven"
+  },
+  "styles": [],
+  "tags": [
+    "concrete",
+    "cement",
+    "plasterconcrete",
+    "mortar",
+    "brick",
+    "bricks",
+    "weathered",
+    "deteriorating",
+    "painted",
+    "rough",
+    "brick wall",
+    "dirty",
+    "slumped",
+    "loose mortar",
+    "cracking"
+  ],
+  "technical": {
+    "animated": null,
+    "animation_count": null,
+    "audio_channels": null,
+    "audio_sample_rate": null,
+    "collision": null,
+    "font_formats": [],
+    "formats": [],
+    "lods": null,
+    "pbr": false,
+    "rigged": null,
+    "texture_resolution": null,
+    "triangle_count": null
+  },
+  "themes": [
+    "outdoor",
+    "man made",
+    "wall",
+    "brick",
+    "plaster-concrete"
+  ],
+  "title": "Slumped Mortar Brick"
+}

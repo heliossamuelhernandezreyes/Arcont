@@ -1,0 +1,100 @@
+{
+  "archive": {
+    "local_path": null,
+    "mirrored_in_arcont": false,
+    "sha256": null,
+    "size_bytes": null
+  },
+  "asset_type": "font",
+  "compatibility": {
+    "android": true,
+    "godot": true,
+    "unity": true,
+    "unreal": true,
+    "web": true
+  },
+  "dimensions": [
+    "shared",
+    "2d",
+    "2_5d",
+    "3d"
+  ],
+  "font_metadata": {
+    "copyright": [
+      "Copyright 2025 The UoqMunThenKhung Project Authors (https://github.com/MoonlitOwen/ThenKhung)"
+    ],
+    "metadata_path": "ofl/uoqmunthenkhung/METADATA.pb",
+    "subsets": [
+      "chinese-traditional",
+      "cyrillic",
+      "latin",
+      "menu",
+      "symbols2"
+    ]
+  },
+  "id": "ARC-ASSET-GOOGLEFONTS-0A9CD5B64FC1E038",
+  "license": {
+    "ai_training_allowed": null,
+    "attribution_required": false,
+    "commercial_use": true,
+    "license_url": "https://openfontlicense.org/",
+    "modification": true,
+    "name": "OFL-1.1",
+    "notes": "SIL Open Font License. Redistribution/modification must preserve the applicable copyright/license terms; Reserved Font Names may apply per family.",
+    "redistribution_allowed": true,
+    "share_alike": true,
+    "version": "1.1"
+  },
+  "review": {
+    "last_checked": "2026-09-12T09:45:29Z",
+    "license_verified": true,
+    "metadata_verified": true,
+    "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
+  },
+  "schema_version": 1,
+  "source": {
+    "acquired_at": "2026-09-12T09:45:29Z",
+    "asset_url": "https://github.com/google/fonts/tree/main/ofl/uoqmunthenkhung",
+    "author": "Moonlit Owen",
+    "download_url": null,
+    "external_id": "ofl/uoqmunthenkhung",
+    "provider": "Google Fonts"
+  },
+  "styles": [],
+  "tags": [
+    "chinese-traditional",
+    "cyrillic",
+    "font",
+    "latin",
+    "menu",
+    "ofl",
+    "symbols2",
+    "typography"
+  ],
+  "technical": {
+    "animated": null,
+    "animation_count": null,
+    "audio_channels": null,
+    "audio_sample_rate": null,
+    "collision": null,
+    "font_files": [
+      "UoqMunThenKhung-Regular.ttf"
+    ],
+    "font_formats": [
+      "ttf"
+    ],
+    "font_variable": false,
+    "formats": [
+      "ttf"
+    ],
+    "lods": null,
+    "pbr": null,
+    "rigged": null,
+    "texture_resolution": null,
+    "triangle_count": null
+  },
+  "themes": [
+    "SERIF"
+  ],
+  "title": "UoqMunThenKhung"
+}

@@ -1,0 +1,110 @@
+{
+  "archive": {
+    "local_path": null,
+    "mirrored_in_arcont": false,
+    "sha256": null,
+    "size_bytes": null
+  },
+  "asset_type": "font",
+  "compatibility": {
+    "android": true,
+    "godot": true,
+    "unity": true,
+    "unreal": true,
+    "web": true
+  },
+  "dimensions": [
+    "shared",
+    "2d",
+    "2_5d",
+    "3d"
+  ],
+  "font_metadata": {
+    "copyright": [
+      "Original font copyright (c) 2014-2017 CDAST, University of Hyderabad, Hyderabad (cdast@uohyd.ernet.in).\\nAdditions and modifications copyright (c) 2015-2023 SIL International (https://www.sil.org/).\\nLatin glyphs copyright (c) 2010, 2012, 2014, 2021 Adobe Systems Incorporated\\n(http://www.adobe.com/), with Reserved Font Name \\'Source\\'.",
+      "Original font copyright (c) 2014-2017 CDAST, University of Hyderabad, Hyderabad (cdast@uohyd.ernet.in).\\nAdditions and modifications copyright (c) 2015-2023 SIL International (https://www.sil.org/).\\nLatin glyphs copyright (c) 2010, 2012, 2014, 2021 Adobe Systems Incorporated\\n(http://www.adobe.com/), with Reserved Font Name \\'Source\\'.",
+      "Original font copyright (c) 2014-2017 CDAST, University of Hyderabad, Hyderabad (cdast@uohyd.ernet.in).\\nAdditions and modifications copyright (c) 2015-2023 SIL International (https://www.sil.org/).\\nLatin glyphs copyright (c) 2010, 2012, 2014, 2021 Adobe Systems Incorporated\\n(http://www.adobe.com/), with Reserved Font Name \\'Source\\'.",
+      "Original font copyright (c) 2014-2017 CDAST, University of Hyderabad, Hyderabad (cdast@uohyd.ernet.in).\\nAdditions and modifications copyright (c) 2015-2023 SIL International (https://www.sil.org/).\\nLatin glyphs copyright (c) 2010, 2012, 2014, 2021 Adobe Systems Incorporated\\n(http://www.adobe.com/), with Reserved Font Name \\'Source\\'.",
+      "Original font copyright (c) 2014-2017 CDAST, University of Hyderabad, Hyderabad (cdast@uohyd.ernet.in).\\nAdditions and modifications copyright (c) 2015-2023 SIL International (https://www.sil.org/).\\nLatin glyphs copyright (c) 2010, 2012, 2014, 2021 Adobe Systems Incorporated\\n(http://www.adobe.com/), with Reserved Font Name \\'Source\\'."
+    ],
+    "metadata_path": "ofl/narnoor/METADATA.pb",
+    "subsets": [
+      "gunjala-gondi",
+      "latin",
+      "latin-ext",
+      "math",
+      "menu",
+      "symbols"
+    ]
+  },
+  "id": "ARC-ASSET-GOOGLEFONTS-69CE9B5FCB27E92E",
+  "license": {
+    "ai_training_allowed": null,
+    "attribution_required": false,
+    "commercial_use": true,
+    "license_url": "https://openfontlicense.org/",
+    "modification": true,
+    "name": "OFL-1.1",
+    "notes": "SIL Open Font License. Redistribution/modification must preserve the applicable copyright/license terms; Reserved Font Names may apply per family.",
+    "redistribution_allowed": true,
+    "share_alike": true,
+    "version": "1.1"
+  },
+  "review": {
+    "last_checked": "2026-09-12T09:45:25Z",
+    "license_verified": true,
+    "metadata_verified": true,
+    "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
+  },
+  "schema_version": 1,
+  "source": {
+    "acquired_at": "2026-09-12T09:45:25Z",
+    "asset_url": "https://github.com/google/fonts/tree/main/ofl/narnoor",
+    "author": "SIL International",
+    "download_url": null,
+    "external_id": "ofl/narnoor",
+    "provider": "Google Fonts"
+  },
+  "styles": [],
+  "tags": [
+    "font",
+    "gunjala-gondi",
+    "latin",
+    "latin-ext",
+    "math",
+    "menu",
+    "ofl",
+    "symbols",
+    "typography"
+  ],
+  "technical": {
+    "animated": null,
+    "animation_count": null,
+    "audio_channels": null,
+    "audio_sample_rate": null,
+    "collision": null,
+    "font_files": [
+      "Narnoor-Regular.ttf",
+      "Narnoor-Medium.ttf",
+      "Narnoor-SemiBold.ttf",
+      "Narnoor-Bold.ttf",
+      "Narnoor-ExtraBold.ttf"
+    ],
+    "font_formats": [
+      "ttf"
+    ],
+    "font_variable": false,
+    "formats": [
+      "ttf"
+    ],
+    "lods": null,
+    "pbr": null,
+    "rigged": null,
+    "texture_resolution": null,
+    "triangle_count": null
+  },
+  "themes": [
+    "SANS_SERIF"
+  ],
+  "title": "Narnoor"
+}
