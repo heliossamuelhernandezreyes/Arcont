@@ -36,7 +36,11 @@
         "attribution_required": {"type": ["boolean", "null"]},
         "redistribution_allowed": {"type": ["boolean", "null"]},
         "share_alike": {"type": ["boolean", "null"]},
-        "ai_training_allowed": {"type": ["boolean", "null"]}
+        "ai_training_allowed": {"type": ["boolean", "null"]},
+        "policy_tier": {"type": ["string", "null"], "enum": ["green", "conditional", "restricted", null]},
+        "drm_risk": {"type": ["boolean", "null"]},
+        "portable_commercial_default": {"type": ["boolean", "null"]},
+        "source_label": {"type": ["string", "null"]}
       }
     },
     "technical": {"type": "object"},
