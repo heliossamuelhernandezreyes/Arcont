@@ -2,6 +2,13 @@
 
 ARCONT se organiza por conocimientos reutilizables, no por un juego concreto.
 
+## Motor — Godot
+
+- [`godot/SOURCE_PIN.md`](godot/SOURCE_PIN.md) — snapshot canónico y reproducible de Godot 4.7.2-stable para análisis del motor.
+- [`godot/ANALYSIS_MAP.md`](godot/ANALYSIS_MAP.md) — mapa de estudio de core, escenas, render, física, navegación, audio, scripting, assets, animación, editor, Android, build system, profiling y extensibilidad.
+
+Godot se conserva aquí como **objeto de estudio del motor**, no como un videojuego. El código fuente upstream se fija por versión y commit; ARCONT conserva nuestros análisis y experimentos mínimos sin duplicar innecesariamente todo el repositorio oficial.
+
 ## Ingeniería
 
 - [`engineering/mobile-performance.md`](engineering/mobile-performance.md) — presupuestos y estrategias para móviles.
