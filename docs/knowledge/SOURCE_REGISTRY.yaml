@@ -1,0 +1,129 @@
+schema_version: 1
+registry_id: ARC-SOURCE-REGISTRY-0001
+purpose: curated game-engineering source registry
+policy: reference-and-extract; do not indiscriminately mirror copyrighted material
+
+sources:
+  - id: ARC-SRC-GODOT-2D-DOCS
+    tier: official_documentation
+    publisher: Godot Engine
+    title: 2D documentation
+    url: https://docs.godotengine.org/en/stable/tutorials/2d/
+    dimensions: shared,2d
+    topics: rendering,physics,tilemaps,particles,animation,parallax
+    acquisition: reference_and_extract
+    status: registered
+
+  - id: ARC-SRC-GODOT-UPSTREAM
+    tier: pinned_source_code
+    publisher: Godot Engine
+    title: Godot source repository
+    url: https://github.com/godotengine/godot
+    dimensions: shared,2d,2_5d,3d
+    topics: engine_architecture,rendering,physics,navigation,animation,audio,platforms
+    acquisition: exact_commit_reference
+    status: active_deep_study
+
+  - id: ARC-SRC-UNREAL-PROFILING
+    tier: official_documentation
+    publisher: Epic Games
+    title: Performance profiling and configuration
+    url: https://dev.epicgames.com/documentation/unreal-engine/introduction-to-performance-profiling-and-configuration-in-unreal-engine
+    dimensions: shared,2_5d,3d
+    topics: profiling,frame_time,cpu,gpu,performance
+    acquisition: reference_and_extract
+    status: registered
+
+  - id: ARC-SRC-UNREAL-RENDERING
+    tier: official_documentation
+    publisher: Epic Games
+    title: Real-time rendering optimization
+    url: https://dev.epicgames.com/documentation/en-us/unreal-engine/optimizing-and-debugging-projects-for-realtime-rendering-in-unreal-engine
+    dimensions: shared,2_5d,3d
+    topics: rendering,profiling,optimization,mobile
+    acquisition: reference_and_extract
+    status: registered
+
+  - id: ARC-SRC-UNREAL-ANIMATION
+    tier: official_documentation
+    publisher: Epic Games
+    title: Animation optimization
+    url: https://dev.epicgames.com/documentation/unreal-engine/animation-optimization-in-unreal-engine
+    dimensions: shared,2_5d,3d
+    topics: animation,multithreading,profiling,optimization
+    acquisition: reference_and_extract
+    status: registered
+
+  - id: ARC-SRC-UNREAL-PHYSICS
+    tier: official_documentation
+    publisher: Epic Games
+    title: Physics in Unreal Engine
+    url: https://dev.epicgames.com/documentation/en-us/unreal-engine/physics-in-unreal-engine
+    dimensions: shared,2_5d,3d
+    topics: physics,destruction,cloth,vehicles,ragdoll
+    acquisition: reference_and_extract
+    status: registered
+
+  - id: ARC-SRC-UNITY-2D
+    tier: official_documentation
+    publisher: Unity Technologies
+    title: Unity 6 2D game development
+    url: https://docs.unity3d.com/6000.0/Manual/2d-game-development-landing.html
+    dimensions: shared,2d
+    topics: workflow,sprites,physics2d,animation,graphics,audio,ui,profiling
+    acquisition: reference_and_extract
+    status: registered
+
+  - id: ARC-SRC-ANDROID-GAME-OPT
+    tier: platform_documentation
+    publisher: Android Developers
+    title: Analyze and optimize game performance
+    url: https://developer.android.com/games/optimize/gameperformance
+    dimensions: shared,2d,2_5d,3d
+    platforms: android
+    topics: profiling,cpu,gpu,thermals,optimization
+    acquisition: reference_and_extract
+    status: registered
+
+  - id: ARC-SRC-ANDROID-FRAME-RATE
+    tier: platform_documentation
+    publisher: Android Developers
+    title: Frame Rate
+    url: https://developer.android.com/games/optimize/framerate
+    dimensions: shared,2d,2_5d,3d
+    platforms: android
+    topics: fps,frame_pacing,p90,p99,stutter
+    acquisition: reference_and_extract
+    status: registered
+
+  - id: ARC-SRC-ANDROID-SWAPPY
+    tier: platform_documentation
+    publisher: Android Developers
+    title: Frame Pacing library
+    url: https://developer.android.com/games/sdk/frame-pacing
+    dimensions: shared,2d,2_5d,3d
+    platforms: android
+    topics: frame_pacing,vsync,input_latency,opengl,vulkan
+    acquisition: reference_and_extract
+    status: registered
+
+  - id: ARC-SRC-ANDROID-POWER
+    tier: platform_documentation
+    publisher: Android Developers
+    title: Optimize power efficiency
+    url: https://developer.android.com/games/optimize/power
+    dimensions: shared,2d,2_5d,3d
+    platforms: android
+    topics: thermals,power,refresh_rate,frame_pacing,vulkan
+    acquisition: reference_and_extract
+    status: registered
+
+future_source_families:
+  - Khronos Vulkan and OpenGL specifications/guides
+  - WebGPU/W3C specifications where relevant
+  - GDC Vault technical talks
+  - ACM SIGGRAPH papers and courses
+  - GPU vendor technical guides from AMD, NVIDIA, Intel, Arm and Qualcomm
+  - platform guidance from Microsoft Xbox, Sony and Nintendo where publicly accessible
+  - reproducible open-source engines and middleware
+  - peer-reviewed AI, graphics, simulation, networking and procedural-generation literature
