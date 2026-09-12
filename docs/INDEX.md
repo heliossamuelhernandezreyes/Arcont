@@ -21,6 +21,15 @@ ARCONT 1.0 fija que no se admite código de juego de producción ni un proyecto 
 - [`knowledge/MOBILE_PERFORMANCE_FOUNDATIONS.md`](knowledge/MOBILE_PERFORMANCE_FOUNDATIONS.md) — frame pacing, refresh, termales, rendimiento sostenido y profiling Android.
 - [`knowledge/NETWORKING_FOUNDATIONS.md`](knowledge/NETWORKING_FOUNDATIONS.md) — snapshots, lockstep, prediction/reconciliation, rollback y networked physics.
 
+### Segunda gran oleada
+
+- [`knowledge/SECOND_WAVE_OVERVIEW.md`](knowledge/SECOND_WAVE_OVERVIEW.md) — alcance, fuentes, límites y familias de benchmarks de la segunda adquisición.
+- [`knowledge/AI_NAVIGATION.md`](knowledge/AI_NAVIGATION.md) — navmesh, Recast/Detour, tiles, queries, crowds, rebuild y streaming de navegación.
+- [`knowledge/PHYSICS_SIMULATION.md`](knowledge/PHYSICS_SIMULATION.md) — rigid bodies, contactos, constraints, queries, CCD, lifecycle y destrucción.
+- [`knowledge/PROCEDURAL_ANIMATION.md`](knowledge/PROCEDURAL_ANIMATION.md) — PCG, particionado, determinismo, animación, IK, full-body IK y retargeting.
+- [`knowledge/DATA_ORIENTED_CONCURRENCY.md`](knowledge/DATA_ORIENTED_CONCURRENCY.md) — ECS, archetypes/chunks, structural changes, jobs, threading y sincronización.
+- [`knowledge/GPU_AUDIO_STREAMING.md`](knowledge/GPU_AUDIO_STREAMING.md) — GPU passes/sync/bandwidth, audio DSP/voices, memoria y asset streaming.
+
 ARCONT no intenta copiar Internet. Conserva referencias, procedencia, extracción técnica, preguntas verificables y, únicamente cuando sea legal y útil, material redistribuible. Godot es el primer motor bajo análisis profundo, no el límite temático de ARCONT.
 
 ## Laboratorio técnico
