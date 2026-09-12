@@ -60,6 +60,9 @@ def validate_manifest(repo: Path) -> list[str]:
     for rel in [
         m.get("knowledge", {}).get("evidence_ledger"),
         m.get("knowledge", {}).get("maturity_model"),
+        m.get("benchmarks", {}).get("plan_schema"),
+        m.get("benchmarks", {}).get("canonical_campaign"),
+        m.get("benchmarks", {}).get("runtime_bridge"),
         m.get("benchmarks", {}).get("result_schema"),
         m.get("integrity", {}).get("validator"),
         m.get("integrity", {}).get("hardening_validator"),
@@ -96,12 +99,6 @@ def validate_result(obj: dict[str, Any]) -> list[str]:
 
 
 def _requirements(evidence: dict[str, Any]) -> dict[int, bool]:
-    """Return cumulative evidence gates for L0-L7.
-
-    Levels are intentionally cumulative. A higher level cannot be reached by
-    toggling a single summary flag while omitting the lower-level evidence that
-    the maturity model requires.
-    """
     source = bool(evidence.get("source_traced"))
     hypothesis = bool(evidence.get("hypothesis"))
     observations = int(evidence.get("observations", 0) or 0)
@@ -121,14 +118,7 @@ def _requirements(evidence: dict[str, Any]) -> dict[int, bool]:
     gates[4] = gates[3] and reproductions >= 2
     gates[5] = gates[4] and hardware >= 2
     gates[6] = gates[5] and versions >= 2
-    gates[7] = (
-        gates[6]
-        and validated_rule
-        and limits_explicit
-        and contradictions_reviewed
-        and falsifiable
-        and decision_usefulness
-    )
+    gates[7] = gates[6] and validated_rule and limits_explicit and contradictions_reviewed and falsifiable and decision_usefulness
     return gates
 
 
@@ -164,13 +154,7 @@ def maturity_missing(level: str, evidence: dict[str, Any]) -> list[str]:
     if target >= 6 and int(evidence.get("engine_versions", 0) or 0) < 2:
         missing.append("engine_versions>=2")
     if target >= 7:
-        for field in [
-            "validated_rule",
-            "limits_explicit",
-            "contradictions_reviewed",
-            "falsifiable",
-            "decision_usefulness",
-        ]:
+        for field in ["validated_rule", "limits_explicit", "contradictions_reviewed", "falsifiable", "decision_usefulness"]:
             if not evidence.get(field):
                 missing.append(field)
     return missing
@@ -182,9 +166,7 @@ def check_maturity(level: str, evidence: dict[str, Any]) -> list[str]:
     missing = maturity_missing(level, evidence)
     if not missing:
         return []
-    return [
-        f"maturity: {level} exceeds evidence ceiling L{max_maturity(evidence)}; missing: {', '.join(missing)}"
-    ]
+    return [f"maturity: {level} exceeds evidence ceiling L{max_maturity(evidence)}; missing: {', '.join(missing)}"]
 
 
 def cmd_validate(args: argparse.Namespace) -> int:
