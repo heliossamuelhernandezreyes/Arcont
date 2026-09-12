@@ -29,6 +29,17 @@
     "raw_evidence_immutable": true,
     "raw_evidence_hash": "sha256"
   },
+  "observability": {
+    "architecture": "docs/integrations/UPSTREAM_OBSERVABILITY.md",
+    "instrument_registry": "docs/integrations/INSTRUMENT_REGISTRY.yaml",
+    "unified_ingest": "tools/evidence_ingest.py",
+    "evidence_record_schema": "schemas/external-evidence.schema.json",
+    "evidence_bundle_schema": "schemas/evidence-bundle.schema.json",
+    "trace_extract_schema": "schemas/trace-extract.schema.json",
+    "providers": ["runtime-lab", "godot-benchmarks", "perfetto", "tracy"],
+    "semantic_equivalence_assumed": false,
+    "auto_promotion_allowed": false
+  },
   "integrity": {
     "validator": "tools/arcont_lab.py",
     "hardening_validator": "tools/arcont_hardening.py",
