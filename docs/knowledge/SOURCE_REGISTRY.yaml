@@ -189,6 +189,108 @@ sources:
     acquisition: reference_extract_and_validate
     status: registered
 
+  - id: ARC-SRC-RECAST-DETOUR
+    tier: open_source_primary
+    publisher: Recast Navigation
+    title: Recast and Detour navigation-mesh toolset
+    url: https://github.com/recastnavigation/recastnavigation
+    dimensions: shared,2_5d,3d
+    topics: navmesh,pathfinding,tile_cache,crowds,streaming,dynamic_rebuild
+    acquisition: reference_and_source_analysis
+    license: Zlib
+    status: active_extraction
+
+  - id: ARC-SRC-NVIDIA-PHYSX
+    tier: official_sdk_documentation
+    publisher: NVIDIA
+    title: PhysX SDK
+    url: https://developer.nvidia.com/physx-sdk
+    dimensions: shared,2_5d,3d
+    topics: rigid_bodies,scene_queries,joints,articulations,soft_bodies,sdf,pbd,destruction
+    acquisition: reference_and_extract
+    status: active_extraction
+
+  - id: ARC-SRC-UNREAL-PCG
+    tier: official_documentation
+    publisher: Epic Games
+    title: Procedural Content Generation Framework
+    url: https://dev.epicgames.com/documentation/unreal-engine/procedural-content-generation-framework-in-unreal-engine
+    dimensions: shared,2_5d,3d
+    topics: procedural_generation,dataflow,partitioning,hierarchical_generation,runtime_generation,world_building
+    acquisition: reference_and_extract
+    status: active_extraction
+
+  - id: ARC-SRC-UNREAL-CONTROL-RIG
+    tier: official_documentation
+    publisher: Epic Games
+    title: Control Rig and IK Rig
+    url: https://dev.epicgames.com/documentation/unreal-engine/control-rig-in-unreal-engine
+    dimensions: shared,2_5d,3d
+    topics: animation,rigging,ik,full_body_ik,retargeting,procedural_animation
+    acquisition: reference_and_extract
+    status: active_extraction
+
+  - id: ARC-SRC-UNITY-ENTITIES
+    tier: official_documentation
+    publisher: Unity Technologies
+    title: Unity Entities
+    url: https://docs.unity3d.com/6000.0/Manual/com.unity.entities.html
+    dimensions: shared,2d,2_5d,3d
+    topics: ecs,data_oriented_design,entities,components,systems
+    acquisition: reference_and_extract
+    status: active_extraction
+
+  - id: ARC-SRC-UNREAL-MASSENTITY
+    tier: official_documentation
+    publisher: Epic Games
+    title: MassEntity
+    url: https://dev.epicgames.com/documentation/unreal-engine/overview-of-mass-entity-in-unreal-engine
+    dimensions: shared,2_5d,3d
+    topics: data_oriented_design,ecs,archetypes,fragments,command_buffers,parallel_processing
+    acquisition: reference_and_extract
+    status: active_extraction
+
+  - id: ARC-SRC-AMD-FIDELITYFX
+    tier: vendor_technical_documentation
+    publisher: AMD GPUOpen
+    title: FidelityFX SDK techniques
+    url: https://gpuopen.com/fidelityfx-spd/
+    dimensions: shared,2_5d,3d
+    topics: gpu,compute,downsampling,wave_ops,fp16,synchronization,bandwidth
+    acquisition: reference_and_extract
+    status: active_extraction
+
+  - id: ARC-SRC-ARM-MALI-BEST-PRACTICES
+    tier: vendor_technical_documentation
+    publisher: Arm
+    title: Mali GPU game development best practices
+    url: https://developer.arm.com/community/arm-community-blogs/b/mobile-graphics-and-gaming-blog/posts/p2-best-practices-mobile-game-development
+    dimensions: shared,2d,2_5d,3d
+    platforms: android,mobile
+    topics: gpu,mobile,frame_construction,shaders,bandwidth,content,api
+    acquisition: reference_and_extract
+    status: active_extraction
+
+  - id: ARC-SRC-GODOT-AUDIO-BUSES
+    tier: official_documentation
+    publisher: Godot Engine
+    title: Audio buses
+    url: https://docs.godotengine.org/en/latest/tutorials/audio/audio_buses.html
+    dimensions: shared,2d,2_5d,3d
+    topics: audio,buses,dsp,effects,routing,performance
+    acquisition: reference_and_extract
+    status: active_extraction
+
+  - id: ARC-SRC-UNREAL-ASYNC-ASSETS
+    tier: official_documentation
+    publisher: Epic Games
+    title: Asynchronous Asset Loading
+    url: https://dev.epicgames.com/documentation/unreal-engine/asynchronous-asset-loading-in-unreal-engine
+    dimensions: shared,2d,2_5d,3d
+    topics: assets,streaming,memory,soft_references,async_loading,hitches
+    acquisition: reference_and_extract
+    status: active_extraction
+
 future_source_families:
   - GDC Vault technical talks
   - ACM SIGGRAPH papers and courses
