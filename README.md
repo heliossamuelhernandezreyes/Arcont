@@ -20,6 +20,10 @@ Esto no convierte ARCONT otra vez en un proyecto de Godot: aquí estudiamos el m
 - Servir como laboratorio de render, física, navegación, audio, animación, scripting, diseño, rendimiento móvil, IA, combate, generación procedural y pipelines 3D.
 - Evitar que prototipos específicos se conviertan accidentalmente en dependencias canónicas.
 
+## Toolchains indexados
+
+- **Map authoring / level design:** [`docs/knowledge/MAP_AUTHORING_TOOLCHAIN.md`](docs/knowledge/MAP_AUTHORING_TOOLCHAIN.md) y su registro reproducible [`MAP_AUTHORING_TOOLCHAIN.yaml`](docs/knowledge/MAP_AUTHORING_TOOLCHAIN.yaml). Incluye Terrain3D, Cyclops Level Builder, ProtonScatter y FuncGodot con licencia, upstream revisado, SHA observado, rol, riesgos y backlog de validación.
+
 ## Qué ya no vive aquí
 
 El antiguo juego/prototipo ejecutable de ARCONT fue retirado del estado actual del repositorio. No se mantienen aquí sus escenas, gameplay, assets, presets de exportación ni CI destinado a compilar aquel juego.
