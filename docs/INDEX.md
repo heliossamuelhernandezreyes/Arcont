@@ -7,6 +7,7 @@ ARCONT se organiza por conocimientos reutilizables, no por un juego concreto.
 - [`../arcont.manifest.json`](../arcont.manifest.json) — manifiesto canónico de versión, rol del repositorio, motor fijado y contratos de integridad.
 - [`MATURITY_MODEL.md`](MATURITY_MODEL.md) — niveles L0–L7 y reglas de promoción/degradación del conocimiento.
 - [`PROVENANCE_AND_IMMUTABILITY.md`](PROVENANCE_AND_IMMUTABILITY.md) — procedencia, SHA-256 e inmutabilidad de evidencia publicada.
+- [`../schemas/benchmark-plan.schema.json`](../schemas/benchmark-plan.schema.json) — contrato formal de campañas runtime prerregistradas.
 - [`../schemas/benchmark-result.schema.json`](../schemas/benchmark-result.schema.json) — contrato machine-readable de resultados de benchmark.
 
 ARCONT 1.0 fija que no se admite código de juego de producción ni un proyecto Godot embebido. La evidencia runtime se produce externamente y se incorpora con procedencia verificable.
@@ -56,21 +57,26 @@ ARCONT no intenta copiar Internet. Conserva referencias, procedencia, extracció
 ## Herramientas operativas
 
 - [`../tools/arcont_lab.py`](../tools/arcont_lab.py) — CLI para integridad, análisis de impacto, confianza heurística y comparación de resultados.
-- [`../tools/arcont_hardening.py`](../tools/arcont_hardening.py) — validador ARCONT 1.0 para manifiesto, contratos de evidencia, SHA-256 y madurez.
+- [`../tools/arcont_hardening.py`](../tools/arcont_hardening.py) — validador de manifiesto, contratos de evidencia, SHA-256 y madurez.
+- [`../tools/runtime_evidence.py`](../tools/runtime_evidence.py) — puente entre campañas prerregistradas y resultados producidos por el harness externo.
 - [`../tools/README.md`](../tools/README.md) — uso y límites de las herramientas.
-- [`../tests/test_arcont_hardening.py`](../tests/test_arcont_hardening.py) — pruebas unitarias y controles negativos del hardening.
+- [`../tests/test_arcont_hardening.py`](../tests/test_arcont_hardening.py) — pruebas del hardening.
+- [`../tests/test_runtime_evidence.py`](../tests/test_runtime_evidence.py) — pruebas del contrato de prerregistro y evidencia runtime.
 - [`.github/workflows/knowledge-integrity.yml`](../.github/workflows/knowledge-integrity.yml) — CI automática en `push` y `pull_request`.
 
 Estas herramientas automatizan comprobaciones mecánicas; no convierten una inferencia en evidencia ni una observación aislada en regla.
 
 ## Benchmarks y evidencia runtime
 
-- [`benchmarks/EXTERNAL_SUITE_SPEC.md`](benchmarks/EXTERNAL_SUITE_SPEC.md) — contrato de la suite externa de microbenchmarks.
+- [`benchmarks/EXTERNAL_SUITE_SPEC.md`](benchmarks/EXTERNAL_SUITE_SPEC.md) — contrato general de la suite externa de microbenchmarks.
+- [`benchmarks/HARNESS_IMPLEMENTATION_SPEC.md`](benchmarks/HARNESS_IMPLEMENTATION_SPEC.md) — contrato de implementación del repositorio ejecutable externo.
+- [`benchmarks/FIRST_RUNTIME_MATRIX.json`](benchmarks/FIRST_RUNTIME_MATRIX.json) — primera campaña Godot prerregistrada y consumible por herramientas.
 - [`benchmarks/RESULT_SCHEMA.md`](benchmarks/RESULT_SCHEMA.md) — formato documental de resultados.
 - [`benchmarks/INGESTION_AND_COMPARISON.md`](benchmarks/INGESTION_AND_COMPARISON.md) — ingesta, comparabilidad, regresiones y promoción de evidencia.
-- [`../schemas/benchmark-result.schema.json`](../schemas/benchmark-result.schema.json) — schema formal para validación automática.
+- [`../schemas/benchmark-plan.schema.json`](../schemas/benchmark-plan.schema.json) — schema formal del plan experimental.
+- [`../schemas/benchmark-result.schema.json`](../schemas/benchmark-result.schema.json) — schema formal del resultado.
 
-La suite runtime permanece separada del banco de conocimiento. Produce datos; ARCONT conserva hashes, evidencia, relaciones, interpretaciones y decisiones.
+La suite runtime permanece separada del banco de conocimiento. Produce datos; ARCONT conserva prerregistro, hashes, evidencia, relaciones, interpretaciones y decisiones.
 
 ## Motor — Godot
 
@@ -82,7 +88,7 @@ La suite runtime permanece separada del banco de conocimiento. Produce datos; AR
 - [`godot/FIRST_CAMPAIGN.md`](godot/FIRST_CAMPAIGN.md) — primera campaña experimental sobre costes fundamentales.
 - [`godot/SOURCE_TRACE_PROTOCOL.md`](godot/SOURCE_TRACE_PROTOCOL.md) — trazabilidad desde API pública hasta implementación y backend.
 - [`godot/FRAME_LIFECYCLE_TRACE.md`](godot/FRAME_LIFECYCLE_TRACE.md) — primera disección verificada: MainLoop → SceneTree → ProcessGroup → Node y ciclo de frame.
-- [`godot/knowledge/scene_tree_graph.yaml`](godot/knowledge/scene_tree_graph.yaml) — primera porción machine-readable del grafo de conocimiento real.
+- [`godot/knowledge/scene_tree_graph.yaml`](godot/knowledge/scene_tree_graph.yaml) — porción machine-readable del grafo y benchmarks prerregistrados.
 - [`godot/SENTINEL_SUITE.md`](godot/SENTINEL_SUITE.md) — batería mínima para detectar regresiones entre versiones y plataformas.
 - [`godot/UPGRADE_PROTOCOL.md`](godot/UPGRADE_PROTOCOL.md) — protocolo para actualizar la versión canónica sin perder conocimiento previo.
 
