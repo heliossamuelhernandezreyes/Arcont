@@ -1,0 +1,104 @@
+schema_version: 1
+registry_id: ARC-MAP-AUTHORING-0001
+reviewed_at: 2026-09-12
+scope: Godot 4 map and level authoring ecosystem
+policy:
+  production_game_code_allowed: false
+  mirror_large_upstreams: false
+  preserve_upstream_license_notice: true
+  audit_demo_assets_separately: true
+  runtime_claims_require_experiment: true
+
+tools:
+  - id: ARC-TOOL-TERRAIN3D
+    name: Terrain3D
+    upstream: https://github.com/TokisanGames/Terrain3D
+    license: MIT
+    license_status: permissive_code_license_verified
+    role: terrain_authoring
+    capabilities:
+      - terrain_sculpting
+      - texture_painting
+      - holes
+      - lod
+      - foliage_instancing
+      - heightmap_import
+    integration_strategy: optional_provider_adapter
+    adoption: recommended
+    maturity: L1_source_traced
+    caveats:
+      - GDExtension binary/platform compatibility must be validated against the exact pinned Godot build
+      - demo and third-party assets require separate provenance review
+
+  - id: ARC-TOOL-CYCLOPS
+    name: Cyclops Level Builder
+    upstream: https://github.com/blackears/cyclopsLevelBuilder
+    license: MIT
+    license_status: permissive_code_license_verified
+    role: structural_blockout_and_brush_geometry
+    capabilities:
+      - viewport_blockout
+      - editable_brush_geometry
+      - materials
+      - collision
+    integration_strategy: optional_provider_adapter
+    adoption: recommended
+    maturity: L1_source_traced
+    caveats:
+      - project upgrade paths must be tested before pin changes
+      - generated geometry performance must be measured for mobile targets
+
+  - id: ARC-TOOL-PROTONSCATTER
+    name: ProtonScatter
+    upstream: https://github.com/deakcor/proton_scatter
+    license: MIT
+    license_status: permissive_code_license_verified
+    role: procedural_environment_scatter
+    capabilities:
+      - prop_scatter
+      - scene_scatter
+      - area_population
+      - modifier_stack
+    integration_strategy: optional_provider_adapter
+    adoption: recommended_with_asset_caveat
+    maturity: L1_source_traced
+    caveats:
+      - demo assets are not uniformly equivalent to addon code licensing
+      - some bundled/demo textures may carry additional terms
+      - mobile density and draw-call budgets require runtime validation
+
+  - id: ARC-TOOL-FUNCGODOT
+    name: FuncGodot
+    upstream: https://github.com/func-godot/func_godot_plugin
+    license: MIT
+    license_status: permissive_code_license_verified
+    role: external_brush_map_interchange
+    capabilities:
+      - quake_map_import
+      - vmf_import
+      - entity_definitions
+      - collision_generation
+      - trenchbroom_integration
+      - fgd_export
+    integration_strategy: optional_import_provider
+    adoption: research_and_optional
+    maturity: L1_source_traced
+    caveats:
+      - primarily useful as interchange and external-authoring path rather than canonical Close Seal map format
+      - imported geometry and entity semantics require Close Seal validation
+
+architecture_decision:
+  canonical_map_format_owner: Close Seal Map Forge
+  plugin_specific_data_allowed_in_canonical_map: false
+  adapters_required: true
+  fallback_provider: native_godot_nodes
+  rationale: keep authored maps portable and prevent lock-in to any single addon
+
+validation_backlog:
+  - exact Godot 4.7.2 compatibility per provider
+  - editor startup and project import regression test
+  - Android export compatibility
+  - terrain rendering cost on target mobile hardware
+  - scatter density versus frame time and memory
+  - navigation bake interoperability
+  - source-control friendliness of generated map data
