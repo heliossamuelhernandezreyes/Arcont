@@ -154,7 +154,7 @@ def parse_record(slug: str, raw: str) -> dict[str, Any] | None:
     if "Creative Commons CC0" not in joined:
         return None
 
-    title = " ".join(parser.h1).strip() or slug.replace("-", " ").title()
+    title = (parser.h1[0].strip() if parser.h1 else "") or slug.replace("-", " ").title()
     tags_raw = value_after(parser.text, "Tags")
     category_raw = value_after(parser.text, "Category")
     files_raw = value_after(parser.text, "Files")
