@@ -15,7 +15,7 @@ import time
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 from urllib.request import Request, urlopen
 
 from asset_vault_indexer import dump_json, load_json, now_utc, stable_id
@@ -79,6 +79,15 @@ def parse_page(raw: str) -> PageParser:
     return parser
 
 
+def slug_from_link(href: str) -> str | None:
+    absolute = urljoin(BASE + "/", href)
+    parsed = urlparse(absolute)
+    if parsed.netloc.lower() not in {"kenney.nl", "www.kenney.nl"}:
+        return None
+    match = re.fullmatch(r"/assets/([a-z0-9][a-z0-9-]*)/?", parsed.path, re.IGNORECASE)
+    return match.group(1).lower() if match else None
+
+
 def discover_asset_slugs(max_pages: int = 100) -> list[str]:
     slugs: set[str] = set()
     empty_pages = 0
@@ -87,15 +96,13 @@ def discover_asset_slugs(max_pages: int = 100) -> list[str]:
         parser = parse_page(fetch_text(url))
         before = len(slugs)
         for href in parser.links:
-            match = re.fullmatch(r"/?assets/([a-z0-9][a-z0-9-]*)/?", href, re.IGNORECASE)
-            if match:
-                slugs.add(match.group(1).lower())
+            slug = slug_from_link(href)
+            if slug:
+                slugs.add(slug)
         if len(slugs) == before:
             empty_pages += 1
         else:
             empty_pages = 0
-        # Kenney currently exposes a finite page count. Two empty pages are a
-        # safe stop if pagination changes or the final page repeats navigation.
         if empty_pages >= 2:
             break
         time.sleep(0.10)
@@ -147,13 +154,9 @@ def parse_record(slug: str, raw: str) -> dict[str, Any] | None:
     tile_size = value_after(parser.text, "Tile size")
     features = value_after(parser.text, "Features")
 
-    tags = []
+    tags = ["kenney"]
     if tags_raw:
-        # Kenney's rendered tag row can arrive as a compact string; preserve it
-        # as provenance-friendly metadata instead of inventing token boundaries.
-        tags = ["kenney", tags_raw.lower()]
-    else:
-        tags = ["kenney"]
+        tags.append(tags_raw.lower())
 
     categories = split_categories(category_raw)
     asset_type, dimensions = infer_type(category_raw)
