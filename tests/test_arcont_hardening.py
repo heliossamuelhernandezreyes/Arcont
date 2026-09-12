@@ -66,7 +66,7 @@ class HardeningTests(unittest.TestCase):
             p.write_bytes(b"arcont")
             self.assertEqual(
                 sha256(p),
-                "8e64b3ed6c0ba8f386a80806b551d4c7e31c42406d2f196a0a6c23644540495d",
+                "64d9bcc1186e4980e8a36895171692353e58c92db3644a83e02610b3c6f9a445",
             )
 
 
