@@ -22,6 +22,8 @@ ARCONT se organiza por conocimientos reutilizables, no por un juego concreto.
 - [`godot/COST_MODEL.md`](godot/COST_MODEL.md) — marco para obtener curvas empíricas de coste del motor.
 - [`godot/FIRST_CAMPAIGN.md`](godot/FIRST_CAMPAIGN.md) — primera campaña experimental sobre costes fundamentales.
 - [`godot/SOURCE_TRACE_PROTOCOL.md`](godot/SOURCE_TRACE_PROTOCOL.md) — trazabilidad desde API pública hasta implementación y backend.
+- [`godot/FRAME_LIFECYCLE_TRACE.md`](godot/FRAME_LIFECYCLE_TRACE.md) — primera disección verificada: MainLoop → SceneTree → ProcessGroup → Node y ciclo de frame.
+- [`godot/knowledge/scene_tree_graph.yaml`](godot/knowledge/scene_tree_graph.yaml) — primera porción machine-readable del grafo de conocimiento real.
 - [`godot/SENTINEL_SUITE.md`](godot/SENTINEL_SUITE.md) — batería mínima para detectar regresiones entre versiones y plataformas.
 - [`godot/UPGRADE_PROTOCOL.md`](godot/UPGRADE_PROTOCOL.md) — protocolo para actualizar la versión canónica sin perder conocimiento previo.
 
