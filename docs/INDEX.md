@@ -14,8 +14,12 @@ ARCONT 1.0 fija que no se admite código de juego de producción ni un proyecto 
 ## Biblioteca general de ingeniería de videojuegos
 
 - [`knowledge/GAME_DEV_ATLAS.md`](knowledge/GAME_DEV_ATLAS.md) — atlas transversal `shared / 2D / 2.5D / 3D`, dominios técnicos, motores y jerarquía de fuentes.
-- [`knowledge/SOURCE_REGISTRY.yaml`](knowledge/SOURCE_REGISTRY.yaml) — registro curado de fuentes primarias/oficiales y familias pendientes de adquisición.
+- [`knowledge/SOURCE_REGISTRY.yaml`](knowledge/SOURCE_REGISTRY.yaml) — registro curado de fuentes primarias, oficiales y referencias técnicas seleccionadas.
 - [`knowledge/ACQUISITION_ROADMAP.md`](knowledge/ACQUISITION_ROADMAP.md) — oleadas de adquisición para fundamentos, 2D, 2.5D, 3D, sistemas transversales, plataformas y comparativas entre motores.
+- [`knowledge/campaigns/FOUNDATION_ACQUISITION_01.md`](knowledge/campaigns/FOUNDATION_ACQUISITION_01.md) — primera campaña transversal de adquisición.
+- [`knowledge/GRAPHICS_ASSET_FOUNDATIONS.md`](knowledge/GRAPHICS_ASSET_FOUNDATIONS.md) — Vulkan, KTX2/Basis, asset delivery y preguntas de investigación para 2D/2.5D/3D.
+- [`knowledge/MOBILE_PERFORMANCE_FOUNDATIONS.md`](knowledge/MOBILE_PERFORMANCE_FOUNDATIONS.md) — frame pacing, refresh, termales, rendimiento sostenido y profiling Android.
+- [`knowledge/NETWORKING_FOUNDATIONS.md`](knowledge/NETWORKING_FOUNDATIONS.md) — snapshots, lockstep, prediction/reconciliation, rollback y networked physics.
 
 ARCONT no intenta copiar Internet. Conserva referencias, procedencia, extracción técnica, preguntas verificables y, únicamente cuando sea legal y útil, material redistribuible. Godot es el primer motor bajo análisis profundo, no el límite temático de ARCONT.
 
