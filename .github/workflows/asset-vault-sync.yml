@@ -14,6 +14,7 @@ on:
       - 'tools/kenney_adapter.py'
       - 'tools/license_policy.py'
       - 'tools/opengameart_adapter.py'
+      - 'tools/asset_trust.py'
       - 'tools/arcont_lab.py'
       - 'tools/arcont_hardening.py'
       - 'assets/sources/opengameart-seeds.json'
@@ -83,6 +84,7 @@ jobs:
           python tools/arcont_lab.py validate
           python tools/arcont_hardening.py validate
           python tools/asset_vault_indexer.py validate
+          python tools/asset_trust.py
           python tools/asset_vault_indexer.py build --output /tmp/arcont-asset-index.json
           python -m unittest discover -s tests -v
 
@@ -114,6 +116,18 @@ jobs:
           JSON
           if python tools/asset_vault_indexer.py validate --root /tmp/arcont-vault; then
             echo "Asset validator accepted illegal mirroring"
+            exit 1
+          fi
+
+      - name: Negative control - fake runtime compatibility must fail
+        shell: bash
+        run: |
+          mkdir -p /tmp/arcont-trust/assets/catalog/test
+          cat > /tmp/arcont-trust/assets/catalog/test/bad.asset.json <<'JSON'
+          {"compatibility":{"android":true},"compatibility_evidence":{"android":{"level":"runtime"}},"license":{"redistribution_allowed":true},"archive":{"mirrored_in_arcont":false},"review":{"license_verified":true}}
+          JSON
+          if python tools/asset_trust.py --root /tmp/arcont-trust; then
+            echo "Trust validator accepted runtime compatibility without traceable evidence"
             exit 1
           fi
 
