@@ -20,3 +20,24 @@ jobs:
           python-version: '3.12'
       - name: Validate knowledge bank
         run: python tools/arcont_lab.py validate
+      - name: Validate ARCONT 1.0 manifest and evidence contracts
+        run: python tools/arcont_hardening.py validate
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Negative control - invalid benchmark result must fail
+        shell: bash
+        run: |
+          cat > /tmp/invalid.result.json <<'JSON'
+          {"schema_version":1,"benchmark_id":"ARC-BAD","run_id":"bad","engine":{"name":"godot","version":"4.7.2-stable","commit":"bad"},"platform":{},"runtime":{},"experiment":{},"metrics":{},"aborted":true}
+          JSON
+          if python tools/arcont_hardening.py validate-result /tmp/invalid.result.json; then
+            echo "Validator accepted deliberately invalid evidence"
+            exit 1
+          fi
+      - name: Negative control - maturity overclaim must fail
+        shell: bash
+        run: |
+          if python tools/arcont_hardening.py maturity L7_VALIDATED_RULE --source-traced --hypothesis --observations 1; then
+            echo "Maturity validator accepted an unsupported L7 claim"
+            exit 1
+          fi
