@@ -12,6 +12,15 @@ ARCONT se organiza por conocimientos reutilizables, no por un juego concreto.
 - [`KNOWLEDGE_SCHEMA.md`](KNOWLEDGE_SCHEMA.md) — esquema legible por humanos y herramientas.
 - [`KNOWLEDGE_GRAPH.md`](KNOWLEDGE_GRAPH.md) — relaciones explícitas entre fuentes, subsistemas, experimentos, reglas y decisiones.
 - [`DECISION_ENGINE.md`](DECISION_ENGINE.md) — transformación de evidencia en recomendaciones condicionadas y revalidables.
+- [`VALIDATOR_SPEC.md`](VALIDATOR_SPEC.md) — especificación del validador de trazabilidad, evidencia, vigencia y coherencia del grafo.
+
+## Benchmarks y evidencia runtime
+
+- [`benchmarks/EXTERNAL_SUITE_SPEC.md`](benchmarks/EXTERNAL_SUITE_SPEC.md) — contrato de la suite externa de microbenchmarks; ARCONT no contiene el proyecto Godot ejecutable.
+- [`benchmarks/RESULT_SCHEMA.md`](benchmarks/RESULT_SCHEMA.md) — formato canónico e inmutable de resultados.
+- [`benchmarks/INGESTION_AND_COMPARISON.md`](benchmarks/INGESTION_AND_COMPARISON.md) — ingesta, comparabilidad, detección de regresiones y promoción de evidencia.
+
+La suite runtime debe permanecer separada del banco de conocimiento. Produce datos; ARCONT conserva evidencia, relaciones, interpretaciones y decisiones.
 
 ## Motor — Godot
 
@@ -46,4 +55,4 @@ Godot se conserva aquí como **objeto de estudio del motor**, no como un videoju
 
 Este repositorio no debe volver a contener un juego completo. Los proyectos futuros pueden consultar ARCONT y reutilizar conocimiento, pero su código de producción debe vivir en repositorios propios.
 
-Los experimentos de ARCONT deben permanecer mínimos, aislados y reproducibles.
+Los experimentos de ARCONT deben permanecer mínimos, aislados y reproducibles. El runtime ejecutable de benchmarks debe vivir fuera de ARCONT y entregar resultados mediante el esquema canónico.
