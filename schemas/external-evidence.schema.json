@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arcont.local/schemas/external-evidence.schema.json",
+  "title": "ARCONT External Evidence Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "evidence_id", "provider", "source", "metric", "provenance", "limitations", "maturity_ceiling"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "evidence_id": {"type": "string", "minLength": 1},
+    "claim_ref": {"type": ["string", "null"]},
+    "provider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "kind"],
+      "properties": {
+        "name": {"enum": ["godot-benchmarks", "perfetto", "tracy", "other"]},
+        "kind": {"enum": ["benchmark-suite", "trace-profiler", "sampling-profiler", "other"]},
+        "version": {"type": ["string", "null"]},
+        "commit": {"type": ["string", "null"]}
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "immutable_ref"],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "immutable_ref": {"type": ["string", "null"]},
+        "path": {"type": ["string", "null"]}
+      }
+    },
+    "engine": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["version", "commit"],
+      "properties": {
+        "version": {"type": ["string", "null"]},
+        "commit": {"type": ["string", "null"]}
+      }
+    },
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["original_name", "original_unit", "normalized_name", "normalized_unit", "value"],
+      "properties": {
+        "original_name": {"type": "string"},
+        "original_unit": {"type": ["string", "null"]},
+        "normalized_name": {"type": "string"},
+        "normalized_unit": {"type": ["string", "null"]},
+        "value": {"type": ["number", "integer", "null"]}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["platform", "hardware", "build_type", "raw_sha256"],
+      "properties": {
+        "platform": {"type": ["string", "null"]},
+        "hardware": {"type": ["string", "null"]},
+        "build_type": {"type": ["string", "null"]},
+        "raw_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "limitations": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "maturity_ceiling": {"enum": ["L1_SOURCE_TRACED", "L2_HYPOTHESIS", "L3_OBSERVED"]}
+  }
+}
