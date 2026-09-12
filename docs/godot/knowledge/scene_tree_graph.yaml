@@ -1,0 +1,51 @@
+engine: godot
+engine_version: 4.7.2-stable
+engine_commit: ed1daf0bf001b61586d9930840f2f1394092c079
+nodes:
+  - id: ARC-GODOT-SRC-MAINLOOP
+    kind: source-symbol
+    path: core/os/main_loop.h
+    symbol: MainLoop
+  - id: ARC-GODOT-SRC-SCENETREE
+    kind: source-symbol
+    path: scene/main/scene_tree.h
+    symbol: SceneTree
+  - id: ARC-GODOT-SRC-PROCESSGROUP
+    kind: source-symbol
+    path: scene/main/scene_tree.h
+    symbol: SceneTree::ProcessGroup
+  - id: ARC-GODOT-SRC-NODE
+    kind: source-symbol
+    path: scene/main/node.h
+    symbol: Node
+  - id: ARC-GODOT-HYP-SCENE-0001
+    kind: inference
+    status: proposed
+    claim: inactive nodes should have lower per-frame incremental cost than nodes registered for process callbacks
+  - id: ARC-GODOT-HYP-SCENE-0002
+    kind: inference
+    status: proposed
+    claim: per-frame processing cost should correlate more strongly with registered process nodes than with total tree node count
+  - id: ARC-GODOT-HYP-SCENE-0003
+    kind: inference
+    status: proposed
+    claim: frequent process-group membership or order changes may add invalidation and sorting cost
+edges:
+  - from: ARC-GODOT-SRC-SCENETREE
+    relation: depends_on
+    to: ARC-GODOT-SRC-MAINLOOP
+  - from: ARC-GODOT-SRC-PROCESSGROUP
+    relation: related_to
+    to: ARC-GODOT-SRC-SCENETREE
+  - from: ARC-GODOT-SRC-NODE
+    relation: related_to
+    to: ARC-GODOT-SRC-PROCESSGROUP
+  - from: ARC-GODOT-HYP-SCENE-0001
+    relation: derived_from
+    to: ARC-GODOT-SRC-PROCESSGROUP
+  - from: ARC-GODOT-HYP-SCENE-0002
+    relation: derived_from
+    to: ARC-GODOT-SRC-PROCESSGROUP
+  - from: ARC-GODOT-HYP-SCENE-0003
+    relation: derived_from
+    to: ARC-GODOT-SRC-PROCESSGROUP
