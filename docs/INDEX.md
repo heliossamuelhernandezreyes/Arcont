@@ -2,12 +2,21 @@
 
 ARCONT se organiza por conocimientos reutilizables, no por un juego concreto.
 
+## Laboratorio técnico
+
+- [`LAB_STANDARD.md`](LAB_STANDARD.md) — estándar del laboratorio: SOURCE → EXPERIMENT → RULE, reproducibilidad y estados de validez.
+- [`EXPERIMENT_TEMPLATE.md`](EXPERIMENT_TEMPLATE.md) — plantilla canónica para experimentos mínimos.
+- [`BENCHMARK_STANDARD.md`](BENCHMARK_STANDARD.md) — protocolo de benchmarks comparables.
+- [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md) — decisiones técnicas trazables.
+
 ## Motor — Godot
 
-- [`godot/SOURCE_PIN.md`](godot/SOURCE_PIN.md) — snapshot canónico y reproducible de Godot 4.7.2-stable para análisis del motor.
-- [`godot/ANALYSIS_MAP.md`](godot/ANALYSIS_MAP.md) — mapa de estudio de core, escenas, render, física, navegación, audio, scripting, assets, animación, editor, Android, build system, profiling y extensibilidad.
+- [`godot/SOURCE_PIN.md`](godot/SOURCE_PIN.md) — snapshot canónico y reproducible de Godot 4.7.2-stable.
+- [`godot/ANALYSIS_MAP.md`](godot/ANALYSIS_MAP.md) — mapa inicial de estudio.
+- [`godot/ENGINE_ATLAS.md`](godot/ENGINE_ATLAS.md) — atlas de subsistemas internos del motor.
+- [`godot/RESEARCH_ROADMAP.md`](godot/RESEARCH_ROADMAP.md) — programa de investigación y validación.
 
-Godot se conserva aquí como **objeto de estudio del motor**, no como un videojuego. El código fuente upstream se fija por versión y commit; ARCONT conserva nuestros análisis y experimentos mínimos sin duplicar innecesariamente todo el repositorio oficial.
+Godot se conserva aquí como **objeto de estudio del motor**, no como un videojuego. El código fuente upstream se fija por versión y commit; ARCONT conserva análisis y experimentos mínimos sin duplicar innecesariamente todo el repositorio oficial.
 
 ## Ingeniería
 
@@ -24,4 +33,6 @@ Godot se conserva aquí como **objeto de estudio del motor**, no como un videoju
 
 ## Regla canónica
 
-Este repositorio no debe volver a contener un juego completo. Los proyectos futuros pueden consultar ARCONT, copiar ideas o implementar módulos inspirados en él, pero su código de producción debe vivir en repositorios propios.
+Este repositorio no debe volver a contener un juego completo. Los proyectos futuros pueden consultar ARCONT y reutilizar conocimiento, pero su código de producción debe vivir en repositorios propios.
+
+Los experimentos de ARCONT deben permanecer mínimos, aislados y reproducibles.
