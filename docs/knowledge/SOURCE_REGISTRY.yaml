@@ -77,24 +77,24 @@ sources:
   - id: ARC-SRC-ANDROID-GAME-OPT
     tier: platform_documentation
     publisher: Android Developers
-    title: Analyze and optimize game performance
-    url: https://developer.android.com/games/optimize/gameperformance
+    title: Android game optimization
+    url: https://developer.android.com/games/optimize/overview
     dimensions: shared,2d,2_5d,3d
     platforms: android
-    topics: profiling,cpu,gpu,thermals,optimization
+    topics: profiling,cpu,gpu,thermals,memory,optimization
     acquisition: reference_and_extract
-    status: registered
+    status: active_extraction
 
   - id: ARC-SRC-ANDROID-FRAME-RATE
     tier: platform_documentation
     publisher: Android Developers
-    title: Frame Rate
-    url: https://developer.android.com/games/optimize/framerate
+    title: FPS throttling and frame-rate guidance
+    url: https://developer.android.com/games/optimize/adpf/gamemode/fps-throttling
     dimensions: shared,2d,2_5d,3d
     platforms: android
-    topics: fps,frame_pacing,p90,p99,stutter
+    topics: fps,frame_pacing,refresh_rate,power
     acquisition: reference_and_extract
-    status: registered
+    status: active_extraction
 
   - id: ARC-SRC-ANDROID-SWAPPY
     tier: platform_documentation
@@ -105,7 +105,18 @@ sources:
     platforms: android
     topics: frame_pacing,vsync,input_latency,opengl,vulkan
     acquisition: reference_and_extract
-    status: registered
+    status: active_extraction
+
+  - id: ARC-SRC-ANDROID-ADPF
+    tier: platform_documentation
+    publisher: Android Developers
+    title: Android Dynamic Performance Framework best practices
+    url: https://developer.android.com/games/optimize/adpf/best-practices-adpf
+    dimensions: shared,2d,2_5d,3d
+    platforms: android
+    topics: thermals,sustained_performance,dynamic_quality,cpu,gpu
+    acquisition: reference_and_extract
+    status: active_extraction
 
   - id: ARC-SRC-ANDROID-POWER
     tier: platform_documentation
@@ -116,14 +127,73 @@ sources:
     platforms: android
     topics: thermals,power,refresh_rate,frame_pacing,vulkan
     acquisition: reference_and_extract
+    status: active_extraction
+
+  - id: ARC-SRC-KHRONOS-VULKAN-SYNC
+    tier: specification_and_official_guide
+    publisher: Khronos Group
+    title: Vulkan synchronization documentation
+    url: https://github.khronos.org/Vulkan-Site/spec/latest/chapters/synchronization.html
+    dimensions: shared,2d,2_5d,3d
+    topics: vulkan,synchronization,pipeline_stages,memory_dependencies,performance
+    acquisition: reference_and_extract
+    status: active_extraction
+
+  - id: ARC-SRC-KHRONOS-KTX2
+    tier: specification
+    publisher: Khronos Group
+    title: KTX 2.0 File Format Specification
+    url: https://registry.khronos.org/KTX/specs/2.0/ktxspec.v2.html
+    dimensions: shared,2d,2_5d,3d
+    topics: textures,compression,mipmaps,streaming,basis_universal,gpu_memory
+    acquisition: reference_and_extract
+    status: active_extraction
+
+  - id: ARC-SRC-KHRONOS-GLTF
+    tier: specification_ecosystem
+    publisher: Khronos Group
+    title: glTF runtime 3D asset delivery
+    url: https://www.khronos.org/gltf/
+    dimensions: 2_5d,3d
+    topics: assets,meshes,materials,textures,animation,runtime_delivery
+    acquisition: reference_and_extract
+    status: active_extraction
+
+  - id: ARC-SRC-KHRONOS-GLTF-BASISU
+    tier: ratified_extension
+    publisher: Khronos Group
+    title: KHR_texture_basisu
+    url: https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu
+    dimensions: shared,2d,2_5d,3d
+    topics: ktx2,basis_universal,texture_transcoding,gpu_compression
+    acquisition: reference_and_extract
+    status: active_extraction
+
+  - id: ARC-SRC-GAFFER-NETWORKED-PHYSICS
+    tier: expert_technical_series
+    publisher: Gaffer On Games / Glenn Fiedler
+    title: Networked Physics
+    url: https://gafferongames.com/categories/networked-physics/
+    dimensions: shared,2d,2_5d,3d
+    topics: networking,determinism,snapshots,interpolation,compression,physics
+    acquisition: reference_extract_and_validate
+    status: registered
+
+  - id: ARC-SRC-REDBLOB-HEX
+    tier: expert_technical_reference
+    publisher: Red Blob Games / Amit Patel
+    title: Hexagonal Grids
+    url: https://www.redblobgames.com/grids/hexagons/
+    dimensions: shared,2d,2_5d
+    topics: grids,coordinates,pathfinding,geometry,map_storage
+    acquisition: reference_extract_and_validate
     status: registered
 
 future_source_families:
-  - Khronos Vulkan and OpenGL specifications/guides
-  - WebGPU/W3C specifications where relevant
   - GDC Vault technical talks
   - ACM SIGGRAPH papers and courses
   - GPU vendor technical guides from AMD, NVIDIA, Intel, Arm and Qualcomm
-  - platform guidance from Microsoft Xbox, Sony and Nintendo where publicly accessible
+  - W3C WebGPU specifications and implementation guidance where relevant
+  - public Microsoft/Xbox platform engineering guidance
   - reproducible open-source engines and middleware
   - peer-reviewed AI, graphics, simulation, networking and procedural-generation literature
