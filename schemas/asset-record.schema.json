@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arcont.invalid/schemas/asset-record.schema.json",
+  "title": "ARCONT Asset Vault Record",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "id", "title", "asset_type", "source", "license", "technical", "compatibility", "archive", "review"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "id": {"type": "string", "pattern": "^[A-Z0-9][A-Z0-9._:-]{2,127}$"},
+    "title": {"type": "string", "minLength": 1},
+    "asset_type": {"type": ["string", "null"]},
+    "dimensions": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "themes": {"type": "array", "items": {"type": "string"}},
+    "styles": {"type": "array", "items": {"type": "string"}},
+    "tags": {"type": "array", "items": {"type": "string"}},
+    "source": {
+      "type": "object",
+      "required": ["provider", "asset_url"],
+      "properties": {
+        "provider": {"type": "string", "minLength": 1},
+        "author": {"type": ["string", "null"]},
+        "external_id": {"type": ["string", "null"]},
+        "asset_url": {"type": "string", "minLength": 1},
+        "download_url": {"type": ["string", "null"]},
+        "acquired_at": {"type": ["string", "null"]}
+      }
+    },
+    "license": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "commercial_use": {"type": ["boolean", "null"]},
+        "modification": {"type": ["boolean", "null"]},
+        "attribution_required": {"type": ["boolean", "null"]},
+        "redistribution_allowed": {"type": ["boolean", "null"]},
+        "share_alike": {"type": ["boolean", "null"]},
+        "ai_training_allowed": {"type": ["boolean", "null"]}
+      }
+    },
+    "technical": {"type": "object"},
+    "compatibility": {"type": "object"},
+    "archive": {
+      "type": "object",
+      "required": ["mirrored_in_arcont", "sha256"],
+      "properties": {
+        "mirrored_in_arcont": {"type": "boolean"},
+        "sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "size_bytes": {"type": ["integer", "null"], "minimum": 0}
+      }
+    },
+    "review": {
+      "type": "object",
+      "required": ["license_verified"],
+      "properties": {
+        "license_verified": {"type": "boolean"},
+        "metadata_verified": {"type": ["boolean", "null"]},
+        "last_checked": {"type": ["string", "null"]}
+      }
+    }
+  }
+}
