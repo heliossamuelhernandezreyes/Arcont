@@ -57,7 +57,7 @@ jobs:
       - name: Commit synchronized metadata
         shell: bash
         run: |
-          if git diff --quiet -- assets; then
+          if [ -z "$(git status --porcelain -- assets)" ]; then
             echo 'No Asset Vault changes.'
             exit 0
           fi
