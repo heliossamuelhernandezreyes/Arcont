@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """Index Kenney game-asset metadata into the ARCONT Asset Vault.
 
-The adapter is intentionally metadata-only. It discovers public asset pages from
-Kenney's paginated catalog and indexes only pages that explicitly state a
-Creative Commons CC0 license. Asset binaries remain upstream.
+Metadata only. Asset binaries remain upstream. Records are created only when the
+individual official Kenney asset page explicitly states Creative Commons CC0.
 """
 
 from __future__ import annotations
@@ -15,6 +14,7 @@ import time
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
+from urllib.error import HTTPError
 from urllib.parse import urljoin, urlparse
 from urllib.request import Request, urlopen
 
@@ -93,7 +93,14 @@ def discover_asset_slugs(max_pages: int = 100) -> list[str]:
     empty_pages = 0
     for page in range(1, max_pages + 1):
         url = CATALOG if page == 1 else f"{CATALOG}/page:{page}"
-        parser = parse_page(fetch_text(url))
+        try:
+            raw = fetch_text(url)
+        except HTTPError as exc:
+            if page > 1 and slugs and exc.code in {404, 500}:
+                print(f"Kenney pagination ended at page {page - 1} (next page returned HTTP {exc.code})")
+                break
+            raise
+        parser = parse_page(raw)
         before = len(slugs)
         for href in parser.links:
             slug = slug_from_link(href)
@@ -111,10 +118,11 @@ def discover_asset_slugs(max_pages: int = 100) -> list[str]:
 
 def value_after(tokens: list[str], label: str) -> str | None:
     label_l = label.lower()
+    labels = {"tags", "category", "files", "license", "tile size", "features", "updates"}
     for index, token in enumerate(tokens):
         if token.lower().rstrip(":") == label_l:
             for value in tokens[index + 1 : index + 5]:
-                if value and value.lower().rstrip(":") not in {"tags", "category", "files", "license", "tile size", "features", "updates"}:
+                if value and value.lower().rstrip(":") not in labels:
                     return value
     return None
 
@@ -137,8 +145,7 @@ def infer_type(category: str | None) -> tuple[str, list[str]]:
 def split_categories(category: str | None) -> list[str]:
     if not category:
         return []
-    normalized = category.replace("•", "|")
-    return [part.strip() for part in normalized.split("|") if part.strip()]
+    return [part.strip() for part in category.replace("•", "|").split("|") if part.strip()]
 
 
 def parse_record(slug: str, raw: str) -> dict[str, Any] | None:
@@ -153,20 +160,15 @@ def parse_record(slug: str, raw: str) -> dict[str, Any] | None:
     files_raw = value_after(parser.text, "Files")
     tile_size = value_after(parser.text, "Tile size")
     features = value_after(parser.text, "Features")
-
-    tags = ["kenney"]
-    if tags_raw:
-        tags.append(tags_raw.lower())
-
     categories = split_categories(category_raw)
     asset_type, dimensions = infer_type(category_raw)
+
     file_count = None
     if files_raw:
         m = re.search(r"(\d+)", files_raw.replace(",", ""))
         if m:
             file_count = int(m.group(1))
 
-    page_url = f"{BASE}/assets/{slug}"
     return {
         "schema_version": 1,
         "id": stable_id("KENNEY", slug),
@@ -175,32 +177,22 @@ def parse_record(slug: str, raw: str) -> dict[str, Any] | None:
         "dimensions": dimensions,
         "themes": categories,
         "styles": [],
-        "tags": tags,
+        "tags": ["kenney"] + ([tags_raw.lower()] if tags_raw else []),
         "source": {
             "provider": "Kenney",
             "author": "Kenney",
             "external_id": slug,
-            "asset_url": page_url,
+            "asset_url": f"{BASE}/assets/{slug}",
             "download_url": None,
             "acquired_at": now_utc(),
         },
         "license": dict(CC0),
         "technical": {
-            "formats": [],
-            "texture_resolution": tile_size,
-            "triangle_count": None,
-            "rigged": None,
-            "animated": True if features and "animation" in features.lower() else None,
-            "animation_count": None,
-            "pbr": None,
-            "lods": None,
-            "collision": None,
-            "audio_sample_rate": None,
-            "audio_channels": None,
-            "font_formats": [],
-            "pack_file_count": file_count,
-            "category_raw": category_raw,
-            "features_raw": features,
+            "formats": [], "texture_resolution": tile_size, "triangle_count": None,
+            "rigged": None, "animated": True if features and "animation" in features.lower() else None,
+            "animation_count": None, "pbr": None, "lods": None, "collision": None,
+            "audio_sample_rate": None, "audio_channels": None, "font_formats": [],
+            "pack_file_count": file_count, "category_raw": category_raw, "features_raw": features,
         },
         "compatibility": {"godot": True, "unreal": True, "unity": True, "web": True, "android": True},
         "archive": {"mirrored_in_arcont": False, "local_path": None, "sha256": None, "size_bytes": None},
@@ -210,12 +202,7 @@ def parse_record(slug: str, raw: str) -> dict[str, Any] | None:
             "last_checked": now_utc(),
             "notes": "Metadata extracted from the individual official Kenney asset page. Record created only when that page explicitly states Creative Commons CC0.",
         },
-        "kenney_metadata": {
-            "category": categories,
-            "tile_size": tile_size,
-            "features": features,
-            "file_count": file_count,
-        },
+        "kenney_metadata": {"category": categories, "tile_size": tile_size, "features": features, "file_count": file_count},
     }
 
 
@@ -243,7 +230,6 @@ def main() -> int:
     root = Path(args.root).resolve()
     target = root / "assets" / "catalog" / "kenney"
     target.mkdir(parents=True, exist_ok=True)
-
     slugs = discover_asset_slugs(args.max_pages)
     if args.limit is not None:
         slugs = slugs[: args.limit]
@@ -252,8 +238,7 @@ def main() -> int:
     skipped = 0
     for index, slug in enumerate(slugs, start=1):
         try:
-            raw = fetch_text(f"{BASE}/assets/{slug}")
-            record = parse_record(slug, raw)
+            record = parse_record(slug, fetch_text(f"{BASE}/assets/{slug}"))
             if record is None:
                 skipped += 1
                 continue
