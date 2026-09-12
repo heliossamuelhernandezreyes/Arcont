@@ -1,0 +1,63 @@
+schema_version: 1
+asset_record:
+  id: ARC-ASSET-UNIQUE-ID
+  title: null
+  asset_type: null
+  dimensions: []
+  themes: []
+  styles: []
+  tags: []
+  source:
+    provider: null
+    author: null
+    asset_url: null
+    download_url: null
+    acquired_at: null
+  license:
+    name: null
+    version: null
+    license_url: null
+    commercial_use: null
+    modification: null
+    attribution_required: null
+    redistribution_allowed: null
+    share_alike: null
+    ai_training_allowed: null
+    notes: null
+  technical:
+    formats: []
+    texture_resolution: null
+    triangle_count: null
+    rigged: null
+    animated: null
+    animation_count: null
+    pbr: null
+    lods: null
+    collision: null
+    audio_sample_rate: null
+    audio_channels: null
+    font_formats: []
+  compatibility:
+    godot: null
+    unreal: null
+    unity: null
+    web: null
+    android: null
+  archive:
+    mirrored_in_arcont: false
+    local_path: null
+    sha256: null
+    size_bytes: null
+  review:
+    license_verified: false
+    metadata_verified: false
+    last_checked: null
+    notes: null
+
+rules:
+  - unknown values are null, never guessed
+  - asset-level license overrides provider-level assumptions
+  - no binary mirroring unless redistribution is explicitly permitted
+  - preserve license evidence and acquisition date
+  - commercial_use and redistribution_allowed are separate concepts
+  - attribution obligations must be machine-readable
