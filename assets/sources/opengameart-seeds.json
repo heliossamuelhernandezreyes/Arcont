@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "provider": "OpenGameArt",
+  "notes": "Curated discovery seeds only. The adapter re-fetches every official page and refuses ingestion unless the page itself explicitly states a GREEN license under tools/license_policy.py.",
+  "assets": [
+    "https://opengameart.org/content/maps-0",
+    "https://opengameart.org/content/ground",
+    "https://opengameart.org/content/tileset-pixel",
+    "https://opengameart.org/content/overworld-0",
+    "https://opengameart.org/content/2d-platformer-game-assets",
+    "https://opengameart.org/content/background-2",
+    "https://opengameart.org/content/window-frame",
+    "https://opengameart.org/content/game-jam-assets"
+  ]
+}
