@@ -44,14 +44,20 @@ jobs:
         run: |
           rm -rf /tmp/google-fonts
           git clone --depth 1 --filter=blob:limit=16384 --no-checkout https://github.com/google/fonts.git /tmp/google-fonts
+          status=0
           python tools/google_fonts_adapter.py /tmp/google-fonts --root . || status=$?
-          if [ "${status:-0}" -gt 2 ]; then exit "$status"; fi
+          if [ "$status" -ne 0 ] && [ "$status" -ne 2 ]; then
+            exit "$status"
+          fi
 
       - name: Sync Kenney CC0 metadata
         shell: bash
         run: |
+          status=0
           python tools/kenney_adapter.py --root . || status=$?
-          if [ "${status:-0}" -gt 2 ]; then exit "$status"; fi
+          if [ "$status" -ne 0 ] && [ "$status" -ne 2 ]; then
+            exit "$status"
+          fi
 
       - name: Rebuild stable Asset Vault index
         run: python tools/asset_vault_bulk_sync.py
