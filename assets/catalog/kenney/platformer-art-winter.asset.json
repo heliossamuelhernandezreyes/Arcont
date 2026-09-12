@@ -39,7 +39,7 @@
     "version": "1.0"
   },
   "review": {
-    "last_checked": "2026-09-12T09:56:05Z",
+    "last_checked": "2026-09-12T10:00:35Z",
     "license_verified": true,
     "metadata_verified": true,
     "notes": "Metadata extracted from the individual official Kenney asset page. Record created only when that page explicitly states Creative Commons CC0."
@@ -78,5 +78,5 @@
   "themes": [
     "2D"
   ],
-  "title": "Platformer Art Winter Consider a donation Thanks for downloading"
+  "title": "Platformer Art Winter"
 }
