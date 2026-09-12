@@ -11,6 +11,14 @@ ARCONT se organiza por conocimientos reutilizables, no por un juego concreto.
 
 ARCONT 1.0 fija que no se admite código de juego de producción ni un proyecto Godot embebido. La evidencia runtime se produce externamente y se incorpora con procedencia verificable.
 
+## Biblioteca general de ingeniería de videojuegos
+
+- [`knowledge/GAME_DEV_ATLAS.md`](knowledge/GAME_DEV_ATLAS.md) — atlas transversal `shared / 2D / 2.5D / 3D`, dominios técnicos, motores y jerarquía de fuentes.
+- [`knowledge/SOURCE_REGISTRY.yaml`](knowledge/SOURCE_REGISTRY.yaml) — registro curado de fuentes primarias/oficiales y familias pendientes de adquisición.
+- [`knowledge/ACQUISITION_ROADMAP.md`](knowledge/ACQUISITION_ROADMAP.md) — oleadas de adquisición para fundamentos, 2D, 2.5D, 3D, sistemas transversales, plataformas y comparativas entre motores.
+
+ARCONT no intenta copiar Internet. Conserva referencias, procedencia, extracción técnica, preguntas verificables y, únicamente cuando sea legal y útil, material redistribuible. Godot es el primer motor bajo análisis profundo, no el límite temático de ARCONT.
+
 ## Laboratorio técnico
 
 - [`LAB_STANDARD.md`](LAB_STANDARD.md) — estándar del laboratorio: SOURCE → EXPERIMENT → RULE, reproducibilidad y estados de validez.
