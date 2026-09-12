@@ -100,6 +100,9 @@ def validate_plan(plan: dict[str, Any], root: Path) -> list[str]:
         metrics = bench.get("metrics")
         if not isinstance(metrics, list) or not metrics or any(not isinstance(m, str) or not m for m in metrics):
             errors.append(f"{prefix}: metrics must be a non-empty string list")
+        controls = bench.get("controls")
+        if controls is not None and not isinstance(controls, dict):
+            errors.append(f"{prefix}: controls must be an object when present")
         abort = bench.get("abort")
         if not isinstance(abort, dict) or not abort:
             errors.append(f"{prefix}: abort policy is required")
@@ -123,6 +126,7 @@ def runner_manifest(plan: dict[str, Any], benchmark_id: str) -> dict[str, Any]:
         "runner_requirements": {
             "record_platform": ["os", "device", "cpu", "gpu"],
             "record_runtime": ["renderer", "resolution", "build_type", "vsync"],
+            "record_experiment_controls": True,
             "raw_samples_required": True,
             "raw_data_sha256_required": True,
             "harness_commit_required": True,
@@ -130,6 +134,16 @@ def runner_manifest(plan: dict[str, Any], benchmark_id: str) -> dict[str, Any]:
             "interpretation_in_runner": False
         }
     }
+
+
+def _metric_has_numeric_measurement(metric: Any) -> bool:
+    if not isinstance(metric, dict):
+        return False
+    if metric.get("status") in {"not-instrumented-yet", "unknown-metric", "missing"}:
+        return False
+    numeric_keys = ("value", "mean", "p50", "p95", "p99", "min", "max")
+    values = [metric[k] for k in numeric_keys if k in metric]
+    return bool(values) and all(isinstance(v, (int, float)) and not isinstance(v, bool) for v in values)
 
 
 def validate_against_plan(result: dict[str, Any], plan: dict[str, Any]) -> list[str]:
@@ -155,6 +169,8 @@ def validate_against_plan(result: dict[str, Any], plan: dict[str, Any]) -> list[
             errors.append(f"result: runtime.{key} required for runtime evidence")
 
     experiment = result.get("experiment") or {}
+    if experiment.get("campaign_id") != plan.get("campaign_id"):
+        errors.append("result: experiment.campaign_id does not match canonical campaign")
     if experiment.get("hypothesis_ref") != bench.get("hypothesis_ref"):
         errors.append("result: experiment.hypothesis_ref does not match benchmark plan")
     if experiment.get("variable") != bench.get("variable"):
@@ -168,12 +184,16 @@ def validate_against_plan(result: dict[str, Any], plan: dict[str, Any]) -> list[
         errors.append("result: warmup_seconds differs from preregistered plan")
     if experiment.get("sample_seconds") != bench.get("sample_seconds"):
         errors.append("result: sample_seconds differs from preregistered plan")
+    if experiment.get("controls") != bench.get("controls", {}):
+        errors.append("result: experiment.controls must exactly match preregistered controls")
 
     metrics = result.get("metrics") or {}
     if not result.get("aborted"):
-        for metric in bench.get("metrics", []):
-            if metric not in metrics:
-                errors.append(f"result: planned metric {metric!r} missing")
+        for metric_name in bench.get("metrics", []):
+            if metric_name not in metrics:
+                errors.append(f"result: planned metric {metric_name!r} missing")
+            elif not _metric_has_numeric_measurement(metrics[metric_name]):
+                errors.append(f"result: planned metric {metric_name!r} lacks a complete numeric measurement")
 
     provenance = result.get("provenance") or {}
     if not result.get("aborted"):
