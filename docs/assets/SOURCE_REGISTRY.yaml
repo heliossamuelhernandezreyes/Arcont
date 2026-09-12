@@ -81,14 +81,16 @@ sources:
   - id: ARC-ASSET-SRC-GOOGLE-FONTS
     provider: Google Fonts
     url: https://fonts.google.com/
+    repository: https://github.com/google/fonts
     asset_types: [fonts, ui_typography]
-    license_model: sil_ofl_for_current_submissions
+    license_model: per_family_repository_license
     commercial_use: true
     attribution_required: license_notice_conditions
     redistribution_allowed: conditional
-    ingestion: future_repository_adapter
+    ingestion: official_repository_metadata
+    adapter: tools/google_fonts_adapter.py
     priority: high
-    notes: Preserve OFL copyright/license material and check Reserved Font Name conditions for modifications.
+    notes: Adapter reads official METADATA.pb and license-class directories from google/fonts without materializing font binaries. Preserve family copyright/license material and Reserved Font Name conditions where applicable.
 
 collections_to_seed:
   - 2d_general
