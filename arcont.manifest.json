@@ -29,6 +29,13 @@
     "raw_evidence_immutable": true,
     "raw_evidence_hash": "sha256"
   },
+  "observability": {
+    "architecture": "docs/integrations/UPSTREAM_OBSERVABILITY.md",
+    "instrument_registry": "docs/integrations/INSTRUMENT_REGISTRY.yaml",
+    "external_evidence_schema": "schemas/external-evidence.schema.json",
+    "providers": ["godot-benchmarks", "perfetto", "tracy"],
+    "external_auto_promotion_allowed": false
+  },
   "integrity": {
     "validator": "tools/arcont_lab.py",
     "hardening_validator": "tools/arcont_hardening.py",
