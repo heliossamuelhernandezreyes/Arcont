@@ -1,0 +1,84 @@
+{
+  "archive": {
+    "local_path": null,
+    "mirrored_in_arcont": false,
+    "sha256": null,
+    "size_bytes": null
+  },
+  "asset_type": "texture",
+  "compatibility": {
+    "android": true,
+    "godot": true,
+    "unity": true,
+    "unreal": true,
+    "web": true
+  },
+  "dimensions": [
+    "shared",
+    "2d",
+    "2_5d",
+    "3d"
+  ],
+  "id": "ARC-ASSET-KENNEY-2B080EFFB61645D3",
+  "kenney_metadata": {
+    "category": [
+      "Textures"
+    ],
+    "features": null,
+    "file_count": 75,
+    "tile_size": null
+  },
+  "license": {
+    "ai_training_allowed": null,
+    "attribution_required": false,
+    "commercial_use": true,
+    "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "modification": true,
+    "name": "CC0-1.0",
+    "notes": "Kenney states game assets on its asset pages are public-domain licensed (CC0); attribution is not required. This adapter additionally requires the individual asset page to contain an explicit Creative Commons CC0 marker before indexing it.",
+    "redistribution_allowed": true,
+    "share_alike": false,
+    "version": "1.0"
+  },
+  "review": {
+    "last_checked": "2026-09-12T09:56:09Z",
+    "license_verified": true,
+    "metadata_verified": true,
+    "notes": "Metadata extracted from the individual official Kenney asset page. Record created only when that page explicitly states Creative Commons CC0."
+  },
+  "schema_version": 1,
+  "source": {
+    "acquired_at": "2026-09-12T09:56:09Z",
+    "asset_url": "https://kenney.nl/assets/prototype-textures",
+    "author": "Kenney",
+    "download_url": null,
+    "external_id": "prototype-textures",
+    "provider": "Kenney"
+  },
+  "styles": [],
+  "tags": [
+    "kenney",
+    "texture"
+  ],
+  "technical": {
+    "animated": null,
+    "animation_count": null,
+    "audio_channels": null,
+    "audio_sample_rate": null,
+    "category_raw": "Textures",
+    "collision": null,
+    "features_raw": null,
+    "font_formats": [],
+    "formats": [],
+    "lods": null,
+    "pack_file_count": 75,
+    "pbr": null,
+    "rigged": null,
+    "texture_resolution": null,
+    "triangle_count": null
+  },
+  "themes": [
+    "Textures"
+  ],
+  "title": "Prototype Textures Consider a donation Thanks for downloading"
+}
