@@ -22,6 +22,8 @@ jobs:
         run: python tools/arcont_lab.py validate
       - name: Validate ARCONT 1.0 manifest and evidence contracts
         run: python tools/arcont_hardening.py validate
+      - name: Validate preregistered runtime campaign
+        run: python tools/runtime_evidence.py validate-plan
       - name: Validate Asset Vault catalog
         run: python tools/asset_vault_indexer.py validate
       - name: Validate Asset Vault trust evidence
@@ -38,6 +40,16 @@ jobs:
           JSON
           if python tools/arcont_hardening.py validate-result /tmp/invalid.result.json; then
             echo "Validator accepted deliberately invalid evidence"
+            exit 1
+          fi
+      - name: Negative control - unregistered runtime result must fail
+        shell: bash
+        run: |
+          cat > /tmp/unregistered.result.json <<'JSON'
+          {"schema_version":1,"benchmark_id":"ARC-BENCH-UNREGISTERED","run_id":"fake","engine":{"name":"godot","version":"4.7.2-stable","commit":"ed1daf0bf001b61586d9930840f2f1394092c079"},"platform":{"os":"Android","device":"fake","cpu":"fake","gpu":"fake"},"runtime":{"renderer":"mobile","resolution":"1x1","build_type":"release","vsync":false},"experiment":{"hypothesis_ref":"ARC-GODOT-HYP-SCENE-0001","variable":"x","value":1,"repetition":1,"warmup_seconds":15,"sample_seconds":30},"metrics":{"frame_time_ms":{}},"provenance":{"harness_commit":"1111111111111111111111111111111111111111","raw_data_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},"aborted":false}
+          JSON
+          if python tools/runtime_evidence.py validate-result /tmp/unregistered.result.json; then
+            echo "Runtime evidence validator accepted an unregistered benchmark"
             exit 1
           fi
       - name: Negative control - maturity overclaim must fail
