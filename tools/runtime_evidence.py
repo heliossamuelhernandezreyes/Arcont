@@ -14,8 +14,12 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from arcont_hardening import HEX40, HEX64, validate_result
-from arcont_lab import load_all_graphs
+try:
+    from tools.arcont_hardening import HEX40, HEX64, validate_result
+    from tools.arcont_lab import load_all_graphs
+except ModuleNotFoundError:
+    from arcont_hardening import HEX40, HEX64, validate_result
+    from arcont_lab import load_all_graphs
 
 CANONICAL_VERSION = "4.7.2-stable"
 CANONICAL_COMMIT = "ed1daf0bf001b61586d9930840f2f1394092c079"
