@@ -24,6 +24,8 @@ jobs:
         run: python tools/arcont_hardening.py validate
       - name: Validate Asset Vault catalog
         run: python tools/asset_vault_indexer.py validate
+      - name: Validate Asset Vault trust evidence
+        run: python tools/asset_trust.py
       - name: Build Asset Vault index
         run: python tools/asset_vault_indexer.py build --output /tmp/arcont-asset-index.json
       - name: Run unit tests
@@ -41,7 +43,7 @@ jobs:
       - name: Negative control - maturity overclaim must fail
         shell: bash
         run: |
-          if python tools/arcont_hardening.py maturity L7_VALIDATED_RULE --source-traced --hypothesis --observations 1; then
+          if python tools/arcont_hardening.py maturity L7_VALIDATED_RULE --source-traced --hypothesis --observations 1 --validated-rule; then
             echo "Maturity validator accepted an unsupported L7 claim"
             exit 1
           fi
@@ -54,5 +56,16 @@ jobs:
           JSON
           if python tools/asset_vault_indexer.py validate --root /tmp/arcont-vault; then
             echo "Asset validator accepted illegal mirroring"
+            exit 1
+          fi
+      - name: Negative control - fake runtime compatibility must fail
+        shell: bash
+        run: |
+          mkdir -p /tmp/arcont-trust/assets/catalog/test
+          cat > /tmp/arcont-trust/assets/catalog/test/bad.asset.json <<'JSON'
+          {"compatibility":{"android":true},"compatibility_evidence":{"android":{"level":"runtime"}},"license":{"redistribution_allowed":true},"archive":{"mirrored_in_arcont":false},"review":{"license_verified":true}}
+          JSON
+          if python tools/asset_trust.py --root /tmp/arcont-trust; then
+            echo "Trust validator accepted runtime compatibility without traceable evidence"
             exit 1
           fi
