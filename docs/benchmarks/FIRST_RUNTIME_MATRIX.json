@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "campaign_id": "ARC-CAMPAIGN-GODOT-FUNDAMENTALS-01",
+  "engine": {
+    "name": "godot",
+    "version": "4.7.2-stable",
+    "commit": "ed1daf0bf001b61586d9930840f2f1394092c079"
+  },
+  "benchmarks": [
+    {
+      "id": "ARC-BENCH-BASELINE-EMPTY-001",
+      "family": "baseline",
+      "title": "Empty laboratory baseline",
+      "hypothesis_ref": "ARC-GODOT-HYP-BASELINE-0001",
+      "knowledge_refs": ["ARC-GODOT-SRC-MAINLOOP", "ARC-GODOT-SRC-SCENETREE"],
+      "variable": "empty_scene",
+      "sweep": [0],
+      "warmup_seconds": 15,
+      "sample_seconds": 30,
+      "repetitions": 5,
+      "metrics": ["frame_time_ms", "fps", "memory_mb", "cpu_ms", "gpu_ms"],
+      "controls": {"fixed_resolution": true, "fixed_renderer": true, "vsync_declared": true, "power_state_declared": true},
+      "abort": {"frame_time_ms": 500, "memory_mb": 4096, "temperature_c": 46, "consecutive_bad_samples": 10}
+    },
+    {
+      "id": "ARC-BENCH-SCENETREE-INACTIVE-NODE-001",
+      "family": "scene_tree",
+      "title": "Inactive Node scaling curve",
+      "hypothesis_ref": "ARC-GODOT-HYP-SCENE-0001",
+      "knowledge_refs": ["ARC-GODOT-SRC-NODE", "ARC-GODOT-SRC-PROCESSGROUP"],
+      "variable": "inactive_node_count",
+      "sweep": [1, 10, 100, 1000, 3000, 10000],
+      "warmup_seconds": 15,
+      "sample_seconds": 30,
+      "repetitions": 5,
+      "metrics": ["frame_time_ms", "fps", "memory_mb", "cpu_ms"],
+      "controls": {"script_attached": false, "process_enabled": false, "physics_process_enabled": false},
+      "abort": {"frame_time_ms": 500, "memory_mb": 4096, "temperature_c": 46, "consecutive_bad_samples": 10}
+    },
+    {
+      "id": "ARC-BENCH-SCENETREE-PROCESS-NODE-001",
+      "family": "scene_tree",
+      "title": "Node _process callback scaling curve",
+      "hypothesis_ref": "ARC-GODOT-HYP-SCENE-0002",
+      "knowledge_refs": ["ARC-GODOT-SRC-NODE", "ARC-GODOT-SRC-PROCESSGROUP"],
+      "variable": "process_node_count",
+      "sweep": [1, 10, 100, 1000, 3000, 10000],
+      "warmup_seconds": 15,
+      "sample_seconds": 30,
+      "repetitions": 5,
+      "metrics": ["frame_time_ms", "fps", "memory_mb", "cpu_ms"],
+      "controls": {"process_body": "empty_callback", "physics_process_enabled": false},
+      "abort": {"frame_time_ms": 500, "memory_mb": 4096, "temperature_c": 46, "consecutive_bad_samples": 10}
+    },
+    {
+      "id": "ARC-BENCH-SCENETREE-PHYSICS-NODE-001",
+      "family": "scene_tree",
+      "title": "Node _physics_process callback scaling curve",
+      "hypothesis_ref": "ARC-GODOT-HYP-SCENE-0002",
+      "knowledge_refs": ["ARC-GODOT-SRC-NODE", "ARC-GODOT-SRC-PROCESSGROUP"],
+      "variable": "physics_process_node_count",
+      "sweep": [1, 10, 100, 1000, 3000, 10000],
+      "warmup_seconds": 15,
+      "sample_seconds": 30,
+      "repetitions": 5,
+      "metrics": ["frame_time_ms", "fps", "memory_mb", "cpu_ms"],
+      "controls": {"physics_process_body": "empty_callback", "process_enabled": false, "physics_ticks_declared": true},
+      "abort": {"frame_time_ms": 500, "memory_mb": 4096, "temperature_c": 46, "consecutive_bad_samples": 10}
+    },
+    {
+      "id": "ARC-BENCH-SCENETREE-PRIORITY-CHURN-001",
+      "family": "scene_tree",
+      "title": "Process priority churn cost",
+      "hypothesis_ref": "ARC-GODOT-HYP-SCENE-0003",
+      "knowledge_refs": ["ARC-GODOT-SRC-PROCESSGROUP", "ARC-GODOT-SRC-NODE"],
+      "variable": "priority_changes_per_second",
+      "sweep": [1, 10, 100, 1000, 3000],
+      "warmup_seconds": 15,
+      "sample_seconds": 30,
+      "repetitions": 5,
+      "metrics": ["frame_time_ms", "fps", "memory_mb", "cpu_ms"],
+      "controls": {"node_count_fixed": 3000, "callback_body": "empty_callback"},
+      "abort": {"frame_time_ms": 500, "memory_mb": 4096, "temperature_c": 46, "consecutive_bad_samples": 10}
+    }
+  ]
+}
