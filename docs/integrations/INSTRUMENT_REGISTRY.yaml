@@ -1,5 +1,16 @@
 schema_version: 1
 instruments:
+  - id: ARC-INSTRUMENT-RUNTIME-LAB
+    name: ARCONT Runtime Lab
+    kind: controlled-benchmark
+    upstream: https://github.com/heliossamuelhernandezreyes/Nia-Tech
+    role:
+      - preregistered-microbenchmark
+      - falsifiable-sweep
+      - canonical-runtime-evidence
+    ingestion: unified-evidence-kernel
+    evidence_policy: canonical-raw-hash-required
+
   - id: ARC-INSTRUMENT-GODOT-BENCHMARKS
     name: Godot Benchmarks
     kind: benchmark-suite
@@ -8,7 +19,7 @@ instruments:
       - upstream-comparison
       - regression-context
       - hypothesis-generation
-    ingestion: adapter-required
+    ingestion: unified-evidence-kernel
     evidence_policy: external-provenance-required
 
   - id: ARC-INSTRUMENT-PERFETTO
@@ -20,7 +31,7 @@ instruments:
       - thread-scheduling
       - cpu-frequency
       - trace-events
-    ingestion: trace-manifest-required
+    ingestion: unified-evidence-kernel-via-trace-extract
     evidence_policy: raw-trace-hash-required
 
   - id: ARC-INSTRUMENT-TRACY
@@ -31,11 +42,19 @@ instruments:
       - cross-platform-cpu-tracing
       - sampling
       - hotspot-analysis
-    ingestion: trace-manifest-required
+    ingestion: unified-evidence-kernel-via-trace-extract
     evidence_policy: raw-trace-hash-required
+
+kernel:
+  tool: tools/evidence_ingest.py
+  evidence_record_schema: schemas/external-evidence.schema.json
+  bundle_schema: schemas/evidence-bundle.schema.json
+  trace_extract_schema: schemas/trace-extract.schema.json
+  invariant: every provider becomes the same evidence record shape before interpretation
 
 rules:
   semantic_equivalence_must_be_explicit: true
   unknown_provenance_must_remain_unknown: true
   external_tools_can_auto_promote_maturity: false
+  runtime_lab_can_auto_promote_maturity: false
   raw_profiler_screenshots_are_canonical_evidence: false
