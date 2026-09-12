@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "observation_id": "ARC-GODOT-OBS-SCENE-0001",
+  "observed_at": "2026-09-12",
+  "engine": {
+    "name": "godot",
+    "version": "4.7.2-stable",
+    "commit": "ed1daf0bf001b61586d9930840f2f1394092c079"
+  },
+  "campaign_id": "ARC-CAMPAIGN-GODOT-FUNDAMENTALS-01",
+  "claim_ref": "ARC-GODOT-HYP-SCENE-0001",
+  "maturity": "L3_OBSERVED",
+  "status": "observed",
+  "scope": {
+    "node_count": 3000,
+    "repetition": 1,
+    "platform": {
+      "os": "Linux",
+      "device": "Virtual Machine",
+      "cpu": "AMD EPYC 9V74 80-Core Processor",
+      "gpu": "headless-no-gpu"
+    },
+    "runtime": {
+      "renderer": "gl_compatibility",
+      "resolution": "0x0",
+      "build_type": "debug",
+      "vsync": 1
+    },
+    "warmup_seconds_each": 15,
+    "sample_seconds_each": 30
+  },
+  "runs": {
+    "inactive": {
+      "benchmark_id": "ARC-BENCH-SCENETREE-INACTIVE-NODE-001",
+      "run_id": "ARC-BENCH-SCENETREE-INACTIVE-NODE-001-v3000-r1-1789213834",
+      "controls": {
+        "script_attached": false,
+        "process_enabled": false,
+        "physics_process_enabled": false
+      },
+      "cpu_ms_mean": 0.0413120975160992,
+      "frame_time_ms_mean": 6.90075804967846,
+      "fps_mean": 144.911615912486,
+      "memory_mb": 27.4180841445923,
+      "raw_data_sha256": "22301d30dbc664e7a69b47588712aff37855f988f65b192f39b2e2f8a205b9ad"
+    },
+    "process": {
+      "benchmark_id": "ARC-BENCH-SCENETREE-PROCESS-NODE-001",
+      "run_id": "ARC-BENCH-SCENETREE-PROCESS-NODE-001-v3000-r1-1789213879",
+      "controls": {
+        "process_body": "empty_callback",
+        "physics_process_enabled": false
+      },
+      "cpu_ms_mean": 0.408764949402031,
+      "frame_time_ms_mean": 6.90075804967846,
+      "fps_mean": 144.911615912486,
+      "memory_mb": 27.8895311355591,
+      "raw_data_sha256": "472bce8331c6425540e0d2464e015cc8d9b0453e8c41b81842a640bd3f02a4fc"
+    }
+  },
+  "comparison": {
+    "cpu_ms_delta": 0.3674528518859318,
+    "process_to_inactive_cpu_ratio": 9.89455810716792,
+    "observed_support": "At N=3000 on this runner, nodes registered for a literal empty _process callback consumed more measured process CPU time than plain inactive Nodes.",
+    "frame_time_interpretation": "Mean frame time and reported FPS were identical in this headless run; they are not used as evidence that callback registration has no cost. The discriminating metric in this observation is Performance.TIME_PROCESS."
+  },
+  "provenance": {
+    "runtime_repository": "heliossamuelhernandezreyes/Nia-Tech",
+    "runtime_repository_role": "ARCONT Runtime Lab",
+    "workflow_run_id": 34692053393,
+    "harness_commit": "abab72795ba4f79e03ec49b21ab177e4a47a26ae",
+    "evidence_branch": "evidence/paired-scene-34692053393",
+    "evidence_merge_commit": "e828f7dc174173cbc0509818cea96b59e4263dcf",
+    "canonical_validator_commit": "7bd04d906b8f58e08d8b93b5e194d800448c9011"
+  },
+  "limitations": [
+    "single paired observation",
+    "one preregistered sweep point: N=3000",
+    "one repetition per side",
+    "GitHub-hosted Linux virtual machine",
+    "headless gl_compatibility runtime",
+    "debug build",
+    "does not establish cross-hardware or cross-version behavior",
+    "does not qualify as an independent reproduction"
+  ],
+  "promotion": {
+    "allowed": "L3_OBSERVED",
+    "not_allowed": ["L4_REPRODUCED", "L5_CROSS_HARDWARE", "L6_CROSS_VERSION", "L7_VALIDATED_RULE"]
+  }
+}
