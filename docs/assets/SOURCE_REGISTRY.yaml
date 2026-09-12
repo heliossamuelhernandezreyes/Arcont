@@ -11,19 +11,23 @@ sources:
     commercial_use: true
     attribution_required: false
     redistribution_review: required_before_mirroring
+    ingestion: verified_manifest
     priority: highest
-    notes: Kenney support states game assets on asset pages are CC0; preserve per-pack license evidence.
+    notes: Kenney support states game assets on asset pages are CC0; preserve per-pack license evidence. Do not add an undocumented scraper when a verified manifest can preserve provenance more reliably.
 
   - id: ARC-ASSET-SRC-POLYHAVEN
     provider: Poly Haven
     url: https://polyhaven.com/
+    api_url: https://api.polyhaven.com/assets
     asset_types: [hdri, textures, pbr_materials, 3d_models]
     license_model: cc0
     commercial_use: true
     attribution_required: false
     redistribution_allowed: true
+    ingestion: live_public_api
+    adapter: tools/asset_vault_indexer.py::polyhaven-sync
     priority: highest
-    notes: Asset license explicitly covers HDRIs, textures and 3D models. Website logos/example renders are not automatically CC0.
+    notes: Assets are CC0. Live API use has separate service terms requiring a distinct User-Agent and source attribution; the adapter preserves that distinction and imports metadata without mirroring binaries.
 
   - id: ARC-ASSET-SRC-QUATERNIUS
     provider: Quaternius
@@ -33,6 +37,7 @@ sources:
     commercial_use: true
     attribution_required: false
     redistribution_allowed: false
+    ingestion: verified_manifest
     priority: high
     notes: Current QAL v1.0 (2026-08-28) prohibits redistributing assets themselves. Some asset pages/FAQ identify CC0; record exact governing license for each acquisition rather than assuming globally.
 
@@ -44,8 +49,9 @@ sources:
     commercial_use: conditional
     attribution_required: conditional
     redistribution_allowed: conditional
+    ingestion: blocked_until_exact_license_adapter_or_verified_manifest
     priority: high
-    notes: Inspect each asset; CC0, CC-BY, CC-BY-SA, GPL and other accepted licenses have different obligations.
+    notes: Inspect each asset; CC0, CC-BY, CC-BY-SA, GPL and other accepted licenses have different obligations. No bulk canonical ingestion if exact per-asset license cannot be preserved.
 
   - id: ARC-ASSET-SRC-FREESOUND
     provider: Freesound
@@ -55,6 +61,7 @@ sources:
     commercial_use: conditional
     attribution_required: conditional
     redistribution_allowed: conditional
+    ingestion: blocked_until_exact_license_adapter_or_verified_manifest
     priority: high
     notes: Prefer CC0 for frictionless game reuse; never treat all Freesound audio as commercially unrestricted.
 
@@ -67,6 +74,7 @@ sources:
     attribution_required: false
     redistribution_allowed: false
     ai_training_allowed: false
+    ingestion: reference_manifest_only
     priority: high
     notes: Use in games/media is allowed under current bundle license, but supplying sounds as an asset library is prohibited. Keep upstream references, not mirrored packs.
 
@@ -78,6 +86,7 @@ sources:
     commercial_use: true
     attribution_required: license_notice_conditions
     redistribution_allowed: conditional
+    ingestion: future_repository_adapter
     priority: high
     notes: Preserve OFL copyright/license material and check Reserved Font Name conditions for modifications.
 
