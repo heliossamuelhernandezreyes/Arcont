@@ -19,6 +19,9 @@
   },
   "benchmarks": {
     "runtime_location": "external repository",
+    "runtime_repository": "heliossamuelhernandezreyes/Nia-Tech",
+    "runtime_identity": "ARCONT Runtime Lab",
+    "runtime_default_branch": "main",
     "plan_schema": "schemas/benchmark-plan.schema.json",
     "canonical_campaign": "docs/benchmarks/FIRST_RUNTIME_MATRIX.json",
     "runtime_bridge": "tools/runtime_evidence.py",
