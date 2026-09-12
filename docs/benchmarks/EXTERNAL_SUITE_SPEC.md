@@ -1,6 +1,18 @@
 # ARCONT External Microbenchmark Suite Specification
 
-ARCONT no contiene un juego ni un proyecto Godot ejecutable. Las pruebas runtime deben vivir en una suite externa y mínima, separada del banco de conocimiento.
+ARCONT no contiene un juego ni un proyecto Godot ejecutable. Las pruebas runtime viven en una suite externa y mínima, separada del banco de conocimiento.
+
+## Repositorio runtime canónico
+
+La implementación ejecutable actual vive en:
+
+- repositorio: `heliossamuelhernandezreyes/Nia-Tech`;
+- identidad funcional: **ARCONT Runtime Lab**;
+- rama canónica: `main`;
+- motor fijado: Godot `4.7.2-stable`;
+- commit de Godot: `ed1daf0bf001b61586d9930840f2f1394092c079`.
+
+El nombre histórico del repositorio (`Nia-Tech`) no define su función. Desde septiembre de 2026 ese repositorio se reutiliza exclusivamente como laboratorio runtime externo de ARCONT. Si GitHub cambia posteriormente el slug a `Arcont-Runtime-Lab`, debe actualizarse también `arcont.manifest.json`.
 
 ## Propósito
 
@@ -11,13 +23,22 @@ La suite existe únicamente para producir evidencia reproducible sobre el motor.
 Cada benchmark externo debe:
 
 - declarar un ID estable `ARC-BENCH-*`;
+- provenir de la campaña prerregistrada de ARCONT;
 - fijar versión y commit exactos de Godot;
 - registrar plataforma, dispositivo, renderer y resolución;
 - registrar warm-up, duración, repeticiones y criterios de aborto;
 - emitir resultados compatibles con `RESULT_SCHEMA.md`;
 - separar datos crudos, resumen estadístico e interpretación;
 - enlazar uno o más nodos del Knowledge Graph;
-- declarar hipótesis antes de observar el resultado.
+- declarar hipótesis antes de observar el resultado;
+- identificar el commit exacto del harness que produjo los datos;
+- generar SHA-256 verificable de los datos crudos antes de promoción a evidencia.
+
+## Flujo de confianza
+
+`ARCONT → plan prerregistrado → ARCONT Runtime Lab → datos crudos + resultado → validación ARCONT → Evidence Ledger`
+
+El Runtime Lab no decide si una hipótesis es verdadera y no promueve niveles de madurez. Su única responsabilidad es ejecutar de forma reproducible el diseño experimental y preservar la procedencia.
 
 ## Familias iniciales
 
