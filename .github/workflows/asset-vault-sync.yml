@@ -14,9 +14,11 @@ on:
       - 'tools/kenney_adapter.py'
       - 'tools/license_policy.py'
       - 'tools/opengameart_adapter.py'
+      - 'tools/arcont_lab.py'
+      - 'tools/arcont_hardening.py'
       - 'assets/sources/opengameart-seeds.json'
       - 'schemas/asset-record.schema.json'
-      - 'tests/test_license_policy.py'
+      - 'tests/**'
 
 permissions:
   contents: write
@@ -76,10 +78,44 @@ jobs:
       - name: Rebuild stable Asset Vault index
         run: python tools/asset_vault_bulk_sync.py
 
-      - name: Validate Asset Vault
+      - name: Validate complete ARCONT integrity before publication
         run: |
+          python tools/arcont_lab.py validate
+          python tools/arcont_hardening.py validate
           python tools/asset_vault_indexer.py validate
+          python tools/asset_vault_indexer.py build --output /tmp/arcont-asset-index.json
           python -m unittest discover -s tests -v
+
+      - name: Negative control - invalid benchmark result must fail
+        shell: bash
+        run: |
+          cat > /tmp/invalid.result.json <<'JSON'
+          {"schema_version":1,"benchmark_id":"ARC-BAD","run_id":"bad","engine":{"name":"godot","version":"4.7.2-stable","commit":"bad"},"platform":{},"runtime":{},"experiment":{},"metrics":{},"aborted":true}
+          JSON
+          if python tools/arcont_hardening.py validate-result /tmp/invalid.result.json; then
+            echo "Validator accepted deliberately invalid evidence"
+            exit 1
+          fi
+
+      - name: Negative control - maturity overclaim must fail
+        shell: bash
+        run: |
+          if python tools/arcont_hardening.py maturity L7_VALIDATED_RULE --source-traced --hypothesis --observations 1 --validated-rule; then
+            echo "Maturity validator accepted an unsupported L7 claim"
+            exit 1
+          fi
+
+      - name: Negative control - illegal mirrored asset must fail
+        shell: bash
+        run: |
+          mkdir -p /tmp/arcont-vault/assets/catalog/test
+          cat > /tmp/arcont-vault/assets/catalog/test/bad.asset.json <<'JSON'
+          {"schema_version":1,"id":"ARC-ASSET-BAD-001","title":"Bad","asset_type":"3d","source":{"provider":"Test","asset_url":"https://example.invalid/bad"},"license":{"name":"TEST","redistribution_allowed":false},"technical":{},"compatibility":{},"archive":{"mirrored_in_arcont":true,"sha256":null},"review":{"license_verified":true}}
+          JSON
+          if python tools/asset_vault_indexer.py validate --root /tmp/arcont-vault; then
+            echo "Asset validator accepted illegal mirroring"
+            exit 1
+          fi
 
       - name: Commit synchronized metadata
         shell: bash
