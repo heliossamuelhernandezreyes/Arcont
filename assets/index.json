@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-12T10:01:13Z",
-  "record_count": 4619,
+  "generated_at": "2026-09-12T10:17:56Z",
+  "record_count": 4627,
   "records": [
     {
       "archive": {
@@ -115172,6 +115172,91 @@
         "2d",
         "2_5d"
       ],
+      "id": "ARC-ASSET-OPENGAMEART-677F8F1BA6348D29",
+      "license": {
+        "ai_training_allowed": null,
+        "attribution_required": false,
+        "commercial_use": true,
+        "drm_risk": false,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "notes": "Public-domain dedication. Preferred for automatic cross-platform game-asset ingestion.",
+        "policy_tier": "green",
+        "portable_commercial_default": true,
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "source_label": "CC0",
+        "version": "1.0"
+      },
+      "opengameart_metadata": {
+        "art_type": "2D Art",
+        "file_count": null,
+        "license_raw": "CC0"
+      },
+      "review": {
+        "last_checked": "2026-09-12T10:17:54Z",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Official OpenGameArt page re-fetched at sync time; automatic ingestion allowed only by GREEN license policy."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-09-12T10:12:00Z",
+        "asset_url": "https://opengameart.org/content/2d-platformer-game-assets",
+        "author": "mrochefort",
+        "download_url": null,
+        "external_id": "2d-platformer-game-assets",
+        "provider": "OpenGameArt"
+      },
+      "styles": [],
+      "tags": [
+        "platform",
+        "grass",
+        "green",
+        "crate",
+        "boxes"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "art_type_raw": "2D Art",
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_formats": [],
+        "formats": [],
+        "lods": null,
+        "pack_file_count": null,
+        "pbr": null,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "2D Art"
+      ],
+      "title": "2D Platformer Game Assets"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "2d_asset",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "dimensions": [
+        "2d",
+        "2_5d"
+      ],
       "id": "ARC-ASSET-KENNEY-4AAD7EB3811144FF",
       "kenney_metadata": {
         "category": [
@@ -115480,6 +115565,87 @@
         "2D"
       ],
       "title": "Animal Pack Remastered"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "2d_asset",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "dimensions": [
+        "2d",
+        "2_5d"
+      ],
+      "id": "ARC-ASSET-OPENGAMEART-80E22FF497B5121B",
+      "license": {
+        "ai_training_allowed": null,
+        "attribution_required": false,
+        "commercial_use": true,
+        "drm_risk": false,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "notes": "Public-domain dedication. Preferred for automatic cross-platform game-asset ingestion.",
+        "policy_tier": "green",
+        "portable_commercial_default": true,
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "source_label": "CC0",
+        "version": "1.0"
+      },
+      "opengameart_metadata": {
+        "art_type": "2D Art",
+        "file_count": null,
+        "license_raw": "CC0"
+      },
+      "review": {
+        "last_checked": "2026-09-12T10:17:54Z",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Official OpenGameArt page re-fetched at sync time; automatic ingestion allowed only by GREEN license policy."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-09-12T10:12:00Z",
+        "asset_url": "https://opengameart.org/content/background-2",
+        "author": "ramses2099",
+        "download_url": null,
+        "external_id": "background-2",
+        "provider": "OpenGameArt"
+      },
+      "styles": [],
+      "tags": [
+        "background"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "art_type_raw": "2D Art",
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_formats": [],
+        "formats": [],
+        "lods": null,
+        "pack_file_count": null,
+        "pbr": null,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "2D Art"
+      ],
+      "title": "Background 2"
     },
     {
       "archive": {
@@ -117366,6 +117532,90 @@
         "2D"
       ],
       "title": "Googly Eyes"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "2d_asset",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "dimensions": [
+        "2d",
+        "2_5d"
+      ],
+      "id": "ARC-ASSET-OPENGAMEART-1CA126E3B95963ED",
+      "license": {
+        "ai_training_allowed": null,
+        "attribution_required": false,
+        "commercial_use": true,
+        "drm_risk": false,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "notes": "Public-domain dedication. Preferred for automatic cross-platform game-asset ingestion.",
+        "policy_tier": "green",
+        "portable_commercial_default": true,
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "source_label": "CC0",
+        "version": "1.0"
+      },
+      "opengameart_metadata": {
+        "art_type": "2D Art",
+        "file_count": null,
+        "license_raw": "CC0"
+      },
+      "review": {
+        "last_checked": "2026-09-12T10:17:52Z",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Official OpenGameArt page re-fetched at sync time; automatic ingestion allowed only by GREEN license policy."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-09-12T10:12:00Z",
+        "asset_url": "https://opengameart.org/content/ground",
+        "author": "Nekith",
+        "download_url": null,
+        "external_id": "ground",
+        "provider": "OpenGameArt"
+      },
+      "styles": [],
+      "tags": [
+        "top-down",
+        "strategy",
+        "ground",
+        "desert"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "art_type_raw": "2D Art",
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_formats": [],
+        "formats": [],
+        "lods": null,
+        "pack_file_count": null,
+        "pbr": null,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "2D Art"
+      ],
+      "title": "Ground"
     },
     {
       "archive": {
@@ -119354,6 +119604,87 @@
         "2d",
         "2_5d"
       ],
+      "id": "ARC-ASSET-OPENGAMEART-839C30A4D15FDCBF",
+      "license": {
+        "ai_training_allowed": null,
+        "attribution_required": false,
+        "commercial_use": true,
+        "drm_risk": false,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "notes": "Public-domain dedication. Preferred for automatic cross-platform game-asset ingestion.",
+        "policy_tier": "green",
+        "portable_commercial_default": true,
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "source_label": "CC0",
+        "version": "1.0"
+      },
+      "opengameart_metadata": {
+        "art_type": "2D Art",
+        "file_count": null,
+        "license_raw": "CC0"
+      },
+      "review": {
+        "last_checked": "2026-09-12T10:17:52Z",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Official OpenGameArt page re-fetched at sync time; automatic ingestion allowed only by GREEN license policy."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-09-12T10:12:00Z",
+        "asset_url": "https://opengameart.org/content/maps-0",
+        "author": "Kroote",
+        "download_url": null,
+        "external_id": "maps-0",
+        "provider": "OpenGameArt"
+      },
+      "styles": [],
+      "tags": [
+        "maps"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "art_type_raw": "2D Art",
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_formats": [],
+        "formats": [],
+        "lods": null,
+        "pack_file_count": null,
+        "pbr": null,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "2D Art"
+      ],
+      "title": "Maps 0"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "2d_asset",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "dimensions": [
+        "2d",
+        "2_5d"
+      ],
       "id": "ARC-ASSET-KENNEY-F3DB4F6C4F583A36",
       "kenney_metadata": {
         "category": [
@@ -120154,6 +120485,87 @@
         "2D"
       ],
       "title": "New Platformer Pack"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "2d_asset",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "dimensions": [
+        "2d",
+        "2_5d"
+      ],
+      "id": "ARC-ASSET-OPENGAMEART-33B957BFF5A6EE45",
+      "license": {
+        "ai_training_allowed": null,
+        "attribution_required": false,
+        "commercial_use": true,
+        "drm_risk": false,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "notes": "Public-domain dedication. Preferred for automatic cross-platform game-asset ingestion.",
+        "policy_tier": "green",
+        "portable_commercial_default": true,
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "source_label": "CC0",
+        "version": "1.0"
+      },
+      "opengameart_metadata": {
+        "art_type": "2D Art",
+        "file_count": null,
+        "license_raw": "CC0"
+      },
+      "review": {
+        "last_checked": "2026-09-12T10:17:53Z",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Official OpenGameArt page re-fetched at sync time; automatic ingestion allowed only by GREEN license policy."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-09-12T10:12:00Z",
+        "asset_url": "https://opengameart.org/content/overworld-0",
+        "author": "SayvilleGames",
+        "download_url": null,
+        "external_id": "overworld-0",
+        "provider": "OpenGameArt"
+      },
+      "styles": [],
+      "tags": [
+        "16x16"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "art_type_raw": "2D Art",
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_formats": [],
+        "formats": [],
+        "lods": null,
+        "pack_file_count": null,
+        "pbr": null,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "2D Art"
+      ],
+      "title": "Overworld 0"
     },
     {
       "archive": {
@@ -125320,6 +125732,98 @@
         "2D"
       ],
       "title": "Tappy Plane"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "2d_asset",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "dimensions": [
+        "2d",
+        "2_5d"
+      ],
+      "id": "ARC-ASSET-OPENGAMEART-55E4B278101A62A2",
+      "license": {
+        "ai_training_allowed": null,
+        "attribution_required": false,
+        "commercial_use": true,
+        "drm_risk": false,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "notes": "Public-domain dedication. Preferred for automatic cross-platform game-asset ingestion.",
+        "policy_tier": "green",
+        "portable_commercial_default": true,
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "source_label": "CC0",
+        "version": "1.0"
+      },
+      "opengameart_metadata": {
+        "art_type": "2D Art",
+        "file_count": null,
+        "license_raw": "CC0"
+      },
+      "review": {
+        "last_checked": "2026-09-12T10:17:53Z",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Official OpenGameArt page re-fetched at sync time; automatic ingestion allowed only by GREEN license policy."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-09-12T10:12:00Z",
+        "asset_url": "https://opengameart.org/content/tileset-pixel",
+        "author": "Aswino",
+        "download_url": null,
+        "external_id": "tileset-pixel",
+        "provider": "OpenGameArt"
+      },
+      "styles": [],
+      "tags": [
+        "tileset",
+        "happy",
+        "flower",
+        "bird",
+        "colorful",
+        "dark",
+        "snail",
+        "tree",
+        "mushroom",
+        "magic",
+        "cloud",
+        "eyes"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "art_type_raw": "2D Art",
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_formats": [],
+        "formats": [],
+        "lods": null,
+        "pack_file_count": null,
+        "pbr": null,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "2D Art"
+      ],
+      "title": "Tileset Pixel"
     },
     {
       "archive": {
@@ -185885,6 +186389,95 @@
         "DISPLAY"
       ],
       "title": "Galindo"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "font",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
+      "id": "ARC-ASSET-OPENGAMEART-F1DCDB8ABDAEF654",
+      "license": {
+        "ai_training_allowed": null,
+        "attribution_required": false,
+        "commercial_use": true,
+        "drm_risk": false,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "notes": "Public-domain dedication. Preferred for automatic cross-platform game-asset ingestion.",
+        "policy_tier": "green",
+        "portable_commercial_default": true,
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "source_label": "CC0",
+        "version": "1.0"
+      },
+      "opengameart_metadata": {
+        "art_type": "2D Art",
+        "file_count": null,
+        "license_raw": "CC0"
+      },
+      "review": {
+        "last_checked": "2026-09-12T10:17:55Z",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Official OpenGameArt page re-fetched at sync time; automatic ingestion allowed only by GREEN license policy."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-09-12T10:12:00Z",
+        "asset_url": "https://opengameart.org/content/game-jam-assets",
+        "author": "Proto Man",
+        "download_url": null,
+        "external_id": "game-jam-assets",
+        "provider": "OpenGameArt"
+      },
+      "styles": [],
+      "tags": [
+        "pixel art",
+        "16x16",
+        "db32",
+        "pixel font",
+        ".ttf",
+        "tileset",
+        "topdown shooter"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "art_type_raw": "2D Art",
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_formats": [],
+        "formats": [],
+        "lods": null,
+        "pack_file_count": null,
+        "pbr": null,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "2D Art"
+      ],
+      "title": "Game Jam Assets"
     },
     {
       "archive": {
@@ -335278,6 +335871,93 @@
         "Textures"
       ],
       "title": "Skyboxes"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "ui",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
+      "id": "ARC-ASSET-OPENGAMEART-120E1BF86A5EFCCD",
+      "license": {
+        "ai_training_allowed": null,
+        "attribution_required": false,
+        "commercial_use": true,
+        "drm_risk": false,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "notes": "Public-domain dedication. Preferred for automatic cross-platform game-asset ingestion.",
+        "policy_tier": "green",
+        "portable_commercial_default": true,
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "source_label": "CC0",
+        "version": "1.0"
+      },
+      "opengameart_metadata": {
+        "art_type": "2D Art",
+        "file_count": null,
+        "license_raw": "CC0"
+      },
+      "review": {
+        "last_checked": "2026-09-12T10:17:55Z",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Official OpenGameArt page re-fetched at sync time; automatic ingestion allowed only by GREEN license policy."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-09-12T10:12:00Z",
+        "asset_url": "https://opengameart.org/content/window-frame",
+        "author": "Shadow3097",
+        "download_url": null,
+        "external_id": "window-frame",
+        "provider": "OpenGameArt"
+      },
+      "styles": [],
+      "tags": [
+        "gui",
+        "ui",
+        "window",
+        "frame",
+        "frames"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "art_type_raw": "2D Art",
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_formats": [],
+        "formats": [],
+        "lods": null,
+        "pack_file_count": null,
+        "pbr": null,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "2D Art"
+      ],
+      "title": "Window Frame"
     },
     {
       "archive": {

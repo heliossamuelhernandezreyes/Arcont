@@ -1,17 +1,81 @@
 {
-  "archive": {"local_path": null, "mirrored_in_arcont": false, "sha256": null, "size_bytes": null},
+  "archive": {
+    "local_path": null,
+    "mirrored_in_arcont": false,
+    "sha256": null,
+    "size_bytes": null
+  },
   "asset_type": "2d_asset",
-  "compatibility": {"android": true, "godot": true, "unity": true, "unreal": true, "web": true},
-  "dimensions": ["2d", "2_5d"],
+  "compatibility": {
+    "android": true,
+    "godot": true,
+    "unity": true,
+    "unreal": true,
+    "web": true
+  },
+  "dimensions": [
+    "2d",
+    "2_5d"
+  ],
   "id": "ARC-ASSET-OPENGAMEART-839C30A4D15FDCBF",
-  "license": {"ai_training_allowed": null, "attribution_required": false, "commercial_use": true, "drm_risk": false, "license_url": "https://creativecommons.org/publicdomain/zero/1.0/", "modification": true, "name": "CC0-1.0", "notes": "Official OpenGameArt page declares CC0. GREEN under ARCONT license policy.", "policy_tier": "green", "portable_commercial_default": true, "redistribution_allowed": true, "share_alike": false, "source_label": "CC0", "version": "1.0"},
-  "opengameart_metadata": {"art_type": "2D Art", "file_count": 5, "license_raw": "CC0"},
-  "review": {"last_checked": "2026-09-12T10:12:00Z", "license_verified": true, "metadata_verified": true, "notes": "Bootstrap from the official asset page; automated adapter revalidates this page on sync."},
+  "license": {
+    "ai_training_allowed": null,
+    "attribution_required": false,
+    "commercial_use": true,
+    "drm_risk": false,
+    "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "modification": true,
+    "name": "CC0-1.0",
+    "notes": "Public-domain dedication. Preferred for automatic cross-platform game-asset ingestion.",
+    "policy_tier": "green",
+    "portable_commercial_default": true,
+    "redistribution_allowed": true,
+    "share_alike": false,
+    "source_label": "CC0",
+    "version": "1.0"
+  },
+  "opengameart_metadata": {
+    "art_type": "2D Art",
+    "file_count": null,
+    "license_raw": "CC0"
+  },
+  "review": {
+    "last_checked": "2026-09-12T10:17:52Z",
+    "license_verified": true,
+    "metadata_verified": true,
+    "notes": "Official OpenGameArt page re-fetched at sync time; automatic ingestion allowed only by GREEN license policy."
+  },
   "schema_version": 1,
-  "source": {"acquired_at": "2026-09-12T10:12:00Z", "asset_url": "https://opengameart.org/content/maps-0", "author": "Kroote", "download_url": null, "external_id": "maps-0", "provider": "OpenGameArt"},
+  "source": {
+    "acquired_at": "2026-09-12T10:12:00Z",
+    "asset_url": "https://opengameart.org/content/maps-0",
+    "author": "Kroote",
+    "download_url": null,
+    "external_id": "maps-0",
+    "provider": "OpenGameArt"
+  },
   "styles": [],
-  "tags": ["maps"],
-  "technical": {"animated": null, "animation_count": null, "art_type_raw": "2D Art", "audio_channels": null, "audio_sample_rate": null, "collision": null, "font_formats": [], "formats": [], "lods": null, "pack_file_count": 5, "pbr": null, "rigged": null, "texture_resolution": null, "triangle_count": null},
-  "themes": ["2D Art"],
-  "title": "Maps"
+  "tags": [
+    "maps"
+  ],
+  "technical": {
+    "animated": null,
+    "animation_count": null,
+    "art_type_raw": "2D Art",
+    "audio_channels": null,
+    "audio_sample_rate": null,
+    "collision": null,
+    "font_formats": [],
+    "formats": [],
+    "lods": null,
+    "pack_file_count": null,
+    "pbr": null,
+    "rigged": null,
+    "texture_resolution": null,
+    "triangle_count": null
+  },
+  "themes": [
+    "2D Art"
+  ],
+  "title": "Maps 0"
 }
