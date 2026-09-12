@@ -30,6 +30,15 @@ ARCONT 1.0 fija que no se admite código de juego de producción ni un proyecto 
 - [`knowledge/DATA_ORIENTED_CONCURRENCY.md`](knowledge/DATA_ORIENTED_CONCURRENCY.md) — ECS, archetypes/chunks, structural changes, jobs, threading y sincronización.
 - [`knowledge/GPU_AUDIO_STREAMING.md`](knowledge/GPU_AUDIO_STREAMING.md) — GPU passes/sync/bandwidth, audio DSP/voices, memoria y asset streaming.
 
+## Asset Vault — galería de recursos reutilizables
+
+- [`assets/ASSET_VAULT.md`](assets/ASSET_VAULT.md) — política canónica del catálogo, cobertura 2D/2.5D/3D/audio/fonts y reglas de almacenamiento/licencias.
+- [`assets/ASSET_SCHEMA.yaml`](assets/ASSET_SCHEMA.yaml) — ficha machine-readable por asset: fuente, licencia, formatos, coste técnico, compatibilidad, hash y revisión.
+- [`assets/SOURCE_REGISTRY.yaml`](assets/SOURCE_REGISTRY.yaml) — fuentes iniciales: Kenney, Poly Haven, Quaternius, OpenGameArt, Freesound, Sonniss GameAudioGDC y Google Fonts/OFL.
+- [`assets/COLLECTIONS.md`](assets/COLLECTIONS.md) — colecciones por dimensión, estilo, temática y uso práctico.
+
+ARCONT distingue **uso en un juego** de **derecho a redistribuir el asset**. Los binarios grandes permanecen upstream por defecto; se guardan metadatos, licencia, procedencia y hashes, y solo se espejan archivos cuando la redistribución está explícitamente permitida. CC0 se prioriza para la colección de mínima fricción.
+
 ARCONT no intenta copiar Internet. Conserva referencias, procedencia, extracción técnica, preguntas verificables y, únicamente cuando sea legal y útil, material redistribuible. Godot es el primer motor bajo análisis profundo, no el límite temático de ARCONT.
 
 ## Laboratorio técnico
@@ -89,7 +98,7 @@ Godot se conserva como **objeto de estudio del motor**, no como videojuego. El u
 
 ## Referencias
 
-- [`ASSET_SOURCES.md`](ASSET_SOURCES.md) — criterios para fuentes y licencias.
+- [`ASSET_SOURCES.md`](ASSET_SOURCES.md) — criterios históricos para fuentes y licencias.
 - [`HISTORY.md`](HISTORY.md) — transición de prototipo jugable a banco de información.
 
 ## Regla canónica
