@@ -1,6 +1,5 @@
 import copy
 import unittest
-from pathlib import Path
 
 from tools.runtime_evidence import (
     CANONICAL_COMMIT,
@@ -30,12 +29,14 @@ class RuntimeEvidenceTests(unittest.TestCase):
             "platform": {"os": "Android 16", "device": "test-device", "cpu": "test-cpu", "gpu": "test-gpu"},
             "runtime": {"renderer": "mobile", "resolution": "1920x1080", "build_type": "release", "vsync": False},
             "experiment": {
+                "campaign_id": self.plan["campaign_id"],
                 "hypothesis_ref": bench["hypothesis_ref"],
                 "variable": bench["variable"],
                 "value": bench["sweep"][0],
                 "repetition": 1,
                 "warmup_seconds": bench["warmup_seconds"],
                 "sample_seconds": bench["sample_seconds"],
+                "controls": copy.deepcopy(bench.get("controls", {})),
             },
             "metrics": {metric: {"mean": 1.0} for metric in bench["metrics"]},
             "provenance": {"harness_commit": "1" * 40, "raw_data_sha256": "a" * 64},
@@ -52,6 +53,7 @@ class RuntimeEvidenceTests(unittest.TestCase):
         self.assertTrue(req["raw_samples_required"])
         self.assertTrue(req["raw_data_sha256_required"])
         self.assertTrue(req["harness_commit_required"])
+        self.assertTrue(req["record_experiment_controls"])
         self.assertFalse(req["interpretation_in_runner"])
 
     def test_valid_result_passes_campaign_contract(self):
@@ -67,10 +69,30 @@ class RuntimeEvidenceTests(unittest.TestCase):
         result["engine"]["version"] = "future-version"
         self.assertTrue(any("engine identity" in e for e in validate_against_plan(result, self.plan)))
 
+    def test_campaign_drift_is_rejected(self):
+        result = self.valid_result()
+        result["experiment"]["campaign_id"] = "ARC-CAMPAIGN-WRONG"
+        self.assertTrue(any("campaign_id" in e for e in validate_against_plan(result, self.plan)))
+
     def test_unplanned_sweep_value_is_rejected(self):
         result = self.valid_result("ARC-BENCH-SCENETREE-INACTIVE-NODE-001")
         result["experiment"]["value"] = 777
         self.assertTrue(any("outside benchmark sweep" in e for e in validate_against_plan(result, self.plan)))
+
+    def test_control_drift_is_rejected(self):
+        result = self.valid_result("ARC-BENCH-SCENETREE-INACTIVE-NODE-001")
+        result["experiment"]["controls"]["script_attached"] = True
+        self.assertTrue(any("experiment.controls" in e for e in validate_against_plan(result, self.plan)))
+
+    def test_missing_controls_are_rejected(self):
+        result = self.valid_result("ARC-BENCH-SCENETREE-INACTIVE-NODE-001")
+        result["experiment"].pop("controls")
+        self.assertTrue(any("experiment.controls" in e for e in validate_against_plan(result, self.plan)))
+
+    def test_incomplete_metric_is_rejected(self):
+        result = self.valid_result("ARC-BENCH-SCENETREE-INACTIVE-NODE-001")
+        result["metrics"]["cpu_ms"] = {"value": None, "status": "not-instrumented-yet"}
+        self.assertTrue(any("complete numeric measurement" in e for e in validate_against_plan(result, self.plan)))
 
     def test_missing_raw_hash_is_rejected_for_completed_run(self):
         result = self.valid_result()
