@@ -24,6 +24,22 @@ from asset_vault_indexer import (
 )
 
 
+def _annotate_inferred_compatibility(record: dict[str, Any]) -> dict[str, Any]:
+    """Mark provider-derived compatibility as inferred, never runtime verified."""
+    compatibility = record.get("compatibility") or {}
+    evidence = record.get("compatibility_evidence") or {}
+    for target, declared in compatibility.items():
+        if declared is True and target not in evidence:
+            evidence[target] = {
+                "level": "inferred",
+                "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+                "tested_at": None,
+                "evidence_ref": None,
+            }
+    record["compatibility_evidence"] = evidence
+    return record
+
+
 def _preserve_stable_fields(new: dict[str, Any], old: dict[str, Any]) -> dict[str, Any]:
     new_source = new.get("source") or {}
     old_source = old.get("source") or {}
@@ -36,6 +52,15 @@ def _preserve_stable_fields(new: dict[str, Any], old: dict[str, Any]) -> dict[st
     if old_review.get("last_checked"):
         new_review["last_checked"] = old_review["last_checked"]
     new["review"] = new_review
+
+    # Never downgrade stronger evidence that was added by an explicit review or
+    # runtime experiment. Provider sync may add inferred claims, not overwrite
+    # human/runtime evidence.
+    old_compat_evidence = old.get("compatibility_evidence")
+    if isinstance(old_compat_evidence, dict):
+        merged = dict(new.get("compatibility_evidence") or {})
+        merged.update(old_compat_evidence)
+        new["compatibility_evidence"] = merged
     return new
 
 
@@ -66,7 +91,7 @@ def sync_polyhaven(root: Path, limit: int | None = None) -> tuple[int, int]:
         total += 1
         seen.add(external_id)
         path = target / f"{external_id}.asset.json"
-        record = polyhaven_record(external_id, meta)
+        record = _annotate_inferred_compatibility(polyhaven_record(external_id, meta))
 
         if path.exists():
             old = load_json(path)
