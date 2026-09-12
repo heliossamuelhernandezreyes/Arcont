@@ -18,6 +18,10 @@ nodes:
     kind: source-symbol
     path: scene/main/node.h
     symbol: Node
+  - id: ARC-GODOT-HYP-BASELINE-0001
+    kind: inference
+    status: proposed
+    claim: a controlled empty-scene baseline is required before attributing incremental runtime cost to SceneTree primitives
   - id: ARC-GODOT-HYP-SCENE-0001
     kind: inference
     status: proposed
@@ -30,6 +34,26 @@ nodes:
     kind: inference
     status: proposed
     claim: frequent process-group membership or order changes may add invalidation and sorting cost
+  - id: ARC-BENCH-BASELINE-EMPTY-001
+    kind: benchmark
+    status: preregistered
+    claim: empty laboratory baseline for the first Godot runtime campaign
+  - id: ARC-BENCH-SCENETREE-INACTIVE-NODE-001
+    kind: benchmark
+    status: preregistered
+    claim: measure inactive Node scaling without process callbacks
+  - id: ARC-BENCH-SCENETREE-PROCESS-NODE-001
+    kind: benchmark
+    status: preregistered
+    claim: measure Node process callback scaling
+  - id: ARC-BENCH-SCENETREE-PHYSICS-NODE-001
+    kind: benchmark
+    status: preregistered
+    claim: measure Node physics process callback scaling
+  - id: ARC-BENCH-SCENETREE-PRIORITY-CHURN-001
+    kind: benchmark
+    status: preregistered
+    claim: measure process-priority churn cost under fixed node count
 edges:
   - from: ARC-GODOT-SRC-SCENETREE
     relation: depends_on
@@ -40,6 +64,9 @@ edges:
   - from: ARC-GODOT-SRC-NODE
     relation: related_to
     to: ARC-GODOT-SRC-PROCESSGROUP
+  - from: ARC-GODOT-HYP-BASELINE-0001
+    relation: derived_from
+    to: ARC-GODOT-SRC-SCENETREE
   - from: ARC-GODOT-HYP-SCENE-0001
     relation: derived_from
     to: ARC-GODOT-SRC-PROCESSGROUP
@@ -49,3 +76,18 @@ edges:
   - from: ARC-GODOT-HYP-SCENE-0003
     relation: derived_from
     to: ARC-GODOT-SRC-PROCESSGROUP
+  - from: ARC-BENCH-BASELINE-EMPTY-001
+    relation: measured_by
+    to: ARC-GODOT-HYP-BASELINE-0001
+  - from: ARC-BENCH-SCENETREE-INACTIVE-NODE-001
+    relation: measured_by
+    to: ARC-GODOT-HYP-SCENE-0001
+  - from: ARC-BENCH-SCENETREE-PROCESS-NODE-001
+    relation: measured_by
+    to: ARC-GODOT-HYP-SCENE-0002
+  - from: ARC-BENCH-SCENETREE-PHYSICS-NODE-001
+    relation: measured_by
+    to: ARC-GODOT-HYP-SCENE-0002
+  - from: ARC-BENCH-SCENETREE-PRIORITY-CHURN-001
+    relation: measured_by
+    to: ARC-GODOT-HYP-SCENE-0003
