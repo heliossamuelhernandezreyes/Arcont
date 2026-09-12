@@ -1,0 +1,41 @@
+schema_version: 1
+instruments:
+  - id: ARC-INSTRUMENT-GODOT-BENCHMARKS
+    name: Godot Benchmarks
+    kind: benchmark-suite
+    upstream: https://github.com/godotengine/godot-benchmarks
+    role:
+      - upstream-comparison
+      - regression-context
+      - hypothesis-generation
+    ingestion: adapter-required
+    evidence_policy: external-provenance-required
+
+  - id: ARC-INSTRUMENT-PERFETTO
+    name: Perfetto
+    kind: trace-profiler
+    upstream: https://perfetto.dev/
+    godot_role:
+      - android-system-tracing
+      - thread-scheduling
+      - cpu-frequency
+      - trace-events
+    ingestion: trace-manifest-required
+    evidence_policy: raw-trace-hash-required
+
+  - id: ARC-INSTRUMENT-TRACY
+    name: Tracy
+    kind: trace-profiler
+    upstream: https://github.com/wolfpld/tracy
+    godot_role:
+      - cross-platform-cpu-tracing
+      - sampling
+      - hotspot-analysis
+    ingestion: trace-manifest-required
+    evidence_policy: raw-trace-hash-required
+
+rules:
+  semantic_equivalence_must_be_explicit: true
+  unknown_provenance_must_remain_unknown: true
+  external_tools_can_auto_promote_maturity: false
+  raw_profiler_screenshots_are_canonical_evidence: false
