@@ -82,6 +82,9 @@ edges:
   - from: ARC-GODOT-HYP-SCENE-0001
     relation: measured_by
     to: ARC-BENCH-SCENETREE-INACTIVE-NODE-001
+  - from: ARC-GODOT-HYP-SCENE-0001
+    relation: measured_by
+    to: ARC-BENCH-SCENETREE-PROCESS-NODE-001
   - from: ARC-GODOT-HYP-SCENE-0002
     relation: measured_by
     to: ARC-BENCH-SCENETREE-PROCESS-NODE-001
