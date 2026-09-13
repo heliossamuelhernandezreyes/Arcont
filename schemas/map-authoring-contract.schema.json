@@ -74,6 +74,18 @@
       "additionalProperties": true,
       "properties": {
         "terrain": {"type": "object"},
+        "navigation": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "agent_radius": {"type": "number", "exclusiveMinimum": 0},
+            "agent_height": {"type": "number", "exclusiveMinimum": 0},
+            "agent_max_climb": {"type": "number", "minimum": 0},
+            "agent_max_slope": {"type": "number", "minimum": 0, "maximum": 90},
+            "cell_size": {"type": "number", "exclusiveMinimum": 0},
+            "cell_height": {"type": "number", "exclusiveMinimum": 0}
+          }
+        },
         "structure_guides": {"type": "array", "items": {"type": "object"}},
         "scatter_zones": {"type": "array", "items": {"type": "object"}},
         "providers": {
