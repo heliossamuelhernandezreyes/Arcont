@@ -57,12 +57,29 @@ Future scalability path, not the explanation for the current isolated-route fail
 7. Preserve every failed variant and exact engine/config combination in ARCONT.
 8. After monolithic stability, benchmark tiled/chunked navigation separately.
 
+## Experiment update — source-geometry attempt 1
+
+Close Seal commit `6dc98e7224f239f546ec6476a1fa92024a1c561f` replaced the active direct-polygon compiler with procedural triangle faces, `NavigationMeshSourceGeometryData3D.add_faces()`, and `NavigationServer3D.bake_from_source_geometry_data()` while retaining the direct-polygon path as a legacy diagnostic control.
+
+The first CI execution did **not** reach Recast baking or physical path queries. `Map Authoring Providers` run `34749963271`, job `103704612413`, failed during the generated workspace build because `_configure_navigation_mesh()` attempted direct GDScript property assignment (`navigation_mesh.agent_radius = ...`). The exact Godot 4.7.2 source exposes and binds explicit methods such as `set_agent_radius()`, `set_agent_height()`, `set_agent_max_climb()`, `set_agent_max_slope()`, `set_cell_size()` and `set_cell_height()`.
+
+This result therefore does **not** falsify the source-geometry/Recast hypothesis. It is an integration/API-usage failure before the candidate navigation pipeline was exercised. The remediation is to use the source-confirmed setters, then rerun the unchanged bake/query/crowd gates.
+
+Evidence:
+
+- Close Seal commit: `6dc98e7224f239f546ec6476a1fa92024a1c561f`
+- workflow: `34749963271`
+- job: `103704612413`
+- failure stage: `Build physical Map Forge provider workspace`
+- observed error: invalid direct access to `agent_radius` on `NavigationMesh`
+- official source anchors: `scene/resources/navigation_mesh.h`, `scene/resources/navigation_mesh.cpp`, Godot 4.7.2-stable
+
 ## Promotion rule
 
 No remediation here is validated yet. Promotion requires a Close Seal CI run on exact Godot 4.7.2 where the replacement compiler produces queryable routes and the physical navigation gate succeeds. Crowd claims additionally require the executable avoidance-agent gate.
 
 ## Sources consulted
 
-Godot stable navigation documentation and class references; Godot upstream issues #79217, #82209, #85548, #99334, #108263; Godot Forum discussion of manual NavigationMesh editing; r/godot discussions of merge-rasterizer conflicts, runtime navmesh generation, thin polygons and tiled terrain navigation.
+Godot stable navigation documentation and class references; exact Godot 4.7.2 `NavigationMesh` and `NavigationMeshSourceGeometryData3D` source; Godot upstream issues #79217, #82209, #85548, #99334, #108263; Godot Forum discussion of manual NavigationMesh editing; r/godot discussions of merge-rasterizer conflicts, runtime navmesh generation, thin polygons and tiled terrain navigation.
 
 Community material remains source guidance only until reproduced.
