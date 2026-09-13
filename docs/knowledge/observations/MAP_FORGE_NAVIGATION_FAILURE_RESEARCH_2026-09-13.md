@@ -157,3 +157,24 @@ The valid branch-head experiments are the synchronize-triggered runs:
 | `34761082693` | `8fe986c...` | provider installation failed before Godot validation | Cyclops release archive layout was not found by the installer |
 
 This correction supersedes any wording above that describes the old run's rerun attempts as tests of those later commits. The current investigation remains an observed negative result on Ubuntu/Godot 4.7.2; it does not establish a cross-hardware or production limitation.
+## Remediation validated — source bake, stable synchronization, and crowd metrics
+
+Close Seal run `34761738190` (branch head `98ce090...`, exact Godot `4.7.2-stable`) passed the complete Map Authoring Providers workflow.
+
+Validated chain:
+- pinned provider installation, including Cyclops release archive assets;
+- clean editor import;
+- source geometry diagnostics: `20` source triangles, `180` packed float vertices, `60` indices;
+- Recast bake and generated provider workspace;
+- minimal procedural NavigationServer3D surface;
+- physical A→B queries for all `3` canonical routes;
+- `70` traffic cells with physical route telemetry;
+- executable NavigationServer3D avoidance-agent flow with callbacks and load telemetry.
+
+The decisive navigation fix was not a geometry rewrite. Godot 4.7.2 requires the scriptable `NavigationMeshGenerator` bake path, and the query probe must wait for the second NavigationServer map iteration. The first nonzero iteration can precede queryable region state; the validated probe records `first_nonzero_iteration=1` and `iteration=2`.
+
+Endpoint projection is now judged against a configuration-derived physical tolerance rather than `0.05m`, because the baked walkable surface is voxelized/eroded and appears at approximately `y=0.5` for this configuration. The final physical probe reported route detour ratios approximately `0.961–0.967` and maximum endpoint projection `0.743m`.
+
+Crowd loads `10` and `50` are operability gates and completed on all routes. Loads `100` and `500` are saturation probes: partial completion is retained as capacity evidence, not treated as a navigation API failure. This run therefore validates executable avoidance callbacks and measurable crowd behavior, but not Android frame-time performance, final gameplay AI, or production balance.
+
+Promotion: Map Forge navigation is now `L4 observed/reproduced in the pinned Ubuntu/Godot 4.7.2 CI environment` for this Close Seal implementation. ARCONT remains below cross-hardware/version maturity until another game, hardware target, or engine version reproduces the chain.
