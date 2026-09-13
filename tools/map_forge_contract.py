@@ -10,7 +10,6 @@ from __future__ import annotations
 import argparse
 import json
 import math
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -23,6 +22,10 @@ def _vec3(value: Any) -> bool:
         and len(value) == 3
         and all(isinstance(v, (int, float)) and math.isfinite(float(v)) for v in value)
     )
+
+
+def _positive_number(value: Any) -> bool:
+    return isinstance(value, (int, float)) and math.isfinite(float(value)) and float(value) > 0
 
 
 def validate_contract(data: dict[str, Any]) -> list[str]:
@@ -44,8 +47,7 @@ def validate_contract(data: dict[str, Any]) -> list[str]:
         errors.append("bounds must be an object")
     else:
         for axis in ("width", "depth"):
-            value = bounds.get(axis)
-            if not isinstance(value, (int, float)) or float(value) <= 0 or not math.isfinite(float(value)):
+            if not _positive_number(bounds.get(axis)):
                 errors.append(f"bounds.{axis} must be a finite positive number")
 
     seen: set[str] = set()
@@ -87,8 +89,7 @@ def validate_contract(data: dict[str, Any]) -> list[str]:
                 continue
             if not isinstance(route.get("kind"), str) or not route.get("kind", "").strip():
                 errors.append(f"routes[{index}].kind must be non-empty")
-            width = route.get("width")
-            if not isinstance(width, (int, float)) or float(width) <= 0:
+            if not _positive_number(route.get("width")):
                 errors.append(f"routes[{index}].width must be positive")
             points = route.get("points")
             if not isinstance(points, list) or len(points) < 2 or not all(_vec3(p) for p in points):
@@ -105,9 +106,7 @@ def validate_contract(data: dict[str, Any]) -> list[str]:
                 errors.append(f"regions[{index}].center must be [x,y,z]")
             if "size" in region and not _vec3(region["size"]):
                 errors.append(f"regions[{index}].size must be [x,y,z]")
-            if "width" in region and (
-                not isinstance(region["width"], (int, float)) or float(region["width"]) <= 0
-            ):
+            if "width" in region and not _positive_number(region["width"]):
                 errors.append(f"regions[{index}].width must be positive")
 
     authoring = data.get("authoring")
@@ -120,6 +119,23 @@ def validate_contract(data: dict[str, Any]) -> list[str]:
         providers = authoring.get("providers")
         if providers is not None and not isinstance(providers, dict):
             errors.append("authoring.providers must be an object when present")
+
+        navigation = authoring.get("navigation")
+        if navigation is not None:
+            if not isinstance(navigation, dict):
+                errors.append("authoring.navigation must be an object when present")
+            else:
+                for field in ("agent_radius", "agent_height", "cell_size", "cell_height"):
+                    if field in navigation and not _positive_number(navigation[field]):
+                        errors.append(f"authoring.navigation.{field} must be a finite positive number")
+                if "agent_max_climb" in navigation:
+                    value = navigation["agent_max_climb"]
+                    if not isinstance(value, (int, float)) or not math.isfinite(float(value)) or float(value) < 0:
+                        errors.append("authoring.navigation.agent_max_climb must be finite and >= 0")
+                if "agent_max_slope" in navigation:
+                    value = navigation["agent_max_slope"]
+                    if not isinstance(value, (int, float)) or not math.isfinite(float(value)) or not 0 <= float(value) <= 90:
+                        errors.append("authoring.navigation.agent_max_slope must be between 0 and 90")
 
     return errors
 
