@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "id": "example_map",
+  "display_name": "Example Map",
+  "bounds": {
+    "width": 64.0,
+    "depth": 64.0
+  },
+  "anchors": [
+    {
+      "id": "spawn_a",
+      "kind": "spawn",
+      "team": "a",
+      "position": [-20.0, 0.0, 0.0],
+      "radius": 3.0
+    },
+    {
+      "id": "spawn_b",
+      "kind": "spawn",
+      "team": "b",
+      "position": [20.0, 0.0, 0.0],
+      "radius": 3.0
+    },
+    {
+      "id": "center_objective",
+      "kind": "objective",
+      "position": [0.0, 0.0, 0.0],
+      "radius": 4.0
+    }
+  ],
+  "routes": [
+    {
+      "id": "main_route",
+      "kind": "primary",
+      "width": 8.0,
+      "points": [
+        [-20.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0],
+        [20.0, 0.0, 0.0]
+      ]
+    }
+  ],
+  "regions": [
+    {
+      "id": "center_space",
+      "kind": "formation_space",
+      "center": [0.0, 0.0, 0.0],
+      "size": [16.0, 0.0, 16.0]
+    },
+    {
+      "id": "center_choke",
+      "kind": "choke",
+      "center": [0.0, 0.0, 0.0],
+      "width": 8.0
+    }
+  ],
+  "authoring": {
+    "terrain": {
+      "provider_role": "terrain",
+      "vertex_spacing": 1.0,
+      "region_size": 64
+    },
+    "structure_guides": [
+      {
+        "id": "north_wall",
+        "kind": "wall",
+        "position": [0.0, 1.5, -24.0],
+        "size": [40.0, 3.0, 1.5]
+      }
+    ],
+    "scatter_zones": [
+      {
+        "id": "north_forest",
+        "kind": "forest",
+        "center": [0.0, 0.0, -20.0],
+        "size": [40.0, 4.0, 8.0],
+        "density": 0.6,
+        "seed": 1
+      }
+    ],
+    "providers": {
+      "terrain": null,
+      "structures": null,
+      "scatter": null,
+      "import": null
+    }
+  }
+}
