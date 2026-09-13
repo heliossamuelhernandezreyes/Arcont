@@ -21,6 +21,8 @@ ARCONT 1.0 fija que no se admite código de juego de producción ni un proyecto 
 - [`knowledge/GRAPHICS_ASSET_FOUNDATIONS.md`](knowledge/GRAPHICS_ASSET_FOUNDATIONS.md) — Vulkan, KTX2/Basis, asset delivery y preguntas de investigación para 2D/2.5D/3D.
 - [`knowledge/MOBILE_PERFORMANCE_FOUNDATIONS.md`](knowledge/MOBILE_PERFORMANCE_FOUNDATIONS.md) — frame pacing, refresh, termales, rendimiento sostenido y profiling Android.
 - [`knowledge/NETWORKING_FOUNDATIONS.md`](knowledge/NETWORKING_FOUNDATIONS.md) — snapshots, lockstep, prediction/reconciliation, rollback y networked physics.
+- [`knowledge/MAP_AUTHORING_TOOLCHAIN.yaml`](knowledge/MAP_AUTHORING_TOOLCHAIN.yaml) — registro de proveedores de autoría de mapas, licencias, revisiones fijadas, riesgos y adopción.
+- [`knowledge/MAP_AUTHORING_ARCHITECTURE_PATTERN.md`](knowledge/MAP_AUTHORING_ARCHITECTURE_PATTERN.md) — patrón observado de contrato semántico canónico + proveedores reemplazables + validación estática + canvas táctico + auditoría heurística.
 
 ### Segunda gran oleada
 
