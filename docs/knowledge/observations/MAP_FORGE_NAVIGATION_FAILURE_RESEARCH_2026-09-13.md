@@ -142,3 +142,18 @@ Attempt 5 / orientation A-B:
 These results narrow the active fault to the Recast bake behavior or the exact procedural source/bake configuration, but do not yet distinguish them. The next experiment should be a dedicated minimal A/B fixture that prints source vertex/index counts, bounds, effective triangle normals, NavigationMesh bake parameters and baked polygon count for one rectangular corridor before touching the full multi-route map. Do not alter canonical route semantics until that fixture identifies the failing condition.
 
 Current Close Seal PR status remains open: PR `#5`, branch `art/first-visual-pass`. No merge performed.
+
+## Evidence correction — synchronize runs versus manual reruns
+
+Several reruns of workflow run `34750364494` reused its original merge commit and therefore do not test later commits pushed to `art/first-visual-pass`. They must not be counted as experiments for those later source-geometry variants.
+
+The valid branch-head experiments are the synchronize-triggered runs:
+
+| Run | Branch head under test | Result | Boundary |
+|---|---|---|---|
+| `34760060966` | `9514c678...` | provider workspace and NavMesh bake passed; physical route query failed | endpoints snapped to `(0,0,0)`; army step skipped |
+| `34760224658` | `1c73d459...` | provider workspace failed because the source-geometry variant did not compile the canonical surface | path and crowd steps skipped |
+| `34760294660` | `ce4c72df...` | provider workspace and NavMesh bake passed; physical route query failed | isolated `main_lane`: `polygons=2`, `vertices=4`, endpoint snap `13.4m`; army step skipped |
+| `34761082693` | `8fe986c...` | provider installation failed before Godot validation | Cyclops release archive layout was not found by the installer |
+
+This correction supersedes any wording above that describes the old run's rerun attempts as tests of those later commits. The current investigation remains an observed negative result on Ubuntu/Godot 4.7.2; it does not establish a cross-hardware or production limitation.
