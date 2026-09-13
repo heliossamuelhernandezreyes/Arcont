@@ -123,6 +123,19 @@ Cada afirmación relevante debe tener:
   confidence: medium
   limitations: [aún no reproducido con éxito en Close Seal; no es regla validada]
   last_validated: null
+
+- id: ARC-GODOT-OBS-MAP-NAV-0002
+  type: OBSERVATION
+  claim: El primer intento de integrar source-geometry baking en Close Seal no alcanzó la etapa de bake/query porque la configuración de NavigationMesh mediante acceso directo a agent_radius produjo un error de API en Godot 4.7.2; el source exacto de la versión fija expone setters explícitos para los parámetros de bake.
+  engine_version: 4.7.2-stable
+  engine_commit: ed1daf0bf001b61586d9930840f2f1394092c079
+  evidence: [docs/knowledge/observations/MAP_FORGE_NAVIGATION_FAILURE_RESEARCH_2026-09-13.md, Close Seal commit 6dc98e7224f239f546ec6476a1fa92024a1c561f, workflow 34749963271, job 103704612413, scene/resources/navigation_mesh.h, scene/resources/navigation_mesh.cpp]
+  status: observed
+  maturity: L3_OBSERVED
+  confidence: high
+  limitations: [fallo de integración previo al bake; no aporta evidencia positiva ni negativa sobre la eficacia de Recast para los corredores]
+  contradictory_evidence: [la documentación de clase describe propiedades con esos nombres, pero la ejecución exacta observada rechazó el acceso directo; los setters están explícitamente enlazados en el source y son la vía seleccionada para la siguiente reproducción]
+  last_validated: 2026-09-13
 ```
 
 El ledger debe crecer junto con los experimentos; no es una lista de opiniones.
