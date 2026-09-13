@@ -115,13 +115,13 @@ Cada afirmación relevante debe tener:
 
 - id: ARC-GODOT-HYP-MAP-NAV-0001
   type: INFERENCE
-  claim: Para Map Forge, compilar corredores semánticos a geometría fuente procedural y dejar que NavigationServer3D.bake_from_source_geometry_data() genere la topología final debería ser más robusto que mantener polígonos de navegación manuales como formato de producción.
+  claim: Para Map Forge, compilar corredores semánticos a geometría fuente procedural y dejar que el generador de navegación de Godot produzca la topología final debería ser más robusto que mantener polígonos de navegación manuales como formato de producción.
   engine_version: 4.7.2-stable
   engine_commit: ed1daf0bf001b61586d9930840f2f1394092c079
   evidence: [ARC-GODOT-OBS-MAP-NAV-0001, documentación oficial de Godot sobre baking desde source geometry, historial upstream de fallos de merge/rasterización]
   status: proposed
   confidence: medium
-  limitations: [aún no reproducido con éxito en Close Seal; no es regla validada]
+  limitations: [aún no reproducido con éxito en Close Seal; la interfaz pública exacta cambia entre revisiones]
   last_validated: null
 
 - id: ARC-GODOT-OBS-MAP-NAV-0002
@@ -134,7 +134,32 @@ Cada afirmación relevante debe tener:
   maturity: L3_OBSERVED
   confidence: high
   limitations: [fallo de integración previo al bake; no aporta evidencia positiva ni negativa sobre la eficacia de Recast para los corredores]
-  contradictory_evidence: [la documentación de clase describe propiedades con esos nombres, pero la ejecución exacta observada rechazó el acceso directo; los setters están explícitamente enlazados en el source y son la vía seleccionada para la siguiente reproducción]
+  contradictory_evidence: [la documentación de clase describe propiedades con esos nombres, pero la ejecución exacta observada rechazó el acceso directo; los setters están explícitamente enlazados en el source]
+  last_validated: 2026-09-13
+
+- id: ARC-GODOT-OBS-MAP-NAV-0003
+  type: OBSERVATION
+  claim: En Godot 4.7.2-stable, bake_from_source_geometry_data existe en la implementación C++ de NavigationServer3D pero no está enlazado como método GDScript de NavigationServer3D; la interfaz scriptable de esa release es NavigationMeshGenerator.bake_from_source_geometry_data(), que delega internamente al servidor nativo.
+  engine_version: 4.7.2-stable
+  engine_commit: ed1daf0bf001b61586d9930840f2f1394092c079
+  evidence: [docs/knowledge/observations/MAP_FORGE_NAVIGATION_FAILURE_RESEARCH_2026-09-13.md, Close Seal commit fafd4e098ae6d93639b6f10ca9c3dece61bc9f4d, workflow 34750148576, job 103705111745, servers/navigation_3d/navigation_server_3d.cpp, modules/navigation_3d/3d/navigation_mesh_generator.cpp, modules/navigation_3d/register_types.cpp, Godot 4.7 NavigationMeshGenerator class reference]
+  status: observed
+  maturity: L3_OBSERVED
+  confidence: high
+  limitations: [confirma binding/API en la release fijada; el intento falló antes del bake y no demuestra aún que los corredores se horneen correctamente]
+  contradictory_evidence: [documentación de revisiones posteriores/current puede exponer la misma operación directamente en NavigationServer3D; no debe extrapolarse hacia atrás]
+  last_validated: 2026-09-13
+
+- id: ARC-GODOT-RULE-PINNED-API-0001
+  type: RULE
+  claim: Para integrar una API de un motor fijado, verificar además de la implementación nativa su binding de scripting y documentación de la release exacta; no asumir que ejemplos de latest/master son compatibles con la versión fijada.
+  engine_version: 4.7.2-stable
+  engine_commit: ed1daf0bf001b61586d9930840f2f1394092c079
+  evidence: [ARC-GODOT-OBS-MAP-NAV-0002, ARC-GODOT-OBS-MAP-NAV-0003]
+  status: observed
+  maturity: L3_OBSERVED
+  confidence: high
+  limitations: [regla de integración observada en este caso; reproducir en más APIs/versiones antes de promoverla como regla universal]
   last_validated: 2026-09-13
 ```
 
