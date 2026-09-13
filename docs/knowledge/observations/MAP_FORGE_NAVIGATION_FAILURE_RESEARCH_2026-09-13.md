@@ -112,3 +112,33 @@ No remediation here is validated yet. Promotion requires a Close Seal CI run on 
 Godot 4.7 navigation documentation and class references; exact Godot 4.7.2 `NavigationMesh`, `NavigationMeshSourceGeometryData3D`, `NavigationServer3D` bindings, `NavigationMeshGenerator`, and navigation module registration source; Godot upstream issues #79217, #82209, #85548, #99334, #108263; Godot Forum discussion of manual/runtime NavigationMesh editing; r/godot discussions of runtime bake APIs, merge-rasterizer conflicts, thin polygons and tiled terrain navigation.
 
 Community material remains source guidance only until reproduced.
+
+## Experiment update — source-geometry attempts 3 and 4
+
+The exact workflow run `34750364494` was rerun twice after the API correction.
+
+Attempt 3:
+- Close Seal commit: `9514c678421a6e0a3fba83f44f223e7d4699ed75`
+- workflow run: `34750364494`, attempt `2`
+- job: `103731210660`
+- change: reversed the procedural triangle input order to compensate for the engine-side `add_faces()` vertex reversal
+- result: failure in `Build physical Map Forge provider workspace`; `compile_route_surface()` still returned an empty baked NavigationMesh
+- navigation-minimal, physical A→B and crowd steps were skipped
+
+Attempt 4:
+- Close Seal commit: `1c73d4590bf81281c68272b5c1ea7d94106f763a`
+- workflow run: `34750364494`, attempt `3`
+- job: `103731644113`
+- change: added a finite vertical source envelope around each canonical route corridor while preserving route points, widths and semantic routes
+- result: same failure stage and empty bake; finite source volume alone did not resolve the issue
+
+Attempt 5 / orientation A-B:
+- Close Seal commit: `ce4c72dfbe6547dcda97032cdf91af49fe26d017`
+- workflow run: `34750364494`, attempt `4`
+- job result: failed again in `Build physical Map Forge provider workspace`; downstream navigation and crowd gates remained skipped
+- change: tested the opposite effective top-face winding inside the finite envelope
+- result: no promotion; winding plus envelope is not yet a validated remediation
+
+These results narrow the active fault to the Recast bake behavior or the exact procedural source/bake configuration, but do not yet distinguish them. The next experiment should be a dedicated minimal A/B fixture that prints source vertex/index counts, bounds, effective triangle normals, NavigationMesh bake parameters and baked polygon count for one rectangular corridor before touching the full multi-route map. Do not alter canonical route semantics until that fixture identifies the failing condition.
+
+Current Close Seal PR status remains open: PR `#5`, branch `art/first-visual-pass`. No merge performed.
