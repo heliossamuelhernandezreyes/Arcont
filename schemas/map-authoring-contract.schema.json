@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arcont.local/schemas/map-authoring-contract.schema.json",
+  "title": "ARCONT Map Authoring Contract",
+  "description": "Engine- and provider-neutral semantic contract for reusable map authoring workflows.",
+  "type": "object",
+  "required": ["version", "id", "bounds", "anchors", "routes", "regions", "authoring"],
+  "additionalProperties": true,
+  "properties": {
+    "version": {"type": "integer", "minimum": 1},
+    "id": {"type": "string", "minLength": 1},
+    "display_name": {"type": "string"},
+    "bounds": {
+      "type": "object",
+      "required": ["width", "depth"],
+      "additionalProperties": true,
+      "properties": {
+        "width": {"type": "number", "exclusiveMinimum": 0},
+        "depth": {"type": "number", "exclusiveMinimum": 0},
+        "height": {"type": "number", "exclusiveMinimum": 0}
+      }
+    },
+    "anchors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "position"],
+        "additionalProperties": true,
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "kind": {"type": "string", "minLength": 1},
+          "position": {"$ref": "#/$defs/vec3"},
+          "team": {"type": "string"},
+          "radius": {"type": "number", "minimum": 0}
+        }
+      }
+    },
+    "routes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "width", "points"],
+        "additionalProperties": true,
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "kind": {"type": "string", "minLength": 1},
+          "width": {"type": "number", "exclusiveMinimum": 0},
+          "points": {
+            "type": "array",
+            "minItems": 2,
+            "items": {"$ref": "#/$defs/vec3"}
+          }
+        }
+      }
+    },
+    "regions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "center"],
+        "additionalProperties": true,
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "kind": {"type": "string", "minLength": 1},
+          "center": {"$ref": "#/$defs/vec3"},
+          "size": {"$ref": "#/$defs/vec3"},
+          "width": {"type": "number", "exclusiveMinimum": 0},
+          "radius": {"type": "number", "minimum": 0}
+        }
+      }
+    },
+    "authoring": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "terrain": {"type": "object"},
+        "structure_guides": {"type": "array", "items": {"type": "object"}},
+        "scatter_zones": {"type": "array", "items": {"type": "object"}},
+        "providers": {
+          "type": "object",
+          "additionalProperties": {"type": ["string", "null"]}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "vec3": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "prefixItems": [
+        {"type": "number"},
+        {"type": "number"},
+        {"type": "number"}
+      ],
+      "items": false
+    }
+  }
+}
