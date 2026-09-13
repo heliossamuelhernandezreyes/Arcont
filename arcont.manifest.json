@@ -15,7 +15,12 @@
   "knowledge": {
     "graph_root": "docs/godot/knowledge",
     "evidence_ledger": "docs/EVIDENCE_LEDGER.md",
-    "maturity_model": "docs/MATURITY_MODEL.md"
+    "maturity_model": "docs/MATURITY_MODEL.md",
+    "map_forge_standard": "docs/knowledge/MAP_FORGE_STANDARD.md",
+    "map_authoring_schema": "schemas/map-authoring-contract.schema.json",
+    "map_authoring_template": "templates/map-forge/map_contract.example.json",
+    "map_authoring_validator": "tools/map_forge_contract.py",
+    "map_authoring_reference_implementation": "heliossamuelhernandezreyes/Closeseal"
   },
   "benchmarks": {
     "runtime_location": "external repository",
