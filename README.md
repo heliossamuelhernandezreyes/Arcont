@@ -23,6 +23,9 @@ Esto no convierte ARCONT otra vez en un proyecto de Godot: aquí estudiamos el m
 ## Toolchains indexados
 
 - **Map authoring / level design:** [`docs/knowledge/MAP_AUTHORING_TOOLCHAIN.md`](docs/knowledge/MAP_AUTHORING_TOOLCHAIN.md) y su registro reproducible [`MAP_AUTHORING_TOOLCHAIN.yaml`](docs/knowledge/MAP_AUTHORING_TOOLCHAIN.yaml). Incluye Terrain3D, Cyclops Level Builder, ProtonScatter y FuncGodot con licencia, upstream revisado, SHA observado, rol, riesgos y backlog de validación.
+- **ARCONT Map Forge:** [`docs/knowledge/MAP_FORGE_STANDARD.md`](docs/knowledge/MAP_FORGE_STANDARD.md) define el estándar portable y agnóstico de motor derivado de la primera implementación validada en Close Seal. El contrato reusable vive en [`schemas/map-authoring-contract.schema.json`](schemas/map-authoring-contract.schema.json), con plantilla en [`templates/map-forge/map_contract.example.json`](templates/map-forge/map_contract.example.json) y validador independiente en [`tools/map_forge_contract.py`](tools/map_forge_contract.py).
+
+Map Forge no convierte ARCONT en un editor ejecutable ni en un proyecto Godot. ARCONT conserva el estándar, contrato, validación, evidencia y patrones de adaptadores; cada juego implementa su editor físico y runtime bridge en su propio repositorio.
 
 ## Qué ya no vive aquí
 
