@@ -96,6 +96,27 @@ Adapters MUST NOT silently rewrite gameplay semantics as a side effect of genera
 
 Two-way editing is permitted only when round-trip behavior is explicit, conflict-aware and tested. Until then, semantic contract → provider workspace is the safe canonical direction.
 
+## Terrain landform extension
+
+A game-specific contract MAY extend `authoring.terrain` with provider-neutral `landforms`. A landform describes terrain intent such as a ridge, peak, cliff, mesa, pass, river, ravine or basin.
+
+Recommended fields:
+
+```json
+{
+  "id": "north_ridge",
+  "kind": "ridge",
+  "center": [0.0, 0.0, -28.0],
+  "size": [72.0, 18.0, 8.0],
+  "height": 14.0,
+  "material": "moss_stone",
+  "blocks_navigation": false,
+  "navigation_role": "visual_boundary"
+}
+```
+
+Landforms with `blocks_navigation: false` are presentation or authoring context only; they MUST NOT silently alter the canonical route surface. If a landform changes traversal, its elevation, pass widths, slopes and walkable source geometry must be represented explicitly and tested through the physical navigation layer. Provider adapters may project the same landform into Terrain3D, meshes, Cyclops guides or another backend, but the semantic contract remains authoritative.
+
 ## Generated-workspace rule
 
 Generated provider data is derivative.
