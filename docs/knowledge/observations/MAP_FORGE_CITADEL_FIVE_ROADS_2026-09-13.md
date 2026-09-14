@@ -4,7 +4,7 @@
 **Implementation:** `heliossamuelhernandezreyes/Closeseal`
 **Branch:** `art/first-visual-pass`
 **Navigation validation:** Map Authoring Providers run `34763576913`
-**Final visual/provider validation:** Map Authoring Providers run `34785401546`; Real Prototype Screenshot run `34785401517`
+**Final visual/provider validation:** Map Authoring Providers run `34861559162`; Real Prototype Screenshot run `34861559236`; Map Contract Integrity run `34861559175`; Project Integrity run `34861559219`
 **Engine:** Godot `4.7.2-stable`
 **Maturity:** L3 observed on GitHub Ubuntu/Godot 4.7.2; not independently reproduced across games, hardware or engine versions.
 
@@ -20,6 +20,18 @@ Close Seal's canonical map contract was expanded into a large tactical arena nam
 - Structures: keeps, gatehouses, towers, ruins, obelisks, pillars and bridge markers.
 - Environment: pine belts, deadwood, rock fields and rune gardens.
 - Authoring metadata: asset catalog, material palette, provider roles and navigation parameters.
+
+## Mountain basin extension
+
+ARCONT's reusable `authoring.terrain.landforms` extension was applied to this implementation. The contract now describes:
+
+- two mountain ridges on the north and south borders;
+- four corner peaks;
+- west/east pass cliffs;
+- a central playable basin and explicit elevation zones;
+- additional spring/water-feature declarations.
+
+All eight landforms are marked `blocks_navigation: false` and `navigation_role: visual_boundary`. They are visual terrain projections only; the canonical route surface and Recast source geometry remain unchanged. A future physical-elevation variant must promote slopes, pass widths and walkable geometry into a separate tested contract revision.
 
 ## Physical evidence
 
@@ -47,11 +59,12 @@ Close Seal now consumes the canonical contract through a deterministic runtime v
 - all 20 structure guides represented by modular keeps, gatehouses, towers, ruins, obelisks, pillars and bridges;
 - all seven objectives represented by readable platforms, seals, shrines or beacons;
 - 154 deterministic environment instances across forests, deadwood, rock fields and rune gardens;
+- 8 contract-declared mountain landforms materialized as low-poly ridges, peaks and cliffs;
 - contract material IDs converted to Godot StandardMaterial3D profiles;
 - mobile-oriented batching of repeated environment meshes with MultiMesh;
 - a full-map tactical camera and a corrected nine-patch HUD layout.
 
-The screenshot workflow now performs a Godot editor import before runtime capture, rejects script/resource-loader errors, and gates on the expected visual-build counts. The final screenshot and visual logs are preserved by workflow run `34785401517`.
+The screenshot workflow now performs a Godot editor import before runtime capture, rejects script/resource-loader errors, and gates on the expected visual-build counts. The final screenshot and visual logs are preserved by workflow run `34861559236`.
 
 ## Negative evidence and correction
 
