@@ -1,0 +1,20 @@
+{
+  "version": "1.0",
+  "id": "close_seal.hero.commander_01",
+  "class": "hero",
+  "source": {"authoring_tool": "Blender", "source_file": null},
+  "delivery": {"format": "glb", "scale_meters": 1.0, "forward": "-Z", "up": "+Y"},
+  "geometry": {"lod0_triangles": 30000},
+  "materials": {"slots": 3, "texture_max": 2048},
+  "lods": [
+    {"name":"LOD0","ratio":1.0},
+    {"name":"LOD1","ratio":0.6},
+    {"name":"LOD2","ratio":0.3},
+    {"name":"LOD3","ratio":0.12}
+  ],
+  "skeleton": {"family":"close_seal_humanoid_v1","required_sockets":["hand_r","hand_l","weapon","shield","head","chest","root_fx"]},
+  "animations": ["idle","locomotion","attack_primary","attack_secondary","cast","hit","death","victory"],
+  "license": {"kind":"original","commercial":true,"source_url":null},
+  "semantic_tags": ["close-seal","hero","commander","stylized-rts","dark-fantasy"],
+  "notes": ["Vertical-slice replacement target for the procedural Close Seal Hero."]
+}
