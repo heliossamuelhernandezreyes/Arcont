@@ -1,0 +1,23 @@
+{
+  "version": "0.1",
+  "project": "Close Seal",
+  "purpose": "environment vertical slice",
+  "assets": [
+    {
+      "record": "assets/catalog/kenney/castle-kit.asset.json",
+      "roles": ["wall","tower","gate","siege_prop"],
+      "priority": 1
+    },
+    {
+      "record": "assets/catalog/kenney/fantasy-town-kit.asset.json",
+      "roles": ["building","wall","town_prop"],
+      "priority": 2
+    }
+  ],
+  "policy": {
+    "license": "CC0 preferred",
+    "commit_third_party_binaries_to_arcont": false,
+    "runtime_validation_required": true,
+    "semantic_ids_required": true
+  }
+}
