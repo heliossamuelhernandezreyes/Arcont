@@ -1,7 +1,8 @@
 import json,struct,tempfile,unittest
 from pathlib import Path
 from tools.model_forge_inspect import inspect
-from tools.model_forge_materialize import gate
+from tools.model_forge_materialize import gate, safe_extract
+import zipfile
 
 class ModelForgeTests(unittest.TestCase):
     def test_green_verified_record_passes_gate(self):
@@ -17,4 +18,10 @@ class ModelForgeTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             p=Path(td)/"x.glb"; p.write_bytes(raw); r=inspect(p)
             self.assertEqual(r["triangles"],1); self.assertEqual(r["meshes"],1); self.assertEqual(r["gltf_version"],"2.0")
+    def test_zip_traversal_is_rejected(self):
+        with tempfile.TemporaryDirectory() as td:
+            zpath=Path(td)/"bad.zip"
+            with zipfile.ZipFile(zpath,"w") as z: z.writestr("../escape.obj","x")
+            with zipfile.ZipFile(zpath) as z:
+                with self.assertRaises(SystemExit): safe_extract(z,Path(td)/"out")
 if __name__=="__main__": unittest.main()
