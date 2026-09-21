@@ -1,4 +1,4 @@
-name: Model Forge Materialize
+name: Model Forge Pipeline
 
 on:
   workflow_dispatch:
@@ -8,27 +8,48 @@ on:
         required: true
         default: assets/catalog/kenney/castle-kit.asset.json
       url:
-        description: Verified direct archive/model URL
+        description: Verified direct archive/model URL (optional when record has download_url)
+        required: false
+      profile:
+        description: Production profile
         required: true
+        default: templates/model-forge/environment-mobile.profile.json
 
 permissions:
   contents: read
 
 jobs:
-  materialize:
+  forge:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Materialize catalogued asset
-        run: python tools/model_forge_materialize.py "$RECORD" --url "$SOURCE_URL" --out model-forge-work
+        with: {python-version: '3.12'}
+      - name: Acquire under canonical Asset Vault policy
+        shell: bash
+        run: |
+          args=("$RECORD" --out model-forge-work)
+          if [ -n "$SOURCE_URL" ]; then args+=(--url "$SOURCE_URL"); fi
+          python tools/model_forge_materialize.py "${args[@]}"
         env:
           RECORD: ${{ inputs.record }}
           SOURCE_URL: ${{ inputs.url }}
+      - name: Inspect actual glTF and GLB payloads
+        shell: bash
+        run: |
+          mapfile -t models < <(find model-forge-work -type f \( -iname '*.glb' -o -iname '*.gltf' \) -print)
+          if [ "${#models[@]}" -eq 0 ]; then
+            echo "No glTF/GLB payload available for direct inspection; source conversion stage is required."
+            exit 2
+          fi
+          python tools/model_forge_inspect.py "${models[@]}" --out model-forge-work/inspection.json
+      - name: Apply ARCONT production budget
+        run: python tools/model_forge_validate.py model-forge-work/inspection.json --profile "$PROFILE"
+        env:
+          PROFILE: ${{ inputs.profile }}
       - name: Preserve reproducible evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: model-forge-${{ github.run_id }}
