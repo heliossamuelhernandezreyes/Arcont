@@ -1,0 +1,13 @@
+{
+  "version":1,
+  "id":"environment-mobile-v1",
+  "canonical_format":"glb",
+  "coordinate_system":{"up":"+Y","front":"+Z","unit_meters":1.0},
+  "budgets":{"triangles_max":60000,"materials_max":6,"texture_max_px":2048},
+  "lods":[
+    {"name":"LOD0","ratio":1.0},
+    {"name":"LOD1","ratio":0.55},
+    {"name":"LOD2","ratio":0.25},
+    {"name":"LOD3","ratio":0.10}
+  ]
+}
