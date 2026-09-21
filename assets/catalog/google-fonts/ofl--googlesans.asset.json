@@ -21,20 +21,41 @@
   ],
   "font_metadata": {
     "copyright": [
-      "Copyright 2019 The Manrope Project Authors (https://github.com/googlefonts/manrope)"
+      "Copyright 2025 The Google Sans Project Authors (github.com/googlefonts/googlesans)",
+      "Copyright 2025 The Google Sans Project Authors (github.com/googlefonts/googlesans)"
     ],
-    "metadata_path": "ofl/manrope/METADATA.pb",
+    "metadata_path": "ofl/googlesans/METADATA.pb",
     "subsets": [
+      "armenian",
+      "bengali",
+      "canadian-aboriginal",
       "cyrillic",
       "cyrillic-ext",
+      "devanagari",
+      "ethiopic",
+      "georgian",
       "greek",
+      "greek-ext",
+      "gujarati",
+      "gurmukhi",
+      "hebrew",
+      "kannada",
+      "khmer",
+      "lao",
       "latin",
       "latin-ext",
+      "malayalam",
       "menu",
+      "oriya",
+      "sinhala",
+      "symbols",
+      "tamil",
+      "telugu",
+      "thai",
       "vietnamese"
     ]
   },
-  "id": "ARC-ASSET-GOOGLEFONTS-98FF82E1E4BBC064",
+  "id": "ARC-ASSET-GOOGLEFONTS-37B9015909BB9149",
   "license": {
     "ai_training_allowed": null,
     "attribution_required": false,
@@ -48,32 +69,52 @@
     "version": "1.1"
   },
   "review": {
-    "last_checked": "2026-09-21T15:56:59Z",
+    "last_checked": "2026-09-21T15:56:58Z",
     "license_verified": true,
     "metadata_verified": true,
     "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
   },
   "schema_version": 1,
   "source": {
-    "acquired_at": "2026-09-12T09:45:25Z",
-    "asset_url": "https://github.com/google/fonts/tree/main/ofl/manrope",
-    "author": "Mikhail Sharanda",
+    "acquired_at": "2026-09-21T15:56:58Z",
+    "asset_url": "https://github.com/google/fonts/tree/main/ofl/googlesans",
+    "author": "Google",
     "download_url": null,
-    "external_id": "ofl/manrope",
+    "external_id": "ofl/googlesans",
     "provider": "Google Fonts"
   },
   "styles": [
     "variable"
   ],
   "tags": [
+    "armenian",
+    "bengali",
+    "canadian-aboriginal",
     "cyrillic",
     "cyrillic-ext",
+    "devanagari",
+    "ethiopic",
     "font",
+    "georgian",
     "greek",
+    "greek-ext",
+    "gujarati",
+    "gurmukhi",
+    "hebrew",
+    "kannada",
+    "khmer",
+    "lao",
     "latin",
     "latin-ext",
+    "malayalam",
     "menu",
     "ofl",
+    "oriya",
+    "sinhala",
+    "symbols",
+    "tamil",
+    "telugu",
+    "thai",
     "typography",
     "vietnamese"
   ],
@@ -84,7 +125,8 @@
     "audio_sample_rate": null,
     "collision": null,
     "font_files": [
-      "Manrope[wght].ttf"
+      "GoogleSans[GRAD,opsz,wght].ttf",
+      "GoogleSans-Italic[GRAD,opsz,wght].ttf"
     ],
     "font_formats": [
       "ttf"
@@ -102,5 +144,5 @@
   "themes": [
     "SANS_SERIF"
   ],
-  "title": "Manrope"
+  "title": "Google Sans"
 }

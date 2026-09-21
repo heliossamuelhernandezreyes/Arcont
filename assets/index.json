@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-14T15:56:14Z",
-  "record_count": 4628,
+  "generated_at": "2026-09-21T15:59:40Z",
+  "record_count": 4633,
   "records": [
     {
       "archive": {
@@ -31020,6 +31020,123 @@
         "2_5d",
         "3d"
       ],
+      "id": "ARC-ASSET-POLYHAVEN-3A5222B0A55621DF",
+      "license": {
+        "ai_training_allowed": true,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "notes": "Asset license is CC0. Live API usage has separate service attribution/User-Agent terms.",
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "version": "1.0"
+      },
+      "review": {
+        "last_checked": "2026-09-21T15:56:54Z",
+        "license_verified": true,
+        "metadata_verified": false,
+        "notes": "Imported from Poly Haven public API metadata."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-09-21T15:56:54Z",
+        "asset_url": "https://polyhaven.com/a/eucalyptus_bark",
+        "author": "All",
+        "download_url": null,
+        "external_id": "eucalyptus_bark",
+        "provider": "Poly Haven"
+      },
+      "styles": [],
+      "tags": [
+        "rough",
+        "weathered",
+        "uneven",
+        "moss",
+        "lichen",
+        "bark",
+        "tree",
+        "tree bark",
+        "eucalyptus",
+        "trunk",
+        "mossy",
+        "flaky"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_formats": [],
+        "formats": [],
+        "lods": null,
+        "pbr": false,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "bark",
+        "natural",
+        "outdoor"
+      ],
+      "title": "Eucalyptus Bark"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "1",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "compatibility_evidence": {
+        "android": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "godot": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unity": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unreal": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "web": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        }
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
       "id": "ARC-ASSET-POLYHAVEN-FDC1BA8288BFC5ED",
       "license": {
         "ai_training_allowed": true,
@@ -37355,6 +37472,119 @@
         "cobblestone"
       ],
       "title": "Grass Concrete Pavement"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "1",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "compatibility_evidence": {
+        "android": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "godot": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unity": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unreal": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "web": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        }
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
+      "id": "ARC-ASSET-POLYHAVEN-78D376D34290282B",
+      "license": {
+        "ai_training_allowed": true,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "notes": "Asset license is CC0. Live API usage has separate service attribution/User-Agent terms.",
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "version": "1.0"
+      },
+      "review": {
+        "last_checked": "2026-09-21T15:56:54Z",
+        "license_verified": true,
+        "metadata_verified": false,
+        "notes": "Imported from Poly Haven public API metadata."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-09-21T15:56:54Z",
+        "asset_url": "https://polyhaven.com/a/grass_ground",
+        "author": "All",
+        "download_url": null,
+        "external_id": "grass_ground",
+        "provider": "Poly Haven"
+      },
+      "styles": [],
+      "tags": [
+        "grass",
+        "dry grass",
+        "dirt",
+        "root",
+        "dead grass",
+        "turf",
+        "dry"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_formats": [],
+        "formats": [],
+        "lods": null,
+        "pbr": false,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "outdoor",
+        "natural",
+        "terrain",
+        "dirty"
+      ],
+      "title": "Grass Ground"
     },
     {
       "archive": {
@@ -234569,6 +234799,154 @@
       ],
       "font_metadata": {
         "copyright": [
+          "Copyright 2025 The Google Sans Project Authors (github.com/googlefonts/googlesans)",
+          "Copyright 2025 The Google Sans Project Authors (github.com/googlefonts/googlesans)"
+        ],
+        "metadata_path": "ofl/googlesans/METADATA.pb",
+        "subsets": [
+          "armenian",
+          "bengali",
+          "canadian-aboriginal",
+          "cyrillic",
+          "cyrillic-ext",
+          "devanagari",
+          "ethiopic",
+          "georgian",
+          "greek",
+          "greek-ext",
+          "gujarati",
+          "gurmukhi",
+          "hebrew",
+          "kannada",
+          "khmer",
+          "lao",
+          "latin",
+          "latin-ext",
+          "malayalam",
+          "menu",
+          "oriya",
+          "sinhala",
+          "symbols",
+          "tamil",
+          "telugu",
+          "thai",
+          "vietnamese"
+        ]
+      },
+      "id": "ARC-ASSET-GOOGLEFONTS-37B9015909BB9149",
+      "license": {
+        "ai_training_allowed": null,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://openfontlicense.org/",
+        "modification": true,
+        "name": "OFL-1.1",
+        "notes": "SIL Open Font License. Redistribution/modification must preserve the applicable copyright/license terms; Reserved Font Names may apply per family.",
+        "redistribution_allowed": true,
+        "share_alike": true,
+        "version": "1.1"
+      },
+      "review": {
+        "last_checked": "2026-09-21T15:56:58Z",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-09-21T15:56:58Z",
+        "asset_url": "https://github.com/google/fonts/tree/main/ofl/googlesans",
+        "author": "Google",
+        "download_url": null,
+        "external_id": "ofl/googlesans",
+        "provider": "Google Fonts"
+      },
+      "styles": [
+        "variable"
+      ],
+      "tags": [
+        "armenian",
+        "bengali",
+        "canadian-aboriginal",
+        "cyrillic",
+        "cyrillic-ext",
+        "devanagari",
+        "ethiopic",
+        "font",
+        "georgian",
+        "greek",
+        "greek-ext",
+        "gujarati",
+        "gurmukhi",
+        "hebrew",
+        "kannada",
+        "khmer",
+        "lao",
+        "latin",
+        "latin-ext",
+        "malayalam",
+        "menu",
+        "ofl",
+        "oriya",
+        "sinhala",
+        "symbols",
+        "tamil",
+        "telugu",
+        "thai",
+        "typography",
+        "vietnamese"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_files": [
+          "GoogleSans[GRAD,opsz,wght].ttf",
+          "GoogleSans-Italic[GRAD,opsz,wght].ttf"
+        ],
+        "font_formats": [
+          "ttf"
+        ],
+        "font_variable": true,
+        "formats": [
+          "ttf"
+        ],
+        "lods": null,
+        "pbr": null,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "SANS_SERIF"
+      ],
+      "title": "Google Sans"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "font",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
+      "font_metadata": {
+        "copyright": [
           "Copyright 2025 The Google Sans Code Project Authors (github.com/googlefonts/googlesans-code)",
           "Copyright 2025 The Google Sans Code Project Authors (github.com/googlefonts/googlesans-code)"
         ],
@@ -268918,7 +269296,7 @@
       ],
       "font_metadata": {
         "copyright": [
-          "Copyright 2019 The Manrope Project Authors (https://github.com/sharanda/manrope)"
+          "Copyright 2019 The Manrope Project Authors (https://github.com/googlefonts/manrope)"
         ],
         "metadata_path": "ofl/manrope/METADATA.pb",
         "subsets": [
@@ -268945,7 +269323,7 @@
         "version": "1.1"
       },
       "review": {
-        "last_checked": "2026-09-12T09:45:25Z",
+        "last_checked": "2026-09-21T15:56:59Z",
         "license_verified": true,
         "metadata_verified": true,
         "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
@@ -380284,6 +380662,122 @@
         "2_5d",
         "3d"
       ],
+      "id": "ARC-ASSET-POLYHAVEN-792E97603766C502",
+      "license": {
+        "ai_training_allowed": true,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "notes": "Asset license is CC0. Live API usage has separate service attribution/User-Agent terms.",
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "version": "1.0"
+      },
+      "review": {
+        "last_checked": "2026-09-21T15:56:54Z",
+        "license_verified": true,
+        "metadata_verified": false,
+        "notes": "Imported from Poly Haven public API metadata."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-09-21T15:56:54Z",
+        "asset_url": "https://polyhaven.com/a/aarfontein_dawn_2",
+        "author": "All",
+        "download_url": null,
+        "external_id": "aarfontein_dawn_2",
+        "provider": "Poly Haven"
+      },
+      "styles": [],
+      "tags": [
+        "grass",
+        "hilltop",
+        "arid landscape",
+        "blue hour",
+        "mountain",
+        "view",
+        "horizon glow"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_formats": [],
+        "formats": [],
+        "lods": null,
+        "pbr": false,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "outdoor",
+        "nature",
+        "natural light",
+        "low contrast",
+        "medium contrast",
+        "partly cloudy",
+        "sunrise-sunset"
+      ],
+      "title": "Aarfontein Dawn 2"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "unknown",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "compatibility_evidence": {
+        "android": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "godot": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unity": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unreal": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "web": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        }
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
       "id": "ARC-ASSET-POLYHAVEN-EB834A061216EE10",
       "license": {
         "ai_training_allowed": true,
@@ -420260,6 +420754,122 @@
         "natural light"
       ],
       "title": "Herkulessäulen"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "unknown",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "compatibility_evidence": {
+        "android": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "godot": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unity": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unreal": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "web": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        }
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
+      "id": "ARC-ASSET-POLYHAVEN-1B16CD562894509B",
+      "license": {
+        "ai_training_allowed": true,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "notes": "Asset license is CC0. Live API usage has separate service attribution/User-Agent terms.",
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "version": "1.0"
+      },
+      "review": {
+        "last_checked": "2026-09-21T15:56:54Z",
+        "license_verified": true,
+        "metadata_verified": false,
+        "notes": "Imported from Poly Haven public API metadata."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-09-21T15:56:54Z",
+        "asset_url": "https://polyhaven.com/a/highway_bridge_sunset",
+        "author": "processing, photography",
+        "download_url": null,
+        "external_id": "highway_bridge_sunset",
+        "provider": "Poly Haven"
+      },
+      "styles": [],
+      "tags": [
+        "highway overpass",
+        "bridge railing",
+        "freeway",
+        "highway",
+        "asphalt",
+        "car",
+        "suburb",
+        "blue hour"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_formats": [],
+        "formats": [],
+        "lods": null,
+        "pbr": false,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "outdoor",
+        "urban",
+        "natural light",
+        "low contrast",
+        "clear",
+        "sunrise-sunset"
+      ],
+      "title": "Highway Bridge Sunset"
     },
     {
       "archive": {
