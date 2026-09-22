@@ -28,8 +28,10 @@ jobs:
       - name: Process representative real glTF
         shell: bash
         run: |
-          src="$(find model-forge-real -type f \( -iname '*.gltf' -o -iname '*.glb' \) | head -n1)"
-          test -n "$src"
+          mapfile -t candidates < <(find model-forge-real -type f \( -iname '*.gltf' -o -iname '*.glb' \) -print)
+          test "${#candidates[@]}" -gt 0
+          src="${candidates[0]}"
+          echo "Selected real source: $src"
           python tools/model_forge_process.py "$src" --out model-forge-real/canonical.glb --keep-names
           python tools/model_forge_pipeline.py model-forge-real/canonical.glb --profile templates/model-forge/environment-mobile.profile.json --out model-forge-real/evidence
           python tools/model_forge_process.py model-forge-real/canonical.glb --out model-forge-real/LOD1.glb --ratio 0.55 --keep-names
