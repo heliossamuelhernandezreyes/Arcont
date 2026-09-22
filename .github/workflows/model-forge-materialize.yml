@@ -6,6 +6,7 @@ on:
       url: {description: Verified direct archive/model URL, required: false}
       profile: {description: Production profile, required: true, default: templates/model-forge/environment-mobile.profile.json}
       semantic_id: {description: Game semantic asset ID, required: true, default: close_seal.structure.castle}
+      expected_sha256: {description: Expected source archive SHA-256 when independently known, required: false}
 permissions: {contents: read}
 jobs:
   forge:
@@ -29,6 +30,7 @@ jobs:
         run: |
           args=("$RECORD" --out model-forge-work)
           if [ -n "$SOURCE_URL" ]; then args+=(--url "$SOURCE_URL"); fi
+          if [ -n "$EXPECTED_SHA256" ]; then args+=(--expected-sha256 "$EXPECTED_SHA256"); fi
           python tools/model_forge_materialize.py "${args[@]}"
       - name: Select processable source
         id: source
