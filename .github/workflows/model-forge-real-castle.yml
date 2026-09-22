@@ -1,0 +1,49 @@
+name: Model Forge Real Castle Integration
+on:
+  pull_request:
+    paths:
+      - 'tools/model_forge_*.py'
+      - 'templates/model-forge/**'
+      - '.github/workflows/model-forge-real-castle.yml'
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  real-castle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Build pinned gltfpack v1.0
+        shell: bash
+        run: |
+          git clone --depth 1 --branch v1.0 https://github.com/zeux/meshoptimizer.git /tmp/meshoptimizer
+          cmake -S /tmp/meshoptimizer -B /tmp/meshoptimizer/build -DMESHOPT_BUILD_GLTFPACK=ON -DMESHOPT_BUILD_DEMO=OFF
+          cmake --build /tmp/meshoptimizer/build --target gltfpack -j2
+          sudo install /tmp/meshoptimizer/build/gltfpack /usr/local/bin/gltfpack
+      - name: Acquire real CC0 Castle Kit mirror with integrity gate
+        run: |
+          python tools/model_forge_materialize.py assets/catalog/kenney/castle-kit.asset.json             --url https://opengameart.org/sites/default/files/kenney_castle-kit.zip             --expected-sha256 921f3f73927bb23106cae34bc21d5ab4b033a9fc120475e96f714a406e3169df             --out model-forge-real
+      - name: Process representative real glTF
+        shell: bash
+        run: |
+          mapfile -t candidates < <(find model-forge-real -type f \( -iname '*.gltf' -o -iname '*.glb' \) -print)
+          test "${#candidates[@]}" -gt 0
+          src="${candidates[0]}"
+          echo "Selected real source: $src"
+          python tools/model_forge_process.py "$src" --out model-forge-real/canonical.glb --keep-names
+          python tools/model_forge_pipeline.py model-forge-real/canonical.glb --profile templates/model-forge/environment-mobile.profile.json --out model-forge-real/evidence
+          python tools/model_forge_process.py model-forge-real/canonical.glb --out model-forge-real/LOD1.glb --ratio 0.55 --keep-names
+          python tools/model_forge_process.py model-forge-real/canonical.glb --out model-forge-real/LOD2.glb --ratio 0.25 --keep-names
+          python tools/model_forge_process.py model-forge-real/canonical.glb --out model-forge-real/LOD3.glb --ratio 0.10 --keep-names
+          python tools/model_forge_inspect.py model-forge-real/canonical.glb model-forge-real/LOD1.glb model-forge-real/LOD2.glb model-forge-real/LOD3.glb --out model-forge-real/lods.inspection.json
+          python tools/model_forge_stage.py model-forge-real/canonical.glb --semantic-id close_seal.structure.castle_test --collision-recipe model-forge-real/evidence/collision.recipe.json --out model-forge-real/staging
+      - name: Upload real integration evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-forge-real-castle-${{ github.run_id }}
+          path: model-forge-real/
+          if-no-files-found: warn
+          retention-days: 14

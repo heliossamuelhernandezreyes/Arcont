@@ -34,6 +34,21 @@ jobs:
         run: python tools/asset_vault_indexer.py build --output /tmp/arcont-asset-index.json
       - name: Run unit tests
         run: python -m unittest discover -s tests -v
+      - name: Model Forge executable smoke test
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json,struct
+          from pathlib import Path
+          d={"asset":{"version":"2.0","generator":"ARCONT-CI"},"accessors":[{"count":3,"type":"VEC3"},{"count":3,"type":"SCALAR"}],"meshes":[{"primitives":[{"attributes":{"POSITION":0},"indices":1}]}]}
+          js=json.dumps(d,separators=(",",":")).encode(); js+=b" " * ((4-len(js)%4)%4)
+          raw=b"glTF"+struct.pack("<II",2,12+8+len(js))+struct.pack("<II",len(js),0x4E4F534A)+js
+          Path("/tmp/model-forge-smoke.glb").write_bytes(raw)
+          PY
+          python tools/model_forge_pipeline.py /tmp/model-forge-smoke.glb --profile templates/model-forge/environment-mobile.profile.json --out /tmp/model-forge-evidence
+          test -s /tmp/model-forge-evidence/inspection.json
+          test -s /tmp/model-forge-evidence/production-validation.json
+          test -s /tmp/model-forge-evidence/evidence.manifest.json
       - name: Negative control - invalid benchmark result must fail
         shell: bash
         run: |
