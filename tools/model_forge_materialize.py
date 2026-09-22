@@ -46,19 +46,22 @@ def inventory(root):
     return sorted(str(p.relative_to(root)) for p in root.rglob("*") if p.is_file() and p.suffix.lower() in MODEL_EXT)
 
 def main():
-    ap=argparse.ArgumentParser(); ap.add_argument("record"); ap.add_argument("--url"); ap.add_argument("--out",default="model-forge-work"); a=ap.parse_args()
+    ap=argparse.ArgumentParser(); ap.add_argument("record"); ap.add_argument("--url"); ap.add_argument("--expected-sha256"); ap.add_argument("--out",default="model-forge-work"); a=ap.parse_args()
     rec=load_record(a.record); policy=gate(rec)
     url=a.url or rec.get("source",{}).get("download_url")
     if not url: raise SystemExit("no verified direct download URL in record; pass --url after source verification")
     root=Path(a.out)/rec["id"]; root.mkdir(parents=True,exist_ok=True)
     archive=root/"source.bin"; sha,size=download(url,archive)
+    expected=a.expected_sha256 or rec.get("archive",{}).get("sha256")
+    if expected and sha.lower()!=str(expected).lower():
+        archive.unlink(missing_ok=True); raise SystemExit(f"source hash mismatch: expected {expected}, got {sha}")
     extracted=root/"extracted"; extracted.mkdir(exist_ok=True)
     if zipfile.is_zipfile(archive):
         with zipfile.ZipFile(archive) as z: safe_extract(z,extracted)
     else: shutil.copy2(archive,extracted/Path(url.split("?")[0]).name)
     models=inventory(extracted)
     manifest={"model_forge_version":"0.2","asset_id":rec["id"],"provider":rec.get("source",{}).get("provider"),
-      "source_url":url,"source_sha256":sha,"source_size_bytes":size,"license":policy.canonical_name,
+      "source_url":url,"source_sha256":sha,"source_size_bytes":size,"expected_sha256":expected,"license":policy.canonical_name,
       "policy_tier":policy.tier,"model_files":models,"model_count":len(models)}
     (root/"materialization.manifest.json").write_text(json.dumps(manifest,indent=2),encoding="utf-8")
     print(json.dumps(manifest))
