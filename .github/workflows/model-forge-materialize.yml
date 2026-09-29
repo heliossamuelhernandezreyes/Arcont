@@ -1,0 +1,58 @@
+name: Model Forge Pipeline
+on:
+  workflow_dispatch:
+    inputs:
+      record: {description: Asset Vault record path, required: true, default: assets/catalog/kenney/castle-kit.asset.json}
+      url: {description: Verified direct archive/model URL, required: false}
+      profile: {description: Production profile, required: true, default: templates/model-forge/environment-mobile.profile.json}
+      semantic_id: {description: Game semantic asset ID, required: true, default: close_seal.structure.castle}
+      expected_sha256: {description: Expected source archive SHA-256 when independently known, required: false}
+permissions: {contents: read}
+jobs:
+  forge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Install pinned meshoptimizer
+        shell: bash
+        run: |
+          git clone --depth 1 --branch v1.0 https://github.com/zeux/meshoptimizer.git /tmp/meshoptimizer
+          cmake -S /tmp/meshoptimizer -B /tmp/meshoptimizer/build -DMESHOPT_BUILD_GLTFPACK=ON -DMESHOPT_BUILD_DEMO=OFF
+          cmake --build /tmp/meshoptimizer/build --target gltfpack -j2
+          sudo install /tmp/meshoptimizer/build/gltfpack /usr/local/bin/gltfpack
+          gltfpack -h >/dev/null
+      - name: Acquire under canonical Asset Vault policy
+        shell: bash
+        env: {RECORD: '${{ inputs.record }}', SOURCE_URL: '${{ inputs.url }}'}
+        run: |
+          args=("$RECORD" --out model-forge-work)
+          if [ -n "$SOURCE_URL" ]; then args+=(--url "$SOURCE_URL"); fi
+          if [ -n "$EXPECTED_SHA256" ]; then args+=(--expected-sha256 "$EXPECTED_SHA256"); fi
+          python tools/model_forge_materialize.py "${args[@]}"
+      - name: Select processable source
+        id: source
+        shell: bash
+        run: |
+          src="$(find model-forge-work -type f \( -iname '*.glb' -o -iname '*.gltf' -o -iname '*.obj' \) | head -n1)"
+          test -n "$src" || { echo "No GLB/glTF/OBJ source; pinned DCC conversion stage is required."; exit 2; }
+          echo "path=$src" >> "$GITHUB_OUTPUT"
+      - name: Normalize and optimize canonical GLB
+        run: python tools/model_forge_process.py "${{ steps.source.outputs.path }}" --out model-forge-work/canonical.glb --keep-names
+      - name: Inspect and validate canonical GLB
+        run: python tools/model_forge_pipeline.py model-forge-work/canonical.glb --profile "${{ inputs.profile }}" --out model-forge-work/evidence
+      - name: Generate LOD candidates
+        shell: bash
+        run: |
+          python tools/model_forge_process.py model-forge-work/canonical.glb --out model-forge-work/LOD1.glb --ratio 0.55 --keep-names
+          python tools/model_forge_process.py model-forge-work/canonical.glb --out model-forge-work/LOD2.glb --ratio 0.25 --keep-names
+          python tools/model_forge_process.py model-forge-work/canonical.glb --out model-forge-work/LOD3.glb --ratio 0.10 --keep-names
+          python tools/model_forge_inspect.py model-forge-work/LOD1.glb model-forge-work/LOD2.glb model-forge-work/LOD3.glb --out model-forge-work/lods.inspection.json
+      - name: Stage production candidate
+        run: python tools/model_forge_stage.py model-forge-work/canonical.glb --semantic-id "${{ inputs.semantic_id }}" --collision-recipe model-forge-work/evidence/collision.recipe.json --out model-forge-work/staging
+      - name: Preserve reproducible evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with: {name: 'model-forge-${{ github.run_id }}', path: model-forge-work/, if-no-files-found: error, retention-days: 14}
