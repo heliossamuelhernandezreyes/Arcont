@@ -93,3 +93,32 @@ native mesh definitions and placement of imported PackedScenes. Its Python
 adapter reuses the existing game validators, and its Godot worker builds and
 captures the same authored state. See the game-owned authoring documentation.
 Runtime confidence remains tied to the exact engine checks performed in CI.
+
+## General environment authoring
+
+A project can distinguish `purpose: environment` from competitive game rules.
+Environment mode must permit empty gameplay collections and must not inject
+unrequested battlefields, rivers or boundaries. Arbitrary meshes (including
+UVs and collision), resource instances, transform groups, heightfield chunks,
+PBR materials and authored lights form a reusable scene composition contract.
+The project owns its renderer and acceptance gates.
+
+`brush` is an explicit editor operation with the same revision, dry-run,
+validation, history and rollback semantics as patch. Options: `heightfield_id`,
+world `center: [x,z]`, `radius`, `strength`, and `mode`: raise, lower, flatten,
+smooth, paint, hole or fill. Flatten also accepts `height`; paint requires an
+existing `material` id. Each heightfield stores columns/rows, positive X/Z
+spacing, translated origin, row-major vertex heights, and row-major cell paint
+and hole arrays. Heightfields are axis-aligned; use triangle geometry for
+overhangs and caves. Brushes never decide the map layout.
+
+`edit` lets the game adapter prepare a new state (for example `terrain_pull`
+from an installed terrain provider). The tool validates and commits that state
+through the ordinary revision-checked transaction. A successful provider
+response is not permission to bypass canonical validation. Provider writes
+and external files are not covered by the JSON writer's rollback guarantee.
+
+World navigation should be baked from actual collision geometry when obstacles
+must affect movement. Route-only navigation remains a different supported mode.
+Rendered geometry, saved collision and successful path queries are distinct
+acceptance evidence.

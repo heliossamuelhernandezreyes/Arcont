@@ -17,7 +17,12 @@ import sys
 import tempfile
 from pathlib import Path
 
-OPERATIONS = ("capabilities", "list", "inspect", "create", "replace", "patch", "restore", "validate", "analyze", "materialize", "capture")
+if __package__:
+    from .map_forge_terrain import brush
+else:
+    from map_forge_terrain import brush
+
+OPERATIONS = ("capabilities", "list", "inspect", "create", "replace", "patch", "brush", "edit", "restore", "validate", "analyze", "materialize", "capture")
 MAP_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$")
 
 
@@ -294,6 +299,13 @@ class Editor:
                 raise ControlError("revision conflict; inspect the latest map before editing")
             if op == "patch":
                 after = apply_patch(before, request.get("patch"))
+            elif op == "brush":
+                after = brush(before, request.get("options", {}))
+            elif op == "edit":
+                prepared = self.adapter("edit", before, request)
+                if not prepared.get("ok"):
+                    return {**prepared, "committed": False}
+                after = prepared.get("state")
             elif op == "restore":
                 old = request.get("restore_revision", "")
                 if not re.fullmatch(r"[0-9a-f]{64}", old):
