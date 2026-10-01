@@ -20,7 +20,9 @@
     "map_authoring_schema": "schemas/map-authoring-contract.schema.json",
     "map_authoring_template": "templates/map-forge/map_contract.example.json",
     "map_authoring_validator": "tools/map_forge_contract.py",
-    "map_authoring_reference_implementation": "heliossamuelhernandezreyes/Closeseal"
+    "map_authoring_reference_implementation": "heliossamuelhernandezreyes/Closeseal",
+    "map_forge_editor_control": "tools/map_forge_control.py",
+    "map_forge_editor_control_schema": "schemas/map-forge-control.schema.json"
   },
   "benchmarks": {
     "runtime_location": "external repository",
@@ -41,7 +43,12 @@
     "evidence_record_schema": "schemas/external-evidence.schema.json",
     "evidence_bundle_schema": "schemas/evidence-bundle.schema.json",
     "trace_extract_schema": "schemas/trace-extract.schema.json",
-    "providers": ["runtime-lab", "godot-benchmarks", "perfetto", "tracy"],
+    "providers": [
+      "runtime-lab",
+      "godot-benchmarks",
+      "perfetto",
+      "tracy"
+    ],
     "semantic_equivalence_assumed": false,
     "auto_promotion_allowed": false
   },
