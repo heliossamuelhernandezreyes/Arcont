@@ -114,6 +114,35 @@ class TransactionTests(unittest.TestCase):
     def test_revision_ignores_object_key_order(self):
         self.assertEqual(revision({"a": 1, "b": 2}), revision({"b": 2, "a": 1}))
 
+    def test_brush_uses_revision_and_restore_history(self):
+        self.state["map"]["authoring"] = {"materials": [{"id": "soil"}], "heightfields": [{"id": "ground", "columns": 3, "rows": 3, "heights": [0] * 9, "material": "soil"}]}
+        created = self.create()
+        request = {"protocol_version": 1, "operation": "brush", "map_id": "arena", "if_revision": created["revision"], "options": {"heightfield_id": "ground", "center": [1, 1], "radius": 0.5, "strength": 4, "mode": "raise"}}
+        dry = self.editor.execute(request)
+        self.assertFalse(dry["committed"])
+        self.assertEqual(revision(self.editor.read("arena")), created["revision"])
+        committed = self.editor.execute({**request, "dry_run": False})
+        with self.assertRaises(ControlError):
+            self.editor.execute({**request, "dry_run": False})
+        restored = self.editor.execute({"protocol_version": 1, "operation": "restore", "map_id": "arena", "if_revision": committed["revision"], "restore_revision": created["revision"], "dry_run": False})
+        self.assertEqual(restored["state"], self.state)
+
+    def test_adapter_edit_is_a_validated_dry_run_then_commit(self):
+        created = self.create()
+        (self.root / "tools/adapter.py").write_text('import sys,json\nr=json.load(sys.stdin); s=r["state"]; ok=s["map"]["bounds"]["width"]>0\nif r["operation"]=="edit": s["map"]["bounds"]["width"]=99\nprint(json.dumps({"ok":ok,"state":s}))\n')
+        request = {"protocol_version": 1, "operation": "edit", "map_id": "arena", "if_revision": created["revision"]}
+        self.assertFalse(self.editor.execute(request)["committed"])
+        self.assertEqual(self.editor.read("arena"), self.state)
+        self.assertTrue(self.editor.execute({**request, "dry_run": False})["committed"])
+        self.assertEqual(self.editor.read("arena")["map"]["bounds"]["width"], 99)
+
+    def test_adapter_cannot_commit_invalid_prepared_state(self):
+        created = self.create()
+        (self.root / "tools/adapter.py").write_text('import sys,json\nr=json.load(sys.stdin); s=r["state"]; ok=s["map"]["bounds"]["width"]>0\nif r["operation"]=="edit": s["map"]["bounds"]["width"]=-1\nprint(json.dumps({"ok":ok,"state":s}))\n')
+        result = self.editor.execute({"protocol_version": 1, "operation": "edit", "map_id": "arena", "if_revision": created["revision"], "dry_run": False})
+        self.assertFalse(result["ok"])
+        self.assertEqual(self.editor.read("arena"), self.state)
+
 
 if __name__ == "__main__":
     unittest.main()
