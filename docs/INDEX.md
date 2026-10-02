@@ -105,6 +105,8 @@ Godot se conserva como **objeto de estudio del motor**, no como videojuego. El u
 ## Ingeniería
 
 - [`knowledge/GODOT_AUTHORING_CONTROL.md`](knowledge/GODOT_AUTHORING_CONTROL.md) — control operativo de APIs Godot y herramientas instaladas mediante recetas explícitas, revisiones, bundles de evidencia y transporte MCP opcional.
+- [`knowledge/ROAD_NETWORK_AUTHORING.md`](knowledge/ROAD_NETWORK_AUTHORING.md) — fuentes explícitas de carreteras curvas, validación reusable y operación de RoadGenerator mediante el puente general.
+- [`knowledge/observations/ROAD_NETWORK_4_7_2_2026-10-02.md`](knowledge/observations/ROAD_NETWORK_4_7_2_2026-10-02.md) — aceptación real de geometría, navegación, colisiones, restauración y edición de carreteras en Godot 4.7.2.
 
 - [`engineering/mobile-performance.md`](engineering/mobile-performance.md) — presupuestos y estrategias para móviles.
 - [`engineering/world-generation.md`](engineering/world-generation.md) — terreno, ecología, hidrología y composición procedural.
