@@ -1,5 +1,8 @@
 # Map Forge editor control protocol v1
 
+For arbitrary native engine and installed provider APIs beyond the canonical
+map contract, use [General Godot authoring control](GODOT_AUTHORING_CONTROL.md).
+
 This interface lets a human or assistant **operate the editor**. It does not
 generate designs, call a model, interpret a prompt or require an API key. The
 author decides every coordinate, material, route, object and mesh.

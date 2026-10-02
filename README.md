@@ -22,6 +22,8 @@ Esto no convierte ARCONT otra vez en un proyecto de Godot: aquí estudiamos el m
 
 ## Toolchains indexados
 
+- **Control general de Godot:** [`GODOT_AUTHORING_CONTROL.md`](docs/knowledge/GODOT_AUTHORING_CONTROL.md) permite consultar y ejecutar APIs nativas y de herramientas instaladas, crear nodos/recursos y conservar recetas, historial y resultados verificables. [`godot_authoring_control.py`](tools/godot_authoring_control.py) y [`godot_authoring_mcp.py`](tools/godot_authoring_mcp.py) comparten el mismo escritor; el adaptador Godot y las escenas siguen viviendo en cada juego.
+
 - **Map authoring / level design:** [`docs/knowledge/MAP_AUTHORING_TOOLCHAIN.md`](docs/knowledge/MAP_AUTHORING_TOOLCHAIN.md) y su registro reproducible [`MAP_AUTHORING_TOOLCHAIN.yaml`](docs/knowledge/MAP_AUTHORING_TOOLCHAIN.yaml). Incluye Terrain3D, Cyclops Level Builder, ProtonScatter y FuncGodot con licencia, upstream revisado, SHA observado, rol, riesgos y backlog de validación.
 - **ARCONT Map Forge:** [`docs/knowledge/MAP_FORGE_STANDARD.md`](docs/knowledge/MAP_FORGE_STANDARD.md) define el estándar portable y agnóstico de motor derivado de la primera implementación validada en Close Seal. El contrato reusable vive en [`schemas/map-authoring-contract.schema.json`](schemas/map-authoring-contract.schema.json), con plantilla en [`templates/map-forge/map_contract.example.json`](templates/map-forge/map_contract.example.json) y validador independiente en [`tools/map_forge_contract.py`](tools/map_forge_contract.py).
 
