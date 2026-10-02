@@ -48,3 +48,10 @@ CC0 source lock. See the game recipe `authoring/recipes/urban_roads.json` and
 `docs/map_forge/ROAD_NETWORK.md` for the measured acceptance scope and evidence.
 Terrain flattening, procedural intersections, traffic and target-device FPS
 need separate acceptance; API availability alone does not validate them.
+
+The game applies a small hash-pinned lifecycle patch: free the upstream gizmo's
+unparented lane-divider template and Object-based connection helper on shutdown.
+This is recorded compatibility code, not an unmodified upstream claim.
+
+[ROAD_NETWORK_4_7_2_2026-10-02.md](observations/ROAD_NETWORK_4_7_2_2026-10-02.md)
+records real engine/editor acceptance, geometry/traversal and distribution limits.
