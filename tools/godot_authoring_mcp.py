@@ -19,6 +19,7 @@ SUPPORTED_PROTOCOLS = ("2024-11-05", "2025-03-26", "2025-06-18")
 SCHEMA = {"type": "object", "required": ["protocol_version", "operation"],
           "properties": {"protocol_version": {"const": 1}, "operation": {"enum": list(OPERATIONS)},
                          "document_id": {"type": "string"}, "if_revision": {"type": "string"},
+                         "if_bundle": {"type": "string"},
                          "restore_revision": {"type": "string"}, "dry_run": {"type": "boolean", "default": True},
                          "recipe": {"type": "object"}, "patch": {"type": "array"}, "options": {"type": "object"},
                          "scene": {"type": "string"}, "session": {"type": "object"}},

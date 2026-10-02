@@ -30,6 +30,9 @@
     "if_revision": {
       "type": "string"
     },
+    "if_bundle": {
+      "type": "string"
+    },
     "restore_revision": {
       "type": "string"
     },
@@ -125,7 +128,8 @@
       "then": {
         "required": [
           "session",
-          "scene"
+          "scene",
+          "if_bundle"
         ]
       }
     }

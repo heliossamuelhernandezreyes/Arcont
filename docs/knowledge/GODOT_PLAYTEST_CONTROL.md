@@ -8,8 +8,11 @@ game retains the runner, controller, geometry, scenes and gameplay.
 
 This is bounded batch control of a fresh saved scene, not a resident remote
 editor session. It reuses the general bridge rather than introducing a second
-writer. Every operation requires the current document revision and selects a
-scene artifact from that document's last accepted bundle. Its SHA-256 is checked
+writer. Every playtest requires the current document revision and `if_bundle`,
+copied from `inspect.last_build.directory` (or a published build's
+`evidence.directory`). A rebuild can replace this bundle without changing the
+recipe revision; a stale or missing bundle pin is rejected before engine work.
+The scene artifact must belong to that accepted bundle. Its SHA-256 is checked
 before and after execution. The authored recipe and dependencies are checked;
 playtest never publishes a new document head. Referenced asset closure is not
 guaranteed beyond the dependencies explicitly pinned by the recipe.
@@ -18,7 +21,8 @@ Example, after `inspect` of the scene document:
 
 ```json
 {"protocol_version":1,"operation":"playtest","document_id":"urban_playtest",
- "if_revision":"<current revision>","scene":"scenes/urban_roads_editable.tscn",
+ "if_revision":"<current revision>","if_bundle":"<last_build.directory>",
+ "scene":"scenes/urban_roads_editable.tscn",
  "options":{"render":true,"audio_driver":"Dummy"},
  "session":{"version":1,"id":"door_check","actor":"Actors/Explorer","seed":41,
  "commands":[{"id":"walk","frames":120,"actions":{"arcont_forward":1},

@@ -140,6 +140,16 @@ class Authoring:
         atomic_write(directory / "manifest.json", manifest)
         return result, {"directory": str(directory.relative_to(self.root)), "manifest": manifest}
 
+    def playtest_runner(self):
+        configuration = self.config.get("playtest")
+        extension = configuration.get("script") if isinstance(configuration, dict) else None
+        if not isinstance(extension, str) or not extension.startswith("res://") or not extension.endswith(".gd"):
+            raise ControlError("project has no configured playtest script")
+        path = self.contained(extension[6:])
+        if not path.is_file():
+            raise ControlError("playtest script missing")
+        return extension, path
+
     def execute(self, request):
         if not isinstance(request, dict) or request.get("protocol_version") != 1:
             raise ControlError("request requires protocol_version=1")
@@ -147,8 +157,13 @@ class Authoring:
         if operation not in OPERATIONS:
             raise ControlError("unsupported authoring operation")
         if operation == "capabilities":
+            try:
+                self.playtest_runner()
+                playtest_available = True
+            except (ControlError, OSError):
+                playtest_available = False
             return {"ok": True, "operations": list(OPERATIONS), "configuration": self.config,
-                    "playtest_available": isinstance(self.config.get("playtest"), dict),
+                    "playtest_available": playtest_available,
                     "arbitrary_engine_apis": True, "dry_run_default": True, "revision_checked": True,
                     "atomic_head": True, "outputs": "immutable per-run bundles",
                     "limits": ["trusted project adapter/scripts are not sandboxed", "external script side effects are outside bundle rollback"]}
@@ -220,16 +235,13 @@ class Authoring:
         session = request.get("session")
         errors = validate_playtest(session)
         if errors: raise ControlError("invalid playtest session: " + "; ".join(errors))
-        configuration = self.config.get("playtest", {})
-        extension = configuration.get("script", "")
-        if not isinstance(extension, str) or not extension.startswith("res://") or not extension.endswith(".gd"):
-            raise ControlError("project has no configured playtest script")
-        extension_path = self.contained(extension[6:])
-        if not extension_path.is_file(): raise ControlError("playtest script missing")
+        extension, extension_path = self.playtest_runner()
         scene = request.get("scene")
         if not isinstance(scene, str) or not scene.endswith(".tscn"):
             raise ControlError("playtest requires a saved scene artifact path")
         build = before.get("last_build", {})
+        if not isinstance(request.get("if_bundle"), str) or request["if_bundle"] != build.get("directory"):
+            raise ControlError("bundle conflict; inspect last_build before playtest")
         directory = self.contained(build.get("directory", ""))
         if self.runs not in directory.parents: raise ControlError("accepted bundle is outside run directory")
         artifact = next((item for item in build.get("manifest", {}).get("artifacts", []) if item.get("path") == scene), None)
@@ -256,12 +268,14 @@ class Authoring:
         self.validate(recipe, identifier)
         self.validate(before["recipe"], identifier)
         if self.read(identifier) != before: raise ControlError("document changed during playtest")
-        report = next((step.get("value") for step in result.get("steps", []) if step.get("id") == "playtest_session"), None)
+        steps = result.get("steps")
+        report = next((step.get("value") for step in steps
+                       if isinstance(step, dict) and step.get("id") == "playtest_session"), None) if isinstance(steps, list) else None
         if result.get("ok") and (not isinstance(report, dict) or not isinstance(report.get("passed"), bool)):
             raise ControlError("playtest adapter must return a boolean passed outcome")
         return {"ok": result.get("ok", False), "passed": report.get("passed", False) if isinstance(report, dict) else False,
                 "committed": False, "document_id": identifier, "revision": before["revision"],
-                "scene": scene, "source_scene_sha256": scene_hash, "session": session,
+                "scene": scene, "source_bundle": build["directory"], "source_scene_sha256": scene_hash, "session": session,
                 "result": result, "report": report, "evidence": evidence,
                 "limits": ["completed execution and passed expectations are distinct", "no cross-platform determinism or device FPS claim"]}
 
