@@ -104,6 +104,8 @@ Godot se conserva como **objeto de estudio del motor**, no como videojuego. El u
 
 ## Ingeniería
 
+- [`knowledge/GODOT_AUTHORING_CONTROL.md`](knowledge/GODOT_AUTHORING_CONTROL.md) — control operativo de APIs Godot y herramientas instaladas mediante recetas explícitas, revisiones, bundles de evidencia y transporte MCP opcional.
+
 - [`engineering/mobile-performance.md`](engineering/mobile-performance.md) — presupuestos y estrategias para móviles.
 - [`engineering/world-generation.md`](engineering/world-generation.md) — terreno, ecología, hidrología y composición procedural.
 - [`engineering/ai-navigation.md`](engineering/ai-navigation.md) — navegación, grafos y límites del enfoque usado.
@@ -120,4 +122,3 @@ Godot se conserva como **objeto de estudio del motor**, no como videojuego. El u
 Este repositorio no debe volver a contener un juego completo. Los proyectos futuros pueden consultar ARCONT y reutilizar conocimiento, pero su código de producción debe vivir en repositorios propios.
 
 Los experimentos de ARCONT deben permanecer mínimos, aislados y reproducibles. El runtime ejecutable de benchmarks vive fuera de ARCONT y entrega resultados mediante el esquema canónico con procedencia y hashes verificables.
-

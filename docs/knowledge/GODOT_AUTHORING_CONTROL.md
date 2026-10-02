@@ -110,6 +110,10 @@ be reviewed before removal.
 
 ## Evidence and scope
 
+The first pinned-engine reference run passed; see
+[the exact integration observation](observations/GODOT_AUTHORING_CONTROL_4_7_2_2026-10-02.md)
+for source commits, artifact hashes, checks and limits.
+
 Python tests cover dry-run, immutable previous output, revision conflicts,
 engine failure, interrupted publication, locking, symlink rejection, dependency
 repair, history corruption and the shared MCP transport. The game reference
