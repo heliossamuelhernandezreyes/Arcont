@@ -19,8 +19,10 @@ SUPPORTED_PROTOCOLS = ("2024-11-05", "2025-03-26", "2025-06-18")
 SCHEMA = {"type": "object", "required": ["protocol_version", "operation"],
           "properties": {"protocol_version": {"const": 1}, "operation": {"enum": list(OPERATIONS)},
                          "document_id": {"type": "string"}, "if_revision": {"type": "string"},
+                         "if_bundle": {"type": "string"},
                          "restore_revision": {"type": "string"}, "dry_run": {"type": "boolean", "default": True},
-                         "recipe": {"type": "object"}, "patch": {"type": "array"}, "options": {"type": "object"}},
+                         "recipe": {"type": "object"}, "patch": {"type": "array"}, "options": {"type": "object"},
+                         "scene": {"type": "string"}, "session": {"type": "object"}},
           "additionalProperties": False}
 
 
@@ -36,7 +38,7 @@ def dispatch(project, message):
     elif method == "ping":
         result = {}
     elif method == "tools/list":
-        result = {"tools": [{"name": "arcont_authoring", "description": "Discover and operate project Godot APIs; author explicit recipes, build, capture, inspect and restore revisions. Run capabilities/discover first.", "inputSchema": SCHEMA}]}
+        result = {"tools": [{"name": "arcont_authoring", "description": "Discover and operate project Godot APIs; author, build, capture, inspect and restore revisions. Playtest accepted scene artifacts through bounded input sessions; inspect both ok and passed. Run capabilities/discover first.", "inputSchema": SCHEMA}]}
     elif method == "tools/call":
         params = message.get("params", {})
         if params.get("name") != "arcont_authoring":

@@ -2,6 +2,7 @@ import copy
 import hashlib
 import json
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -137,6 +138,126 @@ class AuthoringTests(unittest.TestCase):
 
     def test_response_envelope_reports_invalid_requests(self):
         self.assertFalse(respond(self.root, {"operation": "create"})["ok"])
+
+    def playtest_fixture(self, passed=True):
+        created = self.create()
+        (self.root / "runner.gd").write_text("trusted project runner")
+        config = {"protocol_version": 1, "adapter_command": [sys.executable, "adapter.py"],
+                  "playtest": {"script": "res://runner.gd"}}
+        (self.root / "godot-authoring.json").write_text(json.dumps(config))
+        self.editor = Authoring(self.root)
+        (self.root / "adapter.py").write_text(
+            'import sys,json,pathlib\np=json.load(sys.stdin)\n'
+            'd=pathlib.Path(p["output_directory"]); (d/"trace.json").write_text("[]")\n'
+            'print(json.dumps({"ok":True,"steps":[{"id":"playtest_session","value":{"passed":' + str(passed) + '}}]}))\n')
+        session = {"version": 1, "id": "route", "actor": "Actors/Explorer", "commands": [{"id": "walk", "frames": 60, "actions": {"forward": 1}}]}
+        return created, session
+
+    def test_playtest_reads_accepted_artifact_without_publishing_head(self):
+        created, session = self.playtest_fixture(passed=False)
+        before = self.editor.path("city").read_bytes()
+        result = self.request("playtest", if_revision=created["revision"], if_bundle=created["evidence"]["directory"], scene="scene.tscn", session=session)
+        self.assertTrue(result["ok"])
+        self.assertFalse(result["passed"])
+        self.assertFalse(result["committed"])
+        self.assertEqual(self.editor.path("city").read_bytes(), before)
+        self.assertEqual(result["revision"], created["revision"])
+        self.assertEqual(result["source_bundle"], created["evidence"]["directory"])
+        self.assertTrue((self.root / result["evidence"]["directory"] / "trace.json").exists())
+
+    def test_playtest_rejects_tampered_scene_before_engine(self):
+        created, session = self.playtest_fixture()
+        (self.root / created["evidence"]["directory"] / "scene.tscn").write_text("changed accepted scene")
+        with patch.object(self.editor, "adapter") as adapter:
+            with self.assertRaises(ControlError): self.request("playtest", if_revision=created["revision"], if_bundle=created["evidence"]["directory"], scene="scene.tscn", session=session)
+            adapter.assert_not_called()
+
+    def test_playtest_rejects_unrecorded_scene_and_invalid_session(self):
+        created, session = self.playtest_fixture()
+        for scene in ["../scene.tscn", "/scene.tscn", "unrecorded.tscn"]:
+            with self.assertRaises(ControlError): self.request("playtest", if_revision=created["revision"], if_bundle=created["evidence"]["directory"], scene=scene, session=session)
+        session["commands"][0]["frames"] = 10**12
+        with patch.object(self.editor, "adapter") as adapter:
+            with self.assertRaises(ControlError): self.request("playtest", if_revision=created["revision"], if_bundle=created["evidence"]["directory"], scene="scene.tscn", session=session)
+            adapter.assert_not_called()
+
+    def test_capabilities_only_advertises_existing_contained_runner(self):
+        created, session = self.playtest_fixture()
+        configurations = [None, [], "runner", {}, {"script": 42},
+                          {"script": "runner.gd"}, {"script": "user://runner.gd"},
+                          {"script": "res://runner.txt"}, {"script": "res://missing.gd"},
+                          {"script": "res://../outside.gd"}, {"script": "res://."}]
+        request = {"protocol_version": 1, "operation": "playtest", "document_id": "city",
+                   "if_revision": created["revision"], "if_bundle": created["evidence"]["directory"],
+                   "scene": "scene.tscn", "session": session}
+        for configuration in configurations:
+            with self.subTest(configuration=configuration):
+                self.editor.config["playtest"] = configuration
+                self.assertFalse(self.request("capabilities")["playtest_available"])
+                with patch.object(self.editor, "adapter") as adapter:
+                    with self.assertRaises(ControlError): self.editor.execute(request)
+                    adapter.assert_not_called()
+        self.editor.config["playtest"] = {"script": "res://runner.gd"}
+        self.assertTrue(self.request("capabilities")["playtest_available"])
+        (self.root / "runner.gd").unlink()
+        self.assertFalse(self.request("capabilities")["playtest_available"])
+
+    def test_playtest_rejects_stale_bundle_after_same_revision_rebuild(self):
+        created, session = self.playtest_fixture()
+        runner_adapter = (self.root / "adapter.py").read_text()
+        (self.root / "adapter.py").write_text(
+            'import sys,json,pathlib\np=json.load(sys.stdin)\n'
+            'd=pathlib.Path(p["output_directory"]); (d/"scene.tscn").write_text("different rebuild output")\n'
+            'print(json.dumps({"ok":True}))\n')
+        rebuilt = self.request("build", if_revision=created["revision"], dry_run=False)
+        self.assertEqual(created["revision"], rebuilt["revision"])
+        self.assertNotEqual(created["evidence"]["directory"], rebuilt["evidence"]["directory"])
+        (self.root / "adapter.py").write_text(runner_adapter)
+        with patch.object(self.editor, "adapter") as adapter:
+            for bundle in [None, 42, created["evidence"]["directory"]]:
+                with self.subTest(bundle=bundle), self.assertRaisesRegex(ControlError, "bundle conflict"):
+                    self.request("playtest", if_revision=created["revision"], if_bundle=bundle,
+                                 scene="scene.tscn", session=session)
+            adapter.assert_not_called()
+        inspected = self.request("inspect")
+        result = self.request("playtest", if_revision=inspected["revision"],
+                              if_bundle=inspected["last_build"]["directory"], scene="scene.tscn", session=session)
+        self.assertTrue(result["passed"])
+        self.assertEqual(result["source_bundle"], rebuilt["evidence"]["directory"])
+
+    def test_malformed_failed_adapter_steps_preserve_cli_and_mcp_evidence(self):
+        created, session = self.playtest_fixture()
+        request = {"protocol_version": 1, "operation": "playtest", "document_id": "city",
+                   "if_revision": created["revision"], "if_bundle": created["evidence"]["directory"],
+                   "scene": "scene.tscn", "session": session}
+        before = self.editor.path("city").read_bytes()
+        for steps in [None, 42, "failure", {"error": "failed"}, [None, 42, "failed"]]:
+            with self.subTest(steps=steps):
+                failure = {"ok": False, "error": "engine failure", "steps": steps}
+                (self.root / "adapter.py").write_text(
+                    'import sys,json\njson.load(sys.stdin)\nprint(' + repr(json.dumps(failure)) + ')\n')
+                response = dispatch(self.root, {"jsonrpc": "2.0", "id": 42, "method": "tools/call",
+                                               "params": {"name": "arcont_authoring", "arguments": request}})
+                self.assertEqual(response["id"], 42)
+                self.assertTrue(response["result"]["isError"])
+                observed = json.loads(response["result"]["content"][0]["text"])
+                self.assertFalse(observed["ok"])
+                self.assertFalse(observed["passed"])
+                self.assertIsNone(observed["report"])
+                self.assertEqual(observed["result"], failure)
+                self.assertTrue((self.root / observed["evidence"]["directory"] / "response.json").is_file())
+        tool = Path(__file__).resolve().parents[1] / "tools/godot_authoring_control.py"
+        cli = subprocess.run([sys.executable, str(tool), "--project", str(self.root)],
+                             input=json.dumps(request), text=True, capture_output=True, timeout=10)
+        self.assertEqual(cli.returncode, 1)
+        self.assertNotIn("Traceback", cli.stderr)
+        self.assertIn("evidence", json.loads(cli.stdout))
+        self.assertEqual(before, self.editor.path("city").read_bytes())
+
+    def test_mcp_advertises_bundle_pin(self):
+        response = dispatch(self.root, {"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
+        properties = response["result"]["tools"][0]["inputSchema"]["properties"]
+        self.assertEqual(properties["if_bundle"], {"type": "string"})
 
 
 if __name__ == "__main__":
