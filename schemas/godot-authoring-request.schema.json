@@ -20,7 +20,8 @@
         "replace",
         "patch",
         "restore",
-        "build"
+        "build",
+        "playtest"
       ]
     },
     "document_id": {
@@ -44,6 +45,12 @@
     },
     "options": {
       "type": "object"
+    },
+    "scene": {
+      "type": "string"
+    },
+    "session": {
+      "type": "object"
     }
   },
   "additionalProperties": false,
@@ -58,7 +65,8 @@
               "patch",
               "restore",
               "build",
-              "inspect"
+              "inspect",
+              "playtest"
             ]
           }
         }
@@ -77,7 +85,8 @@
               "replace",
               "patch",
               "restore",
-              "build"
+              "build",
+              "playtest"
             ]
           }
         }
@@ -102,6 +111,21 @@
       "then": {
         "required": [
           "recipe"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "playtest"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "session",
+          "scene"
         ]
       }
     }

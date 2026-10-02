@@ -138,6 +138,47 @@ class AuthoringTests(unittest.TestCase):
     def test_response_envelope_reports_invalid_requests(self):
         self.assertFalse(respond(self.root, {"operation": "create"})["ok"])
 
+    def playtest_fixture(self, passed=True):
+        created = self.create()
+        (self.root / "runner.gd").write_text("trusted project runner")
+        config = {"protocol_version": 1, "adapter_command": [sys.executable, "adapter.py"],
+                  "playtest": {"script": "res://runner.gd"}}
+        (self.root / "godot-authoring.json").write_text(json.dumps(config))
+        self.editor = Authoring(self.root)
+        (self.root / "adapter.py").write_text(
+            'import sys,json,pathlib\np=json.load(sys.stdin)\n'
+            'd=pathlib.Path(p["output_directory"]); (d/"trace.json").write_text("[]")\n'
+            'print(json.dumps({"ok":True,"steps":[{"id":"playtest_session","value":{"passed":' + str(passed) + '}}]}))\n')
+        session = {"version": 1, "id": "route", "actor": "Actors/Explorer", "commands": [{"id": "walk", "frames": 60, "actions": {"forward": 1}}]}
+        return created, session
+
+    def test_playtest_reads_accepted_artifact_without_publishing_head(self):
+        created, session = self.playtest_fixture(passed=False)
+        before = self.editor.path("city").read_bytes()
+        result = self.request("playtest", if_revision=created["revision"], scene="scene.tscn", session=session)
+        self.assertTrue(result["ok"])
+        self.assertFalse(result["passed"])
+        self.assertFalse(result["committed"])
+        self.assertEqual(self.editor.path("city").read_bytes(), before)
+        self.assertEqual(result["revision"], created["revision"])
+        self.assertTrue((self.root / result["evidence"]["directory"] / "trace.json").exists())
+
+    def test_playtest_rejects_tampered_scene_before_engine(self):
+        created, session = self.playtest_fixture()
+        (self.root / created["evidence"]["directory"] / "scene.tscn").write_text("changed accepted scene")
+        with patch.object(self.editor, "adapter") as adapter:
+            with self.assertRaises(ControlError): self.request("playtest", if_revision=created["revision"], scene="scene.tscn", session=session)
+            adapter.assert_not_called()
+
+    def test_playtest_rejects_unrecorded_scene_and_invalid_session(self):
+        created, session = self.playtest_fixture()
+        for scene in ["../scene.tscn", "/scene.tscn", "unrecorded.tscn"]:
+            with self.assertRaises(ControlError): self.request("playtest", if_revision=created["revision"], scene=scene, session=session)
+        session["commands"][0]["frames"] = 10**12
+        with patch.object(self.editor, "adapter") as adapter:
+            with self.assertRaises(ControlError): self.request("playtest", if_revision=created["revision"], scene="scene.tscn", session=session)
+            adapter.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()

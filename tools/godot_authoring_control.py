@@ -20,10 +20,12 @@ import uuid
 
 if __package__:
     from .map_forge_control import ControlError, apply_patch, atomic_write, changes, decode, encoded, revision
+    from .playtest_contract import validate as validate_playtest
 else:
     from map_forge_control import ControlError, apply_patch, atomic_write, changes, decode, encoded, revision
+    from playtest_contract import validate as validate_playtest
 
-OPERATIONS = ("capabilities", "discover", "list", "inspect", "create", "replace", "patch", "restore", "build")
+OPERATIONS = ("capabilities", "discover", "list", "inspect", "create", "replace", "patch", "restore", "build", "playtest")
 IDENTIFIER = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$")
 
 
@@ -146,6 +148,7 @@ class Authoring:
             raise ControlError("unsupported authoring operation")
         if operation == "capabilities":
             return {"ok": True, "operations": list(OPERATIONS), "configuration": self.config,
+                    "playtest_available": isinstance(self.config.get("playtest"), dict),
                     "arbitrary_engine_apis": True, "dry_run_default": True, "revision_checked": True,
                     "atomic_head": True, "outputs": "immutable per-run bundles",
                     "limits": ["trusted project adapter/scripts are not sandboxed", "external script side effects are outside bundle rollback"]}
@@ -173,6 +176,8 @@ class Authoring:
                     raise ControlError("document does not exist")
                 if request.get("if_revision") != expected:
                     raise ControlError("revision conflict; inspect before operating")
+                if operation == "playtest":
+                    return self.playtest(identifier, before, request)
                 if operation == "patch":
                     after = apply_patch(before["recipe"], request.get("patch"))
                 elif operation == "replace":
@@ -207,6 +212,58 @@ class Authoring:
             return {"ok": True, "document_id": identifier, "committed": not dry_run, "revision": digest,
                     "previous_revision": expected, "changed_paths": changes(before["recipe"] if before else None, after),
                     "recipe": after, "result": result, "evidence": evidence}
+
+    def playtest(self, identifier, before, request):
+        """Observe one accepted scene without publishing a source revision."""
+        if request.get("dry_run", True) is not True:
+            raise ControlError("playtest does not publish; dry_run must remain true")
+        session = request.get("session")
+        errors = validate_playtest(session)
+        if errors: raise ControlError("invalid playtest session: " + "; ".join(errors))
+        configuration = self.config.get("playtest", {})
+        extension = configuration.get("script", "")
+        if not isinstance(extension, str) or not extension.startswith("res://") or not extension.endswith(".gd"):
+            raise ControlError("project has no configured playtest script")
+        extension_path = self.contained(extension[6:])
+        if not extension_path.is_file(): raise ControlError("playtest script missing")
+        scene = request.get("scene")
+        if not isinstance(scene, str) or not scene.endswith(".tscn"):
+            raise ControlError("playtest requires a saved scene artifact path")
+        build = before.get("last_build", {})
+        directory = self.contained(build.get("directory", ""))
+        if self.runs not in directory.parents: raise ControlError("accepted bundle is outside run directory")
+        artifact = next((item for item in build.get("manifest", {}).get("artifacts", []) if item.get("path") == scene), None)
+        source = directory / scene
+        if not artifact or source.is_symlink() or directory not in source.resolve().parents or not source.is_file():
+            raise ControlError("scene must be a recorded artifact in the accepted bundle")
+        scene_hash = hashlib.sha256(source.read_bytes()).hexdigest()
+        if scene_hash != artifact.get("sha256"): raise ControlError("accepted scene bytes changed")
+        self.validate(before["recipe"], identifier)
+        options = request.get("options", {})
+        if not isinstance(options, dict): raise ControlError("options requires an object")
+        if any("capture" in command for command in session["commands"]) and options.get("render") is not True:
+            raise ControlError("playtest camera captures require options.render=true")
+        recipe = {"version": 1, "id": identifier, "dependencies": {
+            str(source.relative_to(self.root)): scene_hash,
+            str(extension_path.relative_to(self.root)): hashlib.sha256(extension_path.read_bytes()).hexdigest()},
+            "steps": [
+                {"op": "load", "id": "playtest_world", "path": str(source), "instantiate": True},
+                {"op": "attach", "target": "playtest_world"},
+                {"op": "script", "id": "playtest_session", "path": extension,
+                 "args": {"world": "playtest_world", "session": session}}]}
+        self.validate(recipe, identifier)
+        result, evidence = self.adapter("run", recipe, options, identifier)
+        self.validate(recipe, identifier)
+        self.validate(before["recipe"], identifier)
+        if self.read(identifier) != before: raise ControlError("document changed during playtest")
+        report = next((step.get("value") for step in result.get("steps", []) if step.get("id") == "playtest_session"), None)
+        if result.get("ok") and (not isinstance(report, dict) or not isinstance(report.get("passed"), bool)):
+            raise ControlError("playtest adapter must return a boolean passed outcome")
+        return {"ok": result.get("ok", False), "passed": report.get("passed", False) if isinstance(report, dict) else False,
+                "committed": False, "document_id": identifier, "revision": before["revision"],
+                "scene": scene, "source_scene_sha256": scene_hash, "session": session,
+                "result": result, "report": report, "evidence": evidence,
+                "limits": ["completed execution and passed expectations are distinct", "no cross-platform determinism or device FPS claim"]}
 
 
 def respond(project, request):
