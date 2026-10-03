@@ -64,6 +64,10 @@ ARCONT no intenta copiar Internet. Conserva referencias, procedencia, extracció
 
 ## Herramientas operativas
 
+- [`knowledge/PRODUCTION_TOOLCHAIN.md`](knowledge/PRODUCTION_TOOLCHAIN.md) — versión consolidada para assets, animación, sectores y observaciones; aceptación externa en Nexo.
+- [`knowledge/MODEL_FORGE.md`](knowledge/MODEL_FORGE.md) — adquisición, inspección y procesadores experimentales.
+- [`knowledge/3D_PRODUCTION_STANDARD.md`](knowledge/3D_PRODUCTION_STANDARD.md) — estándar estilizado original; Nexo usa presupuestos y perfiles propios de tercera persona.
+
 - [`../tools/arcont_lab.py`](../tools/arcont_lab.py) — CLI para integridad, análisis de impacto, confianza heurística y comparación de resultados.
 - [`../tools/arcont_hardening.py`](../tools/arcont_hardening.py) — validador de manifiesto, contratos de evidencia, SHA-256 y madurez.
 - [`../tools/runtime_evidence.py`](../tools/runtime_evidence.py) — puente entre campañas prerregistradas y resultados producidos por el harness externo.

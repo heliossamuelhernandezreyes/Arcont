@@ -22,6 +22,8 @@ Esto no convierte ARCONT otra vez en un proyecto de Godot: aquí estudiamos el m
 
 ## Toolchains indexados
 
+- **Preparación de producción 0.1:** [`PRODUCTION_TOOLCHAIN.md`](docs/knowledge/PRODUCTION_TOOLCHAIN.md) conecta assets entregados, perfiles explícitos de animación/sectores y evidencia renderizada. [`production_toolchain.py`](tools/production_toolchain.py) ofrece una entrada común con componentes fijados por hash en [`production-toolchain.json`](production-toolchain.json). La integración y aceptación nativa viven en Nexo.
+
 - **Control y observación del juego:** [`GODOT_PLAYTEST_CONTROL.md`](docs/knowledge/GODOT_PLAYTEST_CONTROL.md) amplía el mismo writer con sesiones de entradas sobre escenas verificadas, trazas físicas y capturas por checkpoints. El controlador y el runner siguen siendo propiedad del juego.
 
 - **Control general de Godot:** [`GODOT_AUTHORING_CONTROL.md`](docs/knowledge/GODOT_AUTHORING_CONTROL.md) permite consultar y ejecutar APIs nativas y de herramientas instaladas, crear nodos/recursos y conservar recetas, historial y resultados verificables. [`godot_authoring_control.py`](tools/godot_authoring_control.py) y [`godot_authoring_mcp.py`](tools/godot_authoring_mcp.py) comparten el mismo escritor; el adaptador Godot y las escenas siguen viviendo en cada juego.

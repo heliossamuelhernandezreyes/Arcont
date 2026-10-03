@@ -22,7 +22,11 @@
     "map_authoring_validator": "tools/map_forge_contract.py",
     "map_authoring_reference_implementation": "heliossamuelhernandezreyes/Closeseal",
     "map_forge_editor_control": "tools/map_forge_control.py",
-    "map_forge_editor_control_schema": "schemas/map-forge-control.schema.json"
+    "map_forge_editor_control_schema": "schemas/map-forge-control.schema.json",
+    "production_toolchain": "production-toolchain.json",
+    "production_standard": "docs/knowledge/PRODUCTION_TOOLCHAIN.md",
+    "model_forge": "docs/knowledge/MODEL_FORGE.md",
+    "3d_production_standard": "docs/knowledge/3D_PRODUCTION_STANDARD.md"
   },
   "benchmarks": {
     "runtime_location": "external repository",
