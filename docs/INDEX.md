@@ -56,7 +56,17 @@ ARCONT no intenta copiar Internet. Conserva referencias, procedencia, extracció
 - [`DECISION_ENGINE.md`](DECISION_ENGINE.md) — transformación de evidencia en recomendaciones condicionadas y revalidables.
 - [`VALIDATOR_SPEC.md`](VALIDATOR_SPEC.md) — especificación del validador de trazabilidad, evidencia, vigencia y coherencia del grafo.
 
+## Control del editor Map Forge
+
+- [`knowledge/MAP_FORGE_EDITOR_CONTROL.md`](knowledge/MAP_FORGE_EDITOR_CONTROL.md) — interfaz para que un autor o asistente opere el editor, con edición completa, revisiones, validación y capturas; sin generador ni servicio de IA.
+- [`../tools/map_forge_control.py`](../tools/map_forge_control.py) — CLI portable de control.
+- [`../schemas/map-forge-control.schema.json`](../schemas/map-forge-control.schema.json) — contrato de solicitudes.
+
 ## Herramientas operativas
+
+- [`knowledge/PRODUCTION_TOOLCHAIN.md`](knowledge/PRODUCTION_TOOLCHAIN.md) — versión consolidada para assets, animación, sectores y observaciones; aceptación externa en Nexo.
+- [`knowledge/MODEL_FORGE.md`](knowledge/MODEL_FORGE.md) — adquisición, inspección y procesadores experimentales.
+- [`knowledge/3D_PRODUCTION_STANDARD.md`](knowledge/3D_PRODUCTION_STANDARD.md) — estándar estilizado original; Nexo usa presupuestos y perfiles propios de tercera persona.
 
 - [`../tools/arcont_lab.py`](../tools/arcont_lab.py) — CLI para integridad, análisis de impacto, confianza heurística y comparación de resultados.
 - [`../tools/arcont_hardening.py`](../tools/arcont_hardening.py) — validador de manifiesto, contratos de evidencia, SHA-256 y madurez.
@@ -97,6 +107,12 @@ La suite runtime permanece separada del banco de conocimiento. Produce datos; AR
 Godot se conserva como **objeto de estudio del motor**, no como videojuego. El upstream se fija por versión y commit; ARCONT conserva análisis y evidencia sin duplicar innecesariamente el repositorio oficial.
 
 ## Ingeniería
+
+- [`knowledge/GODOT_PLAYTEST_CONTROL.md`](knowledge/GODOT_PLAYTEST_CONTROL.md) — sesiones acotadas de entrada, observación y corrección sobre escenas aceptadas, usando el mismo writer CLI/MCP.
+
+- [`knowledge/GODOT_AUTHORING_CONTROL.md`](knowledge/GODOT_AUTHORING_CONTROL.md) — control operativo de APIs Godot y herramientas instaladas mediante recetas explícitas, revisiones, bundles de evidencia y transporte MCP opcional.
+- [`knowledge/ROAD_NETWORK_AUTHORING.md`](knowledge/ROAD_NETWORK_AUTHORING.md) — fuentes explícitas de carreteras curvas, validación reusable y operación de RoadGenerator mediante el puente general.
+- [`knowledge/observations/ROAD_NETWORK_4_7_2_2026-10-02.md`](knowledge/observations/ROAD_NETWORK_4_7_2_2026-10-02.md) — aceptación real de geometría, navegación, colisiones, restauración y edición de carreteras en Godot 4.7.2.
 
 - [`engineering/mobile-performance.md`](engineering/mobile-performance.md) — presupuestos y estrategias para móviles.
 - [`engineering/world-generation.md`](engineering/world-generation.md) — terreno, ecología, hidrología y composición procedural.

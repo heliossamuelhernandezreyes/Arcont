@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "release": "production-0.1.0",
+  "repository_role": "authoring tools; no game runtime dependency",
+  "engine": {
+    "version": "4.7.2-stable",
+    "commit": "ed1daf0bf001b61586d9930840f2f1394092c079",
+    "upstream": "https://github.com/godotengine/godot"
+  },
+  "input_revisions": {
+    "authoring": "678d907e742d4ecd66934c9f1d1b83858e7b9e2c",
+    "model_forge_additive_files": "d0e0cce9cc42809ddb1235d3a421874ccd149931",
+    "3d_standard_additive_files": "82b540cd7dcdc8bd40d80104bee082a5a58a6e84"
+  },
+  "components": [
+    {
+      "id": "authoring-control",
+      "files": {
+        "tools/godot_authoring_control.py": "cb95413523a5bf22e9930f659e52c7ff7b640545ee0585e9142bd13fc15ba4a9",
+        "tools/godot_authoring_mcp.py": "1e3137d78e7059d6fef15e457b8b5013f867e4392b2bba85326448148e85864e",
+        "tools/map_forge_control.py": "d3fc59333ab1cc918d681837e9cfeb20a411d96b23aff5445811f383bfdb84db",
+        "tools/map_forge_terrain.py": "ff7796824541b854e950e69c79023c99db28de1e1a8a01a63cda5550ab045ded",
+        "tools/map_forge_contract.py": "a28ccbba1ef67a3b45abaa4fe81ee181fe8aa119b3b08b432ca5ea19677f672a",
+        "tools/playtest_contract.py": "172525e1c6911842b0e41c29cee8d4ac4fc66376617f77711617f2250dd3f2d7",
+        "tools/road_network_contract.py": "58b297546d955386daf1ee319af9b369e2b8c0eaaa116eccbc53deb8e7865ac5"
+      }
+    },
+    {
+      "id": "model-forge",
+      "files": {
+        "tools/model_forge_collision.py": "306a6fd9c5ddfef8e73554d862758c4211d7a22d549c9dd63f48c2da79b38841",
+        "tools/model_forge_inspect.py": "d051307eae382a41a243c8cb713548388ef2a7babdeb3d8a522db4be58ff6386",
+        "tools/model_forge_materialize.py": "67cde97e94ac61ed7cfff4bd8789e777bd9b4caf84825da4e5e02cdf4b8672ab",
+        "tools/model_forge_pipeline.py": "9885d6152c421458598b72834f5f18d1661893a44711c54ec9b5c73cb68af452",
+        "tools/model_forge_process.py": "8e618b6d0e2f8dacd3ba921755d867cebb1fa58143ffac40f6450529213d26f3",
+        "tools/model_forge_spec_validate.py": "01cf253c1c3e413d0c2d3c3f5a729f1191dc4f99af044adf971764ba27b564c0",
+        "tools/model_forge_stage.py": "5769beb92a266cc80fce0ffd7ccb878245987d9d773c90307c7b41abc670a23f",
+        "tools/model_forge_validate.py": "ebb2910a0fc5429a4b8d89103e6ab8b4a527d1903e9abfd60c92927a5b1918f6",
+        "tools/license_policy.py": "d3a9daa5d450912aaca3e87c422d26625d987e7269f2282854e3384c5ea3ec68",
+        "tools/asset_trust.py": "907aa73b2addd848952bfa9e865668e7a6cd1a052d4f47cc040e735b9f931735",
+        "tools/asset_vault_indexer.py": "0f9a7db6656f52225c335f8fb1f09c9df1c3078499dc45e4e60facfa61944333"
+      }
+    },
+    {
+      "id": "production-preparation",
+      "files": {
+        "tools/production_assets.py": "852dd5b26161203d7c736c81c1775bf0bccab02351c2287ebc5e24d043c286f6",
+        "tools/production_evidence.py": "a6d31f617bd95c7bac45ca60e346f446d477329b639a556b8e69bd4961a7570c",
+        "tools/production_recipes.py": "8d02733a1b151bcc734bb8d1564a99333f6b22d05044be5e73b02ea8c8267ef8",
+        "tools/production_toolchain.py": "b91af497a64e7815c08795794780eb972d4524516510880ca1ca5ba19fdae6e0",
+        "tools/validate_3d_asset_manifest.py": "63c36d9325f09ff3594f2f2ed3069633cb6bec34b0008db7933bd91372a269cb"
+      }
+    },
+    {
+      "id": "production-contracts",
+      "files": {
+        "schemas/3d-asset-manifest.schema.json": "6981410c712bd6313515a30a00328bb52fda3b496730b0776b1e4f21715a3787",
+        "schemas/animation-retarget-profile.schema.json": "a7f180687509a0ab88407cd61320693c693e29dde288b6d080c0be838ddb0315",
+        "schemas/model-forge-profile.schema.json": "4cbdcb52968199d9c4ccfeda191d2c251d333a61d1e13d5af65d7316917a2131",
+        "schemas/production-asset-plan.schema.json": "9dcf63e12a9124c9bdd5742ee5b0fdce2f60e9d3042a7f1430f9d8d332b123b8",
+        "schemas/production-performance-record.schema.json": "4d05224d9e81b7031bccac74713c421cd2510c9d2cdd64c15e7159e9100f27ef",
+        "schemas/tactical-sector-recipe.schema.json": "b934e66bbdc0d70a6972c73db4fbb73cd67abb74097541fa589377b0971a2710"
+      }
+    }
+  ],
+  "native_acceptance": {
+    "repository": "heliossamuelhernandezreyes/Closeseal",
+    "entrypoint": "tools/shooter_production_smoke.py",
+    "profiles": "authoring/production"
+  },
+  "limits": [
+    "delivered normalized glTF only; external optimization/conversion processors not accepted by this release",
+    "explicit matching-topology animation retarget; different body proportions require contact acceptance",
+    "axis-aligned tactical-sector recipes; native game adapter required",
+    "Linux rendered runner observations are not Android device measurements"
+  ]
+}
