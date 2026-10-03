@@ -86,15 +86,37 @@ class Authoring:
     def lock(self, identifier):
         path = self.contained(".arcont/locks/" + identifier + ".lock")
         path.parent.mkdir(parents=True, exist_ok=True)
+        # Keep one inode per document. Exclusive file creation leaves a stale
+        # lock after SIGKILL or a disconnected host; kernel locks release when
+        # their owning descriptor/process disappears. Never unlink this inode,
+        # since a waiter could otherwise lock a different replacement file.
+        fd = os.open(path, os.O_CREAT | os.O_RDWR, 0o600)
+        acquired = False
         try:
-            fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-        except FileExistsError as exc:
-            raise ControlError("document is being operated on; retry after completion") from exc
-        os.close(fd)
-        try:
+            try:
+                if os.name == "posix":
+                    import fcntl
+                    fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                elif os.name == "nt":
+                    import msvcrt
+                    if os.fstat(fd).st_size == 0:
+                        os.write(fd, b"\0")
+                    os.lseek(fd, 0, os.SEEK_SET)
+                    msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+                else:
+                    raise ControlError("authoring locks require POSIX or Windows")
+            except (BlockingIOError, PermissionError) as exc:
+                raise ControlError("document is being operated on; retry after completion") from exc
+            acquired = True
             yield
         finally:
-            path.unlink(missing_ok=True)
+            if acquired:
+                if os.name == "posix":
+                    fcntl.flock(fd, fcntl.LOCK_UN)
+                else:
+                    os.lseek(fd, 0, os.SEEK_SET)
+                    msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
+            os.close(fd)
 
     def adapter(self, operation, recipe, options, identifier):
         argv = self.config.get("adapter_command")
