@@ -1,6 +1,7 @@
 import copy
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -91,6 +92,27 @@ class AuthoringTests(unittest.TestCase):
             with self.assertRaises(ControlError):
                 self.create()
         self.assertTrue(self.create()["ok"])
+
+    @unittest.skipUnless(os.name == "posix", "SIGKILL recovery requires POSIX")
+    def test_killed_process_releases_authoring_lock(self):
+        import select
+        code = ('import sys\nfrom tools.godot_authoring_control import Authoring\n'
+                'with Authoring(sys.argv[1]).lock("city"):\n'
+                ' print("locked", flush=True)\n'
+                ' sys.stdin.read()\n')
+        process = subprocess.Popen([sys.executable, "-c", code, str(self.root)],
+                                   stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        try:
+            self.assertTrue(select.select([process.stdout], [], [], 5)[0], "child never acquired lock")
+            self.assertEqual(process.stdout.readline().strip(), b"locked")
+            with self.assertRaises(ControlError): self.create()
+            process.kill()
+            process.communicate(timeout=5)
+            # The persistent inode and an old empty lock file are harmless.
+            self.assertTrue(self.create()["ok"])
+        finally:
+            if process.poll() is None: process.kill()
+            process.communicate(timeout=5)
 
     def test_symlink_outputs_and_escaped_paths_rejected(self):
         for identifier in ["../city", "/city", "x/y"]:
