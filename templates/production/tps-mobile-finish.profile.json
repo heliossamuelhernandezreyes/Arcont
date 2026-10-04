@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "id": "tps-mobile-finish-v1",
+  "required_motion_cases": ["walk", "run", "cover_left", "cover_right", "cover_peek_left", "cover_peek_right", "crouch_walk", "crouch_run"],
+  "minimum_contact_samples_per_case": 20,
+  "limits": {"cadence_relative_error": 0.015, "stance_drift_m": 0.03, "grip_error_m": 0.04},
+  "visual_rubric": ["weight and balance", "start/stop/turn continuity", "hands and feet contact", "hostile readability", "material and lighting coherence"],
+  "device_gate": {"target": "project-selected handset", "active_play_minutes": 15, "warm_windows_required": true},
+  "scope": "Initial project-tunable targets. Not universal AAA thresholds or a device performance result."
+}
