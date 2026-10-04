@@ -44,3 +44,5 @@ El historial de Git permanece como registro técnico histórico, pero **HEAD/mai
 ## Índice
 
 Consulta [`docs/INDEX.md`](docs/INDEX.md).
+
+- [Verified native scene bundles](docs/knowledge/NATIVE_SCENE_BUNDLES.md): staged scene publication, resource ownership and native lightmap acceptance.
