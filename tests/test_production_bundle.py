@@ -74,3 +74,8 @@ class BundleTests(unittest.TestCase):
         with patch('tools.production_bundle.atomic_publish',side_effect=late):
             with self.assertRaises(ValueError):self.run_bundle()
         self.assertEqual('other publisher',(self.root/'assets/review/concurrent.txt').read_text())
+
+    def test_unsupported_platform_returns_controlled_error(self):
+        with patch('tools.production_bundle.sys.platform','win32'):
+            with self.assertRaisesRegex(ValueError,'requires Linux'):
+                self.run_bundle()

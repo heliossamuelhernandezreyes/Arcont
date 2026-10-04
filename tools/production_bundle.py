@@ -77,6 +77,7 @@ def materialize(project,source,destination,files,replace=False):
  target.parent.mkdir(parents=True,exist_ok=True)
  # All publishers using this protocol serialize verification and commit per project.
  # The atomic rename additionally protects non-replace against external publishers.
+ if sys.platform!='linux':raise ValueError('atomic native bundle publication currently requires Linux renameat2')
  from fcntl import flock,LOCK_EX,LOCK_UN
  lock_path=project/'.arcont/native-bundle.lock';lock_path.parent.mkdir(parents=True,exist_ok=True);safe_path(project,lock_path)
  with lock_path.open('a+b') as lock:

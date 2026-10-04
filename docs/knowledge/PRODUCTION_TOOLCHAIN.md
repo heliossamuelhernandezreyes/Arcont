@@ -38,6 +38,17 @@ Las observaciones Linux con render de software sirven para detectar fallos y rev
 
 Los contratos están en `schemas/production-asset-plan.schema.json`, `schemas/animation-retarget-profile.schema.json`, `schemas/tactical-sector-recipe.schema.json` y `schemas/production-performance-record.schema.json`. La aceptación externa se ejecuta en Closeseal con `tools/shooter_production_smoke.py` y su workflow de Nexo.
 
+La transferencia nativa de rotación conserva la escala del hueso destino. El
+desplazamiento se selecciona con `translated_source_bone`, independiente de los
+nombres usados por el rig destino; debe pertenecer al mapa explícito. Sin esa
+selección no se transfiere desplazamiento. La limpieza de contactos y la revisión
+del movimiento siguen perteneciendo al proyecto consumidor.
+
+`production_toolchain.py audio` inspecciona instantáneas acotadas de los mismos
+bytes cuyos hashes valida. Calcula los niveles PCM por bloques, rechaza payloads
+truncados y convierte fallos del parser WAV en errores de validación. Estas
+comprobaciones no acreditan diseño de sonido ni latencia de reproducción.
+
 ## Production 0.4
 
 See [NATIVE_MOTION_AUDIO.md](NATIVE_MOTION_AUDIO.md) for native rest-space motion transfer, recorded-audio inspection and Linux atomic bundle publication. Nexo supplies and exercises the game adapters; these tools do not certify AAA art or Android FPS.

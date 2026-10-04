@@ -73,15 +73,15 @@
     {
       "id": "native-scene-bundles",
       "files": {
-        "tools/production_bundle.py": "b3486eb3a2d6992cce55ec4053612060c2bd1d2c091259b7e753b1dd39cf2080",
+        "tools/production_bundle.py": "8af0745f59a36e0f5ffdcd1cab2de0424f97668f844d3995af0566661ff359b6",
         "docs/knowledge/NATIVE_SCENE_BUNDLES.md": "716da2122030e2ccfd7ff5660c1685db19b8552df44541830784a99b51a3a3cb"
       }
     },
     {
       "id": "native-motion-audio",
       "files": {
-        "tools/native_rest_retarget.gd": "680a288a041cfc914618da0cb0fbed1408a76ad6ad845581523430a00529c781",
-        "tools/production_audio.py": "a19e2022a78f612ea1d7c72be0cf6422190ba94936bb29c418fbc725f400eaf0"
+        "tools/native_rest_retarget.gd": "845caff2891b76a5b12ba834429076db78d120dd958fee1a7afe650ae214be26",
+        "tools/production_audio.py": "53c977c390485e47663f5242b987aae529eb2ebcd97c881fb434a21b4207c1f8"
       }
     }
   ],
