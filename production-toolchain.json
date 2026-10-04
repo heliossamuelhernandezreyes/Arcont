@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "release": "production-0.3.0",
+  "release": "production-0.4.0",
   "repository_role": "authoring tools; no game runtime dependency",
   "engine": {
     "version": "4.7.2-stable",
@@ -47,7 +47,7 @@
         "tools/production_assets.py": "852dd5b26161203d7c736c81c1775bf0bccab02351c2287ebc5e24d043c286f6",
         "tools/production_evidence.py": "a6d31f617bd95c7bac45ca60e346f446d477329b639a556b8e69bd4961a7570c",
         "tools/production_recipes.py": "8d02733a1b151bcc734bb8d1564a99333f6b22d05044be5e73b02ea8c8267ef8",
-        "tools/production_toolchain.py": "c1c33e892c3d8c3b6ecdfe316e21fb5833dfd50c59c269295213a27805181a0c",
+        "tools/production_toolchain.py": "e51bc9d6a6dcf244779954bb8f0f96c900f0c6feae19f0de4a3cef9eae89ef09",
         "tools/validate_3d_asset_manifest.py": "63c36d9325f09ff3594f2f2ed3069633cb6bec34b0008db7933bd91372a269cb"
       }
     },
@@ -73,8 +73,15 @@
     {
       "id": "native-scene-bundles",
       "files": {
-        "tools/production_bundle.py": "e9946cde8d03aa63adb65f191bb288115a1902842f3361c2afd12627291e2dde",
+        "tools/production_bundle.py": "b3486eb3a2d6992cce55ec4053612060c2bd1d2c091259b7e753b1dd39cf2080",
         "docs/knowledge/NATIVE_SCENE_BUNDLES.md": "716da2122030e2ccfd7ff5660c1685db19b8552df44541830784a99b51a3a3cb"
+      }
+    },
+    {
+      "id": "native-motion-audio",
+      "files": {
+        "tools/native_rest_retarget.gd": "680a288a041cfc914618da0cb0fbed1408a76ad6ad845581523430a00529c781",
+        "tools/production_audio.py": "a19e2022a78f612ea1d7c72be0cf6422190ba94936bb29c418fbc725f400eaf0"
       }
     }
   ],
@@ -85,7 +92,7 @@
   },
   "limits": [
     "delivered normalized glTF only; external optimization/conversion processors not accepted by this release",
-    "explicit matching-topology animation retarget; different body proportions require contact acceptance",
+    "Global rest-space partial bone transfer requires project-owned contact cleanup and native visual acceptance.",
     "axis-aligned tactical-sector recipes; native game adapter required",
     "Linux rendered runner observations are not Android device measurements"
   ]

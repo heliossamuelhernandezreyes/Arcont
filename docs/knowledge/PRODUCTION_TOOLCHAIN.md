@@ -37,3 +37,7 @@ Cada revisión conserva receta, hashes, escena nativa guardada, reapertura, PNG 
 Las observaciones Linux con render de software sirven para detectar fallos y revisar la escena. No establecen FPS sostenido, termales, latencia táctil ni memoria GPU en Android. Los registros `android-device` requieren mediciones reales en ese dispositivo; no se convierten automáticamente en reglas o aprobaciones de rendimiento.
 
 Los contratos están en `schemas/production-asset-plan.schema.json`, `schemas/animation-retarget-profile.schema.json`, `schemas/tactical-sector-recipe.schema.json` y `schemas/production-performance-record.schema.json`. La aceptación externa se ejecuta en Closeseal con `tools/shooter_production_smoke.py` y su workflow de Nexo.
+
+## Production 0.4
+
+See [NATIVE_MOTION_AUDIO.md](NATIVE_MOTION_AUDIO.md) for native rest-space motion transfer, recorded-audio inspection and Linux atomic bundle publication. Nexo supplies and exercises the game adapters; these tools do not certify AAA art or Android FPS.
