@@ -130,3 +130,5 @@ Godot se conserva como **objeto de estudio del motor**, no como videojuego. El u
 Este repositorio no debe volver a contener un juego completo. Los proyectos futuros pueden consultar ARCONT y reutilizar conocimiento, pero su código de producción debe vivir en repositorios propios.
 
 Los experimentos de ARCONT deben permanecer mínimos, aislados y reproducibles. El runtime ejecutable de benchmarks vive fuera de ARCONT y entrega resultados mediante el esquema canónico con procedencia y hashes verificables.
+
+- [Acabado TPS móvil: contactos, cadencia y revisión visual](knowledge/TPS_MOBILE_FINISH.md)
