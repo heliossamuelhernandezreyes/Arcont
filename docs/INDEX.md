@@ -132,3 +132,5 @@ Este repositorio no debe volver a contener un juego completo. Los proyectos futu
 Los experimentos de ARCONT deben permanecer mínimos, aislados y reproducibles. El runtime ejecutable de benchmarks vive fuera de ARCONT y entrega resultados mediante el esquema canónico con procedencia y hashes verificables.
 
 - [Acabado TPS móvil: contactos, cadencia y revisión visual](knowledge/TPS_MOBILE_FINISH.md)
+
+- [Verified native scene bundles](knowledge/NATIVE_SCENE_BUNDLES.md): staged scene publication, resource ownership and native lightmap acceptance.

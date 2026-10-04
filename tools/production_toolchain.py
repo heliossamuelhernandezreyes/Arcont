@@ -11,11 +11,13 @@ try:
     from tools.production_recipes import animation_profile, sector
     from tools.production_evidence import summarize, compare
     from tools.production_finish import review
+    from tools.production_bundle import materialize
 except ModuleNotFoundError:
     from production_assets import digest, local, stage, validate_plan
     from production_recipes import animation_profile, sector
     from production_evidence import summarize, compare
     from production_finish import review
+    from production_bundle import materialize
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -46,6 +48,10 @@ def main():
     finish=sub.add_parser("finish")
     finish.add_argument("record",type=Path)
     finish.add_argument("--profile",type=Path,default=ROOT/"templates/production/tps-mobile-finish.profile.json")
+    bundle=sub.add_parser("bundle")
+    bundle.add_argument("record",type=Path)
+    bundle.add_argument("--project",type=Path,required=True)
+    bundle.add_argument("--replace",action="store_true")
     args=parser.parse_args()
     try:
         if args.operation=="doctor": result=doctor(ROOT)
@@ -54,7 +60,8 @@ def main():
             result=stage(args.project,plan,args.stage) if args.stage else validate_plan(args.project,plan)
         else:
             record=json.loads(args.record.read_text())
-            if args.operation=="finish": result=review(json.loads(args.profile.read_text()),record)
+            if args.operation=="bundle": result=materialize(args.project,record['source'],record['destination'],record['files'],args.replace)
+            elif args.operation=="finish": result=review(json.loads(args.profile.read_text()),record)
             elif args.operation=="sector": result=sector(record)
             elif args.operation=="animation":
                 animation_profile(record); result={"ok":True,"clips":len(record["clips"]),"mapped_bones":len(record["bone_map"]),"scope":"profile contract; native adapter acceptance required"}

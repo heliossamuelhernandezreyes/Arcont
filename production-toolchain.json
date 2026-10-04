@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "release": "production-0.2.0",
+  "release": "production-0.3.0",
   "repository_role": "authoring tools; no game runtime dependency",
   "engine": {
     "version": "4.7.2-stable",
@@ -47,7 +47,7 @@
         "tools/production_assets.py": "852dd5b26161203d7c736c81c1775bf0bccab02351c2287ebc5e24d043c286f6",
         "tools/production_evidence.py": "a6d31f617bd95c7bac45ca60e346f446d477329b639a556b8e69bd4961a7570c",
         "tools/production_recipes.py": "8d02733a1b151bcc734bb8d1564a99333f6b22d05044be5e73b02ea8c8267ef8",
-        "tools/production_toolchain.py": "05b2c8651ca840b7d56b83da632155dfd74fe0f059cb433c26dd7e6cc65d2727",
+        "tools/production_toolchain.py": "c1c33e892c3d8c3b6ecdfe316e21fb5833dfd50c59c269295213a27805181a0c",
         "tools/validate_3d_asset_manifest.py": "63c36d9325f09ff3594f2f2ed3069633cb6bec34b0008db7933bd91372a269cb"
       }
     },
@@ -68,6 +68,13 @@
         "tools/production_finish.py": "2291ad233a7c7614eccdef1d4c13a04819cf809cf6b6104b67065d791deb93f7",
         "templates/production/tps-mobile-finish.profile.json": "956f046a8202794d9a02743e1df365636490ace4012ab067711567da5913230c",
         "docs/knowledge/TPS_MOBILE_FINISH.md": "24050fa2cb32b820f6a9a4c9ac9aa6d0f0030d61fb842b6d07cb0e1e251b01f9"
+      }
+    },
+    {
+      "id": "native-scene-bundles",
+      "files": {
+        "tools/production_bundle.py": "e9946cde8d03aa63adb65f191bb288115a1902842f3361c2afd12627291e2dde",
+        "docs/knowledge/NATIVE_SCENE_BUNDLES.md": "716da2122030e2ccfd7ff5660c1685db19b8552df44541830784a99b51a3a3cb"
       }
     }
   ],
