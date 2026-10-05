@@ -63,6 +63,25 @@ El comparador:
 
 La clasificación final de una regresión requiere repetición, dispersión/incertidumbre y un umbral de ingeniería adecuado al experimento.
 
+## Producción de sprites 2D
+
+ARCONT ya incluye dos puertas mecánicas separadas para arte raster de producción:
+
+```bash
+python tools/png_sprite_normalize.py normalization_plan.json \
+  --project-root path/to/project \
+  --report normalization_report.json
+
+python tools/png_sprite_audit.py production_sprite_manifest.json \
+  --project-root path/to/project
+```
+
+`png_sprite_normalize.py` transforma masters RGBA a un canvas/pivote/baseline común con escalado bilinear premultiplicado y rechazo explícito de recortes. El plan por lotes sigue `schemas/sprite-normalization-plan.schema.json` y sólo escribe resultados si todos los frames validan.
+
+`png_sprite_audit.py` verifica después dimensiones, límites alfa, baseline, pivote, deriva de altura, duplicados, secuencias y padding. Ninguno de los dos sustituye la revisión visual semántica de identidad, vestuario, cámara, armas o calidad artística.
+
+El contrato completo está en `docs/knowledge/GODOT_2D_SPRITE_PIPELINE.md`.
+
 ## Principio canónico
 
 Automatizar una comprobación no convierte una inferencia en una verdad. ARCONT mantiene la cadena:
