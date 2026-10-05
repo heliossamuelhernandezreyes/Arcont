@@ -1,0 +1,111 @@
+schema_version: 1
+engine:
+  name: Godot
+  version: 4.7.2-stable
+  commit: ed1daf0bf001b61586d9930840f2f1394092c079
+trigger_consumer:
+  repository: heliossamuelhernandezreyes/Godot-juegos-2d
+  project_path: Mortofe
+status_values:
+  - ready
+  - partial
+  - missing
+  - blocked
+capabilities:
+  source_trace:
+    status: ready
+    evidence:
+      - docs/godot/SOURCE_PIN.md
+      - docs/godot/SOURCE_TRACE_PROTOCOL.md
+  evidence_reproducibility:
+    status: ready
+    evidence:
+      - docs/EVIDENCE_LEDGER.md
+      - docs/MATURITY_MODEL.md
+      - schemas/benchmark-result.schema.json
+  observability:
+    status: partial
+    evidence:
+      - docs/integrations/UPSTREAM_OBSERVABILITY.md
+      - tools/evidence_ingest.py
+    missing:
+      - 2d_gameplay_probe_set
+      - 2d_scene_metrics
+  mobile_performance:
+    status: partial
+    evidence:
+      - docs/knowledge/MOBILE_PERFORMANCE_FOUNDATIONS.md
+    missing:
+      - 2d_android_reference_workload
+      - touch_latency_protocol
+  asset_provenance:
+    status: ready
+    evidence:
+      - assets/ASSET_VAULT.md
+      - docs/knowledge/ASSET_LICENSE_POLICY.md
+  sprite_pipeline:
+    status: missing
+    missing:
+      - canvas_and_pivot_contract
+      - atlas_assembly_contract
+      - frame_consistency_checks
+      - godot_import_profile
+  characterbody2d_locomotion:
+    status: missing
+    missing:
+      - controller_requirements
+      - coyote_and_buffer_tests
+      - slopes_and_one_way_tests
+      - moving_platform_tests
+  combat_2d:
+    status: partial
+    evidence:
+      - docs/engineering/combat-systems.md
+    missing:
+      - hitbox_hurtbox_contract
+      - invulnerability_test
+      - knockback_test
+  tilemaplayer_authoring:
+    status: missing
+    missing:
+      - semantic_2d_map_contract
+      - godot_adapter_guidance
+      - import_validation
+  navigation_2d:
+    status: partial
+    evidence:
+      - docs/knowledge/AI_NAVIGATION.md
+    missing:
+      - godot_2d_source_trace
+      - runtime_cost_matrix
+  lighting_2d:
+    status: missing
+    missing:
+      - light2d_baseline
+      - occluder_baseline
+      - canvas_shader_cost_matrix
+  camera_2d:
+    status: partial
+    missing:
+      - smoothing_contract
+      - lookahead_contract
+      - shake_contract
+      - pixel_subpixel_policy
+  touch_controls_2d:
+    status: missing
+    missing:
+      - control_layout_contract
+      - multi_touch_validation
+      - latency_validation
+  external_game_ci:
+    status: partial
+    missing:
+      - audited_headless_import_recipe
+      - audited_export_recipe
+next_actions:
+  - locomotion_test_plan
+  - combat_hitbox_contract
+  - sprite_pipeline_audit
+  - tilemaplayer_audit
+  - android_touch_probe
+  - headless_ci_audit
