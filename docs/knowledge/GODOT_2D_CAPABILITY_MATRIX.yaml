@@ -48,7 +48,7 @@ capabilities:
       - mobile_first_display_policy_defined
       - frame_percentile_probe_parses_in_godot_4_7_2
     missing:
-      - real_android_reference_run
+      - real_android_reference_run_normalized
       - sustained_thermal_run
       - touch_latency_protocol
       - 60_90_120hz_frame_pacing_matrix
@@ -62,18 +62,26 @@ capabilities:
     evidence:
       - docs/knowledge/GRAPHICS_ASSET_FOUNDATIONS.md
       - docs/knowledge/GODOT_2D_SPRITE_PIPELINE.md
+      - schemas/sprite-animation-manifest.schema.json
+      - tools/sprite_audit.py
+      - external:heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe/art/sprite_manifest.json
+      - external_run:37261303991
     validated:
       - canvas_and_pivot_contract_defined
       - atlas_delivery_contract_defined
       - frame_consistency_requirements_defined
       - godot_mobile_import_profile_requirements_defined
+      - manifest_schema_implemented
+      - svg_canvas_audit_tool_implemented
+      - missing_resource_audit_implemented
+      - first_mortofe_player_and_enemy_sprite_ingest
+      - cross_repo_sprite_audit_in_consumer_ci
     missing:
-      - manifest_schema
-      - frame_audit_tool
       - normalization_tool
+      - alpha_bounds_and_baseline_drift_checks
       - deterministic_atlas_builder
       - godot_import_adapter
-      - mortofe_real_character_ingest
+      - multi_frame_animation_ingest
   characterbody2d_locomotion:
     status: partial
     evidence:
@@ -81,11 +89,13 @@ capabilities:
       - external:heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe/scripts/player.gd
       - external:heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe/scripts/main.gd
       - external:heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe/scripts/moving_platform.gd
-      - external_run:37259454259
+      - external_run:37261303991
     validated:
       - controller_requirements_defined
       - coyote_and_jump_buffer_implemented
       - variable_jump_implemented
+      - double_jump_implemented
+      - ledge_fall_air_jump_accounting_implemented
       - dash_implemented
       - slope_benchmark_present
       - one_way_benchmark_present
@@ -93,6 +103,7 @@ capabilities:
       - godot_parse_smoke_and_android_export
     missing:
       - coyote_and_buffer_behavior_test
+      - double_jump_device_behavior_test
       - slope_behavior_device_test
       - one_way_behavior_device_test
       - moving_platform_behavior_device_test
@@ -106,13 +117,16 @@ capabilities:
       - external:heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe/scripts/combat/hurtbox_2d.gd
       - external:heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe/scripts/player.gd
       - external:heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe/scripts/enemy.gd
-      - external_run:37259279717
+      - external_run:37261303991
     validated:
       - hitbox_hurtbox_contract_defined
       - body_collision_separated_from_combat_detection
       - one_hit_per_target_window_bookkeeping
+      - active_window_overlap_scan_implemented
+      - area_entered_fast_path_retained
       - actor_level_invulnerability_path
       - actor_level_knockback_path
+      - enemy_hit_stun_and_hurt_visual_path
       - parry_interception_hook
       - godot_parse_smoke_and_android_export
     missing:
@@ -122,6 +136,7 @@ capabilities:
       - invulnerability_behavior_test
       - parry_behavior_test
       - overlapping_attackers_test
+      - real_device_hit_registration_validation
   tilemaplayer_authoring:
     status: missing
     missing:
@@ -170,7 +185,7 @@ capabilities:
       - docs/knowledge/GODOT_2D_MOBILE_BASELINE.md
       - external:heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe/export_presets.cfg
       - external:heliossamuelhernandezreyes/Godot-juegos-2d/.github/workflows/mortofe-godot-validate.yml
-      - external_run:37259454259
+      - external_run:37261303991
       - source:godot/platform/android/export/export_plugin.cpp@ed1daf0bf001b61586d9930840f2f1394092c079
       - source:godot/editor/import/resource_importer_texture_settings.cpp@ed1daf0bf001b61586d9930840f2f1394092c079
     validated:
@@ -187,13 +202,15 @@ capabilities:
     status: ready
     evidence:
       - external:heliossamuelhernandezreyes/Godot-juegos-2d/.github/workflows/mortofe-godot-validate.yml
-      - external_run:37259454259
+      - external_run:37261303991
+      - arcont_sprite_audit_commit:c5c0ce20c5ee2e99b6d0a6fba11cd34c282ecc01
       - godot_release_asset_sha256:cadd3204e728a35d3f13adb7fd0d7902636b79f6b95c40c265eb73b6c35329e4
       - godot_export_templates_sha256:f298490b8d44d934be425a5a65a51bf15f422428b229a06a6e11d9ffea248011
     validated:
       - official_binary_hash_check
       - headless_project_import
       - headless_smoke_run
+      - arcont_sprite_manifest_audit
       - android_export_preset_parse
       - android_debug_apk_export
       - artifact_publication
@@ -201,6 +218,6 @@ next_actions:
   - real_android_mortofe_run
   - locomotion_behavior_tests
   - combat_behavior_tests
-  - sprite_manifest_and_audit_tool
+  - sprite_normalization_and_animation_tooling
   - tilemaplayer_audit
   - android_touch_probe
