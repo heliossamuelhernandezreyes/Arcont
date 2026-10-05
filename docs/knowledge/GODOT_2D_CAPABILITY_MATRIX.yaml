@@ -32,6 +32,7 @@ capabilities:
       - external:heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe/scripts/mobile_telemetry.gd
     validated:
       - lightweight_wall_frame_percentiles_implemented
+      - live_hud_percentile_reporting
     missing:
       - 2d_gameplay_probe_set
       - normalized_mortofe_evidence_ingest
@@ -109,6 +110,7 @@ capabilities:
     evidence:
       - docs/knowledge/GODOT_2D_MOBILE_BASELINE.md
       - external:heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe/scripts/mobile_controls.gd
+      - external:heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe/docs/ANDROID_DEVICE_TEST.md
     validated:
       - inputmap_decoupling
       - raw_finger_index_multitouch_structure
@@ -124,26 +126,34 @@ capabilities:
     evidence:
       - docs/knowledge/GODOT_2D_MOBILE_BASELINE.md
       - external:heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe/export_presets.cfg
+      - external:heliossamuelhernandezreyes/Godot-juegos-2d/.github/workflows/mortofe-godot-validate.yml
+      - external_run:37259015301
       - source:godot/platform/android/export/export_plugin.cpp@ed1daf0bf001b61586d9930840f2f1394092c079
+      - source:godot/editor/import/resource_importer_texture_settings.cpp@ed1daf0bf001b61586d9930840f2f1394092c079
     validated:
       - exporter_options_source_traced
       - arm64_default_policy_source_traced
-      - preset_parses_with_project_in_ci
-    missing:
+      - etc2_astc_requirement_source_traced
+      - official_export_templates_hash_verified
       - apk_export_ci
+      - apk_artifact_upload
+    missing:
       - aab_export_ci
       - install_launch_device_validation
   external_game_ci:
     status: ready
     evidence:
       - external:heliossamuelhernandezreyes/Godot-juegos-2d/.github/workflows/mortofe-godot-validate.yml
-      - external_run:37258259314
+      - external_run:37259015301
       - godot_release_asset_sha256:cadd3204e728a35d3f13adb7fd0d7902636b79f6b95c40c265eb73b6c35329e4
+      - godot_export_templates_sha256:f298490b8d44d934be425a5a65a51bf15f422428b229a06a6e11d9ffea248011
     validated:
       - official_binary_hash_check
       - headless_project_import
       - headless_smoke_run
       - android_export_preset_parse
+      - android_debug_apk_export
+      - artifact_publication
 next_actions:
   - real_android_mortofe_run
   - locomotion_test_plan
