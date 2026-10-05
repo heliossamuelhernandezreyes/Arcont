@@ -1,10 +1,10 @@
 # Godot 2D sprite production pipeline
 
-Status: **contract defined / tooling not yet validated**
+Status: **frame audit v1 implemented/tested; normalization, atlas and import adapter still pending**
 
 Trigger consumer: `heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe`
 
-This document complements `GRAPHICS_ASSET_FOUNDATIONS.md`. It does not replace general texture/performance guidance; it defines the missing operational contract for character/environment sprite delivery.
+This document complements `GRAPHICS_ASSET_FOUNDATIONS.md`. It does not replace general texture/performance guidance; it defines the operational contract for character/environment sprite delivery.
 
 ## Goals
 
@@ -37,19 +37,55 @@ All frames must resolve to the same world-space anchor after trimming. A visual 
 
 ## Frame-consistency checks
 
-A future ARCONT validator should report at least:
+`tools/png_sprite_audit.py` is the first production-frame validator. It deliberately requires normalized, non-interlaced, 8-bit RGBA PNG inputs so the runtime derivative has one deterministic format.
 
-- dimension mismatch,
-- unexpected alpha-bound jumps,
+The validator currently reports or rejects:
+
+- canvas dimension mismatch,
+- alpha bounds and fully transparent frames,
 - baseline drift,
-- pivot drift,
-- sudden silhouette/scale discontinuity,
-- duplicate frames,
-- filename/order gaps,
-- excessive transparent padding,
-- atlas overflow.
+- declared pivot drift,
+- per-state visual-height drift,
+- duplicate pixel payloads,
+- simple numeric filename/order gaps,
+- excessive transparent padding.
 
-Generated frames require stronger consistency checks because independent generation can mutate costume, proportions, weapon geometry or camera angle.
+The manifest can define global or per-character quality gates such as `max_baseline_drift_px`, `max_pivot_drift_px`, `max_visual_height_drift_pct`, `transparent_padding_warning_pct` and `alpha_threshold`.
+
+Example:
+
+```json
+{
+  "quality_gates": {
+    "max_baseline_drift_px": 2,
+    "max_pivot_drift_px": 2,
+    "max_visual_height_drift_pct": 4,
+    "transparent_padding_warning_pct": 45,
+    "alpha_threshold": 8
+  },
+  "characters": {
+    "player": {
+      "canvas": [384, 384],
+      "baseline_y": 350,
+      "pivot": [192, 350],
+      "states": {
+        "run": [
+          {"path": "res://art/normalized/player/run_01.png", "pivot": [192, 350]},
+          {"path": "res://art/normalized/player/run_02.png", "pivot": [192, 350]}
+        ]
+      }
+    }
+  }
+}
+```
+
+Run it with:
+
+```bash
+python tools/png_sprite_audit.py path/to/production_sprite_manifest.json --project-root path/to/project
+```
+
+This is a mechanical gate, not a semantic art judge. It does **not** prove that independently generated frames preserve identity, costume, weapon geometry, camera angle or artistic quality. Those remain explicit visual-review gates. Atlas overflow is also deferred to the deterministic atlas builder.
 
 ## Source vs runtime assets
 
@@ -113,12 +149,10 @@ Mortofe's product direction is dark medieval/baroque illustration. The reusable 
 
 ## Promotion backlog
 
-`sprite_pipeline` remains PARTIAL/MISSING until ARCONT has validated tooling for:
+The manifest/frame-audit portion has moved from contract-only to an executable/tested baseline. `sprite_pipeline` remains PARTIAL until ARCONT has validated tooling for:
 
-- manifest format,
-- frame audit,
-- normalization,
+- automatic normalization from master/source frames,
 - deterministic atlas build,
 - Godot import adapter,
 - mobile memory/package benchmark,
-- at least one real Mortofe animated character imported through the pipeline.
+- at least one real Mortofe animated character imported through the complete pipeline.
