@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arcont.local/schemas/sprite-normalization-plan.schema.json",
+  "title": "ARCONT Sprite Normalization Plan",
+  "type": "object",
+  "required": ["schema_version", "defaults", "frames"],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "defaults": {
+      "type": "object",
+      "required": ["target_canvas", "target_pivot", "target_visual_height"],
+      "properties": {
+        "target_canvas": {"$ref": "#/$defs/canvas"},
+        "target_pivot": {"$ref": "#/$defs/point"},
+        "target_visual_height": {"type": "number", "exclusiveMinimum": 0},
+        "alpha_threshold": {"type": "integer", "minimum": 0, "maximum": 254},
+        "padding_px": {"type": "integer", "minimum": 0},
+        "source_anchor_x": {"type": "string", "enum": ["canvas_center", "alpha_center"]}
+      },
+      "additionalProperties": false
+    },
+    "frames": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["input", "output"],
+        "properties": {
+          "input": {"type": "string", "minLength": 1},
+          "output": {"type": "string", "minLength": 1},
+          "target_canvas": {"$ref": "#/$defs/canvas"},
+          "target_pivot": {"$ref": "#/$defs/point"},
+          "target_visual_height": {"type": "number", "exclusiveMinimum": 0},
+          "alpha_threshold": {"type": "integer", "minimum": 0, "maximum": 254},
+          "padding_px": {"type": "integer", "minimum": 0},
+          "source_anchor_x": {"type": "string", "enum": ["canvas_center", "alpha_center"]},
+          "source_pivot": {"$ref": "#/$defs/point"}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "$defs": {
+    "canvas": {
+      "type": "array",
+      "prefixItems": [
+        {"type": "integer", "minimum": 1},
+        {"type": "integer", "minimum": 1}
+      ],
+      "items": false,
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "point": {
+      "type": "array",
+      "prefixItems": [
+        {"type": "number"},
+        {"type": "number"}
+      ],
+      "items": false,
+      "minItems": 2,
+      "maxItems": 2
+    }
+  },
+  "additionalProperties": false
+}
