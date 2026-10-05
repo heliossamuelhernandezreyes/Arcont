@@ -20,7 +20,11 @@
     "map_authoring_schema": "schemas/map-authoring-contract.schema.json",
     "map_authoring_template": "templates/map-forge/map_contract.example.json",
     "map_authoring_validator": "tools/map_forge_contract.py",
-    "map_authoring_reference_implementation": "heliossamuelhernandezreyes/Closeseal"
+    "map_authoring_reference_implementation": "heliossamuelhernandezreyes/Closeseal",
+    "sprite_pipeline_standard": "docs/knowledge/GODOT_2D_SPRITE_PIPELINE.md",
+    "sprite_manifest_schema": "schemas/sprite-animation-manifest.schema.json",
+    "sprite_pipeline_tool": "tools/sprite_pipeline.py",
+    "sprite_pipeline_reference_implementation": "heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe"
   },
   "benchmarks": {
     "runtime_location": "external repository",
