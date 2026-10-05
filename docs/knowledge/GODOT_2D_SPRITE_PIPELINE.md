@@ -1,10 +1,10 @@
 # Godot 2D sprite production pipeline
 
-Status: **contract defined / tooling not yet validated**
+Status: **first operational tooling / Mortofe validation in progress**
 
 Trigger consumer: `heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe`
 
-This document complements `GRAPHICS_ASSET_FOUNDATIONS.md`. It does not replace general texture/performance guidance; it defines the missing operational contract for character/environment sprite delivery.
+This document complements `GRAPHICS_ASSET_FOUNDATIONS.md`. It does not replace general texture/performance guidance; it defines the operational contract for character/environment sprite delivery.
 
 ## Goals
 
@@ -37,17 +37,14 @@ All frames must resolve to the same world-space anchor after trimming. A visual 
 
 ## Frame-consistency checks
 
-A future ARCONT validator should report at least:
+The first operational validator/packer is `tools/sprite_pipeline.py`. It currently checks dimensions, alpha bounds, transparent padding, fully transparent frames and byte-identical duplicates, then emits deterministic page/slot metadata. The generic contract still requires further checks for:
 
-- dimension mismatch,
-- unexpected alpha-bound jumps,
 - baseline drift,
 - pivot drift,
 - sudden silhouette/scale discontinuity,
-- duplicate frames,
+- semantic costume/weapon/camera drift,
 - filename/order gaps,
-- excessive transparent padding,
-- atlas overflow.
+- atlas overflow against the target device profile.
 
 Generated frames require stronger consistency checks because independent generation can mutate costume, proportions, weapon geometry or camera angle.
 
@@ -74,6 +71,28 @@ Atlas assembly must preserve:
 - optional separation by material/shader needs.
 
 One giant atlas is not automatically optimal. Atlas policy must consider texture size limits, memory residency, draw batching and content streaming.
+
+`tools/sprite_pipeline.py pack` creates deterministic PNG atlas pages and `atlas_manifest.json`. Page count, grid and cell size are explicit inputs rather than hidden heuristics.
+
+## Tool contract
+
+Example audit:
+
+```bash
+python tools/sprite_pipeline.py audit path/to/player.sprite.json --output /tmp/player-audit.json
+```
+
+Example deterministic atlas build:
+
+```bash
+python tools/sprite_pipeline.py pack path/to/player.sprite.json \
+  --output-dir /tmp/player-atlas \
+  --cell 256x256 \
+  --grid 4x4 \
+  --colors 256
+```
+
+Pillow is an image-operation dependency of this tool and is intentionally loaded lazily so ARCONT's dependency-light integrity suite can still test the pure ordering/layout contract without Pillow.
 
 ## Godot import profile
 
@@ -111,14 +130,22 @@ while preserving the same gameplay pivot/body relationship.
 
 Mortofe's product direction is dark medieval/baroque illustration. The reusable pipeline must not bake this art direction into generic tools. It only informs the first consumer workload: detailed silhouettes, cloth/metal ornament, dramatic lighting compatibility and non-pixel-art scaling.
 
+## Current Mortofe gate
+
+The first recovered production candidate has coherent separated frames for idle, run, jump, attack and dash. Hurt and death are intentionally not promoted yet because the available older generated sheets drift in armor/weapon identity. That is a correct pipeline failure, not missing bookkeeping: identity consistency has priority over filling every state with incompatible art.
+
+The next promotion gate is to import the candidate into Mortofe, validate gameplay-scale readability and animation stability on Android, then author coherent hurt/death frames from the approved master identity.
+
 ## Promotion backlog
 
-`sprite_pipeline` remains PARTIAL/MISSING until ARCONT has validated tooling for:
+`sprite_pipeline` remains PARTIAL until ARCONT has validated the complete path for:
 
-- manifest format,
-- frame audit,
-- normalization,
-- deterministic atlas build,
-- Godot import adapter,
-- mobile memory/package benchmark,
+- manifest format;
+- frame audit;
+- semantic normalization;
+- deterministic atlas build;
+- Godot import adapter;
+- mobile memory/package benchmark;
 - at least one real Mortofe animated character imported through the pipeline.
+
+The tool implementation alone does not promote the capability to a validated rule.
