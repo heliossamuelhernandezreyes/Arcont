@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-28T17:45:51Z",
-  "record_count": 4634,
+  "generated_at": "2026-10-05T12:33:48Z",
+  "record_count": 4638,
   "records": [
     {
       "archive": {
@@ -46674,6 +46674,122 @@
         "2_5d",
         "3d"
       ],
+      "id": "ARC-ASSET-POLYHAVEN-5F0A7908E25FCE1C",
+      "license": {
+        "ai_training_allowed": true,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "notes": "Asset license is CC0. Live API usage has separate service attribution/User-Agent terms.",
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "version": "1.0"
+      },
+      "review": {
+        "last_checked": "2026-10-05T12:30:46Z",
+        "license_verified": true,
+        "metadata_verified": false,
+        "notes": "Imported from Poly Haven public API metadata."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-10-05T12:30:46Z",
+        "asset_url": "https://polyhaven.com/a/leaf_scattered_gravel",
+        "author": "All",
+        "download_url": null,
+        "external_id": "leaf_scattered_gravel",
+        "provider": "Poly Haven"
+      },
+      "styles": [],
+      "tags": [
+        "forest",
+        "nature",
+        "stones",
+        "autumn",
+        "leaves",
+        "stone-fragments",
+        "organic-debris",
+        "organic-debris",
+        "loose pebbles"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_formats": [],
+        "formats": [],
+        "lods": null,
+        "pbr": false,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "outdoor",
+        "natural",
+        "terrain",
+        "gravel",
+        "rock"
+      ],
+      "title": "Leaf Scattered Gravel"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "1",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "compatibility_evidence": {
+        "android": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "godot": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unity": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unreal": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "web": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        }
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
       "id": "ARC-ASSET-POLYHAVEN-5C964EC6247BD0D4",
       "license": {
         "ai_training_allowed": true,
@@ -54775,6 +54891,118 @@
         "dirty"
       ],
       "title": "Muddy Tracks"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "1",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "compatibility_evidence": {
+        "android": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "godot": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unity": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unreal": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "web": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        }
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
+      "id": "ARC-ASSET-POLYHAVEN-D0CF311F6D9B8504",
+      "license": {
+        "ai_training_allowed": true,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "notes": "Asset license is CC0. Live API usage has separate service attribution/User-Agent terms.",
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "version": "1.0"
+      },
+      "review": {
+        "last_checked": "2026-10-05T12:30:46Z",
+        "license_verified": true,
+        "metadata_verified": false,
+        "notes": "Imported from Poly Haven public API metadata."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-10-05T12:30:46Z",
+        "asset_url": "https://polyhaven.com/a/multicolored_pebble_floor",
+        "author": "All",
+        "download_url": null,
+        "external_id": "multicolored_pebble_floor",
+        "provider": "Poly Haven"
+      },
+      "styles": [],
+      "tags": [
+        "pebble mosaic",
+        "rounded stones",
+        "stone paving",
+        "street",
+        "embedded stones",
+        "natural stone"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_formats": [],
+        "formats": [],
+        "lods": null,
+        "pbr": false,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "outdoor",
+        "floor",
+        "man made",
+        "cobblestone"
+      ],
+      "title": "Multicolored Pebble Floor"
     },
     {
       "archive": {
@@ -93741,6 +93969,120 @@
         "indoor"
       ],
       "title": "White Stucco"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "1",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "compatibility_evidence": {
+        "android": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "godot": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unity": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unreal": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "web": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        }
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
+      "id": "ARC-ASSET-POLYHAVEN-24F888CE88B74FAB",
+      "license": {
+        "ai_training_allowed": true,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "notes": "Asset license is CC0. Live API usage has separate service attribution/User-Agent terms.",
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "version": "1.0"
+      },
+      "review": {
+        "last_checked": "2026-10-05T12:30:46Z",
+        "license_verified": true,
+        "metadata_verified": false,
+        "notes": "Imported from Poly Haven public API metadata."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-10-05T12:30:46Z",
+        "asset_url": "https://polyhaven.com/a/white_stucco_02",
+        "author": "All",
+        "download_url": null,
+        "external_id": "white_stucco_02",
+        "provider": "Poly Haven"
+      },
+      "styles": [],
+      "tags": [
+        "stucco",
+        "rough",
+        "coarse",
+        "exterior",
+        "architectural",
+        "rendered",
+        "skim-coat"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_formats": [],
+        "formats": [],
+        "lods": null,
+        "pbr": false,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "outdoor",
+        "wall",
+        "plaster",
+        "plaster-concrete",
+        "man made"
+      ],
+      "title": "White Stucco 02"
     },
     {
       "archive": {
@@ -380627,6 +380969,90 @@
         "Textures"
       ],
       "title": "Skyboxes"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "texture",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
+      "id": "ARC-ASSET-KENNEY-4A016F502A4B1125",
+      "kenney_metadata": {
+        "category": [
+          "Textures"
+        ],
+        "features": null,
+        "file_count": 5,
+        "tile_size": null
+      },
+      "license": {
+        "ai_training_allowed": null,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "notes": "Kenney states game assets on its asset pages are public-domain licensed (CC0); attribution is not required. This adapter additionally requires the individual asset page to contain an explicit Creative Commons CC0 marker before indexing it.",
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "version": "1.0"
+      },
+      "review": {
+        "last_checked": "2026-10-05T12:33:17Z",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Metadata extracted from the individual official Kenney asset page. Record created only when that page explicitly states Creative Commons CC0."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-10-05T12:33:17Z",
+        "asset_url": "https://kenney.nl/assets/skyboxes-space",
+        "author": "Kenney",
+        "download_url": null,
+        "external_id": "skyboxes-space",
+        "provider": "Kenney"
+      },
+      "styles": [],
+      "tags": [
+        "kenney",
+        "skybox"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "category_raw": "Textures",
+        "collision": null,
+        "features_raw": null,
+        "font_formats": [],
+        "formats": [],
+        "lods": null,
+        "pack_file_count": 5,
+        "pbr": null,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "Textures"
+      ],
+      "title": "Skyboxes Space"
     },
     {
       "archive": {
