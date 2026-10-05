@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arcont.local/schemas/sprite-animation-manifest.schema.json",
+  "title": "ARCONT 2D Sprite Manifest",
+  "type": "object",
+  "required": ["schema_version", "characters"],
+  "properties": {
+    "schema_version": {"type": "integer", "minimum": 1},
+    "project": {"type": "string"},
+    "art_direction": {"type": "string"},
+    "runtime_profile": {"type": "string"},
+    "characters": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["canvas", "anchor", "baseline_y", "states"],
+        "properties": {
+          "canvas": {
+            "type": "array",
+            "prefixItems": [
+              {"type": "integer", "minimum": 1},
+              {"type": "integer", "minimum": 1}
+            ],
+            "items": false,
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "anchor": {"type": "string", "enum": ["feet", "center", "custom"]},
+          "baseline_y": {"type": "number"},
+          "states": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {
+              "type": "string",
+              "pattern": "^res://"
+            }
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}
