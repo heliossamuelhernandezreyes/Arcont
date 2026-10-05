@@ -58,27 +58,70 @@ capabilities:
       - assets/ASSET_VAULT.md
       - docs/knowledge/ASSET_LICENSE_POLICY.md
   sprite_pipeline:
-    status: missing
+    status: partial
+    evidence:
+      - docs/knowledge/GRAPHICS_ASSET_FOUNDATIONS.md
+      - docs/knowledge/GODOT_2D_SPRITE_PIPELINE.md
+    validated:
+      - canvas_and_pivot_contract_defined
+      - atlas_delivery_contract_defined
+      - frame_consistency_requirements_defined
+      - godot_mobile_import_profile_requirements_defined
     missing:
-      - canvas_and_pivot_contract
-      - atlas_assembly_contract
-      - frame_consistency_checks
-      - godot_import_profile
+      - manifest_schema
+      - frame_audit_tool
+      - normalization_tool
+      - deterministic_atlas_builder
+      - godot_import_adapter
+      - mortofe_real_character_ingest
   characterbody2d_locomotion:
-    status: missing
+    status: partial
+    evidence:
+      - docs/knowledge/GODOT_2D_LOCOMOTION_CONTRACT.md
+      - external:heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe/scripts/player.gd
+      - external:heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe/scripts/main.gd
+      - external:heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe/scripts/moving_platform.gd
+      - external_run:37259454259
+    validated:
+      - controller_requirements_defined
+      - coyote_and_jump_buffer_implemented
+      - variable_jump_implemented
+      - dash_implemented
+      - slope_benchmark_present
+      - one_way_benchmark_present
+      - moving_platform_benchmark_present
+      - godot_parse_smoke_and_android_export
     missing:
-      - controller_requirements
-      - coyote_and_buffer_tests
-      - slopes_and_one_way_tests
-      - moving_platform_tests
+      - coyote_and_buffer_behavior_test
+      - slope_behavior_device_test
+      - one_way_behavior_device_test
+      - moving_platform_behavior_device_test
+      - dash_collision_behavior_test
   combat_2d:
     status: partial
     evidence:
       - docs/engineering/combat-systems.md
+      - docs/knowledge/GODOT_2D_COMBAT_CONTRACT.md
+      - external:heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe/scripts/combat/hitbox_2d.gd
+      - external:heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe/scripts/combat/hurtbox_2d.gd
+      - external:heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe/scripts/player.gd
+      - external:heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe/scripts/enemy.gd
+      - external_run:37259279717
+    validated:
+      - hitbox_hurtbox_contract_defined
+      - body_collision_separated_from_combat_detection
+      - one_hit_per_target_window_bookkeeping
+      - actor_level_invulnerability_path
+      - actor_level_knockback_path
+      - parry_interception_hook
+      - godot_parse_smoke_and_android_export
     missing:
-      - hitbox_hurtbox_contract
-      - invulnerability_test
-      - knockback_test
+      - hit_once_behavior_test
+      - multi_target_behavior_test
+      - repeated_window_behavior_test
+      - invulnerability_behavior_test
+      - parry_behavior_test
+      - overlapping_attackers_test
   tilemaplayer_authoring:
     status: missing
     missing:
@@ -127,7 +170,7 @@ capabilities:
       - docs/knowledge/GODOT_2D_MOBILE_BASELINE.md
       - external:heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe/export_presets.cfg
       - external:heliossamuelhernandezreyes/Godot-juegos-2d/.github/workflows/mortofe-godot-validate.yml
-      - external_run:37259015301
+      - external_run:37259454259
       - source:godot/platform/android/export/export_plugin.cpp@ed1daf0bf001b61586d9930840f2f1394092c079
       - source:godot/editor/import/resource_importer_texture_settings.cpp@ed1daf0bf001b61586d9930840f2f1394092c079
     validated:
@@ -144,7 +187,7 @@ capabilities:
     status: ready
     evidence:
       - external:heliossamuelhernandezreyes/Godot-juegos-2d/.github/workflows/mortofe-godot-validate.yml
-      - external_run:37259015301
+      - external_run:37259454259
       - godot_release_asset_sha256:cadd3204e728a35d3f13adb7fd0d7902636b79f6b95c40c265eb73b6c35329e4
       - godot_export_templates_sha256:f298490b8d44d934be425a5a65a51bf15f422428b229a06a6e11d9ffea248011
     validated:
@@ -156,8 +199,8 @@ capabilities:
       - artifact_publication
 next_actions:
   - real_android_mortofe_run
-  - locomotion_test_plan
-  - combat_hitbox_contract
-  - sprite_pipeline_audit
+  - locomotion_behavior_tests
+  - combat_behavior_tests
+  - sprite_manifest_and_audit_tool
   - tilemaplayer_audit
   - android_touch_probe
