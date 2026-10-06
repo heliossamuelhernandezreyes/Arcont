@@ -92,6 +92,79 @@ class ArcontAgentTests(unittest.TestCase):
             self.assertEqual(info["categories"]["assets_3d"], 1)
             self.assertFalse(report["write_performed"])
 
+    def test_invoke_requires_explicit_project_write_permission(self):
+        with tempfile.TemporaryDirectory() as root_tmp, tempfile.TemporaryDirectory() as project_tmp:
+            root = self.make_root(root_tmp)
+            (root / "agent.capabilities.json").write_text(json.dumps({
+                "schema_version": 1,
+                "protocol": "arcont-agent-control",
+                "capabilities": [{
+                    "id": "writer",
+                    "access": "external-project-write",
+                    "entrypoint": "tools/writer.py",
+                    "doctor": False,
+                    "invocable": True,
+                }],
+            }), encoding="utf-8")
+            (root / "tools" / "writer.py").write_text("print('{\"ok\": true}')\n", encoding="utf-8")
+            with self.assertRaises(PermissionError):
+                agent.invoke_capability(root, "writer", Path(project_tmp), {"protocol_version": 1}, False, 5)
+
+    def test_invoke_runs_registered_external_writer_with_json_request(self):
+        with tempfile.TemporaryDirectory() as root_tmp, tempfile.TemporaryDirectory() as project_tmp:
+            root = self.make_root(root_tmp)
+            (root / "agent.capabilities.json").write_text(json.dumps({
+                "schema_version": 1,
+                "protocol": "arcont-agent-control",
+                "capabilities": [{
+                    "id": "writer",
+                    "access": "external-project-write",
+                    "entrypoint": "tools/writer.py",
+                    "doctor": False,
+                    "invocable": True,
+                    "project_arg": "--project",
+                    "request_arg": "--request",
+                }],
+            }), encoding="utf-8")
+            (root / "tools" / "writer.py").write_text(
+                "import argparse,json,sys\n"
+                "p=argparse.ArgumentParser();p.add_argument('--project');p.add_argument('--request');a=p.parse_args()\n"
+                "req=json.loads(sys.stdin.read());print(json.dumps({'ok': True, 'project': a.project, 'operation': req.get('operation')}))\n",
+                encoding="utf-8",
+            )
+            report = agent.invoke_capability(
+                root,
+                "writer",
+                Path(project_tmp),
+                {"protocol_version": 1, "operation": "inspect"},
+                True,
+                5,
+            )
+            self.assertTrue(report["ok"])
+            self.assertEqual(report["permission"], "explicit-project-write")
+            self.assertEqual(report["result"]["operation"], "inspect")
+            self.assertEqual(Path(report["result"]["project"]), Path(project_tmp).resolve())
+
+    def test_invoke_rejects_project_embedded_inside_arcont(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.make_root(tmp)
+            project = root / "embedded-game"
+            project.mkdir()
+            (root / "agent.capabilities.json").write_text(json.dumps({
+                "schema_version": 1,
+                "protocol": "arcont-agent-control",
+                "capabilities": [{
+                    "id": "writer",
+                    "access": "external-project-write",
+                    "entrypoint": "tools/writer.py",
+                    "doctor": False,
+                    "invocable": True,
+                }],
+            }), encoding="utf-8")
+            (root / "tools" / "writer.py").write_text("print('{\"ok\": true}')\n", encoding="utf-8")
+            with self.assertRaises(ValueError):
+                agent.invoke_capability(root, "writer", project, {"protocol_version": 1}, True, 5)
+
     def test_registry_rejects_duplicate_ids(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = self.make_root(tmp)

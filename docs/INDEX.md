@@ -60,7 +60,13 @@ ARCONT no intenta copiar Internet. Conserva referencias, procedencia, extracció
 
 - [`AGENT_CONTROL_PLANE.md`](AGENT_CONTROL_PLANE.md) — protocolo machine-readable para descubrimiento de capacidades, `doctor` e inspección estática de proyectos externos.
 - [`../agent.capabilities.json`](../agent.capabilities.json) — registro canónico de capacidades disponibles para agentes y sus modos de acceso.
-- [`../tools/arcont_agent.py`](../tools/arcont_agent.py) — punto de entrada unificado y de solo lectura para agentes.
+- [`../tools/arcont_agent.py`](../tools/arcont_agent.py) — punto de entrada unificado para discovery/doctor/inspection y writers externos con permiso explícito.
+- [`knowledge/GODOT_AUTHORING_CONTROL.md`](knowledge/GODOT_AUTHORING_CONTROL.md) — authoring Godot revisionado mediante adaptadores propiedad del juego.
+- [`knowledge/GODOT_PLAYTEST_CONTROL.md`](knowledge/GODOT_PLAYTEST_CONTROL.md) — sesiones acotadas de input/observación sobre bundles aceptados.
+- [`knowledge/MAP_FORGE_EDITOR_CONTROL.md`](knowledge/MAP_FORGE_EDITOR_CONTROL.md) — control revisionado de edición de mapas y adaptadores.
+- [`knowledge/ROAD_NETWORK_AUTHORING.md`](knowledge/ROAD_NETWORK_AUTHORING.md) — contrato explícito de redes viales sin generación oculta.
+- [`../tools/godot_authoring_control.py`](../tools/godot_authoring_control.py) — writer/build/playtest para proyectos Godot externos.
+- [`../tools/map_forge_control.py`](../tools/map_forge_control.py) — editor Map Forge revisionado para proyectos externos.
 - [`../tools/arcont_lab.py`](../tools/arcont_lab.py) — CLI para integridad, análisis de impacto, confianza heurística y comparación de resultados.
 - [`../tools/arcont_hardening.py`](../tools/arcont_hardening.py) — validador de manifiesto, contratos de evidencia, SHA-256 y madurez.
 - [`../tools/runtime_evidence.py`](../tools/runtime_evidence.py) — puente entre campañas prerregistradas y resultados producidos por el harness externo.

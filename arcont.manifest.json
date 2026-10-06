@@ -41,7 +41,12 @@
     "evidence_record_schema": "schemas/external-evidence.schema.json",
     "evidence_bundle_schema": "schemas/evidence-bundle.schema.json",
     "trace_extract_schema": "schemas/trace-extract.schema.json",
-    "providers": ["runtime-lab", "godot-benchmarks", "perfetto", "tracy"],
+    "providers": [
+      "runtime-lab",
+      "godot-benchmarks",
+      "perfetto",
+      "tracy"
+    ],
     "semantic_equivalence_assumed": false,
     "auto_promotion_allowed": false
   },
@@ -52,7 +57,13 @@
     "cli": "tools/arcont_agent.py",
     "documentation": "docs/AGENT_CONTROL_PLANE.md",
     "default_access": "read-only",
-    "external_runtime_auto_execution_allowed": false
+    "external_runtime_auto_execution_allowed": false,
+    "external_project_write_requires_opt_in": true,
+    "embedded_project_target_allowed": false,
+    "external_project_writers": [
+      "godot.authoring.control",
+      "map-forge.editor.control"
+    ]
   },
   "integrity": {
     "validator": "tools/arcont_lab.py",

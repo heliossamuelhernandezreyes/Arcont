@@ -7,7 +7,9 @@
       "description": "Validate ARCONT knowledge integrity and graph/link coherence.",
       "access": "read-only",
       "entrypoint": "tools/arcont_lab.py",
-      "argv": ["validate"],
+      "argv": [
+        "validate"
+      ],
       "output": "json",
       "doctor": true
     },
@@ -16,7 +18,9 @@
       "description": "Validate the ARCONT manifest, evidence contracts, hashes and maturity constraints.",
       "access": "read-only",
       "entrypoint": "tools/arcont_hardening.py",
-      "argv": ["validate"],
+      "argv": [
+        "validate"
+      ],
       "output": "text-or-json",
       "doctor": true
     },
@@ -34,7 +38,9 @@
       "description": "Validate the canonical preregistered runtime campaign without executing a game.",
       "access": "read-only",
       "entrypoint": "tools/runtime_evidence.py",
-      "argv": ["validate-plan"],
+      "argv": [
+        "validate-plan"
+      ],
       "output": "text-or-json",
       "doctor": true
     },
@@ -43,7 +49,9 @@
       "description": "Validate Asset Vault catalog records and policy constraints.",
       "access": "read-only",
       "entrypoint": "tools/asset_vault_indexer.py",
-      "argv": ["validate"],
+      "argv": [
+        "validate"
+      ],
       "output": "text-or-json",
       "doctor": true
     },
@@ -83,6 +91,68 @@
       "output": "benchmark-result",
       "doctor": false,
       "external_repository": "heliossamuelhernandezreyes/Nia-Tech"
+    },
+    {
+      "id": "godot.authoring.control",
+      "description": "Operate revisioned Godot authoring, build and bounded playtest sessions in an external game repository.",
+      "access": "external-project-write",
+      "entrypoint": "tools/godot_authoring_control.py",
+      "output": "json",
+      "doctor": false,
+      "invocable": true,
+      "project_arg": "--project",
+      "request_arg": "--request",
+      "request_mode": "json-stdin",
+      "operations": [
+        "capabilities",
+        "discover",
+        "list",
+        "inspect",
+        "create",
+        "replace",
+        "patch",
+        "restore",
+        "build",
+        "playtest"
+      ]
+    },
+    {
+      "id": "map-forge.editor.control",
+      "description": "Operate revisioned Map Forge editing, terrain brushes, validation, materialization and capture in an external game repository.",
+      "access": "external-project-write",
+      "entrypoint": "tools/map_forge_control.py",
+      "output": "json",
+      "doctor": false,
+      "invocable": true,
+      "project_arg": "--project",
+      "request_arg": "--request",
+      "request_mode": "json-stdin",
+      "operations": [
+        "capabilities",
+        "list",
+        "inspect",
+        "validate",
+        "analyze",
+        "materialize",
+        "capture",
+        "create",
+        "replace",
+        "patch",
+        "brush",
+        "edit",
+        "restore"
+      ]
+    },
+    {
+      "id": "godot.authoring.mcp",
+      "description": "Expose the same Godot authoring API over dependency-free MCP stdio for a connected local agent client.",
+      "access": "external-project-write",
+      "entrypoint": "tools/godot_authoring_mcp.py",
+      "output": "json-rpc",
+      "doctor": false,
+      "invocable": false,
+      "project_arg": "--project",
+      "request_mode": "mcp-stdio"
     }
   ]
 }
