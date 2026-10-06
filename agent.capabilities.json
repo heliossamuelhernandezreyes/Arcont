@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "protocol": "arcont-agent-control",
+  "capabilities": [
+    {
+      "id": "knowledge.validate",
+      "description": "Validate ARCONT knowledge integrity and graph/link coherence.",
+      "access": "read-only",
+      "entrypoint": "tools/arcont_lab.py",
+      "argv": ["validate"],
+      "output": "json",
+      "doctor": true
+    },
+    {
+      "id": "repository.hardening.validate",
+      "description": "Validate the ARCONT manifest, evidence contracts, hashes and maturity constraints.",
+      "access": "read-only",
+      "entrypoint": "tools/arcont_hardening.py",
+      "argv": ["validate"],
+      "output": "text-or-json",
+      "doctor": true
+    },
+    {
+      "id": "observability.validate",
+      "description": "Validate the unified observability registry and evidence integration layer.",
+      "access": "read-only",
+      "entrypoint": "tools/observability_integrity.py",
+      "argv": [],
+      "output": "text-or-json",
+      "doctor": true
+    },
+    {
+      "id": "runtime.plan.validate",
+      "description": "Validate the canonical preregistered runtime campaign without executing a game.",
+      "access": "read-only",
+      "entrypoint": "tools/runtime_evidence.py",
+      "argv": ["validate-plan"],
+      "output": "text-or-json",
+      "doctor": true
+    },
+    {
+      "id": "asset-vault.validate",
+      "description": "Validate Asset Vault catalog records and policy constraints.",
+      "access": "read-only",
+      "entrypoint": "tools/asset_vault_indexer.py",
+      "argv": ["validate"],
+      "output": "text-or-json",
+      "doctor": true
+    },
+    {
+      "id": "asset-trust.validate",
+      "description": "Validate traceable compatibility and license trust evidence for catalog assets.",
+      "access": "read-only",
+      "entrypoint": "tools/asset_trust.py",
+      "argv": [],
+      "output": "text-or-json",
+      "doctor": true
+    },
+    {
+      "id": "map-forge.contract.validate",
+      "description": "Validate an external Map Forge authoring contract.",
+      "access": "read-only",
+      "entrypoint": "tools/map_forge_contract.py",
+      "argv": [],
+      "output": "text-or-json",
+      "doctor": false,
+      "requires_arguments": true
+    },
+    {
+      "id": "sprite.production.audit",
+      "description": "Audit external PNG sprite frames for production consistency without modifying them.",
+      "access": "read-only",
+      "entrypoint": "tools/png_sprite_audit.py",
+      "argv": [],
+      "output": "text-or-json",
+      "doctor": false,
+      "requires_arguments": true
+    },
+    {
+      "id": "runtime-lab.execute",
+      "description": "Execute runtime experiments in the external ARCONT Runtime Lab repository; never inside ARCONT.",
+      "access": "external-runtime",
+      "output": "benchmark-result",
+      "doctor": false,
+      "external_repository": "heliossamuelhernandezreyes/Nia-Tech"
+    }
+  ]
+}
