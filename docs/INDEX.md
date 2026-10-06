@@ -58,6 +58,9 @@ ARCONT no intenta copiar Internet. Conserva referencias, procedencia, extracció
 
 ## Herramientas operativas
 
+- [`AGENT_CONTROL_PLANE.md`](AGENT_CONTROL_PLANE.md) — protocolo machine-readable para descubrimiento de capacidades, `doctor` e inspección estática de proyectos externos.
+- [`../agent.capabilities.json`](../agent.capabilities.json) — registro canónico de capacidades disponibles para agentes y sus modos de acceso.
+- [`../tools/arcont_agent.py`](../tools/arcont_agent.py) — punto de entrada unificado y de solo lectura para agentes.
 - [`../tools/arcont_lab.py`](../tools/arcont_lab.py) — CLI para integridad, análisis de impacto, confianza heurística y comparación de resultados.
 - [`../tools/arcont_hardening.py`](../tools/arcont_hardening.py) — validador de manifiesto, contratos de evidencia, SHA-256 y madurez.
 - [`../tools/runtime_evidence.py`](../tools/runtime_evidence.py) — puente entre campañas prerregistradas y resultados producidos por el harness externo.
