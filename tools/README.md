@@ -6,15 +6,17 @@ No ejecuta Godot, no contiene gameplay y no sustituye la revisión científica. 
 
 ## Agent Control Plane
 
-ARCONT exposes a machine-readable, read-only control plane for AI agents:
+ARCONT exposes a machine-readable control plane for AI agents. ARCONT itself remains read-only; registered external game projects can be edited only with explicit permission:
 
 ```bash
 python tools/arcont_agent.py capabilities
 python tools/arcont_agent.py doctor
 python tools/arcont_agent.py inspect-project path/to/external/game
+python tools/arcont_agent.py invoke godot.authoring.control --project path/to/external/game --request request.json --allow-project-write
+python tools/arcont_agent.py invoke map-forge.editor.control --project path/to/external/game --request request.json --allow-project-write
 ```
 
-The canonical capability registry is `agent.capabilities.json`. Discovery reports the repository guards, tool availability and access mode; `doctor` runs only explicitly whitelisted read-only diagnostics with bounded output and per-tool timeouts. `inspect-project` inventories an external repository without modifying it.
+The canonical capability registry is `agent.capabilities.json`. Discovery reports repository guards, tool availability and access mode; `doctor` runs only explicitly whitelisted read-only diagnostics with bounded output and per-tool timeouts. `inspect-project` inventories an external repository without modifying it. `invoke` only accepts registered `external-project-write` tools, rejects projects embedded inside ARCONT, and requires `--allow-project-write` on every call.
 
 The full boundary and extension rules live in `docs/AGENT_CONTROL_PLANE.md`.
 
