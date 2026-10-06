@@ -4,26 +4,95 @@
   "title": "ARCONT agent capability registry",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "protocol", "capabilities"],
+  "required": [
+    "schema_version",
+    "protocol",
+    "capabilities"
+  ],
   "properties": {
-    "schema_version": {"const": 1},
-    "protocol": {"const": "arcont-agent-control"},
+    "schema_version": {
+      "const": 1
+    },
+    "protocol": {
+      "const": "arcont-agent-control"
+    },
     "capabilities": {
       "type": "array",
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "description", "access", "output", "doctor"],
+        "required": [
+          "id",
+          "description",
+          "access",
+          "output",
+          "doctor"
+        ],
         "properties": {
-          "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]+$"},
-          "description": {"type": "string", "minLength": 1},
-          "access": {"enum": ["read-only", "external-runtime"]},
-          "entrypoint": {"type": "string", "minLength": 1},
-          "argv": {"type": "array", "items": {"type": "string"}},
-          "output": {"type": "string", "minLength": 1},
-          "doctor": {"type": "boolean"},
-          "requires_arguments": {"type": "boolean"},
-          "external_repository": {"type": "string", "minLength": 1}
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._-]+$"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "access": {
+            "enum": [
+              "read-only",
+              "external-project-write",
+              "external-runtime"
+            ]
+          },
+          "entrypoint": {
+            "type": "string",
+            "minLength": 1
+          },
+          "argv": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "output": {
+            "type": "string",
+            "minLength": 1
+          },
+          "doctor": {
+            "type": "boolean"
+          },
+          "requires_arguments": {
+            "type": "boolean"
+          },
+          "external_repository": {
+            "type": "string",
+            "minLength": 1
+          },
+          "invocable": {
+            "type": "boolean"
+          },
+          "project_arg": {
+            "type": "string",
+            "minLength": 1
+          },
+          "request_arg": {
+            "type": "string",
+            "minLength": 1
+          },
+          "request_mode": {
+            "enum": [
+              "json-stdin",
+              "mcp-stdio"
+            ]
+          },
+          "operations": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          }
         }
       }
     }
