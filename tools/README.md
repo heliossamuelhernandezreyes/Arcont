@@ -14,6 +14,8 @@ python tools/arcont_agent.py doctor
 python tools/arcont_agent.py inspect-project path/to/external/game
 python tools/arcont_agent.py invoke godot.authoring.control --project path/to/external/game --request request.json --allow-project-write
 python tools/arcont_agent.py invoke map-forge.editor.control --project path/to/external/game --request request.json --allow-project-write
+python tools/arcont_agent.py invoke production.control --project path/to/external/game --request request.json --allow-project-write
+python tools/arcont_agent.py invoke model-forge.control --project path/to/external/game --request request.json --allow-project-write
 ```
 
 The canonical capability registry is `agent.capabilities.json`. Discovery reports repository guards, tool availability and access mode; `doctor` runs only explicitly whitelisted read-only diagnostics with bounded output and per-tool timeouts. `inspect-project` inventories an external repository without modifying it. `invoke` only accepts registered `external-project-write` tools, rejects projects embedded inside ARCONT, and requires `--allow-project-write` on every call.

@@ -153,6 +153,49 @@
       "invocable": false,
       "project_arg": "--project",
       "request_mode": "mcp-stdio"
+    },
+    {
+      "id": "production.control",
+      "description": "Validate and stage production assets, review animation/sector/performance/TPS/audio evidence, and materialize verified native bundles in an external game repository.",
+      "access": "external-project-write",
+      "entrypoint": "tools/production_control.py",
+      "output": "json",
+      "doctor": false,
+      "invocable": true,
+      "project_arg": "--project",
+      "request_arg": "--request",
+      "request_mode": "json-stdin",
+      "operations": [
+        "capabilities",
+        "assets.validate",
+        "assets.stage",
+        "animation.validate",
+        "sector.validate",
+        "performance.summarize",
+        "performance.compare",
+        "finish.review",
+        "audio.review",
+        "bundle.materialize"
+      ]
+    },
+    {
+      "id": "model-forge.control",
+      "description": "Inspect, budget-check, derive collision policy, and stage local glTF/GLB candidates in an external game repository without network access.",
+      "access": "external-project-write",
+      "entrypoint": "tools/model_forge_control.py",
+      "output": "json",
+      "doctor": false,
+      "invocable": true,
+      "project_arg": "--project",
+      "request_arg": "--request",
+      "request_mode": "json-stdin",
+      "operations": [
+        "capabilities",
+        "inspect",
+        "validate",
+        "collision.recipe",
+        "stage"
+      ]
     }
   ]
 }
