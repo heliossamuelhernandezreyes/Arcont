@@ -65,6 +65,24 @@ Godot authoring exposes revisioned `capabilities / discover / list / inspect / c
 
 The MCP transport is also registered as `godot.authoring.mcp`, but it is not routed through one-shot `invoke`; it is a persistent stdio server and must be connected by an MCP client.
 
+## Production and Model Forge control
+
+The same permissioned `invoke` surface now exposes `production.control` and `model-forge.control`.
+
+`production.control` composes the reusable production gates for asset-plan validation/staging, animation profiles, tactical sectors, performance records, TPS finish review, bounded PCM audio review, and hash-verified native scene bundle publication. Only `assets.stage` and `bundle.materialize` report a project write.
+
+`model-forge.control` intentionally exposes a smaller local surface: inspect GLTF/GLB, validate budgets, derive collision policy, and stage a local candidate. It does not expose URL download or arbitrary external processor execution.
+
+```bash
+python tools/arcont_agent.py invoke production.control \
+  --project ../MyGame --request production-request.json --allow-project-write
+
+python tools/arcont_agent.py invoke model-forge.control \
+  --project ../MyGame --request model-request.json --allow-project-write
+```
+
+Technical acceptance remains separate from artistic approval, target-device performance, gameplay feel and rendered presentation.
+
 ## Architecture boundary
 
 The control plane does not change ARCONT's canonical rule:
@@ -76,4 +94,4 @@ Game-owned adapters, scenes, gameplay, animation state machines and rendered evi
 
 ## Extension path
 
-Future capabilities should enter the registry only when their implementation and dependency closure are present on the same branch. The control plane must never advertise an unavailable writer. Production-toolchain, animation/audio review and native scene publication remain separate follow-up gates until their dependency/hash contracts are rebased onto the current canonical branch.
+Future capabilities should enter the registry only when their implementation and dependency closure are present on the same branch. The control plane must never advertise an unavailable writer. Production components are exposed individually through versioned controls rather than reviving the stale release-hash manifest from the older integration branch. Future release manifests must be regenerated from the current canonical file set.
