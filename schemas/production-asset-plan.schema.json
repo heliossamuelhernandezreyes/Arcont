@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "title": "Reviewed game asset plan",
+  "required": [
+    "version",
+    "id",
+    "provenance_manifest",
+    "provenance_sha256",
+    "assets"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+    },
+    "provenance_manifest": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provenance_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "assets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "path",
+          "source_name",
+          "budget"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "require_skin": {
+            "type": "boolean"
+          },
+          "budget": {
+            "type": "object",
+            "required": [
+              "triangles_max",
+              "materials_max"
+            ],
+            "properties": {
+              "triangles_max": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "materials_max": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          },
+          "engine_profile": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  }
+}
