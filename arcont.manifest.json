@@ -62,8 +62,12 @@
     "embedded_project_target_allowed": false,
     "external_project_writers": [
       "godot.authoring.control",
-      "map-forge.editor.control"
-    ]
+      "map-forge.editor.control",
+      "production.control",
+      "model-forge.control"
+    ],
+    "production_game_code_allowed": false,
+    "model_forge_network_auto_execution_allowed": false
   },
   "integrity": {
     "validator": "tools/arcont_lab.py",
