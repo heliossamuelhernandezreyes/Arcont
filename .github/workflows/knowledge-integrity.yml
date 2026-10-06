@@ -18,6 +18,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Validate agent capability discovery
+        run: python tools/arcont_agent.py capabilities > /tmp/arcont-agent-capabilities.json
+      - name: Validate agent control plane doctor
+        run: python tools/arcont_agent.py doctor --timeout 60
       - name: Validate knowledge bank
         run: python tools/arcont_lab.py validate
       - name: Validate ARCONT 1.0 manifest and evidence contracts
