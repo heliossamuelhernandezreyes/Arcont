@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARCONT Map Forge editor-control request v1",
+  "type": "object",
+  "required": [
+    "protocol_version",
+    "operation"
+  ],
+  "properties": {
+    "protocol_version": {
+      "const": 1
+    },
+    "operation": {
+      "enum": [
+        "capabilities",
+        "list",
+        "inspect",
+        "create",
+        "replace",
+        "patch",
+        "restore",
+        "validate",
+        "analyze",
+        "materialize",
+        "capture",
+        "brush",
+        "edit"
+      ]
+    },
+    "map_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+    },
+    "if_revision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "restore_revision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "dry_run": {
+      "type": "boolean",
+      "default": true
+    },
+    "state": {
+      "type": "object",
+      "required": [
+        "map",
+        "physical"
+      ],
+      "properties": {
+        "map": {
+          "type": "object"
+        },
+        "physical": {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "patch": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "op",
+          "path"
+        ],
+        "properties": {
+          "op": {
+            "enum": [
+              "add",
+              "remove",
+              "replace",
+              "copy",
+              "move",
+              "test"
+            ]
+          },
+          "path": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string"
+          },
+          "value": {}
+        }
+      }
+    },
+    "options": {
+      "type": "object"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "not": {
+              "enum": [
+                "capabilities",
+                "list"
+              ]
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "map_id"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "enum": [
+              "create",
+              "replace"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "state"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "enum": [
+              "patch",
+              "replace",
+              "restore",
+              "brush",
+              "edit"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "if_revision"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "patch"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "patch"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "restore"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "restore_revision"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "brush"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "options"
+        ]
+      }
+    }
+  ],
+  "additionalProperties": false
+}

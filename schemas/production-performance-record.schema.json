@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "title": "Scope labelled performance observation",
+  "required": [
+    "scope",
+    "device",
+    "engine",
+    "renderer",
+    "resolution",
+    "build",
+    "scenario",
+    "warmup_frames",
+    "frame_wall_ms"
+  ],
+  "properties": {
+    "scope": {
+      "enum": [
+        "linux-rendered",
+        "android-device"
+      ]
+    },
+    "device": {
+      "type": "string",
+      "minLength": 1
+    },
+    "engine": {
+      "type": "string",
+      "minLength": 1
+    },
+    "renderer": {
+      "type": "string",
+      "minLength": 1
+    },
+    "build": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scenario": {
+      "type": "string",
+      "minLength": 1
+    },
+    "resolution": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "number"
+      }
+    },
+    "warmup_frames": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "frame_wall_ms": {
+      "type": "array",
+      "minItems": 30,
+      "items": {
+        "type": "number",
+        "exclusiveMinimum": 0
+      }
+    }
+  }
+}
