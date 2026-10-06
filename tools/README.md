@@ -4,6 +4,20 @@
 
 No ejecuta Godot, no contiene gameplay y no sustituye la revisión científica. Su trabajo es detectar incoherencias y reducir errores mecánicos.
 
+## Agent Control Plane
+
+ARCONT exposes a machine-readable, read-only control plane for AI agents:
+
+```bash
+python tools/arcont_agent.py capabilities
+python tools/arcont_agent.py doctor
+python tools/arcont_agent.py inspect-project path/to/external/game
+```
+
+The canonical capability registry is `agent.capabilities.json`. Discovery reports the repository guards, tool availability and access mode; `doctor` runs only explicitly whitelisted read-only diagnostics with bounded output and per-tool timeouts. `inspect-project` inventories an external repository without modifying it.
+
+The full boundary and extension rules live in `docs/AGENT_CONTROL_PLANE.md`.
+
 ## Validación
 
 ```bash
