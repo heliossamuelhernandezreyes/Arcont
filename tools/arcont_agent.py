@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Machine-readable control plane for ARCONT.
 
-The control plane is intentionally read-only. It discovers whitelisted ARCONT
-capabilities, runs bounded diagnostics, and inspects external game repositories
-without writing to them or embedding production game code in ARCONT.
+The control plane is read-only inside ARCONT. It discovers whitelisted
+capabilities, runs bounded diagnostics, inspects external game repositories, and
+can invoke explicitly authorized project writers without embedding production
+game code in ARCONT.
 """
 
 from __future__ import annotations
@@ -67,7 +68,7 @@ def load_registry(root: Path) -> dict[str, Any]:
         if cap_id in ids:
             raise ValueError(f"duplicate capability id: {cap_id}")
         ids.add(cap_id)
-        if item.get("access") not in {"read-only", "external-runtime"}:
+        if item.get("access") not in {"read-only", "external-project-write", "external-runtime"}:
             raise ValueError(f"unsupported capability access mode: {cap_id}")
         entrypoint = item.get("entrypoint")
         argv = item.get("argv")
@@ -198,6 +199,92 @@ def run_diagnostics(root: Path, timeout_seconds: int) -> dict[str, Any]:
     }
 
 
+def invoke_capability(
+    root: Path,
+    capability_id: str,
+    project_root: Path,
+    request: dict[str, Any],
+    allow_project_write: bool,
+    timeout_seconds: int,
+) -> dict[str, Any]:
+    registry = load_registry(root)
+    matches = [item for item in registry["capabilities"] if item.get("id") == capability_id]
+    if len(matches) != 1:
+        raise ValueError(f"unknown capability: {capability_id}")
+    item = matches[0]
+    if item.get("access") != "external-project-write" or not item.get("invocable", False):
+        raise ValueError(f"capability is not an invocable external project writer: {capability_id}")
+    if not allow_project_write:
+        raise PermissionError("external project write permission is required")
+    if not isinstance(request, dict) or request.get("protocol_version") != 1:
+        raise ValueError("invocation request requires protocol_version=1")
+    if timeout_seconds < 1 or timeout_seconds > 900:
+        raise ValueError("timeout must be in [1,900] seconds")
+
+    project = project_root.resolve()
+    if not project.is_dir():
+        raise FileNotFoundError(f"project root is not a directory: {project}")
+    arcont = root.resolve()
+    if project == arcont or arcont in project.parents:
+        raise ValueError("refusing to operate on ARCONT itself or an embedded project inside ARCONT")
+
+    entrypoint = item.get("entrypoint")
+    if not isinstance(entrypoint, str):
+        raise ValueError("capability has no executable entrypoint")
+    script = (arcont / entrypoint).resolve()
+    try:
+        script.relative_to(arcont)
+    except ValueError as exc:
+        raise ValueError("capability entrypoint escapes ARCONT") from exc
+    if not script.is_file():
+        raise FileNotFoundError(f"capability entrypoint is missing: {entrypoint}")
+
+    project_arg = item.get("project_arg", "--project")
+    request_arg = item.get("request_arg", "--request")
+    if not isinstance(project_arg, str) or not isinstance(request_arg, str):
+        raise ValueError("invalid invocation argument contract")
+    command = [sys.executable, str(script), project_arg, str(project), request_arg, "-"]
+    try:
+        proc = subprocess.run(
+            command,
+            cwd=arcont,
+            input=json.dumps(request, ensure_ascii=False),
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as exc:
+        return {
+            "schema_version": 1,
+            "protocol": PROTOCOL,
+            "operation": "invoke",
+            "capability": capability_id,
+            "project": str(project),
+            "ok": False,
+            "status": "timeout",
+            "timeout_seconds": timeout_seconds,
+            "stdout": _clip((exc.stdout or "") if isinstance(exc.stdout, str) else ""),
+            "stderr": _clip((exc.stderr or "") if isinstance(exc.stderr, str) else ""),
+        }
+
+    payload = _json_or_text(proc.stdout)
+    child_ok = isinstance(payload, dict) and payload.get("ok") is True
+    return {
+        "schema_version": 1,
+        "protocol": PROTOCOL,
+        "operation": "invoke",
+        "capability": capability_id,
+        "project": str(project),
+        "permission": "explicit-project-write",
+        "ok": proc.returncode == 0 and child_ok,
+        "status": "completed" if proc.returncode == 0 else "failed",
+        "exit_code": proc.returncode,
+        "result": payload,
+        "stderr": _clip(proc.stderr.strip()) or None,
+    }
+
+
 def inspect_project(project_root: Path, max_files: int) -> dict[str, Any]:
     project_root = project_root.resolve()
     if not project_root.is_dir():
@@ -293,6 +380,23 @@ def cmd_inspect_project(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_invoke(args: argparse.Namespace) -> int:
+    raw = sys.stdin.read() if args.request == "-" else Path(args.request).read_text(encoding="utf-8")
+    request = json.loads(raw)
+    if not isinstance(request, dict):
+        raise ValueError("request JSON must be an object")
+    report = invoke_capability(
+        Path(args.root).resolve(),
+        args.capability,
+        Path(args.project),
+        request,
+        args.allow_project_write,
+        args.timeout,
+    )
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return 0 if report["ok"] else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="arcont-agent", description="ARCONT machine-readable agent control plane")
     parser.add_argument("--root", default=str(repo_root()), help="ARCONT repository root")
@@ -309,6 +413,15 @@ def build_parser() -> argparse.ArgumentParser:
     inspect_cmd.add_argument("project_root")
     inspect_cmd.add_argument("--max-files", type=int, default=DEFAULT_MAX_FILES)
     inspect_cmd.set_defaults(func=cmd_inspect_project)
+
+    invoke = sub.add_parser("invoke", help="invoke an explicitly registered external-project writer")
+    invoke.add_argument("capability")
+    invoke.add_argument("--project", required=True)
+    invoke.add_argument("--request", default="-", help="request JSON path, or - for stdin")
+    invoke.add_argument("--allow-project-write", action="store_true",
+                        help="required explicit permission for any external project writer")
+    invoke.add_argument("--timeout", type=int, default=120)
+    invoke.set_defaults(func=cmd_invoke)
     return parser
 
 
@@ -317,7 +430,7 @@ def main() -> int:
     args = parser.parse_args()
     try:
         return int(args.func(args))
-    except (OSError, ValueError, json.JSONDecodeError) as exc:
+    except (OSError, ValueError, PermissionError, json.JSONDecodeError) as exc:
         print(json.dumps({"schema_version": 1, "protocol": PROTOCOL, "ok": False, "error": str(exc)}), file=sys.stderr)
         return 2
 
