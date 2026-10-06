@@ -67,6 +67,12 @@ ARCONT no intenta copiar Internet. Conserva referencias, procedencia, extracció
 - [`knowledge/ROAD_NETWORK_AUTHORING.md`](knowledge/ROAD_NETWORK_AUTHORING.md) — contrato explícito de redes viales sin generación oculta.
 - [`../tools/godot_authoring_control.py`](../tools/godot_authoring_control.py) — writer/build/playtest para proyectos Godot externos.
 - [`../tools/map_forge_control.py`](../tools/map_forge_control.py) — editor Map Forge revisionado para proyectos externos.
+- [`../tools/production_control.py`](../tools/production_control.py) — superficie unificada para preparación, revisión y publicación técnica de assets externos.
+- [`../tools/model_forge_control.py`](../tools/model_forge_control.py) — control local acotado para inspección, budgets, colisión y staging GLTF/GLB.
+- [`knowledge/3D_PRODUCTION_STANDARD.md`](knowledge/3D_PRODUCTION_STANDARD.md) — estándar de producción 3D reusable.
+- [`knowledge/TPS_MOBILE_FINISH.md`](knowledge/TPS_MOBILE_FINISH.md) — revisión cuantificable de cadencia/contactos para TPS móvil.
+- [`knowledge/NATIVE_SCENE_BUNDLES.md`](knowledge/NATIVE_SCENE_BUNDLES.md) — publicación verificable de bundles de escenas nativas.
+- [`knowledge/NATIVE_MOTION_AUDIO.md`](knowledge/NATIVE_MOTION_AUDIO.md) — contratos de movimiento nativo y revisión de audio.
 - [`../tools/arcont_lab.py`](../tools/arcont_lab.py) — CLI para integridad, análisis de impacto, confianza heurística y comparación de resultados.
 - [`../tools/arcont_hardening.py`](../tools/arcont_hardening.py) — validador de manifiesto, contratos de evidencia, SHA-256 y madurez.
 - [`../tools/runtime_evidence.py`](../tools/runtime_evidence.py) — puente entre campañas prerregistradas y resultados producidos por el harness externo.
