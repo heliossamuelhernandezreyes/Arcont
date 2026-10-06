@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arcont.local/schemas/agent-capability-registry.schema.json",
+  "title": "ARCONT agent capability registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "protocol", "capabilities"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "protocol": {"const": "arcont-agent-control"},
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description", "access", "output", "doctor"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]+$"},
+          "description": {"type": "string", "minLength": 1},
+          "access": {"enum": ["read-only", "external-runtime"]},
+          "entrypoint": {"type": "string", "minLength": 1},
+          "argv": {"type": "array", "items": {"type": "string"}},
+          "output": {"type": "string", "minLength": 1},
+          "doctor": {"type": "boolean"},
+          "requires_arguments": {"type": "boolean"},
+          "external_repository": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}
