@@ -63,6 +63,6 @@ Temporary downloaded/generated binaries remain workflow artifacts unless an expl
 
 ## Current limitation
 
-The consolidated release adds project-owned delivered-asset staging through `production_toolchain.py`; see [PRODUCTION_TOOLCHAIN.md](PRODUCTION_TOOLCHAIN.md). The Nexo acceptance uses already normalized GLB/glTF and does not invoke external geometry or texture processors. The stylized tactical 3D standard is a separate profile; it is not silently imposed on the third-person shooter.
+The current agent stack exposes local project-owned inspection, budget validation, collision-policy derivation and deterministic staging through `tools/model_forge_control.py`; see [`../AGENT_CONTROL_PLANE.md`](../AGENT_CONTROL_PLANE.md). The Nexo acceptance uses already normalized GLB/glTF and does not invoke external geometry or texture processors. The stylized tactical 3D standard is a separate profile; it is not silently imposed on the third-person shooter.
 
 The branch can inspect and validate GLB/glTF already present in an acquired package. Automatic conversion of OBJ/FBX/DAE/BLEND, automatic LOD/collision generation, KTX2 processing, and cross-repository staging are the next execution gates and must be implemented with pinned toolchains plus tests, not ad-hoc transformations.
