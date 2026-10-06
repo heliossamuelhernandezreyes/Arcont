@@ -45,6 +45,15 @@
     "semantic_equivalence_assumed": false,
     "auto_promotion_allowed": false
   },
+  "agent_control": {
+    "protocol": "arcont-agent-control",
+    "registry": "agent.capabilities.json",
+    "registry_schema": "schemas/agent-capability-registry.schema.json",
+    "cli": "tools/arcont_agent.py",
+    "documentation": "docs/AGENT_CONTROL_PLANE.md",
+    "default_access": "read-only",
+    "external_runtime_auto_execution_allowed": false
+  },
   "integrity": {
     "validator": "tools/arcont_lab.py",
     "hardening_validator": "tools/arcont_hardening.py",
