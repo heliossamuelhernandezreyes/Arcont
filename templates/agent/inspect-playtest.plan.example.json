@@ -1,0 +1,86 @@
+{
+  "protocol": "arcont-agent-plan",
+  "version": 1,
+  "id": "inspect_and_playtest",
+  "goal": "Reopen the latest accepted Godot scene bundle and verify one bounded player movement checkpoint.",
+  "permissions": {
+    "project_write": true
+  },
+  "capability_allowlist": [
+    "godot.authoring.control"
+  ],
+  "steps": [
+    {
+      "id": "inspect_scene",
+      "kind": "invoke",
+      "capability": "godot.authoring.control",
+      "request": {
+        "protocol_version": 1,
+        "operation": "inspect",
+        "document_id": "urban_playtest"
+      },
+      "expect": [
+        {
+          "pointer": "/result/revision",
+          "op": "exists"
+        },
+        {
+          "pointer": "/result/last_build/directory",
+          "op": "exists"
+        }
+      ]
+    },
+    {
+      "id": "replay_checkpoint",
+      "kind": "invoke",
+      "capability": "godot.authoring.control",
+      "timeout_seconds": 180,
+      "request": {
+        "protocol_version": 1,
+        "operation": "playtest",
+        "document_id": "urban_playtest",
+        "if_revision": {
+          "$from": "inspect_scene",
+          "pointer": "/result/revision"
+        },
+        "if_bundle": {
+          "$from": "inspect_scene",
+          "pointer": "/result/last_build/directory"
+        },
+        "scene": "scenes/urban_roads_editable.tscn",
+        "dry_run": true,
+        "options": {
+          "render": true,
+          "audio_driver": "Dummy"
+        },
+        "session": {
+          "version": 1,
+          "id": "door_check",
+          "actor": "Actors/Explorer",
+          "seed": 41,
+          "commands": [
+            {
+              "id": "walk",
+              "frames": 120,
+              "actions": {
+                "arcont_forward": 1
+              },
+              "capture": "Cameras/Entrance",
+              "expect": {
+                "position": [-30, 0.15, 16],
+                "tolerance_m": 0.8
+              }
+            }
+          ]
+        }
+      },
+      "expect": [
+        {
+          "pointer": "/result/passed",
+          "op": "equals",
+          "value": true
+        }
+      ]
+    }
+  ]
+}

@@ -22,6 +22,30 @@ jobs:
         run: python tools/arcont_agent.py capabilities > /tmp/arcont-agent-capabilities.json
       - name: Validate agent control plane doctor
         run: python tools/arcont_agent.py doctor --timeout 60
+      - name: Validate bounded agent execution loop
+        shell: bash
+        run: |
+          mkdir -p /tmp/arcont-agent-fixture
+          printf '[application]\nconfig/name="fixture"\n' > /tmp/arcont-agent-fixture/project.godot
+          cat > /tmp/arcont-readonly-plan.json <<'JSON'
+          {
+            "protocol":"arcont-agent-plan",
+            "version":1,
+            "id":"ci_inspect",
+            "goal":"Verify bounded read-only plan execution",
+            "permissions":{"project_write":false},
+            "capability_allowlist":["godot.authoring.control"],
+            "steps":[
+              {
+                "id":"inventory",
+                "kind":"inspect-project",
+                "max_files":100,
+                "expect":[{"pointer":"/project/engine","op":"equals","value":"godot"}]
+              }
+            ]
+          }
+          JSON
+          python tools/arcont_agent.py run-plan --project /tmp/arcont-agent-fixture --plan /tmp/arcont-readonly-plan.json
       - name: Validate knowledge bank
         run: python tools/arcont_lab.py validate
       - name: Validate ARCONT 1.0 manifest and evidence contracts

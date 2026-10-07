@@ -344,6 +344,7 @@ def inspect_project(project_root: Path, max_files: int) -> dict[str, Any]:
         "schema_version": 1,
         "protocol": PROTOCOL,
         "operation": "inspect-project",
+        "ok": True,
         "project": {
             "root": str(project_root),
             "engine": engine,
@@ -397,6 +398,29 @@ def cmd_invoke(args: argparse.Namespace) -> int:
     return 0 if report["ok"] else 1
 
 
+def cmd_run_plan(args: argparse.Namespace) -> int:
+    try:
+        from tools.agent_execution_loop import execute_plan
+    except ModuleNotFoundError:
+        from agent_execution_loop import execute_plan
+    raw = sys.stdin.read() if args.plan == "-" else Path(args.plan).read_text(encoding="utf-8")
+    plan = json.loads(raw)
+    if not isinstance(plan, dict):
+        raise ValueError("plan JSON must be an object")
+    root = Path(args.root).resolve()
+    report = execute_plan(
+        root,
+        Path(args.project),
+        plan,
+        args.allow_project_write,
+        load_registry(root),
+        inspect_project,
+        invoke_capability,
+    )
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return 0 if report["ok"] else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="arcont-agent", description="ARCONT machine-readable agent control plane")
     parser.add_argument("--root", default=str(repo_root()), help="ARCONT repository root")
@@ -422,6 +446,13 @@ def build_parser() -> argparse.ArgumentParser:
                         help="required explicit permission for any external project writer")
     invoke.add_argument("--timeout", type=int, default=120)
     invoke.set_defaults(func=cmd_invoke)
+
+    run_plan = sub.add_parser("run-plan", help="execute a bounded revision-aware agent plan")
+    run_plan.add_argument("--project", required=True)
+    run_plan.add_argument("--plan", default="-", help="plan JSON path, or - for stdin")
+    run_plan.add_argument("--allow-project-write", action="store_true",
+                          help="required in addition to plan.permissions.project_write for writer steps")
+    run_plan.set_defaults(func=cmd_run_plan)
     return parser
 
 

@@ -83,6 +83,35 @@ python tools/arcont_agent.py invoke model-forge.control \
 
 Technical acceptance remains separate from artistic approval, target-device performance, gameplay feel and rendered presentation.
 
+## Bounded execution loop
+
+`run-plan` executes a declarative plan with at most 24 steps:
+
+```bash
+python tools/arcont_agent.py run-plan \
+  --project ../MyGame \
+  --plan templates/agent/inspect-playtest.plan.example.json \
+  --allow-project-write
+```
+
+Plans use protocol `arcont-agent-plan` version 1 and are validated against `schemas/agent-execution-plan.schema.json`. They declare a goal, an explicit capability allowlist, project-write permission, ordered steps and optional expectations.
+
+Writer steps require **both** `permissions.project_write=true` in the plan and `--allow-project-write` on the CLI. The plan may only invoke capabilities that are both registered as `external-project-write` and `invocable:true`.
+
+A request can consume a value from a completed prior step using:
+
+```json
+{"$from":"inspect_scene","pointer":"/result/revision"}
+```
+
+The JSON pointer is resolved only against an already completed step. Forward references are rejected. This is how a plan can carry revisions, accepted bundle directories, hashes and other evidence forward without hardcoding stale values.
+
+Expectations are fail-closed. Operators are `exists`, `equals`, `not-equals`, `truthy` and `falsy`. If execution fails or an expectation is false, later steps are not executed.
+
+Each receipt includes the plan SHA-256, capability-registry SHA-256, ordered step outputs, expectation results, write-step count and the failed step when applicable. The loop does not generate a new plan, execute shell commands, invoke external-runtime capabilities, or silently retry a failed mutation.
+
+The example in `templates/agent/inspect-playtest.plan.example.json` inspects a Godot authoring document, binds its current revision and accepted bundle into a playtest request, and requires `passed=true`.
+
 ## Architecture boundary
 
 The control plane does not change ARCONT's canonical rule:

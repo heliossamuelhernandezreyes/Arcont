@@ -67,7 +67,13 @@
       "model-forge.control"
     ],
     "production_game_code_allowed": false,
-    "model_forge_network_auto_execution_allowed": false
+    "model_forge_network_auto_execution_allowed": false,
+    "execution_plan_schema": "schemas/agent-execution-plan.schema.json",
+    "execution_plan_engine": "tools/agent_execution_loop.py",
+    "execution_plan_max_steps": 24,
+    "forward_binding_allowed": false,
+    "arbitrary_shell_execution_allowed": false,
+    "auto_retry_mutations_allowed": false
   },
   "integrity": {
     "validator": "tools/arcont_lab.py",
