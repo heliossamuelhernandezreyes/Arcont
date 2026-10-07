@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arcont.local/schemas/development-session-request.schema.json",
+  "title": "ARCONT bounded development session request",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol_version", "operation"],
+      "properties": {
+        "protocol_version": {"const": 1},
+        "operation": {"const": "capabilities"}
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol_version", "operation", "spec"],
+      "properties": {
+        "protocol_version": {"const": 1},
+        "operation": {"const": "create"},
+        "spec": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "goal", "capability_allowlist", "permissions", "milestones"],
+          "properties": {
+            "id": {"type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$"},
+            "goal": {"type": "string", "minLength": 1, "maxLength": 2000},
+            "capability_allowlist": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 32,
+              "uniqueItems": true,
+              "items": {"type": "string", "minLength": 1}
+            },
+            "permissions": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["project_write"],
+              "properties": {"project_write": {"type": "boolean"}}
+            },
+            "budgets": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "max_plan_runs": {"type": "integer", "minimum": 1, "maximum": 32},
+                "max_execution_steps": {"type": "integer", "minimum": 1, "maximum": 256},
+                "max_write_steps": {"type": "integer", "minimum": 0, "maximum": 96},
+                "max_failed_runs": {"type": "integer", "minimum": 0, "maximum": 8}
+              }
+            },
+            "milestones": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 16,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["id", "goal"],
+                "properties": {
+                  "id": {"type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$"},
+                  "goal": {"type": "string", "minLength": 1, "maxLength": 1000},
+                  "acceptance": {
+                    "type": "array",
+                    "maxItems": 16,
+                    "items": {"type": "string", "minLength": 1, "maxLength": 500}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol_version", "operation", "session_id"],
+      "properties": {
+        "protocol_version": {"const": 1},
+        "operation": {"const": "inspect"},
+        "session_id": {"type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$"}
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocol_version", "operation", "session_id", "if_session_revision",
+        "milestone_id", "plan", "complete_milestone"
+      ],
+      "properties": {
+        "protocol_version": {"const": 1},
+        "operation": {"const": "execute"},
+        "session_id": {"type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$"},
+        "if_session_revision": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "milestone_id": {"type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$"},
+        "plan": {"type": "object"},
+        "complete_milestone": {"type": "boolean"},
+        "completion_note": {"type": ["string", "null"], "maxLength": 2000}
+      }
+    }
+  ]
+}
