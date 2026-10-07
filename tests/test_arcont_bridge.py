@@ -438,6 +438,22 @@ class UniversalAgentBridgeTests(unittest.TestCase):
 
     def test_development_session_inspect_is_pure_read(self):
         from tools.development_session import create as create_session
+        (self.project / "project.intent.json").write_text(
+            json.dumps({
+                "protocol": "arcont-project-intent",
+                "version": 1,
+                "project_id": "bridge_session",
+                "title": "Bridge Session",
+                "genre": "test",
+                "asset_policy": {
+                    "user_assets": True,
+                    "public_assets": False,
+                    "commercial_use_required": True,
+                    "allow_network_discovery": False,
+                },
+            }),
+            encoding="utf-8",
+        )
         created = create_session(
             self.project,
             {
