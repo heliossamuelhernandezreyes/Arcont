@@ -368,6 +368,7 @@ def _milestones(value: Any) -> list[dict[str, Any]]:
                 "status": "active" if index == 0 else "pending",
                 "completed_by_run": None,
                 "completion_note": None,
+                "completion_evidence": None,
             }
         )
     return rows
@@ -532,6 +533,98 @@ def inspect(project: Path, request: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _completion_evidence_spec(
+    value: Any,
+    milestone: dict[str, Any],
+    plan: dict[str, Any],
+    requested: bool,
+) -> list[dict[str, Any]]:
+    if not requested:
+        if value not in (None, []):
+            raise SessionError("completion_evidence is only valid when complete_milestone=true")
+        return []
+    acceptance = milestone.get("acceptance", [])
+    if not acceptance:
+        raise SessionError("milestone completion requires explicit acceptance criteria")
+    if not isinstance(value, list) or len(value) != len(acceptance):
+        raise SessionError("completion_evidence must contain exactly one mapping per acceptance criterion")
+    plan_steps = {step["id"]: step for step in plan["steps"]}
+    rows: list[dict[str, Any]] = []
+    indexes: set[int] = set()
+    for row in value:
+        if not isinstance(row, dict) or set(row) != {"criterion_index", "step_ids"}:
+            raise SessionError("completion_evidence rows require criterion_index and step_ids")
+        index = row.get("criterion_index")
+        step_ids = row.get("step_ids")
+        if isinstance(index, bool) or not isinstance(index, int) or index < 0 or index >= len(acceptance):
+            raise SessionError("completion_evidence criterion_index is out of range")
+        if index in indexes:
+            raise SessionError("completion_evidence criterion_index must be unique")
+        indexes.add(index)
+        if (
+            not isinstance(step_ids, list)
+            or not step_ids
+            or len(step_ids) > 8
+            or len(set(step_ids)) != len(step_ids)
+        ):
+            raise SessionError("completion_evidence step_ids must be a bounded unique non-empty array")
+        for step_id in step_ids:
+            if not isinstance(step_id, str) or step_id not in plan_steps:
+                raise SessionError("completion_evidence references an unknown plan step")
+            step = plan_steps[step_id]
+            has_expectations = bool(step.get("expect"))
+            potentially_mutating = step.get("kind") == "invoke"
+            if not has_expectations and not potentially_mutating:
+                raise SessionError(
+                    "completion evidence must cite a step with machine expectations or an invoked capability"
+                )
+        rows.append({
+            "criterion_index": index,
+            "criterion": acceptance[index],
+            "step_ids": list(step_ids),
+        })
+    if indexes != set(range(len(acceptance))):
+        raise SessionError("completion_evidence must cover every acceptance criterion exactly once")
+    return sorted(rows, key=lambda row: row["criterion_index"])
+
+
+def _verify_completion_evidence(
+    mappings: list[dict[str, Any]],
+    execution: dict[str, Any],
+) -> tuple[bool, list[dict[str, Any]]]:
+    receipts = {
+        step.get("id"): step
+        for step in execution.get("steps", [])
+        if isinstance(step, dict) and isinstance(step.get("id"), str)
+    }
+    checked: list[dict[str, Any]] = []
+    all_ok = True
+    for mapping in mappings:
+        step_results = []
+        mapping_ok = True
+        for step_id in mapping["step_ids"]:
+            step = receipts.get(step_id)
+            ok = isinstance(step, dict) and step.get("ok") is True
+            machine_signal = False
+            if isinstance(step, dict):
+                machine_signal = bool(step.get("write_performed")) or bool(step.get("expectations"))
+            evidence_ok = ok and machine_signal
+            mapping_ok = mapping_ok and evidence_ok
+            step_results.append({
+                "step_id": step_id,
+                "step_ok": ok,
+                "machine_signal": machine_signal,
+                "evidence_ok": evidence_ok,
+            })
+        all_ok = all_ok and mapping_ok
+        checked.append({
+            **mapping,
+            "ok": mapping_ok,
+            "steps": step_results,
+        })
+    return all_ok, checked
+
+
 def _require_revision(state: dict[str, Any], expected: Any) -> None:
     if not isinstance(expected, str) or not SHA256.fullmatch(expected):
         raise SessionError("execute requires if_session_revision SHA-256")
@@ -582,8 +675,12 @@ def _execute_one_locked(project: Path, request: dict[str, Any]) -> dict[str, Any
     note = request.get("completion_note")
     if note is not None and (not isinstance(note, str) or len(note) > MAX_NOTE):
         raise SessionError(f"completion_note must be null/string <={MAX_NOTE}")
-    if complete_milestone and not milestone["acceptance"]:
-        raise SessionError("milestone completion requires explicit acceptance criteria in session spec")
+    completion_evidence = _completion_evidence_spec(
+        request.get("completion_evidence"),
+        milestone,
+        plan,
+        complete_milestone,
+    )
 
     remaining = _remaining(state)
     if remaining["plan_runs"] <= 0:
@@ -649,6 +746,7 @@ def _execute_one_locked(project: Path, request: dict[str, Any]) -> dict[str, Any
         "execution": result,
         "complete_milestone_requested": complete_milestone,
         "completion_note": note,
+        "completion_evidence_requested": completion_evidence,
         "environment_after": {
             "project_intent_sha256": post_intent,
             "registry_sha256": post_registry,
@@ -658,6 +756,14 @@ def _execute_one_locked(project: Path, request: dict[str, Any]) -> dict[str, Any
     }
     _atomic_json(run_path, receipt)
     receipt_sha = hashlib.sha256(run_path.read_bytes()).hexdigest()
+
+    completion_evidence_ok = True
+    checked_completion_evidence: list[dict[str, Any]] = []
+    if complete_milestone and result.get("ok") is True:
+        completion_evidence_ok, checked_completion_evidence = _verify_completion_evidence(
+            completion_evidence,
+            result,
+        )
 
     state["sequence"] += 1
     state["counters"]["plan_runs"] += 1
@@ -678,15 +784,17 @@ def _execute_one_locked(project: Path, request: dict[str, Any]) -> dict[str, Any
         "steps_completed": result.get("steps_completed", 0),
         "write_steps": result.get("write_steps", 0),
         "failed_step": result.get("failed_step"),
+        "completion_evidence_ok": completion_evidence_ok if complete_milestone else None,
     }
     state["history"].append(history_row)
     if len(state["history"]) > MAX_HISTORY:
         raise SessionError("session history exceeded hard limit")
 
-    if result.get("ok") is True and complete_milestone and environment_stable:
+    if result.get("ok") is True and complete_milestone and environment_stable and completion_evidence_ok:
         milestone["status"] = "completed"
         milestone["completed_by_run"] = run_id
         milestone["completion_note"] = note
+        milestone["completion_evidence"] = checked_completion_evidence
         state["counters"]["milestones_completed"] += 1
         pending = [item for item in state["milestones"] if item["status"] == "pending"]
         if pending:
@@ -723,12 +831,17 @@ def _execute_one_locked(project: Path, request: dict[str, Any]) -> dict[str, Any
         pending_path.unlink()
 
     return {
-        "ok": result.get("ok") is True and environment_stable,
+        "ok": (
+            result.get("ok") is True
+            and environment_stable
+            and (not complete_milestone or completion_evidence_ok)
+        ),
         "write_performed": True,
         "result": {
             "session": state,
             "execution": result,
             "run": history_row,
+            "completion_evidence": checked_completion_evidence if complete_milestone else [],
             "remaining": _remaining(state),
             "next_milestone": _active_milestone(state),
             "next_action": (
@@ -736,6 +849,8 @@ def _execute_one_locked(project: Path, request: dict[str, Any]) -> dict[str, Any
                 if state["status"] == "completed"
                 else "session-paused"
                 if not environment_stable
+                else "review-completion-evidence-and-submit-new-plan"
+                if complete_milestone and result.get("ok") is True and not completion_evidence_ok
                 else "review-failure-and-submit-new-plan"
                 if result.get("ok") is not True and state["status"] == "active"
                 else "session-paused"
