@@ -96,8 +96,7 @@ Inventories local project assets with relative path, type, extension, byte size
 and bounded SHA-256 hashing. It does not download assets and does not infer
 copyright or license rights from file contents.
 
-Public asset discovery remains a future bridge operation. Asset Vault remains
-the trust/provenance layer for public sources.
+Provider-scoped public asset discovery is available through the explicit public-asset operations below. Asset Vault remains the broader trust/catalog layer for public sources.
 
 ### `asset.user.inspect / asset.user.stage / asset.user.list`
 
@@ -108,6 +107,22 @@ rights declaration below `.arcont/assets/user/`. ARCONT does not infer or
 independently verify ownership/license rights.
 
 V1 rejects archive extraction and network download.
+
+### `asset.public.providers / asset.public.search / asset.public.files / asset.public.stage / asset.public.list`
+
+Public assets use explicit provider adapters rather than arbitrary URLs. V1
+supports the Poly Haven official API. Search and file-manifest discovery are
+read-only but require project policy to allow public/network assets. Staging
+requires explicit project-write opt-in and a `manifest_sha256` returned by
+`asset.public.files`.
+
+The live file manifest is re-fetched before staging. Any change invalidates the
+selection. Download hosts and redirects are allowlisted, provider MD5/size are
+verified when available, and ARCONT computes SHA-256 plus a persistent
+provenance record. API attribution requirements are kept separate from the
+asset's CC0 attribution requirements.
+
+See `PUBLIC_ASSET_DISCOVERY.md`.
 
 ### `authoring.catalog`
 
@@ -169,8 +184,8 @@ Bridge v1 does **not**:
 - weaken revision checking;
 - permit silent mutation retries;
 - infer a missing project goal;
-- download public assets;
-- extract user archives;
+- download from arbitrary public URLs or unsupported providers;
+- extract user/public archives;
 - infer asset license rights;
 - embed a production game in ARCONT.
 

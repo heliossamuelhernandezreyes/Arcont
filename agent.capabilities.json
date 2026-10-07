@@ -137,6 +137,26 @@
       ]
     },
     {
+      "id": "public-asset.control",
+      "description": "Provider-scoped public asset discovery and verified staging through official APIs with license/provenance records.",
+      "access": "external-project-write",
+      "entrypoint": "tools/public_asset_discovery.py",
+      "output": "json",
+      "doctor": false,
+      "invocable": true,
+      "project_arg": "--project",
+      "request_arg": "--request",
+      "request_mode": "json-stdin",
+      "operations": [
+        "capabilities",
+        "providers",
+        "search",
+        "files",
+        "stage",
+        "list"
+      ]
+    },
+    {
       "id": "agent.bridge",
       "description": "Transport-neutral JSON/stdio bridge for external AI agents to discover ARCONT, read project intent/assets, evaluate hypotheses and execute bounded plans.",
       "access": "external-project-write",
@@ -155,6 +175,11 @@
         "asset.user.inspect",
         "asset.user.stage",
         "asset.user.list",
+        "asset.public.providers",
+        "asset.public.search",
+        "asset.public.files",
+        "asset.public.stage",
+        "asset.public.list",
         "authoring.catalog",
         "authoring.document.read",
         "hypothesis.evaluate",

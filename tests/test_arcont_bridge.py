@@ -2,6 +2,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from tools.arcont_bridge import BridgeError, handle_request, inspect_assets, read_intent, validate_intent
 from tools.arcont_agent import repo_root
@@ -54,6 +55,8 @@ class UniversalAgentBridgeTests(unittest.TestCase):
         bridge = report["result"]["bridge"]
         self.assertEqual(bridge["protocol"], "arcont-bridge")
         self.assertIn("plan.execute", bridge["operations"])
+        self.assertIn("asset.public.search", bridge["operations"])
+        self.assertIn("asset.public.stage", bridge["operations"])
         self.assertFalse(bridge["mutation_boundary"]["bridge_creates_new_writer_primitives"])
         ids = {row["id"] for row in report["result"]["agent_control"]["capabilities"]}
         self.assertIn("godot.authoring.control", ids)
@@ -121,7 +124,10 @@ class UniversalAgentBridgeTests(unittest.TestCase):
         self.assertEqual(rows["assets/shot.wav"]["kind"], "audio")
         self.assertEqual(rows["scenes/main.tscn"]["kind"], "scene")
         self.assertEqual(len(rows["assets/hero.glb"]["sha256"]), 64)
-        self.assertIn("Public-asset network discovery is not performed by Bridge v1.", report["result"]["limitations"])
+        self.assertIn(
+            "assets.inspect inventories local files only; provider-scoped network discovery is available separately through asset.public.* when project policy allows it.",
+            report["result"]["limitations"],
+        )
 
     def test_fresh_agent_can_catalog_and_read_authoring_documents(self):
         catalog = self.request("authoring.catalog")
@@ -253,6 +259,83 @@ class UniversalAgentBridgeTests(unittest.TestCase):
         listed = handle_request(self.root, blank, list_request, allow_project_write=False)
         self.assertTrue(listed["ok"])
         self.assertEqual(listed["result"]["result"]["count"], 1)
+
+    @patch("tools.public_asset_discovery._fetch_json")
+    def test_bridge_searches_public_provider_without_project_write(self, fetch):
+        (self.project / "project.intent.json").write_text(
+            json.dumps({
+                "protocol": "arcont-project-intent",
+                "version": 1,
+                "project_id": "bridge_public",
+                "title": "Bridge Public",
+                "genre": "test",
+                "asset_policy": {
+                    "user_assets": True,
+                    "public_assets": True,
+                    "commercial_use_required": True,
+                    "allow_network_discovery": True,
+                    "allowed_licenses": ["CC0"],
+                },
+            }),
+            encoding="utf-8",
+        )
+        fetch.return_value = {
+            "industrial_wall": {
+                "name": "Industrial Wall",
+                "description": "Concrete industrial wall",
+                "category": "Industrial",
+                "tags": ["industrial", "wall"],
+                "authors": {"Fixture": "All"},
+                "download_count": 10,
+                "files_hash": "fixture",
+                "type": 2,
+            }
+        }
+        report = self.request(
+            "asset.public.search",
+            {"query": "industrial", "asset_type": "all", "limit": 5},
+            allow=False,
+        )
+        self.assertTrue(report["ok"])
+        result = report["result"]["result"]
+        self.assertEqual(result["count"], 1)
+        self.assertEqual(result["results"][0]["provider"], "polyhaven")
+        self.assertEqual(result["results"][0]["asset_license"], "CC0")
+
+    @patch("tools.arcont_bridge.invoke_capability")
+    def test_bridge_public_stage_uses_long_bounded_timeout(self, invoke):
+        invoke.return_value = {"ok": True, "write_performed": True, "result": {"id": "sky"}}
+        request = {
+            "protocol": "arcont-bridge",
+            "version": 1,
+            "request_id": "public-stage-timeout",
+            "operation": "asset.public.stage",
+            "arguments": {
+                "semantic_id": "sky",
+                "asset_id": "sunset_jhbcentral",
+                "file_key": "hdri/1k/hdr",
+                "manifest_sha256": "0" * 64,
+            },
+        }
+        report = handle_request(self.root, self.project, request, allow_project_write=True)
+        self.assertTrue(report["ok"])
+        self.assertEqual(invoke.call_args.args[-1], 900)
+
+    def test_bridge_public_stage_requires_explicit_write_optin(self):
+        stage_request = {
+            "protocol": "arcont-bridge",
+            "version": 1,
+            "request_id": "public-stage-refusal",
+            "operation": "asset.public.stage",
+            "arguments": {
+                "semantic_id": "sky",
+                "asset_id": "sunset_jhbcentral",
+                "file_key": "hdri/1k/hdr",
+                "manifest_sha256": "0" * 64,
+            },
+        }
+        with self.assertRaises(PermissionError):
+            handle_request(self.root, self.project, stage_request, allow_project_write=False)
 
     def test_read_only_plan_runs_through_existing_execution_loop(self):
         plan = {

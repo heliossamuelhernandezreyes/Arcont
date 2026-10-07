@@ -66,7 +66,8 @@
       "production.control",
       "model-forge.control",
       "project.bootstrap.control",
-      "asset-intake.control"
+      "asset-intake.control",
+      "public-asset.control"
     ],
     "production_game_code_allowed": false,
     "model_forge_network_auto_execution_allowed": false,
@@ -106,7 +107,16 @@
     "user_asset_source_root": "incoming/",
     "user_asset_network_access_allowed": false,
     "user_asset_archive_extraction_allowed": false,
-    "project_bootstrap_asset_intake_documentation": "docs/PROJECT_BOOTSTRAP_ASSET_INTAKE.md"
+    "project_bootstrap_asset_intake_documentation": "docs/PROJECT_BOOTSTRAP_ASSET_INTAKE.md",
+    "public_asset_control": "tools/public_asset_discovery.py",
+    "public_asset_record_schema": "schemas/public-asset-record.schema.json",
+    "public_asset_providers": [
+      "polyhaven"
+    ],
+    "public_asset_arbitrary_url_download_allowed": false,
+    "public_asset_archive_extraction_allowed": false,
+    "public_asset_live_network_requires_project_policy": true,
+    "public_asset_documentation": "docs/PUBLIC_ASSET_DISCOVERY.md"
   },
   "integrity": {
     "validator": "tools/arcont_lab.py",

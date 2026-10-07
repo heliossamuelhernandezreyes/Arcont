@@ -66,6 +66,8 @@ ARCONT no intenta copiar Internet. Conserva referencias, procedencia, extracció
 - [`../tools/agent_hypothesis_gate.py`](../tools/agent_hypothesis_gate.py) — puerta de seguridad para hipótesis nuevas generadas por modelo y compilación a reparaciones acotadas.
 - [`UNIVERSAL_AGENT_BRIDGE.md`](UNIVERSAL_AGENT_BRIDGE.md) — interfaz universal JSON/stdio para que agentes externos descubran y operen ARCONT sin conocer sus scripts internos.
 - [`PROJECT_BOOTSTRAP_ASSET_INTAKE.md`](PROJECT_BOOTSTRAP_ASSET_INTAKE.md) — creación segura de proyectos Godot externos vacíos e ingestión de assets proporcionados por el usuario.
+- [`PUBLIC_ASSET_DISCOVERY.md`](PUBLIC_ASSET_DISCOVERY.md) — descubrimiento de assets públicos mediante proveedores explícitos, binding de manifiestos y procedencia verificable.
+- [`../tools/public_asset_discovery.py`](../tools/public_asset_discovery.py) — adaptador Poly Haven v1 con búsqueda, file manifests y staging verificado.
 - [`../tools/project_bootstrap_control.py`](../tools/project_bootstrap_control.py) — bootstrap determinista 2D/3D en carpeta externa vacía.
 - [`../tools/user_asset_intake.py`](../tools/user_asset_intake.py) — inspección/staging local de assets con SHA-256 y procedencia declarada.
 - [`../tools/arcont_bridge.py`](../tools/arcont_bridge.py) — bridge transport-neutral para discovery, project intent, assets, hipótesis y planes acotados.
