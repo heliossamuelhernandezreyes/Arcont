@@ -78,7 +78,14 @@
     "diagnosis_engine": "tools/agent_diagnosis.py",
     "diagnosis_executes_repairs": false,
     "diagnosis_arbitrary_code_allowed": false,
-    "diagnosis_ambiguous_selection_allowed": false
+    "diagnosis_ambiguous_selection_allowed": false,
+    "hypothesis_proposal_schema": "schemas/agent-hypothesis-proposal.schema.json",
+    "hypothesis_gate": "tools/agent_hypothesis_gate.py",
+    "model_generated_repairs_auto_execute": false,
+    "model_arbitrary_writer_selection_allowed": false,
+    "model_repair_primitives": [
+      "map-forge-stable-object-patch"
+    ]
   },
   "integrity": {
     "validator": "tools/arcont_lab.py",
