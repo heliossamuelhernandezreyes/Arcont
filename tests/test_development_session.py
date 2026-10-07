@@ -81,6 +81,7 @@ class DevelopmentSessionTests(unittest.TestCase):
         self.assertTrue(report["ok"])
         state = report["result"]["session"]
         self.assertEqual(len(state["revision"]), 64)
+        self.assertEqual(len(state["toolchain_sha256"]), 64)
         self.assertEqual(state["milestones"][0]["status"], "active")
         self.assertEqual(state["milestones"][1]["status"], "pending")
         self.assertEqual(report["result"]["remaining"]["plan_runs"], 3)
@@ -203,6 +204,55 @@ class DevelopmentSessionTests(unittest.TestCase):
         run.assert_not_called()
 
     @patch("tools.development_session.execute_plan")
+    @patch("tools.development_session._toolchain_sha")
+    def test_toolchain_drift_is_refused_before_execution(self, toolchain, run):
+        toolchain.side_effect = ["a" * 64, "b" * 64]
+        created = create(self.project, {"spec": spec()})
+        state = created["result"]["session"]
+        with self.assertRaises(SessionError):
+            execute_one(
+                self.project,
+                {
+                    "session_id": "build_game",
+                    "if_session_revision": state["revision"],
+                    "milestone_id": "movement",
+                    "plan": plan(),
+                    "complete_milestone": False
+                }
+            )
+        run.assert_not_called()
+
+    @patch("tools.development_session.execute_plan")
+    @patch("tools.development_session._toolchain_sha")
+    def test_environment_drift_during_run_pauses_without_completing_milestone(self, toolchain, run):
+        toolchain.side_effect = ["a" * 64, "a" * 64, "b" * 64]
+        run.return_value = {
+            "ok": True,
+            "status": "completed",
+            "steps_completed": 1,
+            "write_steps": 0,
+            "steps": []
+        }
+        created = create(self.project, {"spec": spec()})
+        state = created["result"]["session"]
+        report = execute_one(
+            self.project,
+            {
+                "session_id": "build_game",
+                "if_session_revision": state["revision"],
+                "milestone_id": "movement",
+                "plan": plan(),
+                "complete_milestone": True
+            }
+        )
+        self.assertFalse(report["ok"])
+        new_state = report["result"]["session"]
+        self.assertEqual(new_state["status"], "paused")
+        self.assertEqual(new_state["stop_reason"], "environment-changed-during-run")
+        self.assertEqual(new_state["milestones"][0]["status"], "active")
+        self.assertEqual(new_state["counters"]["milestones_completed"], 0)
+
+    @patch("tools.development_session.execute_plan")
     def test_plan_cannot_escape_session_capability_allowlist(self, run):
         created = create(self.project, {"spec": spec()})
         state = created["result"]["session"]
@@ -220,6 +270,39 @@ class DevelopmentSessionTests(unittest.TestCase):
                 }
             )
         run.assert_not_called()
+
+    def test_session_directory_symlink_is_not_accepted(self):
+        created = create(self.project, {"spec": spec()})
+        session_dir = self.project / ".arcont/development-sessions/build_game"
+        state_copy = json.loads((session_dir / "session.json").read_text())
+        outside = Path(self.tmp.name) / "outside-session"
+        outside.mkdir()
+        (outside / "session.json").write_text(json.dumps(state_copy))
+        for child in list(session_dir.iterdir()):
+            child.unlink()
+        session_dir.rmdir()
+        session_dir.symlink_to(outside, target_is_directory=True)
+        with self.assertRaises(SessionError):
+            inspect(self.project, {"session_id": "build_game"})
+
+    def test_session_lock_symlink_is_not_accepted(self):
+        created = create(self.project, {"spec": spec()})
+        state = created["result"]["session"]
+        session_dir = self.project / ".arcont/development-sessions/build_game"
+        outside = Path(self.tmp.name) / "outside-lock"
+        outside.write_text("lock")
+        (session_dir / "session.lock").symlink_to(outside)
+        with self.assertRaises(SessionError):
+            execute_one(
+                self.project,
+                {
+                    "session_id": "build_game",
+                    "if_session_revision": state["revision"],
+                    "milestone_id": "movement",
+                    "plan": plan(),
+                    "complete_milestone": False
+                }
+            )
 
     def test_session_state_symlink_is_not_accepted(self):
         outside = Path(self.tmp.name) / "outside"
