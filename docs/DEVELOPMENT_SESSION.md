@@ -151,7 +151,29 @@ Example:
 The normal execution-plan schema still requires real steps; the empty array
 above is only abbreviated documentation.
 
-## No silent retry
+## Crash journal and no silent retry
+
+Before ARCONT starts a plan it atomically writes:
+
+```text
+.arcont/development-sessions/<session-id>/pending-run.json
+```
+
+The marker binds the session revision, run ID, milestone, plan ID and plan
+SHA-256 **before any plan mutation occurs**.
+
+If the process dies while the plan is running, or after project files changed
+but before the new session state is committed, the marker remains. A later
+execute request refuses to repeat the plan automatically. The agent must inspect
+the project/evidence and start a reviewed recovery path rather than assuming
+the old session revision is safe to replay.
+
+If the process dies only after session state was committed, a later execute may
+clear the stale pending marker only when the same run already exists in session
+history **and** its persisted receipt still exists with the exact recorded
+SHA-256. A missing/corrupt receipt fails closed.
+
+After a normal successful state commit, the pending marker is removed.
 
 If a plan fails:
 
