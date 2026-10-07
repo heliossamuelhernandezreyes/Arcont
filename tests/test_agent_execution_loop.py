@@ -17,8 +17,8 @@ class AgentExecutionLoopTests(unittest.TestCase):
             "schema_version": 1,
             "protocol": "arcont-agent-control",
             "capabilities": [
-                {"id": "writer", "access": "external-project-write"},
-                {"id": "other", "access": "external-project-write"},
+                {"id": "writer", "access": "external-project-write", "invocable": True},
+                {"id": "other", "access": "external-project-write", "invocable": True},
             ],
         }
 
