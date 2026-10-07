@@ -125,12 +125,26 @@ The request never accepts a download URL.
 
 Only the exact URL associated with `file_key` in the live provider manifest is
 eligible. The URL must use HTTPS and an allowlisted Poly Haven download host.
-Redirects are checked again after connection and must remain on the allowlist.
+Redirect targets are validated **before they are followed** and must remain on
+the HTTPS host allowlist. The final response URL is checked again as a second
+boundary.
 
-The download is streamed with a hard size bound. If the provider supplies MD5
-and byte size, both are verified. ARCONT additionally computes SHA-256.
+The download is streamed with a 256 MiB hard bound. The Bridge gives the
+bounded stage operation up to 900 seconds. Downloads are written into a
+temporary sibling directory first; the semantic destination becomes visible
+only after integrity verification. If the process is interrupted after the
+final directory move but before the external provenance record is committed, a
+small internal recovery record lets a retry reconstruct the missing provenance
+instead of permanently blocking the semantic ID.
 
-No archive is extracted.
+If the provider supplies MD5 and byte size, both are verified. ARCONT
+additionally computes SHA-256.
+
+No archive is extracted. V1 stages only self-contained single files. For 3D
+models that means GLB; dependency-bearing package formats such as GLTF, OBJ,
+FBX, DAE, and Blend are not stageable until ARCONT can preserve and verify the
+provider's full dependency closure. A provider file carrying an explicit
+`include` dependency set is also marked non-stageable.
 
 ## Provenance record
 
@@ -176,9 +190,10 @@ V1 does not allow:
 - web scraping outside the official adapter;
 - arbitrary provider hosts;
 - HTTP downgrade;
-- redirects outside the host allowlist;
+- redirects outside the host allowlist (they are rejected before following);
 - silent manifest changes;
 - archive extraction;
+- single-file staging of dependency-bearing packages;
 - automatic execution of downloaded content;
 - automatic license inference for unknown providers;
 - staging if project asset policy disallows public/network assets.
