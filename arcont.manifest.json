@@ -73,7 +73,12 @@
     "execution_plan_max_steps": 24,
     "forward_binding_allowed": false,
     "arbitrary_shell_execution_allowed": false,
-    "auto_retry_mutations_allowed": false
+    "auto_retry_mutations_allowed": false,
+    "diagnosis_policy_schema": "schemas/agent-diagnosis-policy.schema.json",
+    "diagnosis_engine": "tools/agent_diagnosis.py",
+    "diagnosis_executes_repairs": false,
+    "diagnosis_arbitrary_code_allowed": false,
+    "diagnosis_ambiguous_selection_allowed": false
   },
   "integrity": {
     "validator": "tools/arcont_lab.py",

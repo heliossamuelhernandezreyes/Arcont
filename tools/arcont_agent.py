@@ -421,6 +421,23 @@ def cmd_run_plan(args: argparse.Namespace) -> int:
     return 0 if report["ok"] else 1
 
 
+def cmd_diagnose(args: argparse.Namespace) -> int:
+    try:
+        from tools.agent_diagnosis import diagnose
+    except ModuleNotFoundError:
+        from agent_diagnosis import diagnose
+    policy = json.loads(Path(args.policy).read_text(encoding="utf-8"))
+    raw = sys.stdin.read() if args.evidence == "-" else Path(args.evidence).read_text(encoding="utf-8")
+    evidence = json.loads(raw)
+    report = diagnose(policy, evidence)
+    print(json.dumps(report, indent=2, sort_keys=True, ensure_ascii=False))
+    if not report["ok"]:
+        return 1
+    if args.require_match and not report.get("matched"):
+        return 1
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="arcont-agent", description="ARCONT machine-readable agent control plane")
     parser.add_argument("--root", default=str(repo_root()), help="ARCONT repository root")
@@ -453,6 +470,12 @@ def build_parser() -> argparse.ArgumentParser:
     run_plan.add_argument("--allow-project-write", action="store_true",
                           help="required in addition to plan.permissions.project_write for writer steps")
     run_plan.set_defaults(func=cmd_run_plan)
+
+    diagnose = sub.add_parser("diagnose", help="evaluate structured evidence and compile a bounded repair plan")
+    diagnose.add_argument("--policy", required=True, help="diagnosis policy JSON path")
+    diagnose.add_argument("--evidence", default="-", help="evidence JSON path, or - for stdin")
+    diagnose.add_argument("--require-match", action="store_true", help="return nonzero if no hypothesis matches")
+    diagnose.set_defaults(func=cmd_diagnose)
     return parser
 
 

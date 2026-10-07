@@ -112,6 +112,27 @@ Each receipt includes the plan SHA-256, capability-registry SHA-256, ordered ste
 
 The example in `templates/agent/inspect-playtest.plan.example.json` inspects a Godot authoring document, binds its current revision and accepted bundle into a playtest request, and requires `passed=true`.
 
+## Evidence-driven diagnosis and repair proposals
+
+`diagnose` turns structured observations into a bounded hypothesis and, when the policy supplies one, a normal revision-checked `arcont-agent-plan`:
+
+```bash
+python tools/arcont_agent.py diagnose \
+  --policy path/to/game-policy.json \
+  --evidence evidence.json \
+  --require-match
+```
+
+Policies use `arcont-agent-diagnosis-policy` version 1 and are described by `schemas/agent-diagnosis-policy.schema.json`. The engine is intentionally game-agnostic: game-specific knowledge lives in declarative policy/evidence files, not Python branches inside ARCONT.
+
+Conditions can compare evidence and selected-candidate values with bounded operators. Candidate selection can filter a supplied object list and choose the unique nearest X/Z candidate to an observed position. Equal-distance ties, missing candidates and out-of-range candidates are rejected rather than guessed.
+
+Templates may reference evidence with `{"$evidence":"/pointer"}`, the selected candidate with `{"$candidate":"/pointer"}`, and stable-ID patch targets with `{"$candidate_path":"/size/1"}`. A compiled repair plan contains an explicit capability allowlist, an inspect step and a repair step that binds `if_revision` to the inspection result.
+
+Diagnosis is **read-only**. It never executes the proposed repair, never runs arbitrary code, and never bypasses the normal `run-plan --allow-project-write` permission boundary. If equally prioritized hypotheses match, the result is `ambiguous` and no repair plan is selected.
+
+The generic example in `templates/agent/spatial-collider-repair.policy.example.json` shows a spatial collider diagnosis without referencing any specific game.
+
 ## Architecture boundary
 
 The control plane does not change ARCONT's canonical rule:

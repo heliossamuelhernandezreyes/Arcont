@@ -62,6 +62,9 @@ ARCONT no intenta copiar Internet. Conserva referencias, procedencia, extracció
 - [`../agent.capabilities.json`](../agent.capabilities.json) — registro canónico de capacidades disponibles para agentes y sus modos de acceso.
 - [`../tools/arcont_agent.py`](../tools/arcont_agent.py) — punto de entrada unificado para discovery/doctor/inspection, writers externos y planes acotados con permiso explícito.
 - [`../tools/agent_execution_loop.py`](../tools/agent_execution_loop.py) — ejecutor determinista de planes con bindings, expectativas, hashes y parada fail-closed.
+- [`../tools/agent_diagnosis.py`](../tools/agent_diagnosis.py) — motor declarativo read-only de observaciones → hipótesis → repair-plan revisionado.
+- [`../schemas/agent-diagnosis-policy.schema.json`](../schemas/agent-diagnosis-policy.schema.json) — contrato machine-readable de políticas de diagnóstico.
+- [`../templates/agent/spatial-collider-repair.policy.example.json`](../templates/agent/spatial-collider-repair.policy.example.json) — ejemplo genérico de diagnóstico espacial y propuesta de reparación.
 - [`../schemas/agent-execution-plan.schema.json`](../schemas/agent-execution-plan.schema.json) — contrato machine-readable de planes de ejecución del agente.
 - [`../templates/agent/inspect-playtest.plan.example.json`](../templates/agent/inspect-playtest.plan.example.json) — ejemplo revision-aware de inspect → playtest.
 - [`knowledge/GODOT_AUTHORING_CONTROL.md`](knowledge/GODOT_AUTHORING_CONTROL.md) — authoring Godot revisionado mediante adaptadores propiedad del juego.
