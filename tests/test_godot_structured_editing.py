@@ -175,6 +175,55 @@ class StructuredGodotEditingTests(unittest.TestCase):
                 {"op": "remove", "path": "../Outside"}
             )
 
+    def test_scene_set_cannot_bypass_dedicated_script_attachment(self):
+        with self.assertRaises(StructuredError):
+            _validate_scene_change(
+                {
+                    "op": "set",
+                    "path": "Player",
+                    "property": "script",
+                    "value": {"$type": "Resource", "path": "res://scripts/player.gd"},
+                }
+            )
+        with self.assertRaises(StructuredError):
+            _validate_scene_change(
+                {"op": "set", "path": "Player", "property": "owner", "value": None}
+            )
+
+    def test_scene_attach_rejects_privileged_existing_script_before_engine_run(self):
+        scripts = self.project / "scripts"
+        scripts.mkdir(exist_ok=True)
+        (scripts / "unsafe.gd").write_text("@tool\nextends Node\n", encoding="utf-8")
+        revision = __import__("hashlib").sha256((self.project / "scenes/main.tscn").read_bytes()).hexdigest()
+        with self.assertRaises(StructuredError):
+            execute(
+                self.project,
+                {
+                    "protocol_version": 1,
+                    "operation": "scene.edit",
+                    "scene": "scenes/main.tscn",
+                    "if_revision": revision,
+                    "changes": [
+                        {"op": "add", "parent": ".", "name": "Unsafe", "type": "Node"},
+                        {"op": "attach_script", "path": "Unsafe", "script": "res://scripts/unsafe.gd"},
+                    ],
+                },
+            )
+
+    def test_resource_editor_refuses_script_resource_types(self):
+        with self.assertRaises(StructuredError):
+            execute(
+                self.project,
+                {
+                    "protocol_version": 1,
+                    "operation": "resource.edit",
+                    "resource": "resources/unsafe.tres",
+                    "if_revision": None,
+                    "resource_type": "GDScript",
+                    "changes": [{"op": "set", "property": "source_code", "value": "extends Node"}],
+                },
+            )
+
     @patch("tools.godot_structured_editing._validate_script_with_godot")
     def test_script_path_cannot_escape_through_symlink(self, validate):
         validate.return_value = {"ok": True}
