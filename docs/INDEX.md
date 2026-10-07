@@ -60,7 +60,10 @@ ARCONT no intenta copiar Internet. Conserva referencias, procedencia, extracció
 
 - [`AGENT_CONTROL_PLANE.md`](AGENT_CONTROL_PLANE.md) — protocolo machine-readable para descubrimiento de capacidades, `doctor` e inspección estática de proyectos externos.
 - [`../agent.capabilities.json`](../agent.capabilities.json) — registro canónico de capacidades disponibles para agentes y sus modos de acceso.
-- [`../tools/arcont_agent.py`](../tools/arcont_agent.py) — punto de entrada unificado para discovery/doctor/inspection y writers externos con permiso explícito.
+- [`../tools/arcont_agent.py`](../tools/arcont_agent.py) — punto de entrada unificado para discovery/doctor/inspection, writers externos y planes acotados con permiso explícito.
+- [`../tools/agent_execution_loop.py`](../tools/agent_execution_loop.py) — ejecutor determinista de planes con bindings, expectativas, hashes y parada fail-closed.
+- [`../schemas/agent-execution-plan.schema.json`](../schemas/agent-execution-plan.schema.json) — contrato machine-readable de planes de ejecución del agente.
+- [`../templates/agent/inspect-playtest.plan.example.json`](../templates/agent/inspect-playtest.plan.example.json) — ejemplo revision-aware de inspect → playtest.
 - [`knowledge/GODOT_AUTHORING_CONTROL.md`](knowledge/GODOT_AUTHORING_CONTROL.md) — authoring Godot revisionado mediante adaptadores propiedad del juego.
 - [`knowledge/GODOT_PLAYTEST_CONTROL.md`](knowledge/GODOT_PLAYTEST_CONTROL.md) — sesiones acotadas de input/observación sobre bundles aceptados.
 - [`knowledge/MAP_FORGE_EDITOR_CONTROL.md`](knowledge/MAP_FORGE_EDITOR_CONTROL.md) — control revisionado de edición de mapas y adaptadores.
