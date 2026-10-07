@@ -67,7 +67,8 @@
       "model-forge.control",
       "project.bootstrap.control",
       "asset-intake.control",
-      "public-asset.control"
+      "public-asset.control",
+      "godot.structured.control"
     ],
     "production_game_code_allowed": false,
     "model_forge_network_auto_execution_allowed": false,
@@ -116,7 +117,11 @@
     "public_asset_arbitrary_url_download_allowed": false,
     "public_asset_archive_extraction_allowed": false,
     "public_asset_live_network_requires_project_policy": true,
-    "public_asset_documentation": "docs/PUBLIC_ASSET_DISCOVERY.md"
+    "public_asset_documentation": "docs/PUBLIC_ASSET_DISCOVERY.md",
+    "godot_structured_control": "tools/godot_structured_editing.py",
+    "godot_structured_request_schema": "schemas/godot-structured-edit-request.schema.json",
+    "godot_structured_revision_checked": true,
+    "godot_structured_rollback_on_validation_failure": true
   },
   "integrity": {
     "validator": "tools/arcont_lab.py",
