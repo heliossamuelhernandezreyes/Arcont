@@ -133,6 +133,25 @@ Diagnosis is **read-only**. It never executes the proposed repair, never runs ar
 
 The generic example in `templates/agent/spatial-collider-repair.policy.example.json` shows a spatial collider diagnosis without referencing any specific game.
 
+## Model-authored hypothesis gate
+
+A model does not need a pre-existing diagnosis policy to suggest a new explanation. It can emit an `arcont-agent-hypothesis-proposal` v1 object and submit it to:
+
+```bash
+python tools/arcont_agent.py evaluate-proposal \
+  --proposal model-proposal.json \
+  --evidence evidence.json \
+  --require-match
+```
+
+The proposal language is deliberately narrower than a diagnosis policy or execution plan. In v1 the model may describe evidence preconditions, a spatial candidate selector, candidate requirements, details, and one bounded repair primitive: `map-forge-stable-object-patch`.
+
+ARCONT—not the model—adds the stable Map Forge patch prefix, current-value `test` operations, capability choice, revision binding, commit expectations and execution-plan envelope. A model cannot select shell execution, arbitrary writers, arbitrary patch roots or candidate-derived replacement values.
+
+A successful evaluation remains read-only. It returns proposal/policy/evidence hashes plus a diagnosis whose `repair_plan` must still be executed separately through `run-plan --allow-project-write`. Missing evidence, no matching hypothesis, ambiguous candidates or an unsafe proposal do not mutate the project.
+
+`templates/agent/model-spatial-repair.proposal.example.json` demonstrates the model-facing protocol.
+
 ## Architecture boundary
 
 The control plane does not change ARCONT's canonical rule:

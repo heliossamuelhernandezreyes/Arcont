@@ -51,11 +51,11 @@ jobs:
         run: |
           cat > /tmp/arcont-diagnosis-evidence.json <<'JSON'
           {
-            "signals":{"interaction_ok":false},
+            "signals":{"interaction_ok":false,"traversal_state":"free"},
             "observations":{"position":[0.0,0.0,0.0]},
             "context":{"map_id":"fixture"},
             "limits":{"max_height":1.35},
-            "baseline":{"height":1.14},
+            "baseline":{"height":1.14,"center_y":0.57},
             "world":{"objects":[
               {"id":"near_box","type":"box","collision":true,"position":[0.5,0.85,0.0],"size":[4.0,1.7,0.56]}
             ]}
@@ -74,6 +74,42 @@ jobs:
           assert plan["protocol"]=="arcont-agent-plan"
           assert plan["steps"][1]["request"]["patch"][0]["path"]=="/map/authoring/objects/@near_box/size/1"
           PY
+      - name: Validate model-authored hypothesis safety gate
+        shell: bash
+        run: |
+          python tools/arcont_agent.py evaluate-proposal \
+            --proposal templates/agent/model-spatial-repair.proposal.example.json \
+            --evidence /tmp/arcont-diagnosis-evidence.json \
+            --require-match > /tmp/arcont-model-proposal.json
+          python - <<'PY'
+          import json
+          report=json.load(open("/tmp/arcont-model-proposal.json"))
+          assert report["ok"]
+          diagnosis=report["diagnosis"]
+          assert diagnosis["matched"]
+          assert diagnosis["hypothesis"]["candidate"]["id"]=="near_box"
+          plan=diagnosis["hypothesis"]["repair_plan"]
+          assert plan["capability_allowlist"]==["map-forge.editor.control"]
+          patch=plan["steps"][1]["request"]["patch"]
+          assert [row["op"] for row in patch]==["test","replace","test","replace"]
+          assert patch[0]["path"]=="/map/authoring/objects/@near_box/size/1"
+          assert patch[1]["value"]==1.14
+          PY
+      - name: Negative control - unsafe model repair primitive must fail
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open("templates/agent/model-spatial-repair.proposal.example.json"))
+          p["hypothesis"]["repair"]["kind"]="shell"
+          json.dump(p,open("/tmp/unsafe-model-proposal.json","w"))
+          PY
+          if python tools/arcont_agent.py evaluate-proposal \
+            --proposal /tmp/unsafe-model-proposal.json \
+            --evidence /tmp/arcont-diagnosis-evidence.json; then
+            echo "Hypothesis gate accepted an arbitrary repair primitive"
+            exit 1
+          fi
       - name: Validate knowledge bank
         run: python tools/arcont_lab.py validate
       - name: Validate ARCONT 1.0 manifest and evidence contracts

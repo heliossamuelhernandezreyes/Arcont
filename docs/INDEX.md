@@ -63,6 +63,9 @@ ARCONT no intenta copiar Internet. Conserva referencias, procedencia, extracció
 - [`../tools/arcont_agent.py`](../tools/arcont_agent.py) — punto de entrada unificado para discovery/doctor/inspection, writers externos y planes acotados con permiso explícito.
 - [`../tools/agent_execution_loop.py`](../tools/agent_execution_loop.py) — ejecutor determinista de planes con bindings, expectativas, hashes y parada fail-closed.
 - [`../tools/agent_diagnosis.py`](../tools/agent_diagnosis.py) — motor declarativo read-only de observaciones → hipótesis → repair-plan revisionado.
+- [`../tools/agent_hypothesis_gate.py`](../tools/agent_hypothesis_gate.py) — puerta de seguridad para hipótesis nuevas generadas por modelo y compilación a reparaciones acotadas.
+- [`../schemas/agent-hypothesis-proposal.schema.json`](../schemas/agent-hypothesis-proposal.schema.json) — contrato machine-readable de propuestas de hipótesis generadas por IA/humano.
+- [`../templates/agent/model-spatial-repair.proposal.example.json`](../templates/agent/model-spatial-repair.proposal.example.json) — ejemplo de propuesta de reparación generada por modelo.
 - [`../schemas/agent-diagnosis-policy.schema.json`](../schemas/agent-diagnosis-policy.schema.json) — contrato machine-readable de políticas de diagnóstico.
 - [`../templates/agent/spatial-collider-repair.policy.example.json`](../templates/agent/spatial-collider-repair.policy.example.json) — ejemplo genérico de diagnóstico espacial y propuesta de reparación.
 - [`../schemas/agent-execution-plan.schema.json`](../schemas/agent-execution-plan.schema.json) — contrato machine-readable de planes de ejecución del agente.

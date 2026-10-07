@@ -1,0 +1,73 @@
+{
+  "protocol": "arcont-agent-hypothesis-proposal",
+  "version": 1,
+  "id": "model_spatial_collider_fault",
+  "goal": "Restore the nearest oversized collider to the accepted interaction geometry.",
+  "provenance": {
+    "author_type": "model",
+    "model": "example-model",
+    "note": "Example model-authored hypothesis; ARCONT must validate it before any repair can be executed."
+  },
+  "hypothesis": {
+    "id": "oversized_nearby_box",
+    "code": "nearby_collider_height_out_of_range",
+    "summary": "The nearest collidable box is taller than the accepted interaction range and is a plausible cause of the failed traversal.",
+    "priority": 100,
+    "when": [
+      {
+        "left": {"$evidence": "/signals/interaction_ok"},
+        "op": "equals",
+        "right": false
+      },
+      {
+        "left": {"$evidence": "/signals/traversal_state"},
+        "op": "not-equals",
+        "right": "vault"
+      }
+    ],
+    "candidate": {
+      "source": "/world/objects",
+      "filters": [
+        {
+          "left": {"$candidate": "/type"},
+          "op": "equals",
+          "right": "box"
+        },
+        {
+          "left": {"$candidate": "/collision"},
+          "op": "equals",
+          "right": true
+        }
+      ],
+      "nearest_xz_to": "/observations/position",
+      "position_pointer": "/position",
+      "max_distance": 4.0
+    },
+    "require": [
+      {
+        "left": {"$candidate": "/size/1"},
+        "op": "gt",
+        "right": {"$evidence": "/limits/max_height"}
+      }
+    ],
+    "details": {
+      "object_id": {"$candidate": "/id"},
+      "observed_height": {"$candidate": "/size/1"},
+      "accepted_height": {"$evidence": "/baseline/height"}
+    },
+    "repair": {
+      "kind": "map-forge-stable-object-patch",
+      "map_id": {"$evidence": "/context/map_id"},
+      "changes": [
+        {
+          "candidate_pointer": "/size/1",
+          "value": {"$evidence": "/baseline/height"}
+        },
+        {
+          "candidate_pointer": "/position/1",
+          "value": {"$evidence": "/baseline/center_y"}
+        }
+      ]
+    }
+  }
+}
