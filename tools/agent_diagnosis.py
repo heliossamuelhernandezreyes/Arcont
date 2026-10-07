@@ -447,7 +447,7 @@ def main() -> int:
         if args.require_match and not report.get("matched"):
             return 1
         return 0
-    except (OSError, json.JSONDecodeError, DiagnosisError) as exc:
+    except (OSError, json.JSONDecodeError, DiagnosisError, ValueError) as exc:
         print(json.dumps({"schema_version": 1, "protocol": "arcont-agent-diagnosis", "ok": False, "error": str(exc)}))
         return 2
 
