@@ -202,7 +202,7 @@ jobs:
           assert catalog["ok"] and catalog["result"]["document_count"]==2
           assert any(row["path"]=="authoring/recipes/bridge_scene.json" for row in catalog["result"]["documents"])
           assert document["ok"] and document["result"]["document"]["id"]=="bridge_scene"
-          assert plan["ok"] and plan["result"]["write_step_count"]==0
+          assert plan["ok"] and plan["result"]["write_steps"]==0
           PY
       - name: Negative control - bridge cannot grant project write permission
         shell: bash
