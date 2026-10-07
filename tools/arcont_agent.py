@@ -344,6 +344,7 @@ def inspect_project(project_root: Path, max_files: int) -> dict[str, Any]:
         "schema_version": 1,
         "protocol": PROTOCOL,
         "operation": "inspect-project",
+        "ok": True,
         "project": {
             "root": str(project_root),
             "engine": engine,
