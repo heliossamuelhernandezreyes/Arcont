@@ -1,6 +1,7 @@
 import unittest
 
 from tools.agent_diagnosis import DiagnosisError, diagnose, select_candidate, validate_policy
+from tools.agent_execution_loop import validate_plan
 
 
 def policy():
@@ -126,6 +127,7 @@ class AgentDiagnosisTests(unittest.TestCase):
         plan = hypothesis["repair_plan"]
         self.assertEqual(plan["capability_allowlist"], ["map-forge.editor.control"])
         self.assertTrue(plan["permissions"]["project_write"])
+        validate_plan(plan, {"map-forge.editor.control"})
         request = plan["steps"][1]["request"]
         self.assertEqual(request["if_revision"], {"$from": "inspect_target", "pointer": "/result/revision"})
         self.assertEqual(request["patch"][0]["path"], "/map/authoring/objects/@near_box/size/1")
