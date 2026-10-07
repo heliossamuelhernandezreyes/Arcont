@@ -85,7 +85,14 @@
     "model_arbitrary_writer_selection_allowed": false,
     "model_repair_primitives": [
       "map-forge-stable-object-patch"
-    ]
+    ],
+    "bridge": "tools/arcont_bridge.py",
+    "bridge_request_schema": "schemas/agent-bridge-request.schema.json",
+    "project_intent_schema": "schemas/project-intent.schema.json",
+    "bridge_transport": "json-stdio",
+    "bridge_creates_new_writer_primitives": false,
+    "bridge_project_write_requires_opt_in": true,
+    "bridge_documentation": "docs/UNIVERSAL_AGENT_BRIDGE.md"
   },
   "integrity": {
     "validator": "tools/arcont_lab.py",

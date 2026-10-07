@@ -1,0 +1,7 @@
+{
+  "protocol": "arcont-bridge",
+  "version": 1,
+  "request_id": "fresh-agent-discovery-001",
+  "operation": "discover",
+  "arguments": {}
+}

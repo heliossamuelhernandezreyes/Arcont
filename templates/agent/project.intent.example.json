@@ -1,0 +1,29 @@
+{
+  "protocol": "arcont-project-intent",
+  "version": 1,
+  "project_id": "my_game",
+  "title": "My Game",
+  "genre": "third-person action",
+  "targets": ["Windows", "Android"],
+  "visual_style": "dark realistic",
+  "references": ["fast mobile shooter movement", "cinematic cover combat"],
+  "goals": ["Build a playable vertical slice"],
+  "priorities": ["movement", "combat", "visual readability", "performance"],
+  "scope": "A short vertical slice with one combat arena and a complete start-to-finish loop.",
+  "performance": {
+    "target_fps": 60,
+    "resolution": "1280x720",
+    "platform_notes": "Target-device validation is required before claiming performance."
+  },
+  "asset_policy": {
+    "user_assets": true,
+    "public_assets": true,
+    "commercial_use_required": true,
+    "allow_network_discovery": false,
+    "allowed_licenses": ["CC0", "MIT", "OFL-1.1"]
+  },
+  "constraints": [
+    "Do not use assets without traceable license provenance."
+  ],
+  "notes": "This file is project-owned persistent intent. Chat memory is not a substitute for it."
+}

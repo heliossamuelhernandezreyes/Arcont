@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arcont.local/schemas/agent-bridge-request.schema.json",
+  "title": "ARCONT Universal Agent Bridge request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol",
+    "version",
+    "request_id",
+    "operation"
+  ],
+  "properties": {
+    "protocol": {
+      "const": "arcont-bridge"
+    },
+    "version": {
+      "const": 1
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "operation": {
+      "enum": [
+        "discover",
+        "project.inspect",
+        "project.intent.read",
+        "assets.inspect",
+        "authoring.catalog",
+        "authoring.document.read",
+        "hypothesis.evaluate",
+        "plan.execute"
+      ]
+    },
+    "arguments": {
+      "type": "object"
+    }
+  }
+}
