@@ -77,6 +77,8 @@ incoming/
 
 V1 accepts individual local files only. It does not extract archives.
 
+For 3D user models, V1 accepts **GLB only** so the staged file is self-contained. Dependency-bearing formats such as `.gltf`, `.obj`, `.dae`, and `.fbx` are rejected until ARCONT can validate and stage a complete dependency closure.
+
 Read-only inspection:
 
 ```json
