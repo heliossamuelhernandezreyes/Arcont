@@ -142,7 +142,11 @@
     "development_session_crash_auto_retry_allowed": false,
     "development_session_pending_reconcile_requires_receipt_hash": true,
     "development_session_completion_requires_machine_evidence": true,
-    "development_session_completion_evidence_same_plan_only": true
+    "development_session_completion_evidence_same_plan_only": true,
+    "development_session_state_max_bytes": 8388608,
+    "development_session_pending_max_bytes": 65536,
+    "development_session_receipt_max_bytes": 33554432,
+    "development_session_receipt_symlink_traversal_allowed": false
   },
   "integrity": {
     "validator": "tools/arcont_lab.py",
