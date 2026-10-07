@@ -96,8 +96,7 @@ Inventories local project assets with relative path, type, extension, byte size
 and bounded SHA-256 hashing. It does not download assets and does not infer
 copyright or license rights from file contents.
 
-Public asset discovery remains a future bridge operation. Asset Vault remains
-the trust/provenance layer for public sources.
+Provider-scoped public asset discovery is available through the explicit public-asset operations below. Asset Vault remains the broader trust/catalog layer for public sources.
 
 ### `asset.user.inspect / asset.user.stage / asset.user.list`
 
