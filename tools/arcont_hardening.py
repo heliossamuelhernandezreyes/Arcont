@@ -91,6 +91,7 @@ def validate_manifest(repo: Path) -> list[str]:
         m.get("agent_control", {}).get("godot_structured_documentation"),
         m.get("agent_control", {}).get("development_session_control"),
         m.get("agent_control", {}).get("development_session_request_schema"),
+        m.get("agent_control", {}).get("development_session_documentation"),
         m.get("integrity", {}).get("validator"),
         m.get("integrity", {}).get("hardening_validator"),
         m.get("integrity", {}).get("ci"),
