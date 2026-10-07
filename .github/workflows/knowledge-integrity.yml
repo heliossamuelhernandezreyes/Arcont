@@ -113,9 +113,12 @@ jobs:
       - name: Validate universal agent bridge fresh-agent flow
         shell: bash
         run: |
-          mkdir -p /tmp/arcont-bridge-fixture/assets
+          mkdir -p /tmp/arcont-bridge-fixture/assets /tmp/arcont-bridge-fixture/authoring/recipes /tmp/arcont-bridge-fixture/authoring/scenarios
           printf '[application]\nconfig/name="Bridge CI Fixture"\n' > /tmp/arcont-bridge-fixture/project.godot
           printf 'fixture-model' > /tmp/arcont-bridge-fixture/assets/hero.glb
+          printf '{}' > /tmp/arcont-bridge-fixture/godot-authoring.json
+          printf '{"version":1,"id":"bridge_scene","purpose":"ci"}\n' > /tmp/arcont-bridge-fixture/authoring/recipes/bridge_scene.json
+          printf '{"version":1,"id":"bridge_route","commands":[]}\n' > /tmp/arcont-bridge-fixture/authoring/scenarios/bridge_route.json
           cat > /tmp/arcont-bridge-fixture/project.intent.json <<'JSON'
           {
             "protocol":"arcont-project-intent",
@@ -145,6 +148,12 @@ jobs:
           cat > /tmp/bridge-assets.json <<'JSON'
           {"protocol":"arcont-bridge","version":1,"request_id":"ci-assets","operation":"assets.inspect","arguments":{"max_assets":100}}
           JSON
+          cat > /tmp/bridge-authoring-catalog.json <<'JSON'
+          {"protocol":"arcont-bridge","version":1,"request_id":"ci-authoring-catalog","operation":"authoring.catalog","arguments":{}}
+          JSON
+          cat > /tmp/bridge-authoring-read.json <<'JSON'
+          {"protocol":"arcont-bridge","version":1,"request_id":"ci-authoring-read","operation":"authoring.document.read","arguments":{"path":"authoring/recipes/bridge_scene.json"}}
+          JSON
           cat > /tmp/bridge-plan.json <<'JSON'
           {
             "protocol":"arcont-bridge",
@@ -172,12 +181,16 @@ jobs:
           python tools/arcont_bridge.py --project /tmp/arcont-bridge-fixture --request /tmp/bridge-discover.json > /tmp/bridge-discover.out.json
           python tools/arcont_bridge.py --project /tmp/arcont-bridge-fixture --request /tmp/bridge-intent.json > /tmp/bridge-intent.out.json
           python tools/arcont_bridge.py --project /tmp/arcont-bridge-fixture --request /tmp/bridge-assets.json > /tmp/bridge-assets.out.json
+          python tools/arcont_bridge.py --project /tmp/arcont-bridge-fixture --request /tmp/bridge-authoring-catalog.json > /tmp/bridge-authoring-catalog.out.json
+          python tools/arcont_bridge.py --project /tmp/arcont-bridge-fixture --request /tmp/bridge-authoring-read.json > /tmp/bridge-authoring-read.out.json
           python tools/arcont_bridge.py --project /tmp/arcont-bridge-fixture --request /tmp/bridge-plan.json > /tmp/bridge-plan.out.json
           python - <<'PY'
           import json
           discover=json.load(open("/tmp/bridge-discover.out.json"))
           intent=json.load(open("/tmp/bridge-intent.out.json"))
           assets=json.load(open("/tmp/bridge-assets.out.json"))
+          catalog=json.load(open("/tmp/bridge-authoring-catalog.out.json"))
+          document=json.load(open("/tmp/bridge-authoring-read.out.json"))
           plan=json.load(open("/tmp/bridge-plan.out.json"))
           assert discover["ok"]
           assert "plan.execute" in discover["result"]["bridge"]["operations"]
@@ -186,6 +199,9 @@ jobs:
           assert intent["result"]["intent"]["performance"]["target_fps"]==60
           assert assets["ok"] and assets["result"]["asset_count"]==1
           assert assets["result"]["assets"][0]["path"]=="assets/hero.glb"
+          assert catalog["ok"] and catalog["result"]["document_count"]==2
+          assert any(row["path"]=="authoring/recipes/bridge_scene.json" for row in catalog["result"]["documents"])
+          assert document["ok"] and document["result"]["document"]["id"]=="bridge_scene"
           assert plan["ok"] and plan["result"]["write_step_count"]==0
           PY
       - name: Negative control - bridge cannot grant project write permission
