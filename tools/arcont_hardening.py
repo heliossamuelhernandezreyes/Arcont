@@ -70,6 +70,8 @@ def validate_manifest(repo: Path) -> list[str]:
         m.get("agent_control", {}).get("documentation"),
         m.get("agent_control", {}).get("execution_plan_schema"),
         m.get("agent_control", {}).get("execution_plan_engine"),
+        m.get("agent_control", {}).get("diagnosis_policy_schema"),
+        m.get("agent_control", {}).get("diagnosis_engine"),
         m.get("integrity", {}).get("validator"),
         m.get("integrity", {}).get("hardening_validator"),
         m.get("integrity", {}).get("ci"),
