@@ -139,6 +139,21 @@ write is accepted, and failed script validation rolls the target back.
 This generic layer complements the richer project-owned recipe/adapter system;
 see `STRUCTURED_GODOT_EDITING.md`.
 
+### Development sessions
+
+A fresh external agent can persist a bounded long-range workflow through:
+
+`development.session.capabilities`, `development.session.create`,
+`development.session.inspect`, and `development.session.execute`.
+
+A session pins project intent and capability-registry hashes, stores ordered
+milestones, budgets plan/write/failure counts, requires exact session revisions
+for mutation, and executes at most one ordinary `arcont-agent-plan` per
+request. Failed plans are recorded and never silently retried.
+
+The external AI remains the planner. ARCONT owns the durable execution envelope
+and receipts. See `DEVELOPMENT_SESSION.md`.
+
 ### `authoring.catalog`
 
 Discovers project-owned JSON documents under the allowlisted
