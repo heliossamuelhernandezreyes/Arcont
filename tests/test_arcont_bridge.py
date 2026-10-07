@@ -57,6 +57,9 @@ class UniversalAgentBridgeTests(unittest.TestCase):
         self.assertIn("plan.execute", bridge["operations"])
         self.assertIn("asset.public.search", bridge["operations"])
         self.assertIn("asset.public.stage", bridge["operations"])
+        self.assertIn("godot.script.create", bridge["operations"])
+        self.assertIn("godot.scene.edit", bridge["operations"])
+        self.assertIn("godot.resource.edit", bridge["operations"])
         self.assertFalse(bridge["mutation_boundary"]["bridge_creates_new_writer_primitives"])
         ids = {row["id"] for row in report["result"]["agent_control"]["capabilities"]}
         self.assertIn("godot.authoring.control", ids)
@@ -336,6 +339,64 @@ class UniversalAgentBridgeTests(unittest.TestCase):
         }
         with self.assertRaises(PermissionError):
             handle_request(self.root, self.project, stage_request, allow_project_write=False)
+
+    def test_bridge_can_inspect_script_without_write_permission(self):
+        (self.project / "scripts").mkdir()
+        (self.project / "scripts/player.gd").write_text(
+            "extends Node\n\nfunc ready_for_bridge():\n    pass\n",
+            encoding="utf-8",
+        )
+        report = self.request(
+            "godot.script.inspect",
+            {"path": "scripts/player.gd"},
+            allow=False,
+        )
+        self.assertTrue(report["ok"])
+        self.assertEqual(report["result"]["result"]["extends"], "Node")
+        self.assertEqual(
+            report["result"]["result"]["functions"][0]["name"],
+            "ready_for_bridge",
+        )
+
+    def test_structured_writer_cannot_gain_permission_from_bridge(self):
+        request = {
+            "protocol": "arcont-bridge",
+            "version": 1,
+            "request_id": "structured-write-refusal",
+            "operation": "godot.script.create",
+            "arguments": {
+                "path": "scripts/player.gd",
+                "if_revision": None,
+                "source": "extends Node\n",
+            },
+        }
+        with self.assertRaises(PermissionError):
+            handle_request(self.root, self.project, request, allow_project_write=False)
+
+    @patch("tools.arcont_bridge.invoke_capability")
+    def test_structured_writer_uses_bounded_long_timeout(self, invoke):
+        invoke.return_value = {
+            "ok": True,
+            "result": {
+                "ok": True,
+                "write_performed": True,
+                "result": {"revision": "a" * 64},
+            },
+        }
+        request = {
+            "protocol": "arcont-bridge",
+            "version": 1,
+            "request_id": "structured-timeout",
+            "operation": "godot.script.create",
+            "arguments": {
+                "path": "scripts/player.gd",
+                "if_revision": None,
+                "source": "extends Node\n",
+            },
+        }
+        report = handle_request(self.root, self.project, request, allow_project_write=True)
+        self.assertTrue(report["ok"])
+        self.assertEqual(invoke.call_args.args[-1], 900)
 
     def test_read_only_plan_runs_through_existing_execution_loop(self):
         plan = {
