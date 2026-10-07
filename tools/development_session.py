@@ -38,6 +38,9 @@ MAX_CAPABILITIES = 32
 MAX_HISTORY = 32
 MAX_ACCEPTANCE = 16
 MAX_NOTE = 2000
+MAX_STATE_BYTES = 8 * 1024 * 1024
+MAX_PENDING_BYTES = 64 * 1024
+MAX_RECEIPT_BYTES = 32 * 1024 * 1024
 BUDGET_LIMITS = {
     "max_plan_runs": (1, 32, 12),
     "max_execution_steps": (1, 256, 96),
@@ -230,6 +233,8 @@ def _read_pending(project: Path, session_id: str) -> dict[str, Any] | None:
         return None
     if path.is_symlink() or not path.is_file():
         raise SessionError("development session pending-run marker is invalid")
+    if path.stat().st_size > MAX_PENDING_BYTES:
+        raise SessionError("development session pending-run marker exceeds size limit")
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
@@ -255,22 +260,37 @@ def _read_pending(project: Path, session_id: str) -> dict[str, Any] | None:
     return value
 
 
-def _receipt_path_from_history(project: Path, row: dict[str, Any]) -> Path:
+def _receipt_path_from_history(project: Path, session_id: str, row: dict[str, Any]) -> Path:
     relative = row.get("receipt")
     digest = row.get("receipt_sha256")
-    if not isinstance(relative, str) or not relative.startswith(".arcont/development-sessions/"):
-        raise SessionError("development session history receipt path is invalid")
+    prefix = f".arcont/development-sessions/{session_id}/runs/"
+    if not isinstance(relative, str) or not relative.startswith(prefix):
+        raise SessionError("development session history receipt path is outside this session")
     rel = Path(relative)
     if rel.is_absolute() or ".." in rel.parts:
         raise SessionError("development session history receipt path escapes project")
-    path = project / rel
-    if path.is_symlink() or not path.is_file():
+    root = project.resolve()
+    lexical = root / rel
+    current = root
+    for part in rel.parts:
+        current = current / part
+        if current.exists() and current.is_symlink():
+            raise SessionError("development session history receipt path traverses a symlink")
+    resolved = lexical.resolve()
+    session_root = _session_root(project, session_id).resolve()
+    try:
+        resolved.relative_to(session_root)
+    except ValueError as exc:
+        raise SessionError("development session history receipt escapes session storage") from exc
+    if not resolved.is_file():
         raise SessionError("development session history receipt is missing")
+    if resolved.stat().st_size > MAX_RECEIPT_BYTES:
+        raise SessionError("development session history receipt exceeds size limit")
     if not isinstance(digest, str) or not SHA256.fullmatch(digest):
         raise SessionError("development session history receipt hash is invalid")
-    if hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+    if _file_sha(resolved) != digest:
         raise SessionError("development session history receipt hash mismatch")
-    return path
+    return resolved
 
 
 def _reconcile_completed_pending(project: Path, state: dict[str, Any]) -> dict[str, Any] | None:
@@ -286,7 +306,7 @@ def _reconcile_completed_pending(project: Path, state: dict[str, Any]) -> dict[s
             raise SessionError("pending run milestone does not match committed history")
         if row.get("plan_id") != pending["plan_id"] or row.get("plan_sha256") != pending["plan_sha256"]:
             raise SessionError("pending run plan identity does not match committed history")
-        _receipt_path_from_history(project, row)
+        _receipt_path_from_history(project, state["id"], row)
         _pending_path(project, state["id"]).unlink()
         return None
     return pending
@@ -310,6 +330,8 @@ def _load_state(project: Path, session_id: Any) -> dict[str, Any]:
     path = _state_path(project, session_id)
     if not path.is_file() or path.is_symlink():
         raise SessionError("development session not found")
+    if path.stat().st_size > MAX_STATE_BYTES:
+        raise SessionError("development session state exceeds size limit")
     try:
         state = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
