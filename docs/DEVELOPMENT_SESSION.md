@@ -276,6 +276,11 @@ The session state itself has a canonical SHA-256 revision. Mutating a stale
 session revision is refused. Session directories and lock files may not be
 symlinks.
 
+Crash-recovery receipt validation is confined to the current session's
+`runs/` directory, rejects symlink traversal, verifies the recorded SHA-256
+and applies bounded file sizes (state 8 MiB, pending marker 64 KiB, receipt
+32 MiB).
+
 ## Relationship to the AI
 
 This layer is deliberately provider-neutral.
