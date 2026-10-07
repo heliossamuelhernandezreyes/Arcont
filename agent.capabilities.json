@@ -117,6 +117,8 @@
         "project.inspect",
         "project.intent.read",
         "assets.inspect",
+        "authoring.catalog",
+        "authoring.document.read",
         "hypothesis.evaluate",
         "plan.execute"
       ]
