@@ -535,6 +535,9 @@ def stage(project: Path, request: dict[str, Any]) -> dict[str, Any]:
             encoding="utf-8",
         )
         os.replace(temp_record, record_path)
+        internal_record = destination / ".arcont-stage-record.json"
+        if internal_record.is_file() and not internal_record.is_symlink():
+            internal_record.unlink()
     except Exception:
         if staging.exists():
             shutil.rmtree(staging, ignore_errors=True)
