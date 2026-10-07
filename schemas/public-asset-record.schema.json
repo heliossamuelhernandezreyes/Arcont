@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arcont.local/schemas/public-asset-record.schema.json",
+  "title": "ARCONT public provider asset provenance record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol","version","id","origin","provider","provider_id","provider_asset_id",
+    "provider_file_key","source_api","download_url","staged_path","extension","bytes",
+    "sha256","upstream_md5","verified_md5","files_manifest_sha256","asset_license",
+    "license_url","commercial_use","asset_attribution_required","api_attribution_required",
+    "provider_credit","api_terms","provenance_status","network_access","archive_extracted"
+  ],
+  "properties": {
+    "protocol": {"const": "arcont-public-asset"},
+    "version": {"const": 1},
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"},
+    "origin": {"const": "public-provider"},
+    "provider": {"const": "Poly Haven"},
+    "provider_id": {"const": "polyhaven"},
+    "provider_asset_id": {"type": "string", "minLength": 1},
+    "provider_file_key": {"type": "string", "minLength": 1},
+    "source_api": {"type": "string", "pattern": "^https://api\\.polyhaven\\.com/"},
+    "download_url": {"type": "string", "pattern": "^https://dl\\.polyhaven\\.org/"},
+    "staged_path": {"type": "string", "minLength": 1},
+    "extension": {"type": "string", "minLength": 1},
+    "bytes": {"type": "integer", "minimum": 0},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "upstream_md5": {"type": ["string","null"]},
+    "verified_md5": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+    "files_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "asset_license": {"const": "CC0"},
+    "license_url": {"const": "https://polyhaven.com/license"},
+    "commercial_use": {"const": true},
+    "asset_attribution_required": {"const": false},
+    "api_attribution_required": {"const": true},
+    "provider_credit": {"const": "Poly Haven"},
+    "api_terms": {"const": "https://polyhaven.com/our-api"},
+    "provenance_status": {"const": "provider-api-and-download-integrity-verified"},
+    "network_access": {"const": true},
+    "archive_extracted": {"const": false}
+  }
+}
