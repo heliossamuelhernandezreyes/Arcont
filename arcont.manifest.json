@@ -122,7 +122,9 @@
     "godot_structured_request_schema": "schemas/godot-structured-edit-request.schema.json",
     "godot_structured_revision_checked": true,
     "godot_structured_rollback_on_validation_failure": true,
-    "godot_structured_documentation": "docs/STRUCTURED_GODOT_EDITING.md"
+    "godot_structured_documentation": "docs/STRUCTURED_GODOT_EDITING.md",
+    "godot_structured_staged_atomic_commit": true,
+    "godot_structured_revision_recheck_before_commit": true
   },
   "integrity": {
     "validator": "tools/arcont_lab.py",
