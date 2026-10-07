@@ -1,4 +1,6 @@
 import json
+import os
+import stat
 import tempfile
 import unittest
 from pathlib import Path
@@ -67,6 +69,11 @@ class ProjectBootstrapAndAssetIntakeTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             bootstrap(self.root, intent(), "godot-3d-minimal")
         self.assertEqual((self.root / "keep.txt").read_text(), "user data")
+
+    def test_bootstrap_preserves_target_directory_mode(self):
+        os.chmod(self.root, 0o775)
+        bootstrap(self.root, intent(), "godot-3d-minimal")
+        self.assertEqual(stat.S_IMODE(self.root.stat().st_mode), 0o775)
 
     def bootstrap_for_assets(self):
         bootstrap(self.root, intent(), "godot-3d-minimal")
@@ -160,6 +167,99 @@ class ProjectBootstrapAndAssetIntakeTests(unittest.TestCase):
                         "license_name": "Unapproved-License",
                     },
                 },
+            )
+
+    def test_licensed_asset_requires_nonempty_license_name(self):
+        self.bootstrap_for_assets()
+        (self.root / "incoming/music.ogg").write_bytes(b"OggSfixture")
+        with self.assertRaises(ValueError):
+            asset_execute(
+                self.root,
+                {
+                    "protocol_version": 1,
+                    "operation": "stage",
+                    "asset_id": "blank_license",
+                    "source": "incoming/music.ogg",
+                    "rights": {
+                        "basis": "licensed",
+                        "commercial_use": True,
+                        "redistribution": False,
+                        "license_name": "   ",
+                    },
+                },
+            )
+
+    def test_explicit_empty_license_allowlist_blocks_all_licensed_assets(self):
+        self.bootstrap_for_assets()
+        project_intent = json.loads((self.root / "project.intent.json").read_text())
+        project_intent["asset_policy"]["allowed_licenses"] = []
+        (self.root / "project.intent.json").write_text(json.dumps(project_intent))
+        (self.root / "incoming/music.ogg").write_bytes(b"OggSfixture")
+        with self.assertRaises(ValueError):
+            asset_execute(
+                self.root,
+                {
+                    "protocol_version": 1,
+                    "operation": "stage",
+                    "asset_id": "blocked_license",
+                    "source": "incoming/music.ogg",
+                    "rights": {
+                        "basis": "licensed",
+                        "commercial_use": True,
+                        "redistribution": False,
+                        "license_name": "CC0",
+                    },
+                },
+            )
+
+    def test_list_rejects_symlinked_provenance_directory(self):
+        self.bootstrap_for_assets()
+        provenance = self.root / ".arcont/assets/user"
+        provenance.rmdir()
+        outside = Path(self.tmp.name) / "outside-provenance"
+        outside.mkdir()
+        (outside / "outside.asset.json").write_text(json.dumps({"id": "outside"}))
+        provenance.symlink_to(outside, target_is_directory=True)
+        with self.assertRaises(ValueError):
+            asset_execute(self.root, {"protocol_version": 1, "operation": "list"})
+
+    def test_list_reports_malformed_provenance_record(self):
+        self.bootstrap_for_assets()
+        (self.root / ".arcont/assets/user/bad.asset.json").write_text("{not-json")
+        with self.assertRaises(ValueError):
+            asset_execute(self.root, {"protocol_version": 1, "operation": "list"})
+
+    def test_stage_rejects_symlinked_destination_ancestor(self):
+        self.bootstrap_for_assets()
+        (self.root / "incoming/hero.svg").write_text("<svg/>")
+        outside = Path(self.tmp.name) / "outside-assets"
+        outside.mkdir()
+        textures = self.root / "assets/user/textures"
+        textures.symlink_to(outside, target_is_directory=True)
+        with self.assertRaises(ValueError):
+            asset_execute(
+                self.root,
+                {
+                    "protocol_version": 1,
+                    "operation": "stage",
+                    "asset_id": "hero",
+                    "source": "incoming/hero.svg",
+                    "rights": {
+                        "basis": "user-owned",
+                        "commercial_use": True,
+                        "redistribution": False,
+                    },
+                },
+            )
+        self.assertEqual(list(outside.iterdir()), [])
+
+    def test_dependency_bearing_gltf_is_not_accepted_in_v1(self):
+        self.bootstrap_for_assets()
+        (self.root / "incoming/model.gltf").write_text('{"asset":{"version":"2.0"},"buffers":[{"uri":"model.bin"}]}')
+        with self.assertRaises(ValueError):
+            asset_execute(
+                self.root,
+                {"protocol_version": 1, "operation": "inspect", "source": "incoming/model.gltf"},
             )
 
     def test_archive_is_not_accepted_in_v1(self):
