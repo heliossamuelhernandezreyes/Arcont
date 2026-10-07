@@ -653,13 +653,6 @@ def _script_inspect(project: Path, relative: str) -> dict[str, Any]:
 
 
 def _validate_script_with_godot(project: Path, relative: str) -> dict[str, Any]:
-    result = _run_godot_script(
-        project,
-        SCRIPT_VALIDATOR_SOURCE,
-        {"operation": "validate.script"},
-    )
-    # The generic runner writes its own request, but the validator needs script path
-    # as the first user argument. Re-run with a specialized lightweight invocation.
     root = project.resolve()
     run = _project_file(root, f".arcont/runs/structured/{uuid.uuid4().hex}")
     run.mkdir(parents=True, exist_ok=False)
