@@ -14,9 +14,10 @@ A fresh compatible agent should be able to:
 2. inspect an external project;
 3. read persistent project intent owned by the project;
 4. inspect local user/project assets;
-5. submit a model-authored hypothesis through the existing safety gate;
-6. execute an existing bounded ARCONT plan;
-7. receive normal ARCONT evidence and receipts.
+5. discover and read allowlisted authoring recipes/scenarios;
+6. submit a model-authored hypothesis through the existing safety gate;
+7. execute an existing bounded ARCONT plan;
+8. receive normal ARCONT evidence and receipts.
 
 The bridge uses one-request JSON over stdin/stdout. MCP, HTTP, local sockets or
 provider-specific adapters can wrap this protocol later without duplicating
@@ -89,6 +90,20 @@ copyright or license rights from file contents.
 
 Public asset discovery remains a future bridge operation. Asset Vault remains
 the trust/provenance layer for public sources.
+
+### `authoring.catalog`
+
+Discovers project-owned JSON documents under the allowlisted
+`authoring/recipes` and `authoring/scenarios` roots. It returns path, kind,
+size, parse status and lightweight metadata such as `id`/version when present.
+It also reports whether the normal Godot/Map Forge authoring contracts exist.
+
+### `authoring.document.read`
+
+Reads one JSON document from those allowlisted authoring roots. Parent traversal,
+symlinks, non-JSON files and oversized documents are rejected. This gives a
+fresh agent the recipe/scenario content needed to construct a normal bounded
+plan without exposing arbitrary project files.
 
 ### `hypothesis.evaluate`
 
