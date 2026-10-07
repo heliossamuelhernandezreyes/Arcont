@@ -352,6 +352,14 @@ func _initialize() -> void:
     scene_nodes = inspected_scene["engine"]["result"]["nodes"]
     node_paths = {row["path"] for row in scene_nodes}
     resource_props = inspected_resource["engine"]["result"]["properties"]
+    size_value = resource_props["size"]["value"]
+    size_roundtripped = (
+        resource_props["size"].get("$type") == "Vector3"
+        and len(size_value) == 3
+        and abs(float(size_value[0]) - 0.8) < 0.001
+        and abs(float(size_value[1]) - 1.8) < 0.001
+        and abs(float(size_value[2]) - 0.8) < 0.001
+    )
     summary = {
         "ok": True,
         "script": {
@@ -373,7 +381,7 @@ func _initialize() -> void:
             "player_node_created": "Player" in node_paths,
             "player_mesh_created": "Player/PlayerBody" in node_paths,
             "script_attached": any(row["path"] == "Player" and row["script"] == "res://scripts/player.gd" for row in scene_nodes),
-            "resource_size_roundtripped": resource_props["size"] == {"$type": "Vector3", "value": [0.8, 1.8, 0.8]},
+            "resource_size_roundtripped": size_roundtripped,
             "function_patch_changed_revision": patched_script["revision"] != inspected_script["revision"],
             "runtime_input_moved_player": runtime_json["ok"] is True and runtime_json["delta_z"] < -0.01,
         },
