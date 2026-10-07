@@ -215,7 +215,7 @@ def inspect_assets(project: Path, max_assets: int = MAX_ASSETS_DEFAULT) -> dict[
         "assets": assets,
         "limitations": [
             "Inventory identifies local project files only; it does not infer copyright/license rights from file contents.",
-            "Public-asset network discovery is not performed by Bridge v1.",
+            "assets.inspect inventories local files only; provider-scoped network discovery is available separately through asset.public.* when project policy allows it.",
             "Technical inventory does not establish artistic quality, runtime cost, rig correctness or target-platform suitability.",
         ],
     }
@@ -483,7 +483,7 @@ def handle_request(
                 "manifest_sha256": args["manifest_sha256"],
             },
             allow_project_write,
-            180,
+            900,
         )
     elif operation == "authoring.catalog":
         if args:
