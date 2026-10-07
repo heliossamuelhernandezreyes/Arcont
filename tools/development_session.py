@@ -220,6 +220,36 @@ def _state_path(project: Path, session_id: str) -> Path:
     return _session_root(project, session_id) / "session.json"
 
 
+def _pending_path(project: Path, session_id: str) -> Path:
+    return _session_root(project, session_id) / "pending-run.json"
+
+
+def _read_pending(project: Path, session_id: str) -> dict[str, Any] | None:
+    path = _pending_path(project, session_id)
+    if not path.exists():
+        return None
+    if path.is_symlink() or not path.is_file():
+        raise SessionError("development session pending-run marker is invalid")
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise SessionError("development session pending-run marker is invalid JSON") from exc
+    if not isinstance(value, dict) or value.get("protocol") != "arcont-development-session-pending" or value.get("version") != 1:
+        raise SessionError("development session pending-run marker is invalid")
+    return value
+
+
+def _reconcile_completed_pending(project: Path, state: dict[str, Any]) -> dict[str, Any] | None:
+    pending = _read_pending(project, state["id"])
+    if pending is None:
+        return None
+    run_id = pending.get("run_id")
+    if any(row.get("run_id") == run_id for row in state.get("history", [])):
+        _pending_path(project, state["id"]).unlink()
+        return None
+    return pending
+
+
 def _atomic_json(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.parent.is_symlink():
@@ -439,6 +469,7 @@ def inspect(project: Path, request: dict[str, Any]) -> dict[str, Any]:
     current_intent = _intent_sha(project)
     current_registry_obj, current_registry, _ = _registry()
     current_toolchain = _toolchain_sha(current_registry_obj, state["capability_allowlist"])
+    pending = _read_pending(project, state["id"])
     return {
         "ok": True,
         "write_performed": False,
@@ -446,6 +477,7 @@ def inspect(project: Path, request: dict[str, Any]) -> dict[str, Any]:
             "session": state,
             "remaining": _remaining(state),
             "next_milestone": _active_milestone(state),
+            "pending_run": pending,
             "environment": {
                 "intent_matches": current_intent == state["project_intent_sha256"],
                 "registry_matches": current_registry == state["registry_sha256"],
@@ -468,6 +500,11 @@ def _require_revision(state: dict[str, Any], expected: Any) -> None:
 def _execute_one_locked(project: Path, request: dict[str, Any]) -> dict[str, Any]:
     state = _load_state(project, request.get("session_id"))
     _require_revision(state, request.get("if_session_revision"))
+    pending = _reconcile_completed_pending(project, state)
+    if pending is not None:
+        raise SessionError(
+            "development session has an unresolved pending run; refuse automatic retry and inspect/review the project before starting a new session"
+        )
     if state["status"] != "active":
         raise SessionError(f"development session is not active: {state['status']}")
 
@@ -517,6 +554,28 @@ def _execute_one_locked(project: Path, request: dict[str, Any]) -> dict[str, Any
     if remaining["failed_runs"] <= 0 and state["budgets"]["max_failed_runs"] > 0:
         raise SessionError("development-session failed-run budget exhausted")
 
+    run_index = state["counters"]["plan_runs"] + 1
+    run_id = f"run-{run_index:03d}-{uuid.uuid4().hex[:12]}"
+    run_path = _session_root(project, state["id"]) / "runs" / f"{run_id}.json"
+    if run_path.exists():
+        raise SessionError("development-session run receipt collision")
+    pending_path = _pending_path(project, state["id"])
+    if pending_path.exists():
+        raise SessionError("development-session pending run already exists")
+    _atomic_json(
+        pending_path,
+        {
+            "protocol": "arcont-development-session-pending",
+            "version": 1,
+            "session_id": state["id"],
+            "run_id": run_id,
+            "milestone_id": milestone["id"],
+            "session_revision_before": state["revision"],
+            "plan_id": plan["id"],
+            "plan_sha256": canonical_sha256(plan),
+        },
+    )
+
     result = execute_plan(
         arcont_root(),
         project,
@@ -536,8 +595,6 @@ def _execute_one_locked(project: Path, request: dict[str, Any]) -> dict[str, Any
         and post_toolchain == state["toolchain_sha256"]
     )
 
-    run_index = state["counters"]["plan_runs"] + 1
-    run_id = f"run-{run_index:03d}-{uuid.uuid4().hex[:12]}"
     receipt = {
         "protocol": "arcont-development-session-run",
         "version": 1,
@@ -557,9 +614,6 @@ def _execute_one_locked(project: Path, request: dict[str, Any]) -> dict[str, Any
             "stable": environment_stable,
         },
     }
-    run_path = _session_root(project, state["id"]) / "runs" / f"{run_id}.json"
-    if run_path.exists():
-        raise SessionError("development-session run receipt collision")
     _atomic_json(run_path, receipt)
     receipt_sha = hashlib.sha256(run_path.read_bytes()).hexdigest()
 
@@ -623,6 +677,8 @@ def _execute_one_locked(project: Path, request: dict[str, Any]) -> dict[str, Any
 
     state["revision"] = _state_revision(state)
     _atomic_json(_state_path(project, state["id"]), state)
+    if pending_path.is_file() and not pending_path.is_symlink():
+        pending_path.unlink()
 
     return {
         "ok": result.get("ok") is True and environment_stable,
