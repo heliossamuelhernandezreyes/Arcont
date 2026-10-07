@@ -358,6 +358,17 @@ class UniversalAgentBridgeTests(unittest.TestCase):
             "ready_for_bridge",
         )
 
+    def test_engine_backed_structured_inspection_requires_optin(self):
+        request = {
+            "protocol": "arcont-bridge",
+            "version": 1,
+            "request_id": "scene-inspect-refusal",
+            "operation": "godot.scene.inspect",
+            "arguments": {"scene": "scenes/main.tscn"},
+        }
+        with self.assertRaises(PermissionError):
+            handle_request(self.root, self.project, request, allow_project_write=False)
+
     def test_structured_writer_cannot_gain_permission_from_bridge(self):
         request = {
             "protocol": "arcont-bridge",
