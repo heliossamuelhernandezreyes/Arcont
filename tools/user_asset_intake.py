@@ -243,8 +243,7 @@ def stage(project: Path, request: dict[str, Any]) -> dict[str, Any]:
         record_path.parent.mkdir(parents=True, exist_ok=True)
         _reject_symlink_ancestors(root, record_path.parent)
         record_path.write_text(
-            json.dumps(record, indent=2, sort_keys=True, ensure_ascii=False) + "
-",
+            json.dumps(record, indent=2, sort_keys=True, ensure_ascii=False) + chr(10),
             encoding="utf-8",
         )
     except Exception:
