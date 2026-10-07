@@ -2,10 +2,12 @@ import hashlib
 import json
 import tempfile
 import unittest
+import urllib.error
 from pathlib import Path
 from unittest.mock import patch
 
 from tools.public_asset_discovery import (
+    _AllowlistedRedirectHandler,
     _canonical_sha,
     execute,
     files,
@@ -196,6 +198,93 @@ class PublicAssetDiscoveryTests(unittest.TestCase):
                     "query": "city",
                     "asset_type": "all",
                     "limit": 5,
+                },
+            )
+
+    def test_redirect_handler_rejects_non_allowlisted_target_before_following(self):
+        handler = _AllowlistedRedirectHandler()
+        with self.assertRaises(urllib.error.HTTPError):
+            handler.redirect_request(
+                None,
+                None,
+                302,
+                "Found",
+                {},
+                "https://evil.example/payload.hdr",
+            )
+
+    @patch("tools.public_asset_discovery._fetch_json")
+    def test_dependency_bearing_or_non_self_contained_model_is_not_stageable(self, fetch):
+        payload = {
+            "model": {
+                "1k": {
+                    "gltf": {
+                        "url": "https://dl.polyhaven.org/file/model.gltf",
+                        "size": 10,
+                        "md5": "0" * 32,
+                        "include": [
+                            {"url": "https://dl.polyhaven.org/file/model.bin", "size": 5, "md5": "1" * 32}
+                        ],
+                    }
+                }
+            }
+        }
+        fetch.return_value = payload
+        report = files(self.project, "dirty_football")
+        rows = {row["file_key"]: row for row in report["result"]["files"]}
+        main = rows["model/1k/gltf"]
+        self.assertEqual(main["extension"], ".gltf")
+        self.assertTrue(main["has_external_dependencies"])
+        self.assertFalse(main["stage_extension_allowed"])
+
+    @patch("tools.public_asset_discovery._fetch_json")
+    def test_stage_rejects_symlinked_public_destination(self, fetch):
+        fetch.side_effect = self.fake_fetch
+        outside = Path(self.tmp.name) / "outside-public"
+        outside.mkdir()
+        public_root = self.project / "assets/public"
+        public_root.mkdir(parents=True, exist_ok=True)
+        (public_root / "polyhaven").symlink_to(outside, target_is_directory=True)
+        with self.assertRaises(ValueError):
+            stage(
+                self.project,
+                {
+                    "semantic_id": "sky",
+                    "asset_id": "sunset_jhbcentral",
+                    "file_key": "hdri/1k/hdr",
+                    "manifest_sha256": _canonical_sha(FILES),
+                },
+            )
+        self.assertEqual(list(outside.iterdir()), [])
+
+    def test_public_list_rejects_symlinked_or_malformed_provenance(self):
+        provenance = self.project / ".arcont/assets/public"
+        outside = Path(self.tmp.name) / "outside-records"
+        outside.mkdir()
+        (outside / "leak.asset.json").write_text(json.dumps({"id": "leak"}))
+        provenance.symlink_to(outside, target_is_directory=True)
+        with self.assertRaises(ValueError):
+            execute(self.project, {"protocol_version": 1, "operation": "list"})
+
+        provenance.unlink()
+        provenance.mkdir(parents=True)
+        (provenance / "bad.asset.json").write_text("{not-json")
+        with self.assertRaises(ValueError):
+            execute(self.project, {"protocol_version": 1, "operation": "list"})
+
+    def test_explicit_empty_license_allowlist_blocks_poly_haven(self):
+        project_intent = json.loads((self.project / "project.intent.json").read_text())
+        project_intent["asset_policy"]["allowed_licenses"] = []
+        (self.project / "project.intent.json").write_text(json.dumps(project_intent))
+        with self.assertRaises(PermissionError):
+            execute(
+                self.project,
+                {
+                    "protocol_version": 1,
+                    "operation": "search",
+                    "query": "sunset",
+                    "asset_type": "all",
+                    "limit": 1,
                 },
             )
 
