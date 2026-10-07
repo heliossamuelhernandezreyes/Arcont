@@ -105,7 +105,8 @@
     "user_asset_record_schema": "schemas/user-asset-record.schema.json",
     "user_asset_source_root": "incoming/",
     "user_asset_network_access_allowed": false,
-    "user_asset_archive_extraction_allowed": false
+    "user_asset_archive_extraction_allowed": false,
+    "project_bootstrap_asset_intake_documentation": "docs/PROJECT_BOOTSTRAP_ASSET_INTAKE.md"
   },
   "integrity": {
     "validator": "tools/arcont_lab.py",
