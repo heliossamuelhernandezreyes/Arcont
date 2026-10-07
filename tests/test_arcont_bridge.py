@@ -18,6 +18,17 @@ class UniversalAgentBridgeTests(unittest.TestCase):
         (self.project / "assets/shot.wav").write_bytes(b"RIFF-fixture")
         (self.project / "scenes").mkdir()
         (self.project / "scenes/main.tscn").write_text("[gd_scene format=3]\n", encoding="utf-8")
+        (self.project / "authoring/recipes").mkdir(parents=True)
+        (self.project / "authoring/scenarios").mkdir(parents=True)
+        (self.project / "authoring/recipes/test_scene.json").write_text(
+            json.dumps({"version": 1, "id": "test_scene", "purpose": "fixture"}),
+            encoding="utf-8",
+        )
+        (self.project / "authoring/scenarios/test_route.json").write_text(
+            json.dumps({"version": 1, "id": "test_route", "commands": []}),
+            encoding="utf-8",
+        )
+        (self.project / "godot-authoring.json").write_text("{}", encoding="utf-8")
         self.root = repo_root()
 
     def tearDown(self):
@@ -111,6 +122,26 @@ class UniversalAgentBridgeTests(unittest.TestCase):
         self.assertEqual(rows["scenes/main.tscn"]["kind"], "scene")
         self.assertEqual(len(rows["assets/hero.glb"]["sha256"]), 64)
         self.assertIn("Public-asset network discovery is not performed by Bridge v1.", report["result"]["limitations"])
+
+    def test_fresh_agent_can_catalog_and_read_authoring_documents(self):
+        catalog = self.request("authoring.catalog")
+        self.assertTrue(catalog["ok"])
+        self.assertTrue(catalog["result"]["godot_authoring_contract_present"])
+        paths = {row["path"] for row in catalog["result"]["documents"]}
+        self.assertIn("authoring/recipes/test_scene.json", paths)
+        self.assertIn("authoring/scenarios/test_route.json", paths)
+
+        document = self.request(
+            "authoring.document.read",
+            {"path": "authoring/recipes/test_scene.json"},
+        )
+        self.assertTrue(document["ok"])
+        self.assertEqual(document["result"]["document"]["id"], "test_scene")
+        self.assertEqual(len(document["result"]["sha256"]), 64)
+
+    def test_authoring_document_read_refuses_path_escape(self):
+        with self.assertRaises(BridgeError):
+            self.request("authoring.document.read", {"path": "../project.intent.json"})
 
     def test_read_only_plan_runs_through_existing_execution_loop(self):
         plan = {
