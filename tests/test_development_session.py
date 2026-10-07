@@ -61,7 +61,12 @@ def plan(plan_id="movement_plan"):
         "permissions": {"project_write": True},
         "capability_allowlist": ["godot.structured.control"],
         "steps": [
-            {"id": "inventory", "kind": "inspect-project", "max_files": 1000}
+            {
+                "id": "inventory",
+                "kind": "inspect-project",
+                "max_files": 1000,
+                "expect": [{"pointer": "/project/engine", "op": "equals", "value": "godot"}]
+            }
         ]
     }
 
@@ -105,7 +110,12 @@ class DevelopmentSessionTests(unittest.TestCase):
             "steps_completed": 1,
             "write_steps": 0,
             "plan_sha256": "a" * 64,
-            "steps": []
+            "steps": [{
+                "id": "inventory",
+                "ok": True,
+                "write_performed": False,
+                "expectations": [{"ok": True}]
+            }]
         }
         created = create(self.project, {"spec": spec()})
         state = created["result"]["session"]
@@ -117,7 +127,8 @@ class DevelopmentSessionTests(unittest.TestCase):
                 "milestone_id": "movement",
                 "plan": plan(),
                 "complete_milestone": True,
-                "completion_note": "Plan expectations passed."
+                "completion_note": "Plan expectations passed.",
+                "completion_evidence": [{"criterion_index": 0, "step_ids": ["inventory"]}]
             }
         )
         self.assertTrue(report["ok"])
@@ -149,7 +160,8 @@ class DevelopmentSessionTests(unittest.TestCase):
                 "if_session_revision": state["revision"],
                 "milestone_id": "movement",
                 "plan": plan(),
-                "complete_milestone": True
+                "complete_milestone": True,
+                "completion_evidence": [{"criterion_index": 0, "step_ids": ["inventory"]}]
             }
         )
         self.assertFalse(report["ok"])
@@ -231,7 +243,12 @@ class DevelopmentSessionTests(unittest.TestCase):
             "status": "completed",
             "steps_completed": 1,
             "write_steps": 0,
-            "steps": []
+            "steps": [{
+                "id": "inventory",
+                "ok": True,
+                "write_performed": False,
+                "expectations": [{"ok": True}]
+            }]
         }
         created = create(self.project, {"spec": spec()})
         state = created["result"]["session"]
@@ -242,7 +259,8 @@ class DevelopmentSessionTests(unittest.TestCase):
                 "if_session_revision": state["revision"],
                 "milestone_id": "movement",
                 "plan": plan(),
-                "complete_milestone": True
+                "complete_milestone": True,
+                "completion_evidence": [{"criterion_index": 0, "step_ids": ["inventory"]}]
             }
         )
         self.assertFalse(report["ok"])
@@ -372,6 +390,58 @@ class DevelopmentSessionTests(unittest.TestCase):
         with self.assertRaises(SessionError):
             _reconcile_completed_pending(self.project, state)
         self.assertTrue((session_dir / "pending-run.json").is_file())
+
+    @patch("tools.development_session.execute_plan")
+    def test_completion_requires_evidence_for_every_acceptance_criterion(self, run):
+        created = create(self.project, {"spec": spec()})
+        state = created["result"]["session"]
+        with self.assertRaises(SessionError):
+            execute_one(
+                self.project,
+                {
+                    "session_id": "build_game",
+                    "if_session_revision": state["revision"],
+                    "milestone_id": "movement",
+                    "plan": plan(),
+                    "complete_milestone": True,
+                    "completion_evidence": [],
+                },
+            )
+        run.assert_not_called()
+
+    @patch("tools.development_session.execute_plan")
+    def test_completion_evidence_must_have_machine_signal(self, run):
+        run.return_value = {
+            "ok": True,
+            "status": "completed",
+            "steps_completed": 1,
+            "write_steps": 0,
+            "steps": [{
+                "id": "inventory",
+                "ok": True,
+                "write_performed": False,
+                "expectations": []
+            }]
+        }
+        created = create(self.project, {"spec": spec()})
+        state = created["result"]["session"]
+        report = execute_one(
+            self.project,
+            {
+                "session_id": "build_game",
+                "if_session_revision": state["revision"],
+                "milestone_id": "movement",
+                "plan": plan(),
+                "complete_milestone": True,
+                "completion_evidence": [{"criterion_index": 0, "step_ids": ["inventory"]}],
+            },
+        )
+        self.assertFalse(report["ok"])
+        self.assertEqual(report["result"]["session"]["milestones"][0]["status"], "active")
+        self.assertEqual(
+            report["result"]["next_action"],
+            "review-completion-evidence-and-submit-new-plan",
+        )
 
     def test_session_directory_symlink_is_not_accepted(self):
         created = create(self.project, {"spec": spec()})
