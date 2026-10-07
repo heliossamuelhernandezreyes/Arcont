@@ -292,6 +292,10 @@ def _download(url: str, target: Path, expected_size: Any, expected_md5: Any) -> 
     md5 = hashlib.md5(usedforsecurity=False)
     total = 0
     with urllib.request.urlopen(request, timeout=60) as response, target.open("wb") as handle:
+        final_url = response.geturl()
+        final_parsed = urllib.parse.urlparse(final_url)
+        if final_parsed.scheme != "https" or final_parsed.hostname not in ALLOWED_DOWNLOAD_HOSTS:
+            raise ValueError("provider download redirected outside host allowlist")
         declared = response.headers.get("Content-Length")
         if declared:
             try:
