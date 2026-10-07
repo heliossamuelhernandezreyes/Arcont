@@ -70,6 +70,9 @@ DENIED_SCRIPT_PATTERNS = {
     "ResourceSaver.save": "resource writes must use structured operations",
 }
 DENIED_NODE_TYPES = {"HTTPRequest", "EditorPlugin"}
+DENIED_SCENE_PROPERTIES = {"script", "owner", "scene_file_path"}
+DENIED_RESOURCE_PROPERTIES = {"script", "resource_path"}
+DENIED_RESOURCE_TYPES = {"GDScript", "Script", "PackedScene"}
 RUNNER_TIMEOUT_SECONDS = 120
 
 RUNNER_SOURCE = r'''extends SceneTree
@@ -766,6 +769,8 @@ def _validate_scene_change(change: Any) -> dict[str, Any]:
         prop = change.get("property")
         if not isinstance(prop, str) or not PROPERTY_NAME.fullmatch(prop):
             raise StructuredError("scene set requires safe property name")
+        if prop in DENIED_SCENE_PROPERTIES:
+            raise StructuredError(f"scene property must use a dedicated structured operation: {prop}")
     if op == "attach_script":
         script = _safe_rel(change.get("script", "").removeprefix("res://") if isinstance(change.get("script"), str) else None, SCRIPT_PATH, "script")
         change = dict(change)
@@ -904,6 +909,13 @@ def execute(project: Path, request: dict[str, Any]) -> dict[str, Any]:
         if not isinstance(changes, list) or not 1 <= len(changes) <= MAX_CHANGES:
             raise StructuredError(f"scene.edit changes must contain 1..{MAX_CHANGES} entries")
         validated = [_validate_scene_change(change) for change in changes]
+        for change in validated:
+            if change.get("op") == "attach_script":
+                relative_script = str(change["script"]).removeprefix("res://")
+                script_path = _project_file(root, relative_script)
+                if not script_path.is_file() or script_path.is_symlink():
+                    raise StructuredError("attached script must be an existing regular project script")
+                _validate_script_source(script_path.read_text(encoding="utf-8"))
         payload = {
             "operation": "scene.edit",
             "scene": "res://" + relative,
@@ -956,11 +968,15 @@ def execute(project: Path, request: dict[str, Any]) -> dict[str, Any]:
             prop = change.get("property")
             if not isinstance(prop, str) or not PROPERTY_NAME.fullmatch(prop):
                 raise StructuredError("resource set requires safe property name")
+            if prop in DENIED_RESOURCE_PROPERTIES:
+                raise StructuredError(f"resource property refused in structured v1: {prop}")
         payload = {"operation": "resource.edit", "resource": "res://" + relative, "changes": changes}
         if not path.exists():
             resource_type = request.get("resource_type")
             if not isinstance(resource_type, str) or not IDENTIFIER.fullmatch(resource_type):
                 raise StructuredError("new resource requires safe resource_type")
+            if resource_type in DENIED_RESOURCE_TYPES:
+                raise StructuredError(f"resource type refused in structured v1: {resource_type}")
             payload["resource_type"] = resource_type
         return _engine_target_edit(root, "resource.edit", relative, request.get("if_revision"), payload)
 
