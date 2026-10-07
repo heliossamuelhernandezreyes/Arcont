@@ -345,7 +345,7 @@ def handle_request(
     operation = request.get("operation")
     if operation not in {
         "discover", "project.inspect", "project.intent.read", "assets.inspect",
-        "hypothesis.evaluate", "plan.execute"
+        "authoring.catalog", "authoring.document.read", "hypothesis.evaluate", "plan.execute"
     }:
         raise BridgeError(f"unsupported bridge operation: {operation!r}")
     args = request.get("arguments", {})
