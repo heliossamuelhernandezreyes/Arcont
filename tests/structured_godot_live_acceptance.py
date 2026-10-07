@@ -230,15 +230,17 @@ func _physics_process(_delta):
         project,
         "godot.scene.inspect",
         {"scene": "scenes/main.tscn"},
+        allow_write=True,
     )
-    inspected_scene = direct_result(scene_inspect)
+    inspected_scene = writer_result(scene_inspect)
     resource_inspect = bridge(
         arcont,
         project,
         "godot.resource.inspect",
         {"resource": "resources/player_mesh.tres", "properties": ["size"]},
+        allow_write=True,
     )
-    inspected_resource = direct_result(resource_inspect)
+    inspected_resource = writer_result(resource_inspect)
     (evidence / "07-inspect.json").write_text(
         json.dumps(
             {
