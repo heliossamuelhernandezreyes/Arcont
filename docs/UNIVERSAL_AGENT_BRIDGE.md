@@ -132,12 +132,30 @@ A fresh project can be edited without a project-specific adapter through:
 `godot.scene.inspect/edit`, `godot.resource.inspect/edit`, and
 `godot.input.action.set`.
 
-Read operations do not require project-write permission. Mutations do. Existing
-targets require SHA-256 revision binding, GDScript is loaded by Godot before a
-write is accepted, and failed script validation rolls the target back.
+Pure source reads such as `godot.script.inspect` do not require
+project-write permission. Engine-backed scene/resource inspection requires
+opt-in because launching Godot may update project-local cache/import state.
+Mutations also require opt-in. Existing targets require SHA-256 revision
+binding and structured edits use staged validation plus revision recheck before
+atomic commit.
 
 This generic layer complements the richer project-owned recipe/adapter system;
 see `STRUCTURED_GODOT_EDITING.md`.
+
+### Development sessions
+
+A fresh external agent can persist a bounded long-range workflow through:
+
+`development.session.capabilities`, `development.session.create`,
+`development.session.inspect`, and `development.session.execute`.
+
+A session pins project intent and capability-registry hashes, stores ordered
+milestones, budgets plan/write/failure counts, requires exact session revisions
+for mutation, and executes at most one ordinary `arcont-agent-plan` per
+request. Failed plans are recorded and never silently retried.
+
+The external AI remains the planner. ARCONT owns the durable execution envelope
+and receipts. See `DEVELOPMENT_SESSION.md`.
 
 ### `authoring.catalog`
 

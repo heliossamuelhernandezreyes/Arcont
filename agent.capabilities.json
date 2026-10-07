@@ -182,6 +182,24 @@
       ]
     },
     {
+      "id": "development.session.control",
+      "description": "Persistent bounded milestone orchestration over existing ARCONT plans with budgets, receipts, revision checks and no silent retries.",
+      "access": "external-project-write",
+      "entrypoint": "tools/development_session.py",
+      "output": "json",
+      "doctor": false,
+      "invocable": true,
+      "project_arg": "--project",
+      "request_arg": "--request",
+      "request_mode": "json-stdin",
+      "operations": [
+        "capabilities",
+        "create",
+        "inspect",
+        "execute"
+      ]
+    },
+    {
       "id": "agent.bridge",
       "description": "Transport-neutral JSON/stdio bridge for external AI agents to discover ARCONT, read project intent/assets, evaluate hypotheses and execute bounded plans.",
       "access": "external-project-write",
@@ -216,6 +234,10 @@
         "godot.resource.inspect",
         "godot.resource.edit",
         "godot.input.action.set",
+        "development.session.capabilities",
+        "development.session.create",
+        "development.session.inspect",
+        "development.session.execute",
         "authoring.document.read",
         "hypothesis.evaluate",
         "plan.execute"

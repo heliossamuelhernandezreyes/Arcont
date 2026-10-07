@@ -48,6 +48,10 @@
         "godot.resource.inspect",
         "godot.resource.edit",
         "godot.input.action.set",
+        "development.session.capabilities",
+        "development.session.create",
+        "development.session.inspect",
+        "development.session.execute",
         "authoring.document.read",
         "hypothesis.evaluate",
         "plan.execute"

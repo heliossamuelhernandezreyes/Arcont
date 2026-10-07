@@ -60,6 +60,8 @@ class UniversalAgentBridgeTests(unittest.TestCase):
         self.assertIn("godot.script.create", bridge["operations"])
         self.assertIn("godot.scene.edit", bridge["operations"])
         self.assertIn("godot.resource.edit", bridge["operations"])
+        self.assertIn("development.session.create", bridge["operations"])
+        self.assertIn("development.session.execute", bridge["operations"])
         self.assertFalse(bridge["mutation_boundary"]["bridge_creates_new_writer_primitives"])
         ids = {row["id"] for row in report["result"]["agent_control"]["capabilities"]}
         self.assertIn("godot.authoring.control", ids)
@@ -403,6 +405,113 @@ class UniversalAgentBridgeTests(unittest.TestCase):
                 "path": "scripts/player.gd",
                 "if_revision": None,
                 "source": "extends Node\n",
+            },
+        }
+        report = handle_request(self.root, self.project, request, allow_project_write=True)
+        self.assertTrue(report["ok"])
+        self.assertEqual(invoke.call_args.args[-1], 900)
+
+    def test_development_session_create_requires_project_write_optin(self):
+        request = {
+            "protocol": "arcont-bridge",
+            "version": 1,
+            "request_id": "session-create-refusal",
+            "operation": "development.session.create",
+            "arguments": {
+                "spec": {
+                    "id": "bridge_session",
+                    "goal": "Prove write permission boundary.",
+                    "capability_allowlist": ["godot.structured.control"],
+                    "permissions": {"project_write": True},
+                    "milestones": [
+                        {
+                            "id": "one",
+                            "goal": "One bounded milestone.",
+                            "acceptance": ["One expectation passes."]
+                        }
+                    ]
+                }
+            }
+        }
+        with self.assertRaises(PermissionError):
+            handle_request(self.root, self.project, request, allow_project_write=False)
+
+    def test_development_session_inspect_is_pure_read(self):
+        from tools.development_session import create as create_session
+        (self.project / "project.intent.json").write_text(
+            json.dumps({
+                "protocol": "arcont-project-intent",
+                "version": 1,
+                "project_id": "bridge_session",
+                "title": "Bridge Session",
+                "genre": "test",
+                "asset_policy": {
+                    "user_assets": True,
+                    "public_assets": False,
+                    "commercial_use_required": True,
+                    "allow_network_discovery": False,
+                },
+            }),
+            encoding="utf-8",
+        )
+        created = create_session(
+            self.project,
+            {
+                "spec": {
+                    "id": "bridge_session",
+                    "goal": "Persist inspectable state.",
+                    "capability_allowlist": ["godot.structured.control"],
+                    "permissions": {"project_write": True},
+                    "milestones": [
+                        {
+                            "id": "one",
+                            "goal": "One bounded milestone.",
+                            "acceptance": ["One expectation passes."]
+                        }
+                    ]
+                }
+            },
+        )
+        report = self.request(
+            "development.session.inspect",
+            {"session_id": "bridge_session"},
+            allow=False,
+        )
+        self.assertTrue(report["ok"])
+        self.assertEqual(
+            report["result"]["result"]["session"]["revision"],
+            created["result"]["session"]["revision"],
+        )
+
+    @patch("tools.arcont_bridge.invoke_capability")
+    def test_development_session_execute_uses_bounded_long_timeout(self, invoke):
+        invoke.return_value = {
+            "ok": True,
+            "result": {
+                "ok": True,
+                "write_performed": True,
+                "result": {"session": {"status": "active"}},
+            },
+        }
+        request = {
+            "protocol": "arcont-bridge",
+            "version": 1,
+            "request_id": "session-execute-timeout",
+            "operation": "development.session.execute",
+            "arguments": {
+                "session_id": "prototype",
+                "if_session_revision": "a" * 64,
+                "milestone_id": "movement",
+                "plan": {
+                    "protocol": "arcont-agent-plan",
+                    "version": 1,
+                    "id": "test_plan",
+                    "goal": "Test plan.",
+                    "permissions": {"project_write": True},
+                    "capability_allowlist": ["godot.structured.control"],
+                    "steps": [{"id": "inspect", "kind": "inspect-project"}],
+                },
+                "complete_milestone": False,
             },
         }
         report = handle_request(self.root, self.project, request, allow_project_write=True)
