@@ -91,14 +91,21 @@ A session captures:
 
 - SHA-256 of `project.intent.json`;
 - SHA-256 of `agent.capabilities.json`;
+- a toolchain SHA-256 covering each allowlisted capability entrypoint plus the
+  execution/session core;
 - session capability allowlist;
 - explicit project-write policy;
 - milestone order and acceptance prose;
 - bounded execution budgets.
 
-If project intent or the ARCONT capability registry changes, execution stops.
-V1 requires a new reviewed session rather than silently migrating an old plan
-onto changed product requirements or changed tools.
+If project intent, the ARCONT capability registry, or the pinned capability
+implementation toolchain changes, execution stops. V1 requires a new reviewed
+session rather than silently migrating an old plan onto changed product
+requirements or changed tools.
+
+A session also owns a kernel-backed lock file. Only one execute request can
+advance a given session at a time. A second agent therefore cannot race the same
+`if_session_revision` and silently overwrite the first agent's state.
 
 ## One plan per execute
 
@@ -177,6 +184,11 @@ remaining budget.
 After execution, actual completed steps and actual write steps from the normal
 execution receipt are charged to the session.
 
+The intent, registry and toolchain pins are checked again after the plan. If
+the environment changed while the plan was running, the run is still preserved
+as evidence but the milestone is not completed and the session pauses with
+`environment-changed-during-run`.
+
 Exhaustion pauses the session instead of automatically extending it.
 
 ## Milestone completion
@@ -220,7 +232,8 @@ A history row stores:
 - failed step when present.
 
 The session state itself has a canonical SHA-256 revision. Mutating a stale
-session revision is refused.
+session revision is refused. Session directories and lock files may not be
+symlinks.
 
 ## Relationship to the AI
 
