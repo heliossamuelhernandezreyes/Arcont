@@ -12,12 +12,13 @@ A fresh compatible agent should be able to:
 
 1. discover ARCONT and its safety boundary;
 2. inspect an external project;
-3. read persistent project intent owned by the project;
-4. inspect local user/project assets;
-5. discover and read allowlisted authoring recipes/scenarios;
-6. submit a model-authored hypothesis through the existing safety gate;
-7. execute an existing bounded ARCONT plan;
-8. receive normal ARCONT evidence and receipts.
+3. bootstrap a new external Godot project when explicitly authorized;
+4. read persistent project intent owned by the project;
+5. inspect/stage local user-provided assets with declared provenance;
+6. discover and read allowlisted authoring recipes/scenarios;
+7. submit a model-authored hypothesis through the existing safety gate;
+8. execute an existing bounded ARCONT plan;
+9. receive normal ARCONT evidence and receipts.
 
 The bridge uses one-request JSON over stdin/stdout. MCP, HTTP, local sockets or
 provider-specific adapters can wrap this protocol later without duplicating
@@ -82,6 +83,13 @@ memory.
 The persistent intent contract is
 `schemas/project-intent.schema.json`.
 
+### `project.bootstrap`
+
+Creates a minimal Godot 2D or 3D project in an existing empty external
+directory. It requires explicit project-write opt-in and a validated persistent
+project intent. The detailed contract lives in
+`PROJECT_BOOTSTRAP_ASSET_INTAKE.md`.
+
 ### `assets.inspect`
 
 Inventories local project assets with relative path, type, extension, byte size
@@ -90,6 +98,16 @@ copyright or license rights from file contents.
 
 Public asset discovery remains a future bridge operation. Asset Vault remains
 the trust/provenance layer for public sources.
+
+### `asset.user.inspect / asset.user.stage / asset.user.list`
+
+User-supplied files are accepted only below `incoming/`. Inspection is
+read-only. Staging requires explicit project-write opt-in, copies the file into
+a type-specific `assets/user/` location, hashes it and records the user's
+rights declaration below `.arcont/assets/user/`. ARCONT does not infer or
+independently verify ownership/license rights.
+
+V1 rejects archive extraction and network download.
 
 ### `authoring.catalog`
 
@@ -147,11 +165,12 @@ use it when planning work, but technical claims still require evidence.
 Bridge v1 does **not**:
 
 - execute arbitrary shell commands;
-- create new writer capabilities;
+- let the bridge invent arbitrary writer capabilities;
 - weaken revision checking;
 - permit silent mutation retries;
 - infer a missing project goal;
 - download public assets;
+- extract user archives;
 - infer asset license rights;
 - embed a production game in ARCONT.
 
