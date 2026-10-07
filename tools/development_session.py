@@ -186,6 +186,8 @@ def _session_lock(project: Path, session_id: str):
     if not root.is_dir():
         raise SessionError("development session not found")
     lock_path = root / "session.lock"
+    if lock_path.exists() and lock_path.is_symlink():
+        raise SessionError("session lock cannot be a symlink")
     handle = lock_path.open("a+b")
     try:
         if os.name == "posix":
@@ -391,7 +393,7 @@ def create(project: Path, request: dict[str, Any]) -> dict[str, Any]:
     milestones = _milestones(spec.get("milestones"))
     budgets = _budgets(spec.get("budgets"))
     intent_sha = _intent_sha(project)
-    toolchain_sha = _toolchain_sha(registry if 'registry' in locals() else load_registry(arcont_root()), capability_allowlist)
+    toolchain_sha = _toolchain_sha(registry, capability_allowlist)
 
     state: dict[str, Any] = {
         "protocol": SESSION_PROTOCOL,
