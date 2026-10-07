@@ -115,7 +115,8 @@
     ],
     "public_asset_arbitrary_url_download_allowed": false,
     "public_asset_archive_extraction_allowed": false,
-    "public_asset_live_network_requires_project_policy": true
+    "public_asset_live_network_requires_project_policy": true,
+    "public_asset_documentation": "docs/PUBLIC_ASSET_DISCOVERY.md"
   },
   "integrity": {
     "validator": "tools/arcont_lab.py",
