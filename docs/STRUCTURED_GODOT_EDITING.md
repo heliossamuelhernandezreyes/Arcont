@@ -13,16 +13,23 @@ It complements, rather than replaces, `godot.authoring.control`:
 
 ## Bridge operations
 
-Read-only:
+Pure read operations that do not start the engine:
 
 ```text
 godot.structured.validate
 godot.script.inspect
+```
+
+Engine-backed inspections require project-write opt-in because starting Godot
+may update project-local cache/import state even though the scene/resource
+source itself is not intentionally changed:
+
+```text
 godot.scene.inspect
 godot.resource.inspect
 ```
 
-Write-capable, requiring explicit project-write opt-in:
+Source mutations also require explicit project-write opt-in:
 
 ```text
 godot.script.create
