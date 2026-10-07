@@ -124,6 +124,21 @@ asset's CC0 attribution requirements.
 
 See `PUBLIC_ASSET_DISCOVERY.md`.
 
+### Structured Godot editing
+
+A fresh project can be edited without a project-specific adapter through:
+
+`godot.structured.validate`, `godot.script.inspect/create/replace/function.replace`,
+`godot.scene.inspect/edit`, `godot.resource.inspect/edit`, and
+`godot.input.action.set`.
+
+Read operations do not require project-write permission. Mutations do. Existing
+targets require SHA-256 revision binding, GDScript is loaded by Godot before a
+write is accepted, and failed script validation rolls the target back.
+
+This generic layer complements the richer project-owned recipe/adapter system;
+see `STRUCTURED_GODOT_EDITING.md`.
+
 ### `authoring.catalog`
 
 Discovers project-owned JSON documents under the allowlisted

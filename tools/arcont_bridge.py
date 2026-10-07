@@ -319,6 +319,16 @@ def discover(arcont_root: Path, project: Path) -> dict[str, Any]:
                 "asset.public.files",
                 "asset.public.stage",
                 "asset.public.list",
+                "godot.structured.validate",
+                "godot.script.inspect",
+                "godot.script.create",
+                "godot.script.replace",
+                "godot.script.function.replace",
+                "godot.scene.inspect",
+                "godot.scene.edit",
+                "godot.resource.inspect",
+                "godot.resource.edit",
+                "godot.input.action.set",
                 "authoring.catalog",
                 "authoring.document.read",
                 "hypothesis.evaluate",
@@ -326,7 +336,12 @@ def discover(arcont_root: Path, project: Path) -> dict[str, Any]:
             ],
             "mutation_boundary": {
                 "bridge_creates_new_writer_primitives": False,
-                "direct_writer_operations": ["project.bootstrap", "asset.user.stage", "asset.public.stage"],
+                "direct_writer_operations": [
+                    "project.bootstrap", "asset.user.stage", "asset.public.stage",
+                    "godot.script.create", "godot.script.replace", "godot.script.function.replace",
+                    "godot.scene.inspect", "godot.scene.edit", "godot.resource.inspect", "godot.resource.edit",
+                    "godot.input.action.set"
+                ],
                 "direct_writer_operations_require_explicit_write_opt_in": True,
                 "plan_execute_requires_explicit_write_opt_in": True,
                 "arbitrary_shell_execution_allowed": False,
@@ -358,6 +373,9 @@ def handle_request(
         "discover", "project.inspect", "project.intent.read", "project.bootstrap", "assets.inspect",
         "asset.user.inspect", "asset.user.stage", "asset.user.list",
         "asset.public.providers", "asset.public.search", "asset.public.files", "asset.public.stage", "asset.public.list",
+        "godot.structured.validate", "godot.script.inspect", "godot.script.create", "godot.script.replace",
+        "godot.script.function.replace", "godot.scene.inspect", "godot.scene.edit",
+        "godot.resource.inspect", "godot.resource.edit", "godot.input.action.set",
         "authoring.catalog", "authoring.document.read", "hypothesis.evaluate", "plan.execute"
     }:
         raise BridgeError(f"unsupported bridge operation: {operation!r}")
@@ -482,6 +500,40 @@ def handle_request(
                 "file_key": args["file_key"],
                 "manifest_sha256": args["manifest_sha256"],
             },
+            allow_project_write,
+            900,
+        )
+    elif operation in {"godot.structured.validate", "godot.script.inspect"}:
+        try:
+            from tools.godot_structured_editing import execute as structured_execute
+        except ModuleNotFoundError:
+            from godot_structured_editing import execute as structured_execute
+        mapping = {
+            "godot.structured.validate": "validate",
+            "godot.script.inspect": "script.inspect",
+        }
+        structured_request = {"protocol_version": 1, "operation": mapping[operation], **args}
+        result = structured_execute(project, structured_request)
+    elif operation in {
+        "godot.script.create", "godot.script.replace", "godot.script.function.replace",
+        "godot.scene.inspect", "godot.scene.edit", "godot.resource.inspect", "godot.resource.edit",
+        "godot.input.action.set"
+    }:
+        mapping = {
+            "godot.script.create": "script.create",
+            "godot.script.replace": "script.replace",
+            "godot.script.function.replace": "script.function.replace",
+            "godot.scene.inspect": "scene.inspect",
+            "godot.scene.edit": "scene.edit",
+            "godot.resource.inspect": "resource.inspect",
+            "godot.resource.edit": "resource.edit",
+            "godot.input.action.set": "input.action.set",
+        }
+        result = invoke_capability(
+            arcont_root,
+            "godot.structured.control",
+            project,
+            {"protocol_version": 1, "operation": mapping[operation], **args},
             allow_project_write,
             900,
         )
