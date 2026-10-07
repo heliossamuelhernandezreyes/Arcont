@@ -175,6 +175,65 @@ class StructuredGodotEditingTests(unittest.TestCase):
                 {"op": "remove", "path": "../Outside"}
             )
 
+    @patch("tools.godot_structured_editing._validate_script_with_godot")
+    def test_script_commit_refuses_concurrent_revision_change(self, validate):
+        validate.return_value = {"ok": True, "evidence": ".arcont/create"}
+        created = execute(
+            self.project,
+            {
+                "protocol_version": 1,
+                "operation": "script.create",
+                "path": "scripts/player.gd",
+                "if_revision": None,
+                "source": "extends Node\n\nfunc original():\n    pass\n",
+            },
+        )
+        target = self.project / "scripts/player.gd"
+
+        def concurrent_validation(_project, _relative):
+            target.write_text("extends Node\n\nfunc concurrent():\n    pass\n", encoding="utf-8")
+            return {"ok": True, "evidence": ".arcont/concurrent"}
+
+        validate.side_effect = concurrent_validation
+        with self.assertRaises(StructuredError):
+            execute(
+                self.project,
+                {
+                    "protocol_version": 1,
+                    "operation": "script.replace",
+                    "path": "scripts/player.gd",
+                    "if_revision": created["result"]["revision"],
+                    "source": "extends Node\n\nfunc arcont_edit():\n    pass\n",
+                },
+            )
+        self.assertIn("func concurrent()", target.read_text())
+
+    @patch("tools.godot_structured_editing._run_godot_script")
+    def test_scene_commit_refuses_concurrent_revision_change(self, runner):
+        target = self.project / "scenes/main.tscn"
+        before = __import__("hashlib").sha256(target.read_bytes()).hexdigest()
+
+        def fake_runner(project, _source, request, timeout=120):
+            staged = project / request["output"].removeprefix("res://")
+            staged.parent.mkdir(parents=True, exist_ok=True)
+            staged.write_text("[gd_scene format=3]\n\n[node name=\"Staged\" type=\"Node3D\"]\n")
+            target.write_text("[gd_scene format=3]\n\n[node name=\"Concurrent\" type=\"Node3D\"]\n")
+            return {"ok": True, "result": {"ok": True}, "evidence": ".arcont/fake"}
+
+        runner.side_effect = fake_runner
+        with self.assertRaises(StructuredError):
+            execute(
+                self.project,
+                {
+                    "protocol_version": 1,
+                    "operation": "scene.edit",
+                    "scene": "scenes/main.tscn",
+                    "if_revision": before,
+                    "changes": [{"op": "rename", "path": ".", "name": "Arcont"}],
+                },
+            )
+        self.assertIn('name="Concurrent"', target.read_text())
+
     def test_scene_set_cannot_bypass_dedicated_script_attachment(self):
         with self.assertRaises(StructuredError):
             _validate_scene_change(
