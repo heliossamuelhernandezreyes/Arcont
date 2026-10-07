@@ -329,6 +329,10 @@ def discover(arcont_root: Path, project: Path) -> dict[str, Any]:
                 "godot.resource.inspect",
                 "godot.resource.edit",
                 "godot.input.action.set",
+                "development.session.capabilities",
+                "development.session.create",
+                "development.session.inspect",
+                "development.session.execute",
                 "authoring.catalog",
                 "authoring.document.read",
                 "hypothesis.evaluate",
@@ -340,7 +344,8 @@ def discover(arcont_root: Path, project: Path) -> dict[str, Any]:
                     "project.bootstrap", "asset.user.stage", "asset.public.stage",
                     "godot.script.create", "godot.script.replace", "godot.script.function.replace",
                     "godot.scene.inspect", "godot.scene.edit", "godot.resource.inspect", "godot.resource.edit",
-                    "godot.input.action.set"
+                    "godot.input.action.set",
+                    "development.session.create", "development.session.execute"
                 ],
                 "direct_writer_operations_require_explicit_write_opt_in": True,
                 "plan_execute_requires_explicit_write_opt_in": True,
@@ -376,6 +381,8 @@ def handle_request(
         "godot.structured.validate", "godot.script.inspect", "godot.script.create", "godot.script.replace",
         "godot.script.function.replace", "godot.scene.inspect", "godot.scene.edit",
         "godot.resource.inspect", "godot.resource.edit", "godot.input.action.set",
+        "development.session.capabilities", "development.session.create",
+        "development.session.inspect", "development.session.execute",
         "authoring.catalog", "authoring.document.read", "hypothesis.evaluate", "plan.execute"
     }:
         raise BridgeError(f"unsupported bridge operation: {operation!r}")
@@ -534,6 +541,51 @@ def handle_request(
             "godot.structured.control",
             project,
             {"protocol_version": 1, "operation": mapping[operation], **args},
+            allow_project_write,
+            900,
+        )
+    elif operation in {"development.session.capabilities", "development.session.inspect"}:
+        try:
+            from tools.development_session import execute as development_session_execute
+        except ModuleNotFoundError:
+            from development_session import execute as development_session_execute
+        if operation == "development.session.capabilities":
+            if args:
+                raise BridgeError("development.session.capabilities accepts no arguments")
+            session_request = {"protocol_version": 1, "operation": "capabilities"}
+        else:
+            if set(args) != {"session_id"}:
+                raise BridgeError("development.session.inspect requires session_id")
+            session_request = {
+                "protocol_version": 1,
+                "operation": "inspect",
+                "session_id": args["session_id"],
+            }
+        result = development_session_execute(project, session_request)
+    elif operation in {"development.session.create", "development.session.execute"}:
+        if operation == "development.session.create":
+            if set(args) != {"spec"}:
+                raise BridgeError("development.session.create requires spec")
+            session_request = {
+                "protocol_version": 1,
+                "operation": "create",
+                "spec": args["spec"],
+            }
+        else:
+            required = {"session_id", "if_session_revision", "milestone_id", "plan", "complete_milestone"}
+            unknown = set(args) - (required | {"completion_note"})
+            if unknown or not required.issubset(args):
+                raise BridgeError("development.session.execute requires session revision, milestone, plan and completion flag")
+            session_request = {
+                "protocol_version": 1,
+                "operation": "execute",
+                **args,
+            }
+        result = invoke_capability(
+            arcont_root,
+            "development.session.control",
+            project,
+            session_request,
             allow_project_write,
             900,
         )
