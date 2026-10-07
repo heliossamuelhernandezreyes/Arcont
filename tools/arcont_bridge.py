@@ -573,7 +573,7 @@ def handle_request(
             }
         else:
             required = {"session_id", "if_session_revision", "milestone_id", "plan", "complete_milestone"}
-            unknown = set(args) - (required | {"completion_note"})
+            unknown = set(args) - (required | {"completion_note", "completion_evidence"})
             if unknown or not required.issubset(args):
                 raise BridgeError("development.session.execute requires session revision, milestone, plan and completion flag")
             session_request = {
