@@ -168,10 +168,20 @@ def execute_plan(
     inspect_fn: Callable[[Path, int], dict[str, Any]],
     invoke_fn: Callable[[Path, str, Path, dict[str, Any], bool, int], dict[str, Any]],
 ) -> dict[str, Any]:
-    known = {item["id"] for item in registry.get("capabilities", []) if isinstance(item, dict) and isinstance(item.get("id"), str)}
+    known = {
+        item["id"]
+        for item in registry.get("capabilities", [])
+        if isinstance(item, dict)
+        and isinstance(item.get("id"), str)
+        and item.get("invocable") is True
+        and item.get("access") == "external-project-write"
+    }
     validate_plan(plan, known)
 
     plan_permission = plan.get("permissions", {}).get("project_write", False)
+    has_invoke = any(step.get("kind") == "invoke" for step in plan["steps"])
+    if has_invoke and not plan_permission:
+        raise PermissionError("plans with invoke steps require permissions.project_write=true")
     if plan_permission and not allow_project_write:
         raise PermissionError("plan requests project_write but CLI permission was not granted")
 
