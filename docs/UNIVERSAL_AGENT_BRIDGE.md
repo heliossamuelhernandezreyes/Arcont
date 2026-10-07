@@ -132,9 +132,12 @@ A fresh project can be edited without a project-specific adapter through:
 `godot.scene.inspect/edit`, `godot.resource.inspect/edit`, and
 `godot.input.action.set`.
 
-Read operations do not require project-write permission. Mutations do. Existing
-targets require SHA-256 revision binding, GDScript is loaded by Godot before a
-write is accepted, and failed script validation rolls the target back.
+Pure source reads such as `godot.script.inspect` do not require
+project-write permission. Engine-backed scene/resource inspection requires
+opt-in because launching Godot may update project-local cache/import state.
+Mutations also require opt-in. Existing targets require SHA-256 revision
+binding and structured edits use staged validation plus revision recheck before
+atomic commit.
 
 This generic layer complements the richer project-owned recipe/adapter system;
 see `STRUCTURED_GODOT_EDITING.md`.
