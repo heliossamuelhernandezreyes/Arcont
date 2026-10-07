@@ -234,17 +234,59 @@ def _read_pending(project: Path, session_id: str) -> dict[str, Any] | None:
         value = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SessionError("development session pending-run marker is invalid JSON") from exc
-    if not isinstance(value, dict) or value.get("protocol") != "arcont-development-session-pending" or value.get("version") != 1:
+    required = {
+        "protocol", "version", "session_id", "run_id", "milestone_id",
+        "session_revision_before", "plan_id", "plan_sha256"
+    }
+    if not isinstance(value, dict) or set(value) != required:
+        raise SessionError("development session pending-run marker has invalid fields")
+    if value.get("protocol") != "arcont-development-session-pending" or value.get("version") != 1:
         raise SessionError("development session pending-run marker is invalid")
+    if value.get("session_id") != session_id:
+        raise SessionError("development session pending-run marker belongs to another session")
+    for key in ("run_id", "milestone_id", "plan_id"):
+        raw = value.get(key)
+        if not isinstance(raw, str) or not raw or len(raw) > 128:
+            raise SessionError(f"development session pending-run {key} is invalid")
+    for key in ("session_revision_before", "plan_sha256"):
+        raw = value.get(key)
+        if not isinstance(raw, str) or not SHA256.fullmatch(raw):
+            raise SessionError(f"development session pending-run {key} is invalid")
     return value
+
+
+def _receipt_path_from_history(project: Path, row: dict[str, Any]) -> Path:
+    relative = row.get("receipt")
+    digest = row.get("receipt_sha256")
+    if not isinstance(relative, str) or not relative.startswith(".arcont/development-sessions/"):
+        raise SessionError("development session history receipt path is invalid")
+    rel = Path(relative)
+    if rel.is_absolute() or ".." in rel.parts:
+        raise SessionError("development session history receipt path escapes project")
+    path = project / rel
+    if path.is_symlink() or not path.is_file():
+        raise SessionError("development session history receipt is missing")
+    if not isinstance(digest, str) or not SHA256.fullmatch(digest):
+        raise SessionError("development session history receipt hash is invalid")
+    if hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+        raise SessionError("development session history receipt hash mismatch")
+    return path
 
 
 def _reconcile_completed_pending(project: Path, state: dict[str, Any]) -> dict[str, Any] | None:
     pending = _read_pending(project, state["id"])
     if pending is None:
         return None
-    run_id = pending.get("run_id")
-    if any(row.get("run_id") == run_id for row in state.get("history", [])):
+    matches = [row for row in state.get("history", []) if row.get("run_id") == pending["run_id"]]
+    if len(matches) > 1:
+        raise SessionError("development session history contains duplicate run ids")
+    if len(matches) == 1:
+        row = matches[0]
+        if row.get("milestone_id") != pending["milestone_id"]:
+            raise SessionError("pending run milestone does not match committed history")
+        if row.get("plan_id") != pending["plan_id"] or row.get("plan_sha256") != pending["plan_sha256"]:
+            raise SessionError("pending run plan identity does not match committed history")
+        _receipt_path_from_history(project, row)
         _pending_path(project, state["id"]).unlink()
         return None
     return pending
