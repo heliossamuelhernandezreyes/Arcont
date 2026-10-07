@@ -56,8 +56,10 @@ Example creation:
 }
 ```
 
-The source is written atomically and loaded by Godot. If Godot rejects it, the
-previous bytes are restored (or the newly created file is removed).
+The candidate source is written to a staging file and loaded by Godot **before**
+the project target is changed. ARCONT then rechecks the target SHA-256. Only if
+the revision is still unchanged is the staged file atomically committed. A
+parse failure or concurrent edit therefore leaves the project target untouched.
 
 `godot.script.function.replace` replaces one named top-level function instead
 of rewriting the whole file:
@@ -133,7 +135,11 @@ Example:
 }
 ```
 
-Godot itself loads, mutates, packs and saves the scene.
+Godot itself loads, mutates and packs the scene into an ARCONT staging path.
+After Godot succeeds, ARCONT rechecks the original scene SHA-256 and atomically
+moves the staged scene into place only if the revision still matches. Resources
+and `project.godot` input edits use the same stage → validate → recheck →
+atomic commit protocol.
 
 Structured values support ordinary JSON plus typed descriptors:
 
