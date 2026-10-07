@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import shutil
 import sys
@@ -35,13 +36,15 @@ LICENSE_URL = "https://polyhaven.com/license"
 PROVIDER_SITE = "https://polyhaven.com"
 USER_AGENT = "ARCONT-PublicAssetDiscovery/1.0 (+https://github.com/heliossamuelhernandezreyes/Arcont)"
 MAX_JSON_BYTES = 64 * 1024 * 1024
-MAX_DOWNLOAD_BYTES = 512 * 1024 * 1024
+MAX_DOWNLOAD_BYTES = 256 * 1024 * 1024
+MAX_RECORD_BYTES = 1024 * 1024
+MAX_RECORDS = 2000
 MAX_RESULTS = 50
 ASSET_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$")
 SEMANTIC_ID = re.compile(r"^[a-z0-9][a-z0-9._-]{0,127}$")
 ALLOWED_DOWNLOAD_HOSTS = {"dl.polyhaven.org"}
 STAGE_EXTENSIONS = {
-    ".glb", ".gltf", ".blend", ".fbx", ".obj", ".dae",
+    ".glb",
     ".hdr", ".exr", ".png", ".jpg", ".jpeg", ".webp", ".tif", ".tiff",
 }
 TYPE_QUERY = {
@@ -119,7 +122,7 @@ def _project_policy(project: Path) -> dict[str, Any]:
     if policy.get("allow_network_discovery") is not True:
         raise PermissionError("project intent does not allow network asset discovery")
     allowed = policy.get("allowed_licenses")
-    if isinstance(allowed, list) and allowed and "CC0" not in allowed:
+    if isinstance(allowed, list) and "CC0" not in allowed:
         raise PermissionError("project allowed_licenses does not permit Poly Haven CC0 assets")
     forbidden = policy.get("forbidden_licenses")
     if isinstance(forbidden, list) and "CC0" in forbidden:
@@ -238,6 +241,8 @@ def _flatten_files(value: Any, path: tuple[str, ...] = ()) -> list[dict[str, Any
             parsed = urllib.parse.urlparse(url)
             decoded_path = urllib.parse.unquote(parsed.path)
             extension = Path(decoded_path).suffix.lower()
+            dependencies = value.get("include")
+            has_dependencies = isinstance(dependencies, (dict, list)) and bool(dependencies)
             rows.append({
                 "file_key": "/".join(path),
                 "url": url,
@@ -245,8 +250,9 @@ def _flatten_files(value: Any, path: tuple[str, ...] = ()) -> list[dict[str, Any
                 "extension": extension,
                 "size": value.get("size"),
                 "md5": value.get("md5"),
+                "has_external_dependencies": has_dependencies,
                 "download_host_allowed": parsed.scheme == "https" and parsed.hostname in ALLOWED_DOWNLOAD_HOSTS,
-                "stage_extension_allowed": extension in STAGE_EXTENSIONS,
+                "stage_extension_allowed": extension in STAGE_EXTENSIONS and not has_dependencies,
             })
         for key, child in value.items():
             if key == "url":
@@ -283,6 +289,51 @@ def files(project: Path, asset_id: Any) -> dict[str, Any]:
     }
 
 
+def _reject_symlink_ancestors(project: Path, path: Path) -> None:
+    root = project.resolve()
+    lexical = path if path.is_absolute() else root / path
+    try:
+        rel = lexical.relative_to(root)
+    except ValueError as exc:
+        raise ValueError("path escapes external project") from exc
+    current = root
+    for part in rel.parts:
+        current = current / part
+        if current.exists() and current.is_symlink():
+            raise ValueError("symlink paths are not accepted")
+
+
+def _safe_destination(project: Path, relative: str) -> Path:
+    root = project.resolve()
+    rel = Path(relative)
+    if rel.is_absolute() or ".." in rel.parts:
+        raise ValueError("safe project-relative destination required")
+    lexical = root / rel
+    _reject_symlink_ancestors(root, lexical)
+    parent = lexical.parent.resolve()
+    if parent != root and root not in parent.parents:
+        raise ValueError("destination escapes external project")
+    return lexical
+
+
+class _AllowlistedRedirectHandler(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        parsed = urllib.parse.urlparse(newurl)
+        if parsed.scheme != "https" or parsed.hostname not in ALLOWED_DOWNLOAD_HOSTS:
+            raise urllib.error.HTTPError(
+                newurl,
+                code,
+                "provider redirect target is outside download host allowlist",
+                headers,
+                fp,
+            )
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+def _download_opener():
+    return urllib.request.build_opener(_AllowlistedRedirectHandler())
+
+
 def _download(url: str, target: Path, expected_size: Any, expected_md5: Any) -> dict[str, Any]:
     parsed = urllib.parse.urlparse(url)
     if parsed.scheme != "https" or parsed.hostname not in ALLOWED_DOWNLOAD_HOSTS:
@@ -291,7 +342,8 @@ def _download(url: str, target: Path, expected_size: Any, expected_md5: Any) -> 
     sha = hashlib.sha256()
     md5 = hashlib.md5(usedforsecurity=False)
     total = 0
-    with urllib.request.urlopen(request, timeout=60) as response, target.open("wb") as handle:
+    opener = _download_opener()
+    with opener.open(request, timeout=60) as response, target.open("wb") as handle:
         final_url = response.geturl()
         final_parsed = urllib.parse.urlparse(final_url)
         if final_parsed.scheme != "https" or final_parsed.hostname not in ALLOWED_DOWNLOAD_HOSTS:
@@ -323,27 +375,69 @@ def _download(url: str, target: Path, expected_size: Any, expected_md5: Any) -> 
 
 
 def _record_dir(project: Path) -> Path:
-    return project / ".arcont/assets/public"
+    return _safe_destination(project, ".arcont/assets/public")
 
 
 def list_records(project: Path) -> dict[str, Any]:
-    base = _record_dir(project)
+    root = project.resolve()
+    base = _record_dir(root)
     records = []
-    if base.is_dir():
-        for path in sorted(base.glob("*.asset.json")):
-            if path.is_symlink():
-                continue
-            try:
-                data = json.loads(path.read_text(encoding="utf-8"))
-            except (OSError, json.JSONDecodeError):
-                continue
-            if isinstance(data, dict):
-                records.append(data)
+    if not base.exists():
+        return {"ok": True, "write_performed": False, "result": {"assets": [], "count": 0}}
+    _reject_symlink_ancestors(root, base)
+    if not base.is_dir():
+        raise ValueError("public asset provenance path is not a directory")
+    paths = sorted(base.glob("*.asset.json"))
+    if len(paths) > MAX_RECORDS:
+        raise ValueError("public asset provenance record count exceeds v1 limit")
+    for path in paths:
+        if path.is_symlink() or not path.is_file():
+            raise ValueError(f"invalid public asset provenance entry: {path.name}")
+        if path.stat().st_size > MAX_RECORD_BYTES:
+            raise ValueError(f"public asset provenance record exceeds size limit: {path.name}")
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise ValueError(f"invalid public asset provenance record: {path.name}") from exc
+        if not isinstance(data, dict):
+            raise ValueError(f"public asset provenance record must be an object: {path.name}")
+        records.append(data)
     return {"ok": True, "write_performed": False, "result": {"assets": records, "count": len(records)}}
 
 
+def _recover_completed_stage(project: Path, destination: Path, record_path: Path, semantic_id: str) -> dict[str, Any] | None:
+    internal = destination / ".arcont-stage-record.json"
+    if not destination.is_dir() or record_path.exists() or not internal.is_file() or internal.is_symlink():
+        return None
+    if internal.stat().st_size > MAX_RECORD_BYTES:
+        raise ValueError("recoverable stage record exceeds size limit")
+    record = json.loads(internal.read_text(encoding="utf-8"))
+    if not isinstance(record, dict) or record.get("id") != semantic_id:
+        raise ValueError("staged destination exists without matching recoverable provenance")
+    staged = project / record.get("staged_path", "")
+    staged = staged.resolve()
+    root = project.resolve()
+    if staged == root or root not in staged.parents or not staged.is_file():
+        raise ValueError("recoverable staged asset path is invalid")
+    digest = hashlib.sha256()
+    total = 0
+    with staged.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            total += len(chunk)
+            digest.update(chunk)
+    if digest.hexdigest() != record.get("sha256") or total != record.get("bytes"):
+        raise ValueError("recoverable staged asset no longer matches provenance")
+    record_path.parent.mkdir(parents=True, exist_ok=True)
+    _reject_symlink_ancestors(root, record_path.parent)
+    tmp_record = record_path.with_suffix(record_path.suffix + ".tmp")
+    tmp_record.write_text(json.dumps(record, indent=2, sort_keys=True, ensure_ascii=False) + chr(10), encoding="utf-8")
+    os.replace(tmp_record, record_path)
+    return record
+
+
 def stage(project: Path, request: dict[str, Any]) -> dict[str, Any]:
-    _project_policy(project)
+    root = project.resolve()
+    _project_policy(root)
     semantic_id = request.get("semantic_id")
     asset_id = request.get("asset_id")
     file_key = request.get("file_key")
@@ -357,7 +451,20 @@ def stage(project: Path, request: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(expected_manifest, str) or not re.fullmatch(r"[0-9a-f]{64}", expected_manifest):
         raise ValueError("stage requires manifest_sha256 from asset.public.files")
 
-    manifest_report = files(project, asset_id)
+    destination_parent = _safe_destination(root, "assets/public/polyhaven")
+    destination = _safe_destination(root, f"assets/public/polyhaven/{semantic_id}")
+    record_path = _safe_destination(root, f".arcont/assets/public/{semantic_id}.asset.json")
+    _reject_symlink_ancestors(root, destination_parent)
+    _reject_symlink_ancestors(root, destination)
+    _reject_symlink_ancestors(root, record_path)
+
+    recovered = _recover_completed_stage(root, destination, record_path, semantic_id)
+    if recovered is not None:
+        return {"ok": True, "write_performed": True, "result": recovered, "recovered": True}
+    if destination.exists() or record_path.exists():
+        raise ValueError("semantic_id is already staged")
+
+    manifest_report = files(root, asset_id)
     manifest = manifest_report["result"]
     if manifest["manifest_sha256"] != expected_manifest:
         raise ValueError("provider files manifest changed since selection; rediscover before staging")
@@ -368,27 +475,23 @@ def stage(project: Path, request: dict[str, Any]) -> dict[str, Any]:
     if not selected["download_host_allowed"]:
         raise ValueError("selected provider file uses a non-allowlisted host")
     if not selected["stage_extension_allowed"]:
-        raise ValueError("selected provider file extension is not stageable in v1")
+        raise ValueError("selected provider file extension/dependency policy is not stageable in v1")
     if isinstance(selected.get("size"), int) and selected["size"] > MAX_DOWNLOAD_BYTES:
         raise ValueError("selected provider file exceeds v1 size limit")
 
-    destination = project / "assets/public/polyhaven" / semantic_id
-    record_path = _record_dir(project) / f"{semantic_id}.asset.json"
-    if destination.exists() or record_path.exists():
-        raise ValueError("semantic_id is already staged")
-
-    destination.mkdir(parents=True, exist_ok=False)
+    destination_parent.mkdir(parents=True, exist_ok=True)
+    _reject_symlink_ancestors(root, destination_parent)
+    staging = Path(tempfile.mkdtemp(prefix=f".{semantic_id}.arcont-public-", dir=destination_parent))
     try:
         parsed = urllib.parse.urlparse(selected["url"])
         filename = Path(urllib.parse.unquote(parsed.path)).name
         if not filename or Path(filename).suffix.lower() not in STAGE_EXTENSIONS:
             raise ValueError("provider URL has no safe stageable filename")
-        target = destination / filename
-        tmp = destination / (filename + ".partial")
+        target = staging / filename
         integrity = _download(
-            selected["url"], tmp, selected.get("size"), selected.get("md5")
+            selected["url"], target, selected.get("size"), selected.get("md5")
         )
-        tmp.replace(target)
+        final_target = destination / filename
         record = {
             "protocol": "arcont-public-asset",
             "version": 1,
@@ -400,8 +503,8 @@ def stage(project: Path, request: dict[str, Any]) -> dict[str, Any]:
             "provider_file_key": file_key,
             "source_api": manifest["source_api"],
             "download_url": selected["url"],
-            "staged_path": target.relative_to(project).as_posix(),
-            "extension": target.suffix.lower(),
+            "staged_path": final_target.relative_to(root).as_posix(),
+            "extension": final_target.suffix.lower(),
             "bytes": integrity["bytes"],
             "sha256": integrity["sha256"],
             "upstream_md5": selected.get("md5"),
@@ -418,17 +521,25 @@ def stage(project: Path, request: dict[str, Any]) -> dict[str, Any]:
             "network_access": True,
             "archive_extracted": False,
         }
-        record_path.parent.mkdir(parents=True, exist_ok=True)
-        record_path.write_text(
-            json.dumps(record, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
+        (staging / ".arcont-stage-record.json").write_text(
+            json.dumps(record, indent=2, sort_keys=True, ensure_ascii=False) + chr(10),
             encoding="utf-8",
         )
+        os.replace(staging, destination)
+
+        record_path.parent.mkdir(parents=True, exist_ok=True)
+        _reject_symlink_ancestors(root, record_path.parent)
+        temp_record = record_path.with_suffix(record_path.suffix + ".tmp")
+        temp_record.write_text(
+            json.dumps(record, indent=2, sort_keys=True, ensure_ascii=False) + chr(10),
+            encoding="utf-8",
+        )
+        os.replace(temp_record, record_path)
     except Exception:
-        shutil.rmtree(destination, ignore_errors=True)
-        if record_path.exists():
-            record_path.unlink()
+        if staging.exists():
+            shutil.rmtree(staging, ignore_errors=True)
         raise
-    return {"ok": True, "write_performed": True, "result": record}
+    return {"ok": True, "write_performed": True, "result": record, "recovered": False}
 
 
 def execute(project: Path, request: dict[str, Any]) -> dict[str, Any]:
@@ -450,7 +561,11 @@ def execute(project: Path, request: dict[str, Any]) -> dict[str, Any]:
             "mutating_operations": ["stage"],
             "arbitrary_url_download": False,
             "archive_extraction": False,
+            "dependency_policy": "single-file-self-contained",
+            "stageable_extensions": sorted(STAGE_EXTENSIONS),
             "max_download_bytes": MAX_DOWNLOAD_BYTES,
+            "max_record_bytes": MAX_RECORD_BYTES,
+            "max_records": MAX_RECORDS,
         }
     if operation == "providers":
         return {"ok": True, "write_performed": False, "result": {"providers": [_provider_info()]}}
