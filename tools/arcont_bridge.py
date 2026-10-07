@@ -314,6 +314,11 @@ def discover(arcont_root: Path, project: Path) -> dict[str, Any]:
                 "asset.user.inspect",
                 "asset.user.stage",
                 "asset.user.list",
+                "asset.public.providers",
+                "asset.public.search",
+                "asset.public.files",
+                "asset.public.stage",
+                "asset.public.list",
                 "authoring.catalog",
                 "authoring.document.read",
                 "hypothesis.evaluate",
@@ -321,7 +326,7 @@ def discover(arcont_root: Path, project: Path) -> dict[str, Any]:
             ],
             "mutation_boundary": {
                 "bridge_creates_new_writer_primitives": False,
-                "direct_writer_operations": ["project.bootstrap", "asset.user.stage"],
+                "direct_writer_operations": ["project.bootstrap", "asset.user.stage", "asset.public.stage"],
                 "direct_writer_operations_require_explicit_write_opt_in": True,
                 "plan_execute_requires_explicit_write_opt_in": True,
                 "arbitrary_shell_execution_allowed": False,
@@ -352,6 +357,7 @@ def handle_request(
     if operation not in {
         "discover", "project.inspect", "project.intent.read", "project.bootstrap", "assets.inspect",
         "asset.user.inspect", "asset.user.stage", "asset.user.list",
+        "asset.public.providers", "asset.public.search", "asset.public.files", "asset.public.stage", "asset.public.list",
         "authoring.catalog", "authoring.document.read", "hypothesis.evaluate", "plan.execute"
     }:
         raise BridgeError(f"unsupported bridge operation: {operation!r}")
@@ -427,6 +433,57 @@ def handle_request(
             },
             allow_project_write,
             120,
+        )
+    elif operation in {"asset.public.providers", "asset.public.search", "asset.public.files", "asset.public.list"}:
+        try:
+            from tools.public_asset_discovery import execute as public_asset_execute
+        except ModuleNotFoundError:
+            from public_asset_discovery import execute as public_asset_execute
+        if operation == "asset.public.providers":
+            if args:
+                raise BridgeError("asset.public.providers accepts no arguments")
+            public_request = {"protocol_version": 1, "operation": "providers"}
+        elif operation == "asset.public.search":
+            unknown = set(args) - {"query", "asset_type", "limit"}
+            if unknown or "query" not in args:
+                raise BridgeError("asset.public.search requires query and optional asset_type/limit")
+            public_request = {
+                "protocol_version": 1,
+                "operation": "search",
+                "query": args["query"],
+                "asset_type": args.get("asset_type", "all"),
+                "limit": args.get("limit", 10),
+            }
+        elif operation == "asset.public.files":
+            if set(args) != {"asset_id"}:
+                raise BridgeError("asset.public.files requires exactly one asset_id")
+            public_request = {
+                "protocol_version": 1,
+                "operation": "files",
+                "asset_id": args["asset_id"],
+            }
+        else:
+            if args:
+                raise BridgeError("asset.public.list accepts no arguments")
+            public_request = {"protocol_version": 1, "operation": "list"}
+        result = public_asset_execute(project, public_request)
+    elif operation == "asset.public.stage":
+        if set(args) != {"semantic_id", "asset_id", "file_key", "manifest_sha256"}:
+            raise BridgeError("asset.public.stage requires semantic_id, asset_id, file_key and manifest_sha256")
+        result = invoke_capability(
+            arcont_root,
+            "public-asset.control",
+            project,
+            {
+                "protocol_version": 1,
+                "operation": "stage",
+                "semantic_id": args["semantic_id"],
+                "asset_id": args["asset_id"],
+                "file_key": args["file_key"],
+                "manifest_sha256": args["manifest_sha256"],
+            },
+            allow_project_write,
+            180,
         )
     elif operation == "authoring.catalog":
         if args:
