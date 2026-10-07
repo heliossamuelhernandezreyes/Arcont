@@ -137,7 +137,10 @@
     "development_session_documentation": "docs/DEVELOPMENT_SESSION.md",
     "development_session_pins_capability_toolchain": true,
     "development_session_single_writer_lock": true,
-    "development_session_post_run_environment_recheck": true
+    "development_session_post_run_environment_recheck": true,
+    "development_session_pending_run_journal": true,
+    "development_session_crash_auto_retry_allowed": false,
+    "development_session_pending_reconcile_requires_receipt_hash": true
   },
   "integrity": {
     "validator": "tools/arcont_lab.py",
