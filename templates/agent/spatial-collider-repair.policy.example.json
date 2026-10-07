@@ -1,0 +1,91 @@
+{
+  "protocol": "arcont-agent-diagnosis-policy",
+  "version": 1,
+  "id": "spatial_collider_repair",
+  "description": "Example: diagnose an oversized nearby collidable box and compile a revision-checked Map Forge repair plan.",
+  "hypotheses": [
+    {
+      "id": "oversized_nearby_collider",
+      "code": "collider_height_out_of_range",
+      "summary": "The nearest collidable box exceeds the accepted height for the observed interaction.",
+      "priority": 100,
+      "when": [
+        {
+          "left": {"$evidence": "/signals/interaction_ok"},
+          "op": "equals",
+          "right": false
+        }
+      ],
+      "candidate": {
+        "source": "/world/objects",
+        "filters": [
+          {
+            "left": {"$candidate": "/type"},
+            "op": "equals",
+            "right": "box"
+          },
+          {
+            "left": {"$candidate": "/collision"},
+            "op": "equals",
+            "right": true
+          }
+        ],
+        "nearest_xz_to": "/observations/position",
+        "position_pointer": "/position",
+        "max_distance": 4.0,
+        "stable_patch_prefix": "/map/authoring/objects"
+      },
+      "require": [
+        {
+          "left": {"$candidate": "/size/1"},
+          "op": "gt",
+          "right": {"$evidence": "/limits/max_height"}
+        }
+      ],
+      "details": {
+        "object_id": {"$candidate": "/id"},
+        "observed_height": {"$candidate": "/size/1"},
+        "accepted_height": {"$evidence": "/baseline/height"}
+      },
+      "repair_plan": {
+        "id": "repair_spatial_collider",
+        "goal": "Restore the diagnosed collider to the accepted geometry.",
+        "capability": "map-forge.editor.control",
+        "inspect_request": {
+          "protocol_version": 1,
+          "operation": "inspect",
+          "map_id": {"$evidence": "/context/map_id"}
+        },
+        "repair_request": {
+          "protocol_version": 1,
+          "operation": "patch",
+          "map_id": {"$evidence": "/context/map_id"},
+          "if_revision": {
+            "$from": "inspect_target",
+            "pointer": "/result/revision"
+          },
+          "dry_run": false,
+          "patch": [
+            {
+              "op": "test",
+              "path": {"$candidate_path": "/size/1"},
+              "value": {"$candidate": "/size/1"}
+            },
+            {
+              "op": "replace",
+              "path": {"$candidate_path": "/size/1"},
+              "value": {"$evidence": "/baseline/height"}
+            }
+          ]
+        },
+        "expect": [
+          {
+            "pointer": "/result/committed",
+            "op": "equals",
+            "value": true
+          }
+        ]
+      }
+    }
+  ]
+}
