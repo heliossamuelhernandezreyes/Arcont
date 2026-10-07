@@ -58,14 +58,15 @@ def _source(project: Path, value: Any) -> Path:
     rel = _relative(value)
     if not rel.parts or rel.parts[0] != "incoming":
         raise ValueError("user asset source must be below project/incoming")
-    path = (project / rel).resolve()
-    if path == project or project not in path.parents:
-        raise ValueError("asset source escapes project")
-    current = path
+    lexical = project / rel
+    current = lexical
     while current != project:
         if current.is_symlink():
             raise ValueError("symlink asset paths are not accepted")
         current = current.parent
+    path = lexical.resolve()
+    if path == project or project not in path.parents:
+        raise ValueError("asset source escapes project")
     if not path.is_file():
         raise ValueError("user asset source file does not exist")
     return path
