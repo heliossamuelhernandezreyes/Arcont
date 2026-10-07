@@ -394,7 +394,11 @@ func _physics_process(_delta):
 
     inspected = bridge(arcont, project, "development.session.inspect", {"session_id": "prototype"})
     final_session = direct_child(inspected)
-    if not final_session["environment"]["intent_matches"] or not final_session["environment"]["registry_matches"]:
+    if (
+        not final_session["environment"]["intent_matches"]
+        or not final_session["environment"]["registry_matches"]
+        or not final_session["environment"]["toolchain_matches"]
+    ):
         raise RuntimeError({"session_environment_drift": final_session["environment"]})
     if final_session["session"]["revision"] != state3["revision"]:
         raise RuntimeError("persisted session revision differs from final execute response")
@@ -486,6 +490,7 @@ func _initialize() -> void:
             "history": history,
             "project_intent_sha256": state3["project_intent_sha256"],
             "registry_sha256": state3["registry_sha256"],
+            "toolchain_sha256": state3["toolchain_sha256"],
         },
         "runtime": runtime,
         "assertions": {
@@ -496,6 +501,7 @@ func _initialize() -> void:
             "receipts_persisted": len(receipt_paths) == 2 and all(path.is_file() for path in receipt_paths),
             "intent_pin_still_matches": final_session["environment"]["intent_matches"] is True,
             "registry_pin_still_matches": final_session["environment"]["registry_matches"] is True,
+            "toolchain_pin_still_matches": final_session["environment"]["toolchain_matches"] is True,
             "runtime_player_moved": runtime["delta_z"] < -0.01,
         },
         "limits": [
