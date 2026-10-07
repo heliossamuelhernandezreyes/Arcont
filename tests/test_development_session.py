@@ -271,6 +271,108 @@ class DevelopmentSessionTests(unittest.TestCase):
             )
         run.assert_not_called()
 
+    @patch("tools.development_session.execute_plan")
+    def test_unresolved_pending_run_blocks_automatic_retry(self, run):
+        created = create(self.project, {"spec": spec()})
+        state = created["result"]["session"]
+        pending = self.project / ".arcont/development-sessions/build_game/pending-run.json"
+        pending.write_text(
+            json.dumps({
+                "protocol": "arcont-development-session-pending",
+                "version": 1,
+                "session_id": "build_game",
+                "run_id": "run-001-interrupted",
+                "milestone_id": "movement",
+                "session_revision_before": state["revision"],
+                "plan_id": "movement_plan",
+                "plan_sha256": __import__("tools.agent_execution_loop", fromlist=["canonical_sha256"]).canonical_sha256(plan()),
+            }),
+            encoding="utf-8",
+        )
+        with self.assertRaises(SessionError):
+            execute_one(
+                self.project,
+                {
+                    "session_id": "build_game",
+                    "if_session_revision": state["revision"],
+                    "milestone_id": "movement",
+                    "plan": plan(),
+                    "complete_milestone": False,
+                },
+            )
+        run.assert_not_called()
+
+    @patch("tools.development_session.execute_plan")
+    def test_pending_marker_symlink_is_refused(self, run):
+        created = create(self.project, {"spec": spec()})
+        state = created["result"]["session"]
+        session_dir = self.project / ".arcont/development-sessions/build_game"
+        outside = Path(self.tmp.name) / "pending.json"
+        outside.write_text("{}", encoding="utf-8")
+        (session_dir / "pending-run.json").symlink_to(outside)
+        with self.assertRaises(SessionError):
+            execute_one(
+                self.project,
+                {
+                    "session_id": "build_game",
+                    "if_session_revision": state["revision"],
+                    "milestone_id": "movement",
+                    "plan": plan(),
+                    "complete_milestone": False,
+                },
+            )
+        run.assert_not_called()
+
+    def test_completed_pending_is_cleared_only_when_receipt_hash_matches(self):
+        import hashlib
+        from tools.development_session import _atomic_json, _reconcile_completed_pending, _state_revision
+        from tools.agent_execution_loop import canonical_sha256
+
+        created = create(self.project, {"spec": spec()})
+        state = created["result"]["session"]
+        session_dir = self.project / ".arcont/development-sessions/build_game"
+        run_id = "run-001-committed"
+        receipt_rel = ".arcont/development-sessions/build_game/runs/run-001-committed.json"
+        receipt_path = self.project / receipt_rel
+        receipt_path.parent.mkdir(parents=True, exist_ok=True)
+        receipt_path.write_text('{"ok":true}\n', encoding="utf-8")
+        plan_hash = canonical_sha256(plan())
+        state["history"].append({
+            "run_id": run_id,
+            "milestone_id": "movement",
+            "ok": True,
+            "status": "completed",
+            "plan_id": "movement_plan",
+            "plan_sha256": plan_hash,
+            "receipt": receipt_rel,
+            "receipt_sha256": hashlib.sha256(receipt_path.read_bytes()).hexdigest(),
+            "steps_completed": 1,
+            "write_steps": 0,
+            "failed_step": None,
+        })
+        state["revision"] = _state_revision(state)
+        _atomic_json(session_dir / "session.json", state)
+        pending = {
+            "protocol": "arcont-development-session-pending",
+            "version": 1,
+            "session_id": "build_game",
+            "run_id": run_id,
+            "milestone_id": "movement",
+            "session_revision_before": created["result"]["session"]["revision"],
+            "plan_id": "movement_plan",
+            "plan_sha256": plan_hash,
+        }
+        _atomic_json(session_dir / "pending-run.json", pending)
+        self.assertIsNone(_reconcile_completed_pending(self.project, state))
+        self.assertFalse((session_dir / "pending-run.json").exists())
+
+        # Recreate the marker, corrupt the receipt, and require fail-closed behavior.
+        _atomic_json(session_dir / "pending-run.json", pending)
+        receipt_path.write_text('{"ok":false}\n', encoding="utf-8")
+        with self.assertRaises(SessionError):
+            _reconcile_completed_pending(self.project, state)
+        self.assertTrue((session_dir / "pending-run.json").is_file())
+
     def test_session_directory_symlink_is_not_accepted(self):
         created = create(self.project, {"spec": spec()})
         session_dir = self.project / ".arcont/development-sessions/build_game"
