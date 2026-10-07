@@ -438,6 +438,30 @@ def cmd_diagnose(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_evaluate_proposal(args: argparse.Namespace) -> int:
+    try:
+        from tools.agent_hypothesis_gate import compile_policy, evaluate_proposal
+    except ModuleNotFoundError:
+        from agent_hypothesis_gate import compile_policy, evaluate_proposal
+    proposal = json.loads(Path(args.proposal).read_text(encoding="utf-8"))
+    raw = sys.stdin.read() if args.evidence == "-" else Path(args.evidence).read_text(encoding="utf-8")
+    evidence = json.loads(raw)
+    if not isinstance(proposal, dict) or not isinstance(evidence, dict):
+        raise ValueError("proposal and evidence must be JSON objects")
+    report = evaluate_proposal(proposal, evidence)
+    if args.emit_policy:
+        Path(args.emit_policy).write_text(
+            json.dumps(compile_policy(proposal), indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+    print(json.dumps(report, indent=2, sort_keys=True, ensure_ascii=False))
+    if not report["ok"]:
+        return 1
+    if args.require_match and not report["diagnosis"].get("matched"):
+        return 1
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="arcont-agent", description="ARCONT machine-readable agent control plane")
     parser.add_argument("--root", default=str(repo_root()), help="ARCONT repository root")
@@ -476,6 +500,13 @@ def build_parser() -> argparse.ArgumentParser:
     diagnose.add_argument("--evidence", default="-", help="evidence JSON path, or - for stdin")
     diagnose.add_argument("--require-match", action="store_true", help="return nonzero if no hypothesis matches")
     diagnose.set_defaults(func=cmd_diagnose)
+
+    proposal = sub.add_parser("evaluate-proposal", help="validate a model-authored hypothesis and compile a bounded repair proposal")
+    proposal.add_argument("--proposal", required=True, help="model/human hypothesis proposal JSON path")
+    proposal.add_argument("--evidence", default="-", help="structured evidence JSON path, or - for stdin")
+    proposal.add_argument("--require-match", action="store_true", help="return nonzero if the proposed hypothesis does not match")
+    proposal.add_argument("--emit-policy", help="optional output path for the validated compiled diagnosis policy")
+    proposal.set_defaults(func=cmd_evaluate_proposal)
     return parser
 
 
