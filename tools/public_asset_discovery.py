@@ -18,6 +18,7 @@ import re
 import shutil
 import sys
 import tempfile
+import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -72,10 +73,11 @@ def _fetch_json(url: str, timeout: int = 30) -> Any:
         declared = response.headers.get("Content-Length")
         if declared:
             try:
-                if int(declared) > MAX_JSON_BYTES:
-                    raise ValueError("provider JSON response exceeds size limit")
+                declared_size = int(declared)
             except ValueError:
-                pass
+                declared_size = None
+            if declared_size is not None and declared_size > MAX_JSON_BYTES:
+                raise ValueError("provider JSON response exceeds size limit")
         body = response.read(MAX_JSON_BYTES + 1)
         if len(body) > MAX_JSON_BYTES:
             raise ValueError("provider JSON response exceeds size limit")
@@ -293,10 +295,11 @@ def _download(url: str, target: Path, expected_size: Any, expected_md5: Any) -> 
         declared = response.headers.get("Content-Length")
         if declared:
             try:
-                if int(declared) > MAX_DOWNLOAD_BYTES:
-                    raise ValueError("download exceeds v1 size limit")
+                declared_size = int(declared)
             except ValueError:
-                pass
+                declared_size = None
+            if declared_size is not None and declared_size > MAX_DOWNLOAD_BYTES:
+                raise ValueError("download exceeds v1 size limit")
         while True:
             chunk = response.read(1024 * 1024)
             if not chunk:
