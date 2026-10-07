@@ -162,7 +162,7 @@ class UniversalAgentBridgeTests(unittest.TestCase):
         }
         report = self.request("plan.execute", {"plan": plan})
         self.assertTrue(report["ok"])
-        self.assertEqual(report["result"]["write_step_count"], 0)
+        self.assertEqual(report["result"]["write_steps"], 0)
         self.assertEqual(report["result"]["steps"][0]["id"], "inventory")
 
     def test_write_plan_does_not_gain_permission_from_bridge(self):
