@@ -309,7 +309,11 @@ def discover(arcont_root: Path, project: Path) -> dict[str, Any]:
                 "discover",
                 "project.inspect",
                 "project.intent.read",
+                "project.bootstrap",
                 "assets.inspect",
+                "asset.user.inspect",
+                "asset.user.stage",
+                "asset.user.list",
                 "authoring.catalog",
                 "authoring.document.read",
                 "hypothesis.evaluate",
@@ -317,6 +321,8 @@ def discover(arcont_root: Path, project: Path) -> dict[str, Any]:
             ],
             "mutation_boundary": {
                 "bridge_creates_new_writer_primitives": False,
+                "direct_writer_operations": ["project.bootstrap", "asset.user.stage"],
+                "direct_writer_operations_require_explicit_write_opt_in": True,
                 "plan_execute_requires_explicit_write_opt_in": True,
                 "arbitrary_shell_execution_allowed": False,
                 "auto_retry_mutations_allowed": False,
@@ -344,7 +350,8 @@ def handle_request(
         raise BridgeError("bridge request requires non-empty request_id <=128 chars")
     operation = request.get("operation")
     if operation not in {
-        "discover", "project.inspect", "project.intent.read", "assets.inspect",
+        "discover", "project.inspect", "project.intent.read", "project.bootstrap", "assets.inspect",
+        "asset.user.inspect", "asset.user.stage", "asset.user.list",
         "authoring.catalog", "authoring.document.read", "hypothesis.evaluate", "plan.execute"
     }:
         raise BridgeError(f"unsupported bridge operation: {operation!r}")
@@ -364,11 +371,63 @@ def handle_request(
         if args:
             raise BridgeError("project.intent.read accepts no arguments")
         result = read_intent(project)
+    elif operation == "project.bootstrap":
+        if set(args) - {"intent", "template"} or "intent" not in args:
+            raise BridgeError("project.bootstrap requires intent and optional template")
+        result = invoke_capability(
+            arcont_root,
+            "project.bootstrap.control",
+            project,
+            {
+                "protocol_version": 1,
+                "operation": "bootstrap",
+                "intent": args["intent"],
+                "template": args.get("template", "godot-3d-minimal"),
+            },
+            allow_project_write,
+            120,
+        )
     elif operation == "assets.inspect":
         unknown = set(args) - {"max_assets"}
         if unknown:
             raise BridgeError(f"assets.inspect has unsupported arguments: {sorted(unknown)}")
         result = inspect_assets(project, args.get("max_assets", MAX_ASSETS_DEFAULT))
+    elif operation == "asset.user.inspect":
+        if set(args) != {"source"}:
+            raise BridgeError("asset.user.inspect requires exactly one source")
+        try:
+            from tools.user_asset_intake import execute as asset_intake_execute
+        except ModuleNotFoundError:
+            from user_asset_intake import execute as asset_intake_execute
+        result = asset_intake_execute(
+            project,
+            {"protocol_version": 1, "operation": "inspect", "source": args["source"]},
+        )
+    elif operation == "asset.user.list":
+        if args:
+            raise BridgeError("asset.user.list accepts no arguments")
+        try:
+            from tools.user_asset_intake import execute as asset_intake_execute
+        except ModuleNotFoundError:
+            from user_asset_intake import execute as asset_intake_execute
+        result = asset_intake_execute(project, {"protocol_version": 1, "operation": "list"})
+    elif operation == "asset.user.stage":
+        if set(args) != {"asset_id", "source", "rights"}:
+            raise BridgeError("asset.user.stage requires asset_id, source and rights")
+        result = invoke_capability(
+            arcont_root,
+            "asset-intake.control",
+            project,
+            {
+                "protocol_version": 1,
+                "operation": "stage",
+                "asset_id": args["asset_id"],
+                "source": args["source"],
+                "rights": args["rights"],
+            },
+            allow_project_write,
+            120,
+        )
     elif operation == "authoring.catalog":
         if args:
             raise BridgeError("authoring.catalog accepts no arguments")
