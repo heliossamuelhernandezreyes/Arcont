@@ -294,6 +294,11 @@ func _physics_process(_delta):
             "plan": plan1,
             "complete_milestone": True,
             "completion_note": "Movement scaffold plan completed with all machine-readable expectations.",
+            "completion_evidence": [
+                {"criterion_index": 0, "step_ids": ["forward", "back", "left", "right"]},
+                {"criterion_index": 1, "step_ids": ["script"]},
+                {"criterion_index": 2, "step_ids": ["scene_edit"]}
+            ],
         },
         allow_write=True,
     )
@@ -381,6 +386,11 @@ func _physics_process(_delta):
             "plan": plan2,
             "complete_milestone": True,
             "completion_note": "Inspection and bounded function patch passed.",
+            "completion_evidence": [
+                {"criterion_index": 0, "step_ids": ["script_before"]},
+                {"criterion_index": 1, "step_ids": ["scene_check"]},
+                {"criterion_index": 2, "step_ids": ["patch_movement", "script_after"]}
+            ],
         },
         allow_write=True,
     )
@@ -502,6 +512,14 @@ func _initialize() -> void:
             "intent_pin_still_matches": final_session["environment"]["intent_matches"] is True,
             "registry_pin_still_matches": final_session["environment"]["registry_matches"] is True,
             "toolchain_pin_still_matches": final_session["environment"]["toolchain_matches"] is True,
+            "milestone_evidence_persisted": all(
+                item.get("completion_evidence")
+                for item in final_session["session"]["milestones"]
+            ),
+            "run_evidence_verified": all(
+                row.get("completion_evidence_ok") is True
+                for row in history
+            ),
             "runtime_player_moved": runtime["delta_z"] < -0.01,
         },
         "limits": [
