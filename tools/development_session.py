@@ -10,6 +10,7 @@ silently retries a failed mutation.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import hashlib
 import json
 import os
@@ -114,6 +115,58 @@ def _registry() -> tuple[dict[str, Any], str, set[str]]:
     return registry, registry_sha, invocable
 
 
+def _file_sha(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _toolchain_sha(registry: dict[str, Any], capability_allowlist: list[str]) -> str:
+    root = arcont_root().resolve()
+    by_id = {
+        item.get("id"): item
+        for item in registry.get("capabilities", [])
+        if isinstance(item, dict) and isinstance(item.get("id"), str)
+    }
+    capabilities = []
+    for capability_id in sorted(capability_allowlist):
+        item = by_id.get(capability_id)
+        if not isinstance(item, dict):
+            raise SessionError(f"session capability disappeared from registry: {capability_id}")
+        entrypoint = item.get("entrypoint")
+        if not isinstance(entrypoint, str):
+            raise SessionError(f"session capability has no entrypoint: {capability_id}")
+        path = (root / entrypoint).resolve()
+        try:
+            path.relative_to(root)
+        except ValueError as exc:
+            raise SessionError("capability entrypoint escapes ARCONT") from exc
+        if not path.is_file():
+            raise SessionError(f"capability entrypoint is missing: {capability_id}")
+        capabilities.append({
+            "id": capability_id,
+            "registry": item,
+            "entrypoint_sha256": _file_sha(path),
+        })
+    core = {}
+    for relative in (
+        "tools/agent_execution_loop.py",
+        "tools/arcont_agent.py",
+        "tools/development_session.py",
+    ):
+        path = root / relative
+        if not path.is_file():
+            raise SessionError(f"development session core file missing: {relative}")
+        core[relative] = _file_sha(path)
+    return _sha({
+        "registry_sha256": canonical_sha256(registry),
+        "capabilities": capabilities,
+        "core": core,
+    })
+
+
 def _session_root(project: Path, session_id: str) -> Path:
     base = project / ".arcont" / "development-sessions"
     current = project
@@ -121,7 +174,44 @@ def _session_root(project: Path, session_id: str) -> Path:
         current = current / part
         if current.exists() and current.is_symlink():
             raise SessionError("session storage cannot traverse symlinks")
-    return base / session_id
+    root = base / session_id
+    if root.exists() and root.is_symlink():
+        raise SessionError("session directory cannot be a symlink")
+    return root
+
+
+@contextlib.contextmanager
+def _session_lock(project: Path, session_id: str):
+    root = _session_root(project, session_id)
+    if not root.is_dir():
+        raise SessionError("development session not found")
+    lock_path = root / "session.lock"
+    handle = lock_path.open("a+b")
+    try:
+        if os.name == "posix":
+            import fcntl
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+        elif os.name == "nt":
+            import msvcrt
+            if lock_path.stat().st_size == 0:
+                handle.write(b"0")
+                handle.flush()
+            handle.seek(0)
+            msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
+        else:
+            raise SessionError("development session locking is unsupported on this platform")
+        yield
+    finally:
+        try:
+            if os.name == "posix":
+                import fcntl
+                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+            elif os.name == "nt":
+                import msvcrt
+                handle.seek(0)
+                msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+        finally:
+            handle.close()
 
 
 def _state_path(project: Path, session_id: str) -> Path:
@@ -227,10 +317,10 @@ def _remaining(state: dict[str, Any]) -> dict[str, int]:
     budgets = state["budgets"]
     counters = state["counters"]
     return {
-        "plan_runs": budgets["max_plan_runs"] - counters["plan_runs"],
-        "execution_steps": budgets["max_execution_steps"] - counters["execution_steps"],
-        "write_steps": budgets["max_write_steps"] - counters["write_steps"],
-        "failed_runs": budgets["max_failed_runs"] - counters["failed_runs"],
+        "plan_runs": max(0, budgets["max_plan_runs"] - counters["plan_runs"]),
+        "execution_steps": max(0, budgets["max_execution_steps"] - counters["execution_steps"]),
+        "write_steps": max(0, budgets["max_write_steps"] - counters["write_steps"]),
+        "failed_runs": max(0, budgets["max_failed_runs"] - counters["failed_runs"]),
     }
 
 
@@ -297,11 +387,11 @@ def create(project: Path, request: dict[str, Any]) -> dict[str, Any]:
     if root.exists():
         raise SessionError("development session id already exists")
     registry, registry_sha, known = _registry()
-    del registry
     capability_allowlist = _session_capabilities(spec.get("capability_allowlist"), known)
     milestones = _milestones(spec.get("milestones"))
     budgets = _budgets(spec.get("budgets"))
     intent_sha = _intent_sha(project)
+    toolchain_sha = _toolchain_sha(registry if 'registry' in locals() else load_registry(arcont_root()), capability_allowlist)
 
     state: dict[str, Any] = {
         "protocol": SESSION_PROTOCOL,
@@ -314,6 +404,7 @@ def create(project: Path, request: dict[str, Any]) -> dict[str, Any]:
         "project_root": str(project),
         "project_intent_sha256": intent_sha,
         "registry_sha256": registry_sha,
+        "toolchain_sha256": toolchain_sha,
         "permissions": permissions,
         "capability_allowlist": capability_allowlist,
         "budgets": budgets,
@@ -344,7 +435,8 @@ def create(project: Path, request: dict[str, Any]) -> dict[str, Any]:
 def inspect(project: Path, request: dict[str, Any]) -> dict[str, Any]:
     state = _load_state(project, request.get("session_id"))
     current_intent = _intent_sha(project)
-    _, current_registry, _ = _registry()
+    current_registry_obj, current_registry, _ = _registry()
+    current_toolchain = _toolchain_sha(current_registry_obj, state["capability_allowlist"])
     return {
         "ok": True,
         "write_performed": False,
@@ -355,8 +447,10 @@ def inspect(project: Path, request: dict[str, Any]) -> dict[str, Any]:
             "environment": {
                 "intent_matches": current_intent == state["project_intent_sha256"],
                 "registry_matches": current_registry == state["registry_sha256"],
+                "toolchain_matches": current_toolchain == state["toolchain_sha256"],
                 "current_project_intent_sha256": current_intent,
                 "current_registry_sha256": current_registry,
+                "current_toolchain_sha256": current_toolchain,
             },
         },
     }
@@ -369,7 +463,7 @@ def _require_revision(state: dict[str, Any], expected: Any) -> None:
         raise SessionError("development session revision conflict")
 
 
-def execute_one(project: Path, request: dict[str, Any]) -> dict[str, Any]:
+def _execute_one_locked(project: Path, request: dict[str, Any]) -> dict[str, Any]:
     state = _load_state(project, request.get("session_id"))
     _require_revision(state, request.get("if_session_revision"))
     if state["status"] != "active":
@@ -377,10 +471,13 @@ def execute_one(project: Path, request: dict[str, Any]) -> dict[str, Any]:
 
     current_intent = _intent_sha(project)
     registry, current_registry, known = _registry()
+    current_toolchain = _toolchain_sha(registry, state["capability_allowlist"])
     if current_intent != state["project_intent_sha256"]:
         raise SessionError("project intent changed since session creation; start a new reviewed session")
     if current_registry != state["registry_sha256"]:
         raise SessionError("ARCONT capability registry changed since session creation; start a new reviewed session")
+    if current_toolchain != state["toolchain_sha256"]:
+        raise SessionError("ARCONT session toolchain changed since session creation; start a new reviewed session")
 
     milestone = _active_milestone(state)
     if milestone is None:
@@ -428,8 +525,17 @@ def execute_one(project: Path, request: dict[str, Any]) -> dict[str, Any]:
         invoke_capability,
     )
 
+    post_intent = _intent_sha(project)
+    post_registry_obj, post_registry, _ = _registry()
+    post_toolchain = _toolchain_sha(post_registry_obj, state["capability_allowlist"])
+    environment_stable = (
+        post_intent == state["project_intent_sha256"]
+        and post_registry == state["registry_sha256"]
+        and post_toolchain == state["toolchain_sha256"]
+    )
+
     run_index = state["counters"]["plan_runs"] + 1
-    run_id = f"run-{run_index:03d}-{uuid.uuid4().hex[:8]}"
+    run_id = f"run-{run_index:03d}-{uuid.uuid4().hex[:12]}"
     receipt = {
         "protocol": "arcont-development-session-run",
         "version": 1,
@@ -442,8 +548,16 @@ def execute_one(project: Path, request: dict[str, Any]) -> dict[str, Any]:
         "execution": result,
         "complete_milestone_requested": complete_milestone,
         "completion_note": note,
+        "environment_after": {
+            "project_intent_sha256": post_intent,
+            "registry_sha256": post_registry,
+            "toolchain_sha256": post_toolchain,
+            "stable": environment_stable,
+        },
     }
     run_path = _session_root(project, state["id"]) / "runs" / f"{run_id}.json"
+    if run_path.exists():
+        raise SessionError("development-session run receipt collision")
     _atomic_json(run_path, receipt)
     receipt_sha = hashlib.sha256(run_path.read_bytes()).hexdigest()
 
@@ -471,7 +585,7 @@ def execute_one(project: Path, request: dict[str, Any]) -> dict[str, Any]:
     if len(state["history"]) > MAX_HISTORY:
         raise SessionError("session history exceeded hard limit")
 
-    if result.get("ok") is True and complete_milestone:
+    if result.get("ok") is True and complete_milestone and environment_stable:
         milestone["status"] = "completed"
         milestone["completed_by_run"] = run_id
         milestone["completion_note"] = note
@@ -489,6 +603,10 @@ def execute_one(project: Path, request: dict[str, Any]) -> dict[str, Any]:
             state["status"] = "paused"
             state["stop_reason"] = "failed-run-budget-exhausted"
 
+    if not environment_stable:
+        state["status"] = "paused"
+        state["stop_reason"] = "environment-changed-during-run"
+
     after_remaining = _remaining(state)
     if state["status"] == "active":
         if after_remaining["plan_runs"] <= 0:
@@ -505,7 +623,7 @@ def execute_one(project: Path, request: dict[str, Any]) -> dict[str, Any]:
     _atomic_json(_state_path(project, state["id"]), state)
 
     return {
-        "ok": result.get("ok") is True,
+        "ok": result.get("ok") is True and environment_stable,
         "write_performed": True,
         "result": {
             "session": state,
@@ -516,6 +634,8 @@ def execute_one(project: Path, request: dict[str, Any]) -> dict[str, Any]:
             "next_action": (
                 "session-complete"
                 if state["status"] == "completed"
+                else "session-paused"
+                if not environment_stable
                 else "review-failure-and-submit-new-plan"
                 if result.get("ok") is not True and state["status"] == "active"
                 else "session-paused"
@@ -524,6 +644,14 @@ def execute_one(project: Path, request: dict[str, Any]) -> dict[str, Any]:
             ),
         },
     }
+
+
+def execute_one(project: Path, request: dict[str, Any]) -> dict[str, Any]:
+    session_id = request.get("session_id")
+    if not isinstance(session_id, str) or not ID.fullmatch(session_id):
+        raise SessionError("invalid development session id")
+    with _session_lock(project, session_id):
+        return _execute_one_locked(project, request)
 
 
 def execute(project: Path, request: dict[str, Any]) -> dict[str, Any]:
