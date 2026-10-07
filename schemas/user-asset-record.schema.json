@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arcont.local/schemas/user-asset-record.schema.json",
+  "title": "ARCONT user-provided asset provenance record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocol", "version", "id", "origin", "source", "staged_path", "kind", "extension", "bytes", "sha256", "rights", "rights_status", "network_access"],
+  "properties": {
+    "protocol": {"const": "arcont-user-asset"},
+    "version": {"const": 1},
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"},
+    "origin": {"const": "user-provided"},
+    "source": {"type": "string"},
+    "staged_path": {"type": "string"},
+    "kind": {"enum": ["texture", "vector", "model3d", "audio", "font"]},
+    "extension": {"type": "string"},
+    "bytes": {"type": "integer", "minimum": 0},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "rights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["basis", "commercial_use", "redistribution"],
+      "properties": {
+        "basis": {"enum": ["user-owned", "licensed", "public-domain"]},
+        "commercial_use": {"type": "boolean"},
+        "redistribution": {"type": "boolean"},
+        "license_name": {"type": ["string", "null"], "maxLength": 200},
+        "attribution": {"type": ["string", "null"], "maxLength": 1000},
+        "notes": {"type": ["string", "null"], "maxLength": 2000}
+      }
+    },
+    "rights_status": {"const": "user-declared-not-verified-by-arcont"},
+    "network_access": {"const": false}
+  }
+}
