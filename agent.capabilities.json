@@ -103,6 +103,25 @@
       "requires_arguments": true
     },
     {
+      "id": "agent.bridge",
+      "description": "Transport-neutral JSON/stdio bridge for external AI agents to discover ARCONT, read project intent/assets, evaluate hypotheses and execute bounded plans.",
+      "access": "external-project-write",
+      "entrypoint": "tools/arcont_bridge.py",
+      "output": "json",
+      "doctor": false,
+      "invocable": false,
+      "requires_arguments": true,
+      "request_mode": "json-stdio",
+      "operations": [
+        "discover",
+        "project.inspect",
+        "project.intent.read",
+        "assets.inspect",
+        "hypothesis.evaluate",
+        "plan.execute"
+      ]
+    },
+    {
       "id": "runtime-lab.execute",
       "description": "Execute runtime experiments in the external ARCONT Runtime Lab repository; never inside ARCONT.",
       "access": "external-runtime",
