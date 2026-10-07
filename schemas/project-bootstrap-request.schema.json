@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arcont.local/schemas/project-bootstrap-request.schema.json",
+  "title": "ARCONT external project bootstrap request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocol_version", "operation", "intent", "template"],
+  "properties": {
+    "protocol_version": {"const": 1},
+    "operation": {"const": "bootstrap"},
+    "template": {"enum": ["godot-3d-minimal", "godot-2d-minimal"]},
+    "intent": {"type": "object"}
+  }
+}
