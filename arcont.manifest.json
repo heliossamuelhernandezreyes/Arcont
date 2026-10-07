@@ -68,7 +68,8 @@
       "project.bootstrap.control",
       "asset-intake.control",
       "public-asset.control",
-      "godot.structured.control"
+      "godot.structured.control",
+      "development.session.control"
     ],
     "production_game_code_allowed": false,
     "model_forge_network_auto_execution_allowed": false,
@@ -124,7 +125,15 @@
     "godot_structured_rollback_on_validation_failure": true,
     "godot_structured_documentation": "docs/STRUCTURED_GODOT_EDITING.md",
     "godot_structured_staged_atomic_commit": true,
-    "godot_structured_revision_recheck_before_commit": true
+    "godot_structured_revision_recheck_before_commit": true,
+    "development_session_control": "tools/development_session.py",
+    "development_session_request_schema": "schemas/development-session-request.schema.json",
+    "development_session_protocol": "arcont-development-session",
+    "development_session_max_milestones": 16,
+    "development_session_auto_retry_allowed": false,
+    "development_session_one_plan_per_execute": true,
+    "development_session_pins_project_intent": true,
+    "development_session_pins_capability_registry": true
   },
   "integrity": {
     "validator": "tools/arcont_lab.py",
