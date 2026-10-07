@@ -43,7 +43,7 @@ def _relative(value: Any) -> Path:
     if not isinstance(value, str) or not value:
         raise ValueError("project-relative source path required")
     pure = PurePosixPath(value)
-    if pure.is_absolute() or pure.as_posix() != value or ".." in pure.parts or "\" in value:
+    if pure.is_absolute() or pure.as_posix() != value or ".." in pure.parts or chr(92) in value:
         raise ValueError("safe project-relative source path required")
     return Path(*pure.parts)
 
