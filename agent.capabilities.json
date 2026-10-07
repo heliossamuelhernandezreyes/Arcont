@@ -85,6 +85,15 @@
       "requires_arguments": true
     },
     {
+      "id": "agent.diagnosis",
+      "description": "Evaluate bounded declarative diagnosis policies against structured game evidence and compile repair plans without executing them.",
+      "access": "read-only",
+      "entrypoint": "tools/agent_diagnosis.py",
+      "output": "json",
+      "doctor": false,
+      "requires_arguments": true
+    },
+    {
       "id": "runtime-lab.execute",
       "description": "Execute runtime experiments in the external ARCONT Runtime Lab repository; never inside ARCONT.",
       "access": "external-runtime",
