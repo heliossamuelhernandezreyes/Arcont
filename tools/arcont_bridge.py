@@ -339,7 +339,8 @@ def discover(arcont_root: Path, project: Path) -> dict[str, Any]:
                 "direct_writer_operations": [
                     "project.bootstrap", "asset.user.stage", "asset.public.stage",
                     "godot.script.create", "godot.script.replace", "godot.script.function.replace",
-                    "godot.scene.edit", "godot.resource.edit", "godot.input.action.set"
+                    "godot.scene.inspect", "godot.scene.edit", "godot.resource.inspect", "godot.resource.edit",
+                    "godot.input.action.set"
                 ],
                 "direct_writer_operations_require_explicit_write_opt_in": True,
                 "plan_execute_requires_explicit_write_opt_in": True,
@@ -502,7 +503,7 @@ def handle_request(
             allow_project_write,
             900,
         )
-    elif operation in {"godot.structured.validate", "godot.script.inspect", "godot.scene.inspect", "godot.resource.inspect"}:
+    elif operation in {"godot.structured.validate", "godot.script.inspect"}:
         try:
             from tools.godot_structured_editing import execute as structured_execute
         except ModuleNotFoundError:
@@ -510,20 +511,21 @@ def handle_request(
         mapping = {
             "godot.structured.validate": "validate",
             "godot.script.inspect": "script.inspect",
-            "godot.scene.inspect": "scene.inspect",
-            "godot.resource.inspect": "resource.inspect",
         }
         structured_request = {"protocol_version": 1, "operation": mapping[operation], **args}
         result = structured_execute(project, structured_request)
     elif operation in {
         "godot.script.create", "godot.script.replace", "godot.script.function.replace",
-        "godot.scene.edit", "godot.resource.edit", "godot.input.action.set"
+        "godot.scene.inspect", "godot.scene.edit", "godot.resource.inspect", "godot.resource.edit",
+        "godot.input.action.set"
     }:
         mapping = {
             "godot.script.create": "script.create",
             "godot.script.replace": "script.replace",
             "godot.script.function.replace": "script.function.replace",
+            "godot.scene.inspect": "scene.inspect",
             "godot.scene.edit": "scene.edit",
+            "godot.resource.inspect": "resource.inspect",
             "godot.resource.edit": "resource.edit",
             "godot.input.action.set": "input.action.set",
         }
