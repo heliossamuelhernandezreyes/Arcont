@@ -1,0 +1,9 @@
+{
+  "protocol": "arcont-bridge",
+  "version": 1,
+  "request_id": "public-asset-files-001",
+  "operation": "asset.public.files",
+  "arguments": {
+    "asset_id": "sunset_jhbcentral"
+  }
+}
