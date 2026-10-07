@@ -38,6 +38,8 @@ INTENT_FILENAME = "project.intent.json"
 MAX_ASSETS_DEFAULT = 2000
 MAX_ASSETS_HARD = 10000
 HASH_FILE_LIMIT = 64 * 1024 * 1024
+AUTHORING_JSON_LIMIT = 2 * 1024 * 1024
+AUTHORING_ROOTS = ("authoring/recipes", "authoring/scenarios")
 
 ASSET_KINDS = {
     ".png": "texture", ".jpg": "texture", ".jpeg": "texture", ".webp": "texture",
@@ -219,6 +221,82 @@ def inspect_assets(project: Path, max_assets: int = MAX_ASSETS_DEFAULT) -> dict[
     }
 
 
+
+def authoring_catalog(project: Path) -> dict[str, Any]:
+    documents: list[dict[str, Any]] = []
+    for root_name in AUTHORING_ROOTS:
+        root = project / root_name
+        if not root.is_dir():
+            continue
+        for path in sorted(root.glob("*.json")):
+            if path.is_symlink() or not path.is_file():
+                continue
+            try:
+                size = path.stat().st_size
+            except OSError:
+                continue
+            row: dict[str, Any] = {
+                "path": path.relative_to(project).as_posix(),
+                "kind": "recipe" if root_name.endswith("recipes") else "scenario",
+                "bytes": size,
+            }
+            if size <= AUTHORING_JSON_LIMIT:
+                try:
+                    data = _load_object(path, "authoring document")
+                    for key in ("id", "version", "title", "purpose"):
+                        if key in data and (data[key] is None or isinstance(data[key], (str, int, float, bool))):
+                            row[key] = data[key]
+                    canonical = json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+                    row["sha256"] = hashlib.sha256(canonical).hexdigest()
+                except (BridgeError, OSError):
+                    row["parseable"] = False
+                else:
+                    row["parseable"] = True
+            else:
+                row["parseable"] = False
+                row["parse_skipped_reason"] = "document exceeds bridge v1 authoring JSON limit"
+            documents.append(row)
+    return {
+        "ok": True,
+        "godot_authoring_contract_present": (project / "godot-authoring.json").is_file(),
+        "map_forge_contract_present": (project / "map-forge.authoring.json").is_file(),
+        "documents": documents,
+        "document_count": len(documents),
+        "allowed_roots": list(AUTHORING_ROOTS),
+    }
+
+
+def read_authoring_document(project: Path, relative_path: Any) -> dict[str, Any]:
+    if not isinstance(relative_path, str) or not relative_path or len(relative_path) > 500:
+        raise BridgeError("authoring.document.read requires a non-empty path <=500 chars")
+    rel = Path(relative_path)
+    if rel.is_absolute() or ".." in rel.parts:
+        raise BridgeError("authoring document path must be project-relative and cannot traverse parents")
+    normalized = rel.as_posix()
+    if not any(normalized == root or normalized.startswith(root + "/") for root in AUTHORING_ROOTS):
+        raise BridgeError("authoring document path is outside allowed authoring roots")
+    if rel.suffix.lower() != ".json":
+        raise BridgeError("authoring document must be JSON")
+    path = (project / rel).resolve()
+    try:
+        path.relative_to(project.resolve())
+    except ValueError as exc:
+        raise BridgeError("authoring document escapes project root") from exc
+    if path.is_symlink() or not path.is_file():
+        raise BridgeError(f"authoring document not found: {relative_path}")
+    size = path.stat().st_size
+    if size > AUTHORING_JSON_LIMIT:
+        raise BridgeError("authoring document exceeds bridge v1 size limit")
+    data = _load_object(path, "authoring document")
+    canonical = json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return {
+        "ok": True,
+        "path": normalized,
+        "sha256": hashlib.sha256(canonical).hexdigest(),
+        "document": data,
+    }
+
+
 def discover(arcont_root: Path, project: Path) -> dict[str, Any]:
     snapshot = capability_snapshot(arcont_root)
     return {
@@ -232,6 +310,8 @@ def discover(arcont_root: Path, project: Path) -> dict[str, Any]:
                 "project.inspect",
                 "project.intent.read",
                 "assets.inspect",
+                "authoring.catalog",
+                "authoring.document.read",
                 "hypothesis.evaluate",
                 "plan.execute",
             ],
@@ -289,6 +369,14 @@ def handle_request(
         if unknown:
             raise BridgeError(f"assets.inspect has unsupported arguments: {sorted(unknown)}")
         result = inspect_assets(project, args.get("max_assets", MAX_ASSETS_DEFAULT))
+    elif operation == "authoring.catalog":
+        if args:
+            raise BridgeError("authoring.catalog accepts no arguments")
+        result = authoring_catalog(project)
+    elif operation == "authoring.document.read":
+        if set(args) != {"path"}:
+            raise BridgeError("authoring.document.read requires exactly one path")
+        result = read_authoring_document(project, args["path"])
     elif operation == "hypothesis.evaluate":
         if set(args) != {"proposal", "evidence"}:
             raise BridgeError("hypothesis.evaluate requires proposal and evidence")
