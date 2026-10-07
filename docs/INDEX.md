@@ -68,6 +68,8 @@ ARCONT no intenta copiar Internet. Conserva referencias, procedencia, extracció
 - [`PROJECT_BOOTSTRAP_ASSET_INTAKE.md`](PROJECT_BOOTSTRAP_ASSET_INTAKE.md) — creación segura de proyectos Godot externos vacíos e ingestión de assets proporcionados por el usuario.
 - [`PUBLIC_ASSET_DISCOVERY.md`](PUBLIC_ASSET_DISCOVERY.md) — descubrimiento de assets públicos mediante proveedores explícitos, binding de manifiestos y procedencia verificable.
 - [`STRUCTURED_GODOT_EDITING.md`](STRUCTURED_GODOT_EDITING.md) — edición genérica revisionada de GDScript, escenas, recursos e input para proyectos Godot recién creados.
+- [`DEVELOPMENT_SESSION.md`](DEVELOPMENT_SESSION.md) — sesiones persistentes por milestones con presupuestos, receipts y ejecución de un plan acotado por iteración.
+- [`../tools/development_session.py`](../tools/development_session.py) — orquestador durable sobre el execution loop existente, sin retries silenciosos.
 - [`../tools/godot_structured_editing.py`](../tools/godot_structured_editing.py) — control estructurado de gameplay con validación Godot y rollback.
 - [`../tools/public_asset_discovery.py`](../tools/public_asset_discovery.py) — adaptador Poly Haven v1 con búsqueda, file manifests y staging verificado.
 - [`../tools/project_bootstrap_control.py`](../tools/project_bootstrap_control.py) — bootstrap determinista 2D/3D en carpeta externa vacía.
