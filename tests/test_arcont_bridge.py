@@ -124,7 +124,10 @@ class UniversalAgentBridgeTests(unittest.TestCase):
         self.assertEqual(rows["assets/shot.wav"]["kind"], "audio")
         self.assertEqual(rows["scenes/main.tscn"]["kind"], "scene")
         self.assertEqual(len(rows["assets/hero.glb"]["sha256"]), 64)
-        self.assertIn("Public-asset network discovery is not performed by Bridge v1.", report["result"]["limitations"])
+        self.assertIn(
+            "assets.inspect inventories local files only; provider-scoped network discovery is available separately through asset.public.* when project policy allows it.",
+            report["result"]["limitations"],
+        )
 
     def test_fresh_agent_can_catalog_and_read_authoring_documents(self):
         catalog = self.request("authoring.catalog")
@@ -298,6 +301,25 @@ class UniversalAgentBridgeTests(unittest.TestCase):
         self.assertEqual(result["count"], 1)
         self.assertEqual(result["results"][0]["provider"], "polyhaven")
         self.assertEqual(result["results"][0]["asset_license"], "CC0")
+
+    @patch("tools.arcont_bridge.invoke_capability")
+    def test_bridge_public_stage_uses_long_bounded_timeout(self, invoke):
+        invoke.return_value = {"ok": True, "write_performed": True, "result": {"id": "sky"}}
+        request = {
+            "protocol": "arcont-bridge",
+            "version": 1,
+            "request_id": "public-stage-timeout",
+            "operation": "asset.public.stage",
+            "arguments": {
+                "semantic_id": "sky",
+                "asset_id": "sunset_jhbcentral",
+                "file_key": "hdri/1k/hdr",
+                "manifest_sha256": "0" * 64,
+            },
+        }
+        report = handle_request(self.root, self.project, request, allow_project_write=True)
+        self.assertTrue(report["ok"])
+        self.assertEqual(invoke.call_args.args[-1], 900)
 
     def test_bridge_public_stage_requires_explicit_write_optin(self):
         stage_request = {
