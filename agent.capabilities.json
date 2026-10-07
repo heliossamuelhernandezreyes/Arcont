@@ -157,6 +157,31 @@
       ]
     },
     {
+      "id": "godot.structured.control",
+      "description": "Revision-checked structured editing for fresh Godot projects: GDScript, scenes, resources and input actions with Godot validation and rollback.",
+      "access": "external-project-write",
+      "entrypoint": "tools/godot_structured_editing.py",
+      "output": "json",
+      "doctor": false,
+      "invocable": true,
+      "project_arg": "--project",
+      "request_arg": "--request",
+      "request_mode": "json-stdin",
+      "operations": [
+        "capabilities",
+        "validate",
+        "script.inspect",
+        "script.create",
+        "script.replace",
+        "script.function.replace",
+        "scene.inspect",
+        "scene.edit",
+        "resource.inspect",
+        "resource.edit",
+        "input.action.set"
+      ]
+    },
+    {
       "id": "agent.bridge",
       "description": "Transport-neutral JSON/stdio bridge for external AI agents to discover ARCONT, read project intent/assets, evaluate hypotheses and execute bounded plans.",
       "access": "external-project-write",
@@ -181,6 +206,16 @@
         "asset.public.stage",
         "asset.public.list",
         "authoring.catalog",
+        "godot.structured.validate",
+        "godot.script.inspect",
+        "godot.script.create",
+        "godot.script.replace",
+        "godot.script.function.replace",
+        "godot.scene.inspect",
+        "godot.scene.edit",
+        "godot.resource.inspect",
+        "godot.resource.edit",
+        "godot.input.action.set",
         "authoring.document.read",
         "hypothesis.evaluate",
         "plan.execute"
