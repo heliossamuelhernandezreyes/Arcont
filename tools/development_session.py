@@ -734,6 +734,14 @@ def _execute_one_locked(project: Path, request: dict[str, Any]) -> dict[str, Any
         and post_toolchain == state["toolchain_sha256"]
     )
 
+    completion_evidence_ok = True
+    checked_completion_evidence: list[dict[str, Any]] = []
+    if complete_milestone and result.get("ok") is True:
+        completion_evidence_ok, checked_completion_evidence = _verify_completion_evidence(
+            completion_evidence,
+            result,
+        )
+
     receipt = {
         "protocol": "arcont-development-session-run",
         "version": 1,
@@ -747,6 +755,8 @@ def _execute_one_locked(project: Path, request: dict[str, Any]) -> dict[str, Any
         "complete_milestone_requested": complete_milestone,
         "completion_note": note,
         "completion_evidence_requested": completion_evidence,
+        "completion_evidence_checked": checked_completion_evidence,
+        "completion_evidence_ok": completion_evidence_ok if complete_milestone else None,
         "environment_after": {
             "project_intent_sha256": post_intent,
             "registry_sha256": post_registry,
@@ -756,14 +766,6 @@ def _execute_one_locked(project: Path, request: dict[str, Any]) -> dict[str, Any
     }
     _atomic_json(run_path, receipt)
     receipt_sha = hashlib.sha256(run_path.read_bytes()).hexdigest()
-
-    completion_evidence_ok = True
-    checked_completion_evidence: list[dict[str, Any]] = []
-    if complete_milestone and result.get("ok") is True:
-        completion_evidence_ok, checked_completion_evidence = _verify_completion_evidence(
-            completion_evidence,
-            result,
-        )
 
     state["sequence"] += 1
     state["counters"]["plan_runs"] += 1
