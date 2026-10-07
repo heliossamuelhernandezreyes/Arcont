@@ -218,13 +218,32 @@ Exhaustion pauses the session instead of automatically extending it.
 A model may request `complete_milestone=true` only for a milestone that has
 explicit acceptance criteria in the session specification.
 
-ARCONT does not pretend to understand that prose semantically. Completion means:
+ARCONT does not pretend to understand acceptance prose semantically. Instead,
+`complete_milestone=true` requires a `completion_evidence` mapping with
+exactly one entry for every acceptance criterion. Each entry names one or more
+steps from the submitted plan.
+
+A cited step counts as machine-backed evidence only when it completed
+successfully and either:
+
+- it had machine-readable expectations that were evaluated; or
+- it invoked a capability that reports a real project write.
+
+Completion therefore means:
 
 - the submitted bounded plan completed successfully;
-- all machine-readable plan expectations passed;
-- the caller explicitly states that this plan satisfies the milestone.
+- every acceptance criterion is explicitly mapped to successful execution
+  evidence from that same plan;
+- the environment pins remained stable;
+- the caller explicitly requests milestone completion.
 
-The completing run ID and optional completion note are persisted.
+The immutable run receipt stores both the requested criterion→step mapping and
+the verified per-step evidence result. The milestone persists the checked
+evidence, completing run ID and optional completion note.
+
+ARCONT still does not claim that it understands the *meaning* of the prose; the
+explicit mapping makes the model's claim auditable instead of accepting a bare
+"done".
 
 The next pending milestone becomes active. When the final milestone completes,
 the session status becomes `completed`.
