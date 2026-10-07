@@ -94,6 +94,15 @@
       "requires_arguments": true
     },
     {
+      "id": "agent.hypothesis-gate",
+      "description": "Validate model-authored hypotheses against structured evidence and compile only bounded safe repair proposals.",
+      "access": "read-only",
+      "entrypoint": "tools/agent_hypothesis_gate.py",
+      "output": "json",
+      "doctor": false,
+      "requires_arguments": true
+    },
+    {
       "id": "runtime-lab.execute",
       "description": "Execute runtime experiments in the external ARCONT Runtime Lab repository; never inside ARCONT.",
       "access": "external-runtime",
