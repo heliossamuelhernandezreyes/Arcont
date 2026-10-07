@@ -143,6 +143,117 @@ class UniversalAgentBridgeTests(unittest.TestCase):
         with self.assertRaises(BridgeError):
             self.request("authoring.document.read", {"path": "../project.intent.json"})
 
+    def test_bridge_bootstraps_blank_project_only_with_explicit_write_permission(self):
+        blank = Path(self.tmp.name) / "blank"
+        blank.mkdir()
+        request = {
+            "protocol": "arcont-bridge",
+            "version": 1,
+            "request_id": "bootstrap-blank",
+            "operation": "project.bootstrap",
+            "arguments": {
+                "template": "godot-3d-minimal",
+                "intent": {
+                    "protocol": "arcont-project-intent",
+                    "version": 1,
+                    "project_id": "blank",
+                    "title": "Blank",
+                    "genre": "third-person action",
+                    "targets": ["Windows"],
+                    "asset_policy": {
+                        "user_assets": True,
+                        "public_assets": False,
+                        "commercial_use_required": True,
+                        "allow_network_discovery": False,
+                    },
+                },
+            },
+        }
+        with self.assertRaises(PermissionError):
+            handle_request(self.root, blank, request, allow_project_write=False)
+        report = handle_request(self.root, blank, request, allow_project_write=True)
+        self.assertTrue(report["ok"])
+        self.assertTrue((blank / "project.godot").is_file())
+        self.assertTrue((blank / "project.intent.json").is_file())
+
+    def test_bridge_stages_and_lists_user_asset_with_provenance(self):
+        blank = Path(self.tmp.name) / "asset-game"
+        blank.mkdir()
+        bootstrap_request = {
+            "protocol": "arcont-bridge",
+            "version": 1,
+            "request_id": "bootstrap-assets",
+            "operation": "project.bootstrap",
+            "arguments": {
+                "template": "godot-2d-minimal",
+                "intent": {
+                    "protocol": "arcont-project-intent",
+                    "version": 1,
+                    "project_id": "asset_game",
+                    "title": "Asset Game",
+                    "genre": "2d action",
+                    "asset_policy": {
+                        "user_assets": True,
+                        "public_assets": False,
+                        "commercial_use_required": True,
+                        "allow_network_discovery": False,
+                        "allowed_licenses": ["CC0"],
+                    },
+                },
+            },
+        }
+        handle_request(self.root, blank, bootstrap_request, allow_project_write=True)
+        (blank / "incoming/icon.svg").write_text(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4"></svg>',
+            encoding="utf-8",
+        )
+
+        inspect_request = {
+            "protocol": "arcont-bridge",
+            "version": 1,
+            "request_id": "asset-inspect",
+            "operation": "asset.user.inspect",
+            "arguments": {"source": "incoming/icon.svg"},
+        }
+        inspected = handle_request(self.root, blank, inspect_request, allow_project_write=False)
+        self.assertTrue(inspected["ok"])
+        self.assertEqual(inspected["result"]["result"]["kind"], "vector")
+
+        stage_request = {
+            "protocol": "arcont-bridge",
+            "version": 1,
+            "request_id": "asset-stage",
+            "operation": "asset.user.stage",
+            "arguments": {
+                "asset_id": "icon",
+                "source": "incoming/icon.svg",
+                "rights": {
+                    "basis": "user-owned",
+                    "commercial_use": True,
+                    "redistribution": False,
+                    "license_name": None,
+                },
+            },
+        }
+        with self.assertRaises(PermissionError):
+            handle_request(self.root, blank, stage_request, allow_project_write=False)
+        staged = handle_request(self.root, blank, stage_request, allow_project_write=True)
+        self.assertTrue(staged["ok"])
+        record = staged["result"]["result"]["result"]
+        self.assertEqual(record["id"], "icon")
+        self.assertEqual(record["origin"], "user-provided")
+
+        list_request = {
+            "protocol": "arcont-bridge",
+            "version": 1,
+            "request_id": "asset-list",
+            "operation": "asset.user.list",
+            "arguments": {},
+        }
+        listed = handle_request(self.root, blank, list_request, allow_project_write=False)
+        self.assertTrue(listed["ok"])
+        self.assertEqual(listed["result"]["result"]["count"], 1)
+
     def test_read_only_plan_runs_through_existing_execution_loop(self):
         plan = {
             "protocol": "arcont-agent-plan",
