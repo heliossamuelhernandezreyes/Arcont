@@ -106,6 +106,11 @@ attach_script
 rename
 ```
 
+The generic `set` operation cannot set `script`, `owner`, or
+`scene_file_path`; scripts must go through `attach_script`. Before an
+existing project script is attached, ARCONT applies the same structured
+GDScript safety checks used for newly generated source.
+
 Example:
 
 ```json
@@ -170,7 +175,11 @@ Example:
 }
 ```
 
-Existing resources require their current revision.
+Existing resources require their current revision. Structured resource edits
+cannot set the `script` or `resource_path` properties, and V1 refuses
+`GDScript`, `Script`, and `PackedScene` as generic resource types so the
+resource editor cannot be used as a back door around the dedicated script/scene
+controls.
 
 ## Input actions
 
