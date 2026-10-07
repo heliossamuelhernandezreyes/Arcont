@@ -341,6 +341,53 @@ class DevelopmentSessionTests(unittest.TestCase):
             )
         run.assert_not_called()
 
+    def test_pending_reconciliation_rejects_symlinked_runs_directory(self):
+        import hashlib
+        from tools.development_session import _atomic_json, _reconcile_completed_pending, _state_revision
+        from tools.agent_execution_loop import canonical_sha256
+
+        created = create(self.project, {"spec": spec()})
+        state = created["result"]["session"]
+        session_dir = self.project / ".arcont/development-sessions/build_game"
+        outside = Path(self.tmp.name) / "outside-runs"
+        outside.mkdir()
+        receipt = outside / "run-001-committed.json"
+        receipt.write_text('{"ok":true}\n', encoding="utf-8")
+        (session_dir / "runs").symlink_to(outside, target_is_directory=True)
+        plan_hash = canonical_sha256(plan())
+        receipt_rel = ".arcont/development-sessions/build_game/runs/run-001-committed.json"
+        state["history"].append({
+            "run_id": "run-001-committed",
+            "milestone_id": "movement",
+            "ok": True,
+            "status": "completed",
+            "plan_id": "movement_plan",
+            "plan_sha256": plan_hash,
+            "receipt": receipt_rel,
+            "receipt_sha256": hashlib.sha256(receipt.read_bytes()).hexdigest(),
+            "steps_completed": 1,
+            "write_steps": 0,
+            "failed_step": None,
+        })
+        state["revision"] = _state_revision(state)
+        _atomic_json(session_dir / "session.json", state)
+        _atomic_json(
+            session_dir / "pending-run.json",
+            {
+                "protocol": "arcont-development-session-pending",
+                "version": 1,
+                "session_id": "build_game",
+                "run_id": "run-001-committed",
+                "milestone_id": "movement",
+                "session_revision_before": created["result"]["session"]["revision"],
+                "plan_id": "movement_plan",
+                "plan_sha256": plan_hash,
+            },
+        )
+        with self.assertRaises(SessionError):
+            _reconcile_completed_pending(self.project, state)
+        self.assertTrue((session_dir / "pending-run.json").is_file())
+
     def test_completed_pending_is_cleared_only_when_receipt_hash_matches(self):
         import hashlib
         from tools.development_session import _atomic_json, _reconcile_completed_pending, _state_revision
