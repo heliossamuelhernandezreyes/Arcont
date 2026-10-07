@@ -64,7 +64,9 @@
       "godot.authoring.control",
       "map-forge.editor.control",
       "production.control",
-      "model-forge.control"
+      "model-forge.control",
+      "project.bootstrap.control",
+      "asset-intake.control"
     ],
     "production_game_code_allowed": false,
     "model_forge_network_auto_execution_allowed": false,
@@ -92,7 +94,18 @@
     "bridge_transport": "json-stdio",
     "bridge_creates_new_writer_primitives": false,
     "bridge_project_write_requires_opt_in": true,
-    "bridge_documentation": "docs/UNIVERSAL_AGENT_BRIDGE.md"
+    "bridge_documentation": "docs/UNIVERSAL_AGENT_BRIDGE.md",
+    "project_bootstrap": "tools/project_bootstrap_control.py",
+    "project_bootstrap_schema": "schemas/project-bootstrap-request.schema.json",
+    "project_bootstrap_templates": [
+      "godot-3d-minimal",
+      "godot-2d-minimal"
+    ],
+    "user_asset_intake": "tools/user_asset_intake.py",
+    "user_asset_record_schema": "schemas/user-asset-record.schema.json",
+    "user_asset_source_root": "incoming/",
+    "user_asset_network_access_allowed": false,
+    "user_asset_archive_extraction_allowed": false
   },
   "integrity": {
     "validator": "tools/arcont_lab.py",
