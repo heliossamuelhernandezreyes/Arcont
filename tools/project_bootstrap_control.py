@@ -13,6 +13,7 @@ import hashlib
 import json
 import os
 import shutil
+import stat
 import sys
 import tempfile
 from pathlib import Path
@@ -121,7 +122,9 @@ def bootstrap(project: Path, intent: dict[str, Any], template: str) -> dict[str,
     intent = _validate_intent(intent)
 
     parent = root.parent
+    original_mode = stat.S_IMODE(root.stat().st_mode)
     staging = Path(tempfile.mkdtemp(prefix=f".{root.name}.arcont-bootstrap-", dir=parent))
+    os.chmod(staging, original_mode)
     try:
         for rel in (
             "assets/user",
