@@ -65,6 +65,9 @@ ARCONT no intenta copiar Internet. Conserva referencias, procedencia, extracció
 - [`../tools/agent_diagnosis.py`](../tools/agent_diagnosis.py) — motor declarativo read-only de observaciones → hipótesis → repair-plan revisionado.
 - [`../tools/agent_hypothesis_gate.py`](../tools/agent_hypothesis_gate.py) — puerta de seguridad para hipótesis nuevas generadas por modelo y compilación a reparaciones acotadas.
 - [`UNIVERSAL_AGENT_BRIDGE.md`](UNIVERSAL_AGENT_BRIDGE.md) — interfaz universal JSON/stdio para que agentes externos descubran y operen ARCONT sin conocer sus scripts internos.
+- [`PROJECT_BOOTSTRAP_ASSET_INTAKE.md`](PROJECT_BOOTSTRAP_ASSET_INTAKE.md) — creación segura de proyectos Godot externos vacíos e ingestión de assets proporcionados por el usuario.
+- [`../tools/project_bootstrap_control.py`](../tools/project_bootstrap_control.py) — bootstrap determinista 2D/3D en carpeta externa vacía.
+- [`../tools/user_asset_intake.py`](../tools/user_asset_intake.py) — inspección/staging local de assets con SHA-256 y procedencia declarada.
 - [`../tools/arcont_bridge.py`](../tools/arcont_bridge.py) — bridge transport-neutral para discovery, project intent, assets, hipótesis y planes acotados.
 - [`../schemas/project-intent.schema.json`](../schemas/project-intent.schema.json) — contrato persistente de intención del videojuego.
 - [`../schemas/agent-hypothesis-proposal.schema.json`](../schemas/agent-hypothesis-proposal.schema.json) — contrato machine-readable de propuestas de hipótesis generadas por IA/humano.
