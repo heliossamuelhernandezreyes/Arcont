@@ -213,9 +213,12 @@ def execute_plan(
             expectations_ok = all(item["ok"] for item in expectations)
             ok = execution_ok and expectations_ok
             if isinstance(output, dict):
+                nested = output.get("result") if isinstance(output.get("result"), dict) else {}
                 write_performed = bool(
                     output.get("write_performed")
-                    or (isinstance(output.get("result"), dict) and output["result"].get("write_performed"))
+                    or output.get("committed")
+                    or nested.get("write_performed")
+                    or nested.get("committed")
                 )
             else:
                 write_performed = False
