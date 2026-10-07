@@ -66,6 +66,8 @@ DENIED_SCRIPT_PATTERNS = {
     "UDPServer": "network APIs are outside the gameplay-safe subset",
     "WebSocketPeer": "network APIs are outside the gameplay-safe subset",
     "JavaScriptBridge": "host/browser bridge APIs are outside the gameplay-safe subset",
+    "ClassDB": "dynamic class construction is outside the gameplay-safe subset",
+    "Engine.get_singleton": "dynamic engine singleton access is outside the gameplay-safe subset",
     "ProjectSettings.save": "project settings writes must use structured operations",
     "ResourceSaver.save": "resource writes must use structured operations",
 }
@@ -244,7 +246,8 @@ func _scene_inspect() -> Dictionary:
 
 func _scene_edit() -> Dictionary:
     var path := str(request_data.get("scene", ""))
-    if not _valid_res_path(path, ".tscn"):
+    var output := str(request_data.get("output", path))
+    if not _valid_res_path(path, ".tscn") or not _valid_res_path(output, ".tscn"):
         return {"ok": false, "error": "invalid scene path"}
     var root: Node
     if ResourceLoader.exists(path):
@@ -332,7 +335,7 @@ func _scene_edit() -> Dictionary:
     if pack_error != OK:
         root.free()
         return {"ok": false, "error": "PackedScene.pack failed: " + str(pack_error)}
-    var save_error := ResourceSaver.save(packed, path)
+    var save_error := ResourceSaver.save(packed, output)
     var rows := _tree_rows(root)
     root.free()
     if save_error != OK:
@@ -356,7 +359,8 @@ func _resource_inspect() -> Dictionary:
 
 func _resource_edit() -> Dictionary:
     var path := str(request_data.get("resource", ""))
-    if not _valid_res_path(path, ".tres"):
+    var output := str(request_data.get("output", path))
+    if not _valid_res_path(path, ".tres") or not _valid_res_path(output, ".tres"):
         return {"ok": false, "error": "invalid resource path"}
     var resource: Resource
     if ResourceLoader.exists(path):
@@ -385,7 +389,7 @@ func _resource_edit() -> Dictionary:
         if not found:
             return {"ok": false, "error": "resource property not found: " + prop}
         resource.set(prop, _variant(change.get("value")))
-    var save_error := ResourceSaver.save(resource, path)
+    var save_error := ResourceSaver.save(resource, output)
     if save_error != OK:
         return {"ok": false, "error": "resource save failed: " + str(save_error)}
     return {"ok": true, "class": resource.get_class()}
@@ -427,10 +431,13 @@ func _input_action_set() -> Dictionary:
         if event == null:
             return {"ok": false, "error": "unsupported input event"}
         events.append(event)
+    var output := str(request_data.get("output", ""))
+    if not _valid_res_path(output, ".godot"):
+        return {"ok": false, "error": "input action requires staged .godot output"}
     ProjectSettings.set_setting("input/" + action, {"deadzone": deadzone, "events": events})
-    var err := ProjectSettings.save()
+    var err := ProjectSettings.save_custom(output)
     if err != OK:
-        return {"ok": false, "error": "ProjectSettings.save failed: " + str(err)}
+        return {"ok": false, "error": "ProjectSettings.save_custom failed: " + str(err)}
     return {"ok": true, "action": action, "event_count": events.size(), "deadzone": deadzone}
 
 func _validate_resource() -> Dictionary:
@@ -702,21 +709,23 @@ def _validate_script_with_godot(project: Path, relative: str) -> dict[str, Any]:
 def _commit_script(project: Path, relative: str, source: str, expected: Any) -> dict[str, Any]:
     path = _project_file(project, relative)
     before_revision = _revision_guard(path, expected)
-    before_bytes = path.read_bytes() if path.exists() else None
     source = _validate_script_source(source)
     path.parent.mkdir(parents=True, exist_ok=True)
-    temp = path.with_name(path.name + f".arcont-{uuid.uuid4().hex}.tmp")
+
+    temp_name = f".{path.stem}.arcont-{uuid.uuid4().hex}.gd"
+    temp = path.parent / temp_name
+    temp_relative = temp.relative_to(project.resolve()).as_posix()
     temp.write_text(source, encoding="utf-8")
-    os.replace(temp, path)
-    validation = _validate_script_with_godot(project, relative)
-    if not validation["ok"]:
-        if before_bytes is None:
-            path.unlink(missing_ok=True)
-        else:
-            rollback = path.with_name(path.name + f".arcont-rollback-{uuid.uuid4().hex}.tmp")
-            rollback.write_bytes(before_bytes)
-            os.replace(rollback, path)
-        raise StructuredError("GDScript validation failed and edit was rolled back")
+    try:
+        validation = _validate_script_with_godot(project, temp_relative)
+        if not validation["ok"]:
+            raise StructuredError("GDScript validation failed; target was not modified")
+        if _sha_file(path) != before_revision:
+            raise StructuredError("script revision changed during validation; refusing commit")
+        os.replace(temp, path)
+    except Exception:
+        temp.unlink(missing_ok=True)
+        raise
     after_revision = _sha_file(path)
     return {
         "ok": True,
@@ -728,7 +737,6 @@ def _commit_script(project: Path, relative: str, source: str, expected: Any) -> 
             "validation": validation,
         },
     }
-
 
 def _script_function_replace(project: Path, relative: str, function: Any, replacement: Any, expected: Any) -> dict[str, Any]:
     if not isinstance(function, str) or not FUNCTION_NAME.fullmatch(function):
@@ -793,22 +801,30 @@ def _engine_target_edit(
     expected: Any,
     request: dict[str, Any],
 ) -> dict[str, Any]:
-    path = _project_file(project, relative)
+    root = project.resolve()
+    path = _project_file(root, relative)
     before_revision = _revision_guard(path, expected)
-    before_bytes = path.read_bytes() if path.exists() else None
     path.parent.mkdir(parents=True, exist_ok=True)
-    engine = _run_godot_script(project, RUNNER_SOURCE, request)
-    if not engine["ok"]:
-        if before_bytes is None:
-            path.unlink(missing_ok=True)
-        else:
-            rollback = path.with_name(path.name + f".arcont-rollback-{uuid.uuid4().hex}.tmp")
-            rollback.write_bytes(before_bytes)
-            os.replace(rollback, path)
-        raise StructuredError(f"{operation} failed and target was rolled back")
+
+    staging_relative = f".arcont/staging/structured/{uuid.uuid4().hex}/{path.name}"
+    staging = _project_file(root, staging_relative)
+    staging.parent.mkdir(parents=True, exist_ok=False)
+    payload = dict(request)
+    payload["output"] = "res://" + staging_relative
+    try:
+        engine = _run_godot_script(root, RUNNER_SOURCE, payload)
+        if not engine["ok"]:
+            raise StructuredError(f"{operation} failed; target was not modified")
+        if not staging.is_file() or staging.is_symlink():
+            raise StructuredError(f"{operation} produced no staged target")
+        if _sha_file(path) != before_revision:
+            raise StructuredError(f"{operation} revision changed during engine execution; refusing commit")
+        os.replace(staging, path)
+    finally:
+        shutil.rmtree(staging.parent, ignore_errors=True)
     after_revision = _sha_file(path)
     if after_revision is None:
-        raise StructuredError(f"{operation} reported success but target file is missing")
+        raise StructuredError(f"{operation} commit produced no target")
     return {
         "ok": True,
         "write_performed": True,
@@ -819,7 +835,6 @@ def _engine_target_edit(
             "engine": engine,
         },
     }
-
 
 def execute(project: Path, request: dict[str, Any]) -> dict[str, Any]:
     if request.get("protocol_version") != PROTOCOL_VERSION:
@@ -983,7 +998,6 @@ def execute(project: Path, request: dict[str, Any]) -> dict[str, Any]:
     if operation == "input.action.set":
         project_godot = root / "project.godot"
         before_revision = _revision_guard(project_godot, request.get("if_revision"))
-        before_bytes = project_godot.read_bytes()
         action = request.get("action")
         events = request.get("events", [])
         if not isinstance(action, str) or not IDENTIFIER.fullmatch(action):
@@ -993,21 +1007,31 @@ def execute(project: Path, request: dict[str, Any]) -> dict[str, Any]:
         for event in events:
             if not isinstance(event, dict) or event.get("type") not in {"key", "mouse_button", "joypad_button"}:
                 raise StructuredError("unsupported structured input event")
-        engine = _run_godot_script(
-            root,
-            RUNNER_SOURCE,
-            {
-                "operation": "input.action.set",
-                "action": action,
-                "deadzone": request.get("deadzone", 0.2),
-                "events": events,
-            },
-        )
-        if not engine["ok"]:
-            rollback = project_godot.with_name(project_godot.name + f".arcont-rollback-{uuid.uuid4().hex}.tmp")
-            rollback.write_bytes(before_bytes)
-            os.replace(rollback, project_godot)
-            raise StructuredError("input action edit failed and project.godot was rolled back")
+
+        staging_relative = f".arcont/staging/structured/{uuid.uuid4().hex}/project.godot"
+        staging = _project_file(root, staging_relative)
+        staging.parent.mkdir(parents=True, exist_ok=False)
+        try:
+            engine = _run_godot_script(
+                root,
+                RUNNER_SOURCE,
+                {
+                    "operation": "input.action.set",
+                    "action": action,
+                    "deadzone": request.get("deadzone", 0.2),
+                    "events": events,
+                    "output": "res://" + staging_relative,
+                },
+            )
+            if not engine["ok"]:
+                raise StructuredError("input action edit failed; project.godot was not modified")
+            if not staging.is_file() or staging.is_symlink():
+                raise StructuredError("input action produced no staged project.godot")
+            if _sha_file(project_godot) != before_revision:
+                raise StructuredError("project.godot revision changed during input edit; refusing commit")
+            os.replace(staging, project_godot)
+        finally:
+            shutil.rmtree(staging.parent, ignore_errors=True)
         return {
             "ok": True,
             "write_performed": True,
