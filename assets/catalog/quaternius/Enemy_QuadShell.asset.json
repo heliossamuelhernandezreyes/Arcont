@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "id": "ARC-ASSET-QUATERNIUS-ENEMY-QUADSHELL",
+  "title": "Quaternius QuadShell robot",
+  "asset_type": "3d_model",
+  "dimensions": [
+    "3d"
+  ],
+  "themes": [
+    "sci-fi",
+    "industrial"
+  ],
+  "styles": [
+    "stylized"
+  ],
+  "tags": [
+    "enemy",
+    "robot",
+    "quadruped",
+    "skeletal",
+    "walk",
+    "run",
+    "attack",
+    "hit"
+  ],
+  "source": {
+    "provider": "Quaternius",
+    "author": "Quaternius",
+    "external_id": "Enemy_QuadShell",
+    "asset_url": "https://quaternius.com/packs/scifiessentialskit.html",
+    "download_url": "https://raw.githubusercontent.com/agentkaerf/FreeModels/db3df04d1e4714298a09510b26fb6de6645138a2/Sci-Fi%20Essentials%20Kit%5BStandard%5D/glTF/Enemy_QuadShell.gltf",
+    "acquired_at": "2026-10-08T04:39:06Z"
+  },
+  "license": {
+    "name": "CC0-1.0",
+    "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "commercial_use": true,
+    "modification": true,
+    "attribution_required": false,
+    "redistribution_allowed": true,
+    "share_alike": false,
+    "ai_training_allowed": true,
+    "policy_tier": "green",
+    "drm_risk": false,
+    "portable_commercial_default": true,
+    "source_label": "Embedded Quaternius License_Standard.txt + official creator pack page"
+  },
+  "technical": {
+    "formats": [
+      "gltf",
+      "bin",
+      "png"
+    ],
+    "triangle_count": 7494,
+    "rigged": true,
+    "animated": true,
+    "animation_count": 8,
+    "pbr": true,
+    "texture_resolution": null,
+    "collision": "no collision mesh; use gameplay proxy",
+    "lods": null
+  },
+  "compatibility": {
+    "godot": true,
+    "android": null,
+    "unity": null,
+    "unreal": null,
+    "web": null
+  },
+  "compatibility_evidence": {
+    "godot": {
+      "level": "runtime",
+      "basis": "Godot 4.7.2 Linux CI imported meshes and inspected AnimationPlayer and Skeleton3D; does not establish performance, collision or frame pacing.",
+      "tested_at": "2026-10-08",
+      "evidence_ref": "heliossamuelhernandezreyes/Godot-juegos-3d.- Actions run 37728531689"
+    },
+    "android": {
+      "level": "inferred",
+      "basis": "glTF compatible format only; no device or APK test",
+      "tested_at": null,
+      "evidence_ref": null
+    }
+  },
+  "archive": {
+    "mirrored_in_arcont": false,
+    "sha256": null,
+    "size_bytes": null
+  },
+  "review": {
+    "license_verified": true,
+    "metadata_verified": true,
+    "last_checked": "2026-10-08",
+    "notes": "Third-party source mirror pinned to db3df04d1e4714298a09510b26fb6de6645138a2; only selected binaries vendored in FISURA game with sha256 provenance. Do not infer source is official Quaternius hosting."
+  }
+}
