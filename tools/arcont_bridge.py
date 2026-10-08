@@ -75,8 +75,10 @@ def _safe_project(project: Path, arcont_root: Path) -> Path:
     if not resolved.is_dir():
         raise BridgeError(f"project root is not a directory: {resolved}")
     root = arcont_root.resolve()
-    if resolved == root or root in resolved.parents:
-        raise BridgeError("refusing ARCONT itself or an embedded project inside ARCONT")
+    if resolved == root or root in resolved.parents or resolved in root.parents:
+        raise BridgeError(
+            "refusing overlapping ARCONT/project trees; neither path may contain the other"
+        )
     return resolved
 
 
