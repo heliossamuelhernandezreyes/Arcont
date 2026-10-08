@@ -174,7 +174,13 @@
     "mcp_http_constant_time_bearer_compare": true,
     "mcp_bearer_forwarded_to_bridge": false,
     "external_project_tree_must_be_disjoint_from_arcont": true,
-    "mcp_project_tree_must_be_disjoint_from_arcont": true
+    "mcp_project_tree_must_be_disjoint_from_arcont": true,
+    "mcp_max_bridge_concurrency": 4,
+    "mcp_read_timeout_seconds": 120,
+    "mcp_long_operation_timeout_seconds": 900,
+    "mcp_http_headers_timeout_seconds": 10,
+    "mcp_http_request_timeout_seconds": 30,
+    "mcp_http_max_headers": 100
   },
   "integrity": {
     "validator": "tools/arcont_lab.py",
