@@ -170,7 +170,9 @@
     "mcp_http_host_origin_validation": true,
     "mcp_arbitrary_shell_execution_allowed": false,
     "mcp_gateway_lockfile": "integrations/mcp/package-lock.json",
-    "mcp_dependencies_locked": true
+    "mcp_dependencies_locked": true,
+    "mcp_http_constant_time_bearer_compare": true,
+    "mcp_bearer_forwarded_to_bridge": false
   },
   "integrity": {
     "validator": "tools/arcont_lab.py",
