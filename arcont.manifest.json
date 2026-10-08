@@ -146,7 +146,29 @@
     "development_session_state_max_bytes": 8388608,
     "development_session_pending_max_bytes": 65536,
     "development_session_receipt_max_bytes": 33554432,
-    "development_session_receipt_symlink_traversal_allowed": false
+    "development_session_receipt_symlink_traversal_allowed": false,
+    "mcp_gateway": "integrations/mcp/server.mjs",
+    "mcp_gateway_package": "integrations/mcp/package.json",
+    "mcp_gateway_documentation": "docs/MCP_AGENT_GATEWAY.md",
+    "mcp_protocol_revision": "2026-07-28",
+    "mcp_transports": [
+      "stdio",
+      "streamable-http"
+    ],
+    "mcp_sdk": {
+      "server": "2.3.1",
+      "client_acceptance": "2.3.1",
+      "node": "2.1.1",
+      "zod": "4.6.5"
+    },
+    "mcp_bridge_operation": "tools/arcont_bridge.py",
+    "mcp_gateway_adds_writer_primitives": false,
+    "mcp_project_write_fixed_at_process_start": true,
+    "mcp_model_can_escalate_write_authority": false,
+    "mcp_http_loopback_default": true,
+    "mcp_http_non_loopback_requires_bearer": true,
+    "mcp_http_host_origin_validation": true,
+    "mcp_arbitrary_shell_execution_allowed": false
   },
   "integrity": {
     "validator": "tools/arcont_lab.py",
