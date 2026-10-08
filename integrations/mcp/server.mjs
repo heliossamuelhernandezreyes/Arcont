@@ -17,6 +17,9 @@ const SERVER_VERSION = "0.1.0";
 const MAX_BRIDGE_STDOUT = 32 * 1024 * 1024;
 const MAX_BRIDGE_STDERR = 2 * 1024 * 1024;
 const DEFAULT_TIMEOUT_MS = 900_000;
+const READ_TIMEOUT_MS = 120_000;
+const MAX_BRIDGE_CONCURRENCY = 4;
+let activeBridgeProcesses = 0;
 
 function fail(message) {
   throw new Error(message);
@@ -133,6 +136,12 @@ function boundedAppend(current, chunk, limit, label, child) {
 }
 
 function runBridge(config, operation, args = {}, timeoutMs = DEFAULT_TIMEOUT_MS) {
+  if (activeBridgeProcesses >= MAX_BRIDGE_CONCURRENCY) {
+    return Promise.reject(
+      new Error(`ARCONT MCP bridge concurrency limit reached (${MAX_BRIDGE_CONCURRENCY})`)
+    );
+  }
+  activeBridgeProcesses += 1;
   return new Promise((resolve, reject) => {
     const request = {
       protocol: "arcont-bridge",
@@ -162,10 +171,16 @@ function runBridge(config, operation, args = {}, timeoutMs = DEFAULT_TIMEOUT_MS)
     let stdout = "";
     let stderr = "";
     let settled = false;
+    const finish = () => {
+      if (!settled) {
+        settled = true;
+        activeBridgeProcesses = Math.max(0, activeBridgeProcesses - 1);
+      }
+    };
     const timer = setTimeout(() => {
       if (!settled) {
         child.kill("SIGKILL");
-        settled = true;
+        finish();
         reject(new Error(`ARCONT bridge timed out after ${timeoutMs} ms`));
       }
     }, timeoutMs);
@@ -175,7 +190,7 @@ function runBridge(config, operation, args = {}, timeoutMs = DEFAULT_TIMEOUT_MS)
       try {
         stdout = boundedAppend(stdout, chunk, MAX_BRIDGE_STDOUT, "ARCONT bridge stdout", child);
       } catch (error) {
-        settled = true;
+        finish();
         clearTimeout(timer);
         reject(error);
       }
@@ -185,20 +200,20 @@ function runBridge(config, operation, args = {}, timeoutMs = DEFAULT_TIMEOUT_MS)
       try {
         stderr = boundedAppend(stderr, chunk, MAX_BRIDGE_STDERR, "ARCONT bridge stderr", child);
       } catch (error) {
-        settled = true;
+        finish();
         clearTimeout(timer);
         reject(error);
       }
     });
     child.on("error", error => {
       if (settled) return;
-      settled = true;
+      finish();
       clearTimeout(timer);
       reject(error);
     });
     child.on("close", code => {
       if (settled) return;
-      settled = true;
+      finish();
       clearTimeout(timer);
       let parsed;
       try {
@@ -231,7 +246,24 @@ function mcpResult(value) {
 
 async function mcpCall(config, operation, args = {}) {
   try {
-    return mcpResult(await runBridge(config, operation, args));
+    const longRunning = new Set([
+      "project.bootstrap",
+      "asset.user.stage",
+      "asset.public.stage",
+      "godot.script.create",
+      "godot.script.replace",
+      "godot.script.function.replace",
+      "godot.scene.inspect",
+      "godot.scene.edit",
+      "godot.resource.inspect",
+      "godot.resource.edit",
+      "godot.input.action.set",
+      "plan.execute",
+      "development.session.create",
+      "development.session.execute"
+    ]);
+    const timeoutMs = longRunning.has(operation) ? DEFAULT_TIMEOUT_MS : READ_TIMEOUT_MS;
+    return mcpResult(await runBridge(config, operation, args, timeoutMs));
   } catch (error) {
     return {
       content: [{ type: "text", text: JSON.stringify({ ok: false, error: String(error?.message || error) }, null, 2) }],
@@ -285,7 +317,7 @@ function buildMcpServer(config) {
       ];
       const result = { ok: true, project: config.project, authority, context: {} };
       for (const [operation, args] of operations) {
-        const value = await runBridge(config, operation, args);
+        const value = await runBridge(config, operation, args, READ_TIMEOUT_MS);
         result.context[operation] = value;
         if (value?.ok === false) result.ok = false;
       }
@@ -385,7 +417,7 @@ function buildMcpServer(config) {
       mimeType: "application/json"
     },
     async uri => {
-      const value = await runBridge(config, "project.intent.read", {});
+      const value = await runBridge(config, "project.intent.read", {}, READ_TIMEOUT_MS);
       return { contents: [{ uri: uri.href, mimeType: "application/json", text: JSON.stringify(value, null, 2) }] };
     }
   );
@@ -399,7 +431,7 @@ function buildMcpServer(config) {
       mimeType: "application/json"
     },
     async uri => {
-      const value = await runBridge(config, "discover", {});
+      const value = await runBridge(config, "discover", {}, READ_TIMEOUT_MS);
       return { contents: [{ uri: uri.href, mimeType: "application/json", text: JSON.stringify(value, null, 2) }] };
     }
   );
@@ -464,6 +496,11 @@ async function serveHttp(config) {
       process.stderr.write(`ARCONT MCP HTTP error: ${String(error?.stack || error)}\n`);
     }
   });
+
+  httpServer.headersTimeout = 10_000;
+  httpServer.requestTimeout = 30_000;
+  httpServer.keepAliveTimeout = 5_000;
+  httpServer.maxHeadersCount = 100;
 
   await new Promise((resolve, reject) => {
     httpServer.once("error", reject);
