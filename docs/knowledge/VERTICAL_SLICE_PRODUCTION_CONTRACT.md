@@ -67,3 +67,7 @@ The reusable mission JSON contains `map`, `duration_minutes`, hostile `caps`, ga
 ### ARCONT responsibility and limitations
 
 A useful next tool would correlate mission objectives with actual Godot scene anchors and navigation reachability, **without bringing gameplay into ARCONT**. Prefer engine-neutral data exchange and **game-owned harnesses**. The existing Map Forge validator already handles map semantics but cannot substitute this mission graph, and the mission graph cannot substitute Map Forge's spatial contract.
+
+## ARCONT mission-to-map bridge
+
+`tools/mission_map_bridge.py` cross-validates one game-owned mission and its Map Forge JSON: declared path, level bounds, anchor IDs/coordinates and spawn team/kind. It resolves a separate semantic drift failure discovered while moving FISURA Reactivo-13 from document into a real Godot scene. It **cannot** prove pathfinding, physical collision, camera quality or playing the scene. Invoke `python tools/mission_map_bridge.py missions/example.slice.json maps/example.json` and separately validate the actual scene in the target engine.
