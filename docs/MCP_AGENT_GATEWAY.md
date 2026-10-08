@@ -35,9 +35,9 @@ The gateway uses the official MCP TypeScript SDK v2:
 - `@modelcontextprotocol/node@2.1.1`
 - `zod@4.6.5`
 
-`integrations/mcp/package-lock.json` pins the resolved transitive dependency graph used by CI.
+`integrations/mcp/package-lock.json` pins the resolved transitive dependency graph and CI installs it with `npm ci`.
 
-The tested modern protocol revision is `2026-07-28`.
+The tested modern protocol revision is `2026-07-28`. Acceptance uses `versionNegotiation.mode="auto"`, so the official client must actually probe `server/discover` and select the modern era; a separate `mode="legacy"` connection proves the same stdio entrypoint still serves a 2025-era initialize client.
 
 The official SDK entries used here are:
 
@@ -294,8 +294,9 @@ It proves:
 10. wildcard HTTP bind without an explicit allowed Host refuses startup;
 11. Streamable HTTP rejects unauthenticated requests when token auth is enabled;
 12. Streamable HTTP rejects a malicious Host header;
-13. the official client negotiates the modern 2026 protocol;
-14. stdio and HTTP observe the same persisted ARCONT session state.
+13. the official client auto-negotiates the modern 2026 protocol through `server/discover`;
+14. the same stdio server accepts an explicit 2025-era legacy client;
+15. stdio and HTTP observe the same persisted ARCONT session state.
 
 This is interoperability evidence for the tested SDK/client on Linux CI. It is
 not a claim that every proprietary MCP host exposes identical UI or connection
