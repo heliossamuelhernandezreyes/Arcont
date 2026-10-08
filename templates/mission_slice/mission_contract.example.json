@@ -1,0 +1,228 @@
+{
+  "schema_version": 1,
+  "id": "example_compact_slice",
+  "title": "Example training mission",
+  "project": "EXAMPLE_ONLY",
+  "implementation_status": "design_only",
+  "map": {
+    "ref": "maps/example_room.json",
+    "status": "planned",
+    "bounds": {
+      "width": 40,
+      "depth": 30
+    },
+    "coordinate_system": "godot_xz_y_up"
+  },
+  "duration_minutes": {
+    "min": 2,
+    "max": 4
+  },
+  "caps": {
+    "global_hostiles": 4,
+    "preferred_mobile_hostiles": 3,
+    "spawns_per_wave": 2
+  },
+  "zones": [
+    {
+      "id": "start_zone",
+      "rect": {
+        "min_x": -16,
+        "max_x": 16,
+        "min_z": 1,
+        "max_z": 14
+      },
+      "cover_targets": 1
+    },
+    {
+      "id": "exit_zone",
+      "rect": {
+        "min_x": -16,
+        "max_x": 16,
+        "min_z": -14,
+        "max_z": 0
+      },
+      "cover_targets": 2
+    }
+  ],
+  "anchors": [
+    {
+      "id": "start_player",
+      "kind": "player_spawn",
+      "zone": "start_zone",
+      "position": [
+        0,
+        0,
+        10
+      ]
+    },
+    {
+      "id": "entry_enemy",
+      "kind": "enemy_spawn",
+      "zone": "start_zone",
+      "position": [
+        7,
+        0,
+        7
+      ]
+    },
+    {
+      "id": "exit_enemy",
+      "kind": "enemy_spawn",
+      "zone": "exit_zone",
+      "position": [
+        -7,
+        0,
+        -7
+      ]
+    },
+    {
+      "id": "exit_pad",
+      "kind": "extraction",
+      "zone": "exit_zone",
+      "position": [
+        0,
+        0,
+        -10
+      ]
+    }
+  ],
+  "roles": [
+    {
+      "id": "scout",
+      "status": "planned",
+      "archetype": "ranged",
+      "telegraph_seconds": 1,
+      "counterplay": [
+        "cover"
+      ]
+    }
+  ],
+  "objectives": [
+    {
+      "id": "reach_exit",
+      "phase": "phase_one",
+      "kind": "reach_zone",
+      "target": "exit_zone",
+      "duration_seconds": 0,
+      "required": true
+    },
+    {
+      "id": "complete_extraction",
+      "phase": "phase_two",
+      "kind": "interact",
+      "target": "exit_pad",
+      "duration_seconds": 2,
+      "required": true
+    }
+  ],
+  "phases": [
+    {
+      "id": "phase_one",
+      "order": 1,
+      "zone": "start_zone",
+      "objective_ids": [
+        "reach_exit"
+      ],
+      "encounter_ids": [
+        "entry_raid"
+      ],
+      "entry_event": "mission_start",
+      "expected_seconds": {
+        "min": 40,
+        "max": 90
+      }
+    },
+    {
+      "id": "phase_two",
+      "order": 2,
+      "zone": "exit_zone",
+      "objective_ids": [
+        "complete_extraction"
+      ],
+      "encounter_ids": [
+        "exit_raid"
+      ],
+      "entry_event": "objective_completed",
+      "expected_seconds": {
+        "min": 30,
+        "max": 90
+      }
+    }
+  ],
+  "encounters": [
+    {
+      "id": "entry_raid",
+      "phase": "phase_one",
+      "trigger": {
+        "event": "zone_enter",
+        "target": "start_zone"
+      },
+      "spawn_anchor_ids": [
+        "entry_enemy"
+      ],
+      "units": [
+        {
+          "role": "scout",
+          "count": 1
+        }
+      ],
+      "max_concurrent": 1,
+      "telegraph_seconds": 1
+    },
+    {
+      "id": "exit_raid",
+      "phase": "phase_two",
+      "trigger": {
+        "event": "zone_enter",
+        "target": "exit_zone"
+      },
+      "spawn_anchor_ids": [
+        "exit_enemy"
+      ],
+      "units": [
+        {
+          "role": "scout",
+          "count": 1
+        }
+      ],
+      "max_concurrent": 1,
+      "telegraph_seconds": 1
+    }
+  ],
+  "transitions": [
+    {
+      "from": "phase_one",
+      "to": "phase_two",
+      "condition": {
+        "event": "objective_completed",
+        "objective_ids": [
+          "reach_exit"
+        ]
+      }
+    },
+    {
+      "from": "phase_two",
+      "to": "victory",
+      "condition": {
+        "event": "objective_completed",
+        "objective_ids": [
+          "complete_extraction"
+        ]
+      }
+    }
+  ],
+  "terminal_states": [
+    "victory",
+    "failed"
+  ],
+  "failure_conditions": [
+    "player_health_zero"
+  ],
+  "qa_gates": [
+    {
+      "id": "G0",
+      "name": "contract_integrity",
+      "status": "planned"
+    }
+  ]
+}
