@@ -28,8 +28,8 @@ class MissionContractTests(unittest.TestCase):
     def test_valid_reusable_example(self):
         self.assertEqual(validate_contract(self.example), [])
 
-    def test_duplicate_cross_collection_id(self):
-        self.check_failure(lambda x: x["anchors"][0].update(id="start_zone"), "duplicate global id")
+    def test_duplicate_within_collection_id(self):
+        self.check_failure(lambda x: x["anchors"][0].update(id="exit_pad"), "duplicate id")
 
     def test_phase_requires_completed_objective(self):
         self.check_failure(lambda x: x["transitions"][0]["condition"].update(objective_ids=[]), "condition.event and condition.objective_ids required")
