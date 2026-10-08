@@ -168,7 +168,9 @@
     "mcp_http_loopback_default": true,
     "mcp_http_non_loopback_requires_bearer": true,
     "mcp_http_host_origin_validation": true,
-    "mcp_arbitrary_shell_execution_allowed": false
+    "mcp_arbitrary_shell_execution_allowed": false,
+    "mcp_gateway_lockfile": "integrations/mcp/package-lock.json",
+    "mcp_dependencies_locked": true
   },
   "integrity": {
     "validator": "tools/arcont_lab.py",
