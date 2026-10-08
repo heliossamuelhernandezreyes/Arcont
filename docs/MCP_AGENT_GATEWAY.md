@@ -278,7 +278,7 @@ receive time, request receive time, keep-alive duration and header count.
 ## Acceptance
 
 `.github/workflows/mcp-agent-gateway-acceptance.yml` uses the official MCP
-client package and pins the modern `2026-07-28` era.
+client package, auto-negotiates the modern `2026-07-28` era through `server/discover`, and separately forces a legacy connection.
 
 It proves:
 
