@@ -28,7 +28,7 @@ jobs:
       - name: Install exact MCP gateway dependencies
         working-directory: integrations/mcp
         run: |
-          npm install --ignore-scripts --no-audit --no-fund
+          npm ci --ignore-scripts --no-audit --no-fund
           npm ls --depth=0
           node - <<'NODE'
           const p=require('./package.json');
@@ -60,7 +60,7 @@ jobs:
           node integrations/mcp/acceptance.mjs \
             --project /tmp/arcont-mcp-game \
             --evidence "$PWD/mcp-gateway-evidence"
-          cp integrations/mcp/package-lock.json mcp-gateway-evidence/package-lock.generated.json
+          cp integrations/mcp/package-lock.json mcp-gateway-evidence/package-lock.committed.json
 
       - name: Final Godot import
         env:
