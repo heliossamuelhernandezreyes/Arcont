@@ -80,6 +80,10 @@ Estas herramientas automatizan comprobaciones mecánicas; no convierten una infe
 
 La suite runtime permanece separada del banco de conocimiento. Produce datos; ARCONT conserva prerregistro, hashes, evidencia, relaciones, interpretaciones y decisiones.
 
+## Observaciones de producción externas
+
+- [`knowledge/observations/FISURA_PRODUCTION_OBSERVATION_2026-10-07.md`](knowledge/observations/FISURA_PRODUCTION_OBSERVATION_2026-10-07.md) — experimento FISURA 0.3: contrato de mapas, navegación A*, materiales CC0, evidencias Godot y errores de cámara; el código jugable permanece fuera de ARCONT.
+
 ## Motor — Godot
 
 - [`godot/SOURCE_PIN.md`](godot/SOURCE_PIN.md) — snapshot canónico y reproducible de Godot 4.7.2-stable.
