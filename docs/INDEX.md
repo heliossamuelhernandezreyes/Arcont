@@ -120,3 +120,8 @@ Godot se conserva como **objeto de estudio del motor**, no como videojuego. El u
 Este repositorio no debe volver a contener un juego completo. Los proyectos futuros pueden consultar ARCONT y reutilizar conocimiento, pero su código de producción debe vivir en repositorios propios.
 
 Los experimentos de ARCONT deben permanecer mínimos, aislados y reproducibles. El runtime ejecutable de benchmarks vive fuera de ARCONT y entrega resultados mediante el esquema canónico con procedencia y hashes verificables.
+
+## Diseño de misiones y vertical slices
+
+- [`knowledge/VERTICAL_SLICE_PRODUCTION_CONTRACT.md`](knowledge/VERTICAL_SLICE_PRODUCTION_CONTRACT.md) — especificaciones engine-neutral de fases, objetivos, encounters, limites, evidencia y pruebas negativas.
+- [`../schemas/vertical-slice-contract.schema.json`](../schemas/vertical-slice-contract.schema.json), [`../tools/vertical_slice_contract.py`](../tools/vertical_slice_contract.py) y [`../templates/mission_slice/mission_contract.example.json`](../templates/mission_slice/mission_contract.example.json) — formato, validador y ejemplo reusable; sin escenas ni gameplay dentro de Arcont.
