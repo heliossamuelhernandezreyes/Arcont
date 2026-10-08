@@ -18,6 +18,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
+try:
+    from tools.asset_taxonomy import polyhaven_type
+    from tools.asset_trust import compatibility_level, evidence_resolution
+except ModuleNotFoundError:
+    from asset_taxonomy import polyhaven_type
+    from asset_trust import compatibility_level, evidence_resolution
+
 SCHEMA_VERSION = 1
 CATALOG_GLOB = "*.asset.json"
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -48,16 +55,28 @@ def dump_json(path: Path, obj: Any) -> None:
 
 def validate_record(record: dict[str, Any]) -> list[str]:
     errors: list[str] = []
+    if not isinstance(record, dict):
+        return ["record must be an object"]
     missing = sorted(REQUIRED_TOP - set(record))
     if missing:
         errors.append(f"missing top-level fields: {', '.join(missing)}")
-    if record.get("schema_version") != SCHEMA_VERSION:
+    if type(record.get("schema_version")) is not int or record.get("schema_version") != SCHEMA_VERSION:
         errors.append("schema_version must be 1")
     rid = record.get("id")
     if not isinstance(rid, str) or not ID_RE.match(rid):
         errors.append("id must be a stable uppercase ARCONT-style identifier")
     if not isinstance(record.get("title"), str) or not record.get("title", "").strip():
         errors.append("title must be a non-empty string")
+    if not isinstance(record.get("asset_type"), str) or not record["asset_type"].strip():
+        errors.append("asset_type must be a non-empty string")
+    for field in ("source", "license", "technical", "compatibility", "archive", "review"):
+        if not isinstance(record.get(field), dict):
+            errors.append(f"{field} must be an object")
+    if any(not isinstance(record.get(field), dict) for field in ("source", "license", "technical", "compatibility", "archive", "review")):
+        return errors
+    for field, value in record["compatibility"].items():
+        if value is not None and type(value) is not bool:
+            errors.append(f"compatibility.{field} must be boolean or null")
     source = record.get("source") or {}
     if not isinstance(source, dict) or not source.get("provider") or not source.get("asset_url"):
         errors.append("source.provider and source.asset_url are required")
@@ -67,6 +86,8 @@ def validate_record(record: dict[str, Any]) -> list[str]:
     review = record.get("review") or {}
     if not isinstance(review, dict) or "license_verified" not in review:
         errors.append("review.license_verified is required")
+    elif type(review["license_verified"]) is not bool:
+        errors.append("review.license_verified must be a boolean")
     archive = record.get("archive") or {}
     if isinstance(archive, dict):
         digest = archive.get("sha256")
@@ -105,8 +126,11 @@ def build_index(root: Path) -> tuple[dict[str, Any], list[str]]:
     seen_hashes: dict[str, Path] = {}
 
     for path, record in iter_catalog(root) or []:
-        for err in validate_record(record):
+        record_errors = validate_record(record)
+        for err in record_errors:
             errors.append(f"{path}: {err}")
+        if record_errors:
+            continue
         rid = record.get("id")
         if isinstance(rid, str):
             if rid in seen_ids:
@@ -185,13 +209,18 @@ def cmd_query(args: argparse.Namespace) -> int:
         print(json.dumps({
             "id": record.get("id"), "title": record.get("title"), "type": record.get("asset_type"),
             "provider": (record.get("source") or {}).get("provider"), "url": (record.get("source") or {}).get("asset_url"),
-            "license": (record.get("license") or {}).get("name")
+            "license": (record.get("license") or {}).get("name"),
+            "formats": (record.get("technical") or {}).get("formats", []),
+            "triangle_count": (record.get("technical") or {}).get("triangle_count"),
+            "compatibility_evidence": {target: {"level": compatibility_level(record, target),
+                "resolution": evidence_resolution((record.get("compatibility_evidence") or {}).get(target, {}))}
+                for target in ("godot", "android")}
         }, ensure_ascii=False))
     return 0
 
 
 def polyhaven_record(external_id: str, meta: dict[str, Any]) -> dict[str, Any]:
-    asset_type = str(meta.get("type") or meta.get("asset_type") or "unknown")
+    asset_type = polyhaven_type(meta.get("type", meta.get("asset_type")))
     tags = meta.get("tags") if isinstance(meta.get("tags"), list) else []
     categories = meta.get("categories") or meta.get("category")
     if isinstance(categories, str):

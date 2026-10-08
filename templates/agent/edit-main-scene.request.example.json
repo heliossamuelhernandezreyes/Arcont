@@ -1,0 +1,14 @@
+{
+  "protocol": "arcont-bridge",
+  "version": 1,
+  "request_id": "edit-main-scene-001",
+  "operation": "godot.scene.edit",
+  "arguments": {
+    "scene": "scenes/main.tscn",
+    "if_revision": "<inspect sha256>",
+    "changes": [
+      {"op":"add","parent":".","name":"Player","type":"CharacterBody3D"},
+      {"op":"attach_script","path":"Player","script":"res://scripts/player.gd"}
+    ]
+  }
+}

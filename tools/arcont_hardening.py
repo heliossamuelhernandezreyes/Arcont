@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import re
 import sys
 from pathlib import Path
@@ -46,8 +47,8 @@ def validate_manifest(repo: Path) -> list[str]:
     if not path.exists():
         return ["missing arcont.manifest.json"]
     m = load_json(path)
-    if m.get("arcont_version") != "1.0.0":
-        errors.append("manifest: expected arcont_version 1.0.0")
+    if m.get("arcont_version") != "1.1.0":
+        errors.append("manifest: expected arcont_version 1.1.0")
     if m.get("production_game_code_allowed") is not False:
         errors.append("manifest: production_game_code_allowed must be false")
     if m.get("embedded_godot_project_allowed") is not False:
@@ -64,9 +65,44 @@ def validate_manifest(repo: Path) -> list[str]:
         m.get("benchmarks", {}).get("canonical_campaign"),
         m.get("benchmarks", {}).get("runtime_bridge"),
         m.get("benchmarks", {}).get("result_schema"),
+        m.get("agent_control", {}).get("registry"),
+        m.get("agent_control", {}).get("registry_schema"),
+        m.get("agent_control", {}).get("cli"),
+        m.get("agent_control", {}).get("documentation"),
+        m.get("agent_control", {}).get("execution_plan_schema"),
+        m.get("agent_control", {}).get("execution_plan_engine"),
+        m.get("agent_control", {}).get("diagnosis_policy_schema"),
+        m.get("agent_control", {}).get("diagnosis_engine"),
+        m.get("agent_control", {}).get("hypothesis_proposal_schema"),
+        m.get("agent_control", {}).get("hypothesis_gate"),
+        m.get("agent_control", {}).get("bridge"),
+        m.get("agent_control", {}).get("bridge_request_schema"),
+        m.get("agent_control", {}).get("project_intent_schema"),
+        m.get("agent_control", {}).get("bridge_documentation"),
+        m.get("agent_control", {}).get("project_bootstrap"),
+        m.get("agent_control", {}).get("project_bootstrap_schema"),
+        m.get("agent_control", {}).get("user_asset_intake"),
+        m.get("agent_control", {}).get("user_asset_record_schema"),
+        m.get("agent_control", {}).get("project_bootstrap_asset_intake_documentation"),
+        m.get("agent_control", {}).get("public_asset_control"),
+        m.get("agent_control", {}).get("public_asset_record_schema"),
+        m.get("agent_control", {}).get("public_asset_documentation"),
+        m.get("agent_control", {}).get("godot_structured_control"),
+        m.get("agent_control", {}).get("godot_structured_request_schema"),
+        m.get("agent_control", {}).get("godot_structured_documentation"),
+        m.get("agent_control", {}).get("development_session_control"),
+        m.get("agent_control", {}).get("development_session_request_schema"),
+        m.get("agent_control", {}).get("development_session_documentation"),
+        m.get("agent_control", {}).get("mcp_gateway"),
+        m.get("agent_control", {}).get("mcp_gateway_package"),
+        m.get("agent_control", {}).get("mcp_gateway_lockfile"),
+        m.get("agent_control", {}).get("mcp_gateway_documentation"),
         m.get("integrity", {}).get("validator"),
         m.get("integrity", {}).get("hardening_validator"),
         m.get("integrity", {}).get("ci"),
+        m.get("integrity", {}).get("processor_lock"),
+        m.get("integrity", {}).get("reliability_acceptance"),
+        m.get("integrity", {}).get("reliability_documentation"),
     ]:
         if not rel or not (repo / rel).exists():
             errors.append(f"manifest: missing referenced path {rel!r}")
@@ -75,19 +111,60 @@ def validate_manifest(repo: Path) -> list[str]:
 
 def validate_result(obj: dict[str, Any]) -> list[str]:
     errors: list[str] = []
+    if not isinstance(obj, dict):
+        return ["result: root must be an object"]
     for key in ["schema_version", "benchmark_id", "run_id", "engine", "platform", "runtime", "experiment", "metrics", "aborted"]:
         if key not in obj:
             errors.append(f"result: missing {key}")
-    if obj.get("schema_version") != 1:
+    if type(obj.get("schema_version")) is not int or obj.get("schema_version") != 1:
         errors.append("result: schema_version must be 1")
+    for key in ("benchmark_id", "run_id"):
+        if not isinstance(obj.get(key), str) or not obj[key].strip():
+            errors.append(f"result: {key} must be a non-empty string")
+    if type(obj.get("aborted")) is not bool:
+        errors.append("result: aborted must be a boolean")
+    for key in ("engine", "platform", "runtime", "experiment", "metrics", "provenance"):
+        if key in obj and not isinstance(obj[key], dict):
+            errors.append(f"result: {key} must be an object")
+    if any(key in obj and not isinstance(obj[key], dict) for key in
+           ("engine", "platform", "runtime", "experiment", "metrics", "provenance")):
+        return errors
+    try:
+        json.dumps(obj, allow_nan=False)
+    except (ValueError, TypeError):
+        errors.append("result: all values must be finite JSON data")
     engine = obj.get("engine") or {}
     for key in ["name", "version", "commit"]:
-        if not engine.get(key):
+        if not isinstance(engine.get(key), str) or not engine.get(key):
             errors.append(f"result: engine.{key} required")
     if engine.get("commit") and not HEX40.fullmatch(str(engine["commit"])):
         errors.append("result: engine.commit invalid")
-    if obj.get("aborted") is True and not obj.get("abort_reason"):
+    if obj.get("aborted") is True and (not isinstance(obj.get("abort_reason"), str) or not obj["abort_reason"].strip()):
         errors.append("result: aborted run requires abort_reason")
+    runtime = obj.get("runtime", {})
+    if "vsync" in runtime and type(runtime["vsync"]) is not bool:
+        errors.append("result: runtime.vsync must be a boolean")
+    experiment = obj.get("experiment", {})
+    for field in ("warmup_seconds", "sample_seconds"):
+        if field in experiment:
+            value = experiment[field]
+            if type(value) not in (int, float) or not math.isfinite(value) or value < 0 or (field == "sample_seconds" and value == 0):
+                errors.append(f"result: experiment.{field} has invalid duration")
+    if "repetition" in experiment and (type(experiment["repetition"]) is not int or experiment["repetition"] < 1):
+        errors.append("result: experiment.repetition must be an integer >= 1")
+    for name, metric in obj.get("metrics", {}).items():
+        if not isinstance(metric, dict):
+            errors.append(f"result: metric {name} must be an object")
+            continue
+        nonnegative = name.endswith(("_ms", "_bytes", "_mb", "_count", "_seconds")) or name in {"fps", "draw_calls", "objects"}
+        for key in ("value", "mean", "median", "p50", "p95", "p99", "min", "max", "stddev", "rss", "peak", "count", "samples"):
+            if key not in metric:
+                continue
+            value = metric[key]
+            if type(value) not in (int, float) or not math.isfinite(value):
+                errors.append(f"result: metric {name}.{key} must be finite numeric data")
+            elif (nonnegative or key in {"stddev", "count", "samples"}) and value < 0:
+                errors.append(f"result: metric {name}.{key} cannot be negative")
     provenance = obj.get("provenance") or {}
     if provenance.get("harness_commit") is not None and not HEX40.fullmatch(str(provenance["harness_commit"])):
         errors.append("result: provenance.harness_commit invalid")
@@ -95,6 +172,20 @@ def validate_result(obj: dict[str, Any]) -> list[str]:
         val = provenance.get(key)
         if val is not None and not HEX64.fullmatch(str(val)):
             errors.append(f"result: provenance.{key} invalid")
+    return errors
+
+
+def _maturity_shape_errors(evidence: dict[str, Any]) -> list[str]:
+    if not isinstance(evidence, dict):
+        return ["maturity: evidence must be an object"]
+    errors = []
+    for field in ("source_traced", "hypothesis", "validated_rule", "limits_explicit",
+                  "contradictions_reviewed", "falsifiable", "decision_usefulness"):
+        if field in evidence and type(evidence[field]) is not bool:
+            errors.append(f"maturity: {field} must be a boolean")
+    for field in ("observations", "reproductions", "hardware_profiles", "engine_versions"):
+        if field in evidence and (type(evidence[field]) is not int or evidence[field] < 0):
+            errors.append(f"maturity: {field} must be a nonnegative integer")
     return errors
 
 
@@ -123,6 +214,8 @@ def _requirements(evidence: dict[str, Any]) -> dict[int, bool]:
 
 
 def max_maturity(evidence: dict[str, Any]) -> int:
+    if _maturity_shape_errors(evidence):
+        return 0
     gates = _requirements(evidence)
     allowed = 0
     for level in range(1, 8):
@@ -134,8 +227,11 @@ def max_maturity(evidence: dict[str, Any]) -> int:
 
 
 def maturity_missing(level: str, evidence: dict[str, Any]) -> list[str]:
-    if level not in MATURITY:
+    if not isinstance(level, str) or level not in MATURITY:
         return [f"unknown level {level}"]
+    shape_errors = _maturity_shape_errors(evidence)
+    if shape_errors:
+        return shape_errors
     target = MATURITY[level]
     if target == 0:
         return []
@@ -161,8 +257,11 @@ def maturity_missing(level: str, evidence: dict[str, Any]) -> list[str]:
 
 
 def check_maturity(level: str, evidence: dict[str, Any]) -> list[str]:
-    if level not in MATURITY:
+    if not isinstance(level, str) or level not in MATURITY:
         return [f"maturity: unknown level {level}"]
+    shape_errors = _maturity_shape_errors(evidence)
+    if shape_errors:
+        return shape_errors
     missing = maturity_missing(level, evidence)
     if not missing:
         return []

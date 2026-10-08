@@ -72,7 +72,7 @@
       "level": "runtime",
       "basis": "Godot 4.7.2 Linux CI imported meshes and inspected AnimationPlayer and Skeleton3D; does not establish performance, collision or frame pacing.",
       "tested_at": "2026-10-08",
-      "evidence_ref": "heliossamuelhernandezreyes/Godot-juegos-3d.- Actions run 37728531689"
+      "evidence_ref": "https://github.com/heliossamuelhernandezreyes/Godot-juegos-3d.-/actions/runs/37728531689"
     }
   },
   "archive": {

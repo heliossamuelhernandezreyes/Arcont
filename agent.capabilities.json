@@ -1,0 +1,360 @@
+{
+  "schema_version": 1,
+  "protocol": "arcont-agent-control",
+  "capabilities": [
+    {
+      "id": "knowledge.validate",
+      "description": "Validate ARCONT knowledge integrity and graph/link coherence.",
+      "access": "read-only",
+      "entrypoint": "tools/arcont_lab.py",
+      "argv": [
+        "validate"
+      ],
+      "output": "json",
+      "doctor": true
+    },
+    {
+      "id": "repository.hardening.validate",
+      "description": "Validate the ARCONT manifest, evidence contracts, hashes and maturity constraints.",
+      "access": "read-only",
+      "entrypoint": "tools/arcont_hardening.py",
+      "argv": [
+        "validate"
+      ],
+      "output": "text-or-json",
+      "doctor": true
+    },
+    {
+      "id": "observability.validate",
+      "description": "Validate the unified observability registry and evidence integration layer.",
+      "access": "read-only",
+      "entrypoint": "tools/observability_integrity.py",
+      "argv": [],
+      "output": "text-or-json",
+      "doctor": true
+    },
+    {
+      "id": "runtime.plan.validate",
+      "description": "Validate the canonical preregistered runtime campaign without executing a game.",
+      "access": "read-only",
+      "entrypoint": "tools/runtime_evidence.py",
+      "argv": [
+        "validate-plan"
+      ],
+      "output": "text-or-json",
+      "doctor": true
+    },
+    {
+      "id": "asset-vault.validate",
+      "description": "Validate Asset Vault catalog records and policy constraints.",
+      "access": "read-only",
+      "entrypoint": "tools/asset_vault_indexer.py",
+      "argv": [
+        "validate"
+      ],
+      "output": "text-or-json",
+      "doctor": true
+    },
+    {
+      "id": "asset-trust.validate",
+      "description": "Validate traceable compatibility and license trust evidence for catalog assets.",
+      "access": "read-only",
+      "entrypoint": "tools/asset_trust.py",
+      "argv": [],
+      "output": "text-or-json",
+      "doctor": true
+    },
+    {
+      "id": "map-forge.contract.validate",
+      "description": "Validate an external Map Forge authoring contract.",
+      "access": "read-only",
+      "entrypoint": "tools/map_forge_contract.py",
+      "argv": [],
+      "output": "text-or-json",
+      "doctor": false,
+      "requires_arguments": true
+    },
+    {
+      "id": "sprite.production.audit",
+      "description": "Audit external PNG sprite frames for production consistency without modifying them.",
+      "access": "read-only",
+      "entrypoint": "tools/png_sprite_audit.py",
+      "argv": [],
+      "output": "text-or-json",
+      "doctor": false,
+      "requires_arguments": true
+    },
+    {
+      "id": "agent.diagnosis",
+      "description": "Evaluate bounded declarative diagnosis policies against structured game evidence and compile repair plans without executing them.",
+      "access": "read-only",
+      "entrypoint": "tools/agent_diagnosis.py",
+      "output": "json",
+      "doctor": false,
+      "requires_arguments": true
+    },
+    {
+      "id": "agent.hypothesis-gate",
+      "description": "Validate model-authored hypotheses against structured evidence and compile only bounded safe repair proposals.",
+      "access": "read-only",
+      "entrypoint": "tools/agent_hypothesis_gate.py",
+      "output": "json",
+      "doctor": false,
+      "requires_arguments": true
+    },
+    {
+      "id": "project.bootstrap.control",
+      "description": "Create a minimal external Godot 2D/3D project from an explicitly authorized empty directory.",
+      "access": "external-project-write",
+      "entrypoint": "tools/project_bootstrap_control.py",
+      "output": "json",
+      "doctor": false,
+      "invocable": true,
+      "project_arg": "--project",
+      "request_arg": "--request",
+      "request_mode": "json-stdin",
+      "operations": [
+        "capabilities",
+        "bootstrap"
+      ]
+    },
+    {
+      "id": "asset-intake.control",
+      "description": "Inspect and stage user-provided local assets from project/incoming with hashes and declared-rights provenance.",
+      "access": "external-project-write",
+      "entrypoint": "tools/user_asset_intake.py",
+      "output": "json",
+      "doctor": false,
+      "invocable": true,
+      "project_arg": "--project",
+      "request_arg": "--request",
+      "request_mode": "json-stdin",
+      "operations": [
+        "capabilities",
+        "inspect",
+        "stage",
+        "list"
+      ]
+    },
+    {
+      "id": "public-asset.control",
+      "description": "Provider-scoped public asset discovery and verified staging through official APIs with license/provenance records.",
+      "access": "external-project-write",
+      "entrypoint": "tools/public_asset_discovery.py",
+      "output": "json",
+      "doctor": false,
+      "invocable": true,
+      "project_arg": "--project",
+      "request_arg": "--request",
+      "request_mode": "json-stdin",
+      "operations": [
+        "capabilities",
+        "providers",
+        "search",
+        "files",
+        "stage",
+        "list"
+      ]
+    },
+    {
+      "id": "godot.structured.control",
+      "description": "Revision-checked structured editing for fresh Godot projects: GDScript, scenes, resources and input actions with Godot validation and rollback.",
+      "access": "external-project-write",
+      "entrypoint": "tools/godot_structured_editing.py",
+      "output": "json",
+      "doctor": false,
+      "invocable": true,
+      "project_arg": "--project",
+      "request_arg": "--request",
+      "request_mode": "json-stdin",
+      "operations": [
+        "capabilities",
+        "validate",
+        "script.inspect",
+        "script.create",
+        "script.replace",
+        "script.function.replace",
+        "scene.inspect",
+        "scene.edit",
+        "resource.inspect",
+        "resource.edit",
+        "input.action.set"
+      ]
+    },
+    {
+      "id": "development.session.control",
+      "description": "Persistent bounded milestone orchestration over existing ARCONT plans with budgets, receipts, revision checks and no silent retries.",
+      "access": "external-project-write",
+      "entrypoint": "tools/development_session.py",
+      "output": "json",
+      "doctor": false,
+      "invocable": true,
+      "project_arg": "--project",
+      "request_arg": "--request",
+      "request_mode": "json-stdin",
+      "operations": [
+        "capabilities",
+        "create",
+        "inspect",
+        "execute"
+      ]
+    },
+    {
+      "id": "agent.bridge",
+      "description": "Transport-neutral JSON/stdio bridge for external AI agents to discover ARCONT, read project intent/assets, evaluate hypotheses and execute bounded plans.",
+      "access": "external-project-write",
+      "entrypoint": "tools/arcont_bridge.py",
+      "output": "json",
+      "doctor": false,
+      "invocable": false,
+      "requires_arguments": true,
+      "request_mode": "json-stdio",
+      "operations": [
+        "discover",
+        "project.inspect",
+        "project.intent.read",
+        "project.bootstrap",
+        "assets.inspect",
+        "asset.user.inspect",
+        "asset.user.stage",
+        "asset.user.list",
+        "asset.public.providers",
+        "asset.public.search",
+        "asset.public.files",
+        "asset.public.stage",
+        "asset.public.list",
+        "authoring.catalog",
+        "godot.structured.validate",
+        "godot.script.inspect",
+        "godot.script.create",
+        "godot.script.replace",
+        "godot.script.function.replace",
+        "godot.scene.inspect",
+        "godot.scene.edit",
+        "godot.resource.inspect",
+        "godot.resource.edit",
+        "godot.input.action.set",
+        "development.session.capabilities",
+        "development.session.create",
+        "development.session.inspect",
+        "development.session.execute",
+        "authoring.document.read",
+        "hypothesis.evaluate",
+        "plan.execute"
+      ]
+    },
+    {
+      "id": "runtime-lab.execute",
+      "description": "Execute runtime experiments in the external ARCONT Runtime Lab repository; never inside ARCONT.",
+      "access": "external-runtime",
+      "output": "benchmark-result",
+      "doctor": false,
+      "external_repository": "heliossamuelhernandezreyes/Nia-Tech"
+    },
+    {
+      "id": "godot.authoring.control",
+      "description": "Operate revisioned Godot authoring, build and bounded playtest sessions in an external game repository.",
+      "access": "external-project-write",
+      "entrypoint": "tools/godot_authoring_control.py",
+      "output": "json",
+      "doctor": false,
+      "invocable": true,
+      "project_arg": "--project",
+      "request_arg": "--request",
+      "request_mode": "json-stdin",
+      "operations": [
+        "capabilities",
+        "discover",
+        "list",
+        "inspect",
+        "create",
+        "replace",
+        "patch",
+        "restore",
+        "build",
+        "playtest"
+      ]
+    },
+    {
+      "id": "map-forge.editor.control",
+      "description": "Operate revisioned Map Forge editing, terrain brushes, validation, materialization and capture in an external game repository.",
+      "access": "external-project-write",
+      "entrypoint": "tools/map_forge_control.py",
+      "output": "json",
+      "doctor": false,
+      "invocable": true,
+      "project_arg": "--project",
+      "request_arg": "--request",
+      "request_mode": "json-stdin",
+      "operations": [
+        "capabilities",
+        "list",
+        "inspect",
+        "validate",
+        "analyze",
+        "materialize",
+        "capture",
+        "create",
+        "replace",
+        "patch",
+        "brush",
+        "edit",
+        "restore"
+      ]
+    },
+    {
+      "id": "godot.authoring.mcp",
+      "description": "Expose the same Godot authoring API over dependency-free MCP stdio for a connected local agent client.",
+      "access": "external-project-write",
+      "entrypoint": "tools/godot_authoring_mcp.py",
+      "output": "json-rpc",
+      "doctor": false,
+      "invocable": false,
+      "project_arg": "--project",
+      "request_mode": "mcp-stdio"
+    },
+    {
+      "id": "production.control",
+      "description": "Validate and stage production assets, review animation/sector/performance/TPS/audio evidence, and materialize verified native bundles in an external game repository.",
+      "access": "external-project-write",
+      "entrypoint": "tools/production_control.py",
+      "output": "json",
+      "doctor": false,
+      "invocable": true,
+      "project_arg": "--project",
+      "request_arg": "--request",
+      "request_mode": "json-stdin",
+      "operations": [
+        "capabilities",
+        "assets.validate",
+        "assets.stage",
+        "animation.validate",
+        "sector.validate",
+        "performance.summarize",
+        "performance.compare",
+        "finish.review",
+        "audio.review",
+        "bundle.materialize"
+      ]
+    },
+    {
+      "id": "model-forge.control",
+      "description": "Inspect, budget-check, derive collision policy, and stage local glTF/GLB candidates in an external game repository without network access.",
+      "access": "external-project-write",
+      "entrypoint": "tools/model_forge_control.py",
+      "output": "json",
+      "doctor": false,
+      "invocable": true,
+      "project_arg": "--project",
+      "request_arg": "--request",
+      "request_mode": "json-stdin",
+      "operations": [
+        "capabilities",
+        "inspect",
+        "validate",
+        "collision.recipe",
+        "stage"
+      ]
+    }
+  ]
+}

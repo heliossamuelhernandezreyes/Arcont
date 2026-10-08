@@ -1,0 +1,181 @@
+name: Project Bootstrap Acceptance
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout ARCONT
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install exact Godot
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1 libx11-6 libxcursor1 libxinerama1 libxrandr2 libxi6 libasound2t64 unzip
+          curl -L --fail --retry 3 -o /tmp/godot.zip https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -q /tmp/godot.zip -d /tmp/godot-bin
+          chmod +x /tmp/godot-bin/Godot_v4.7.2-stable_linux.x86_64
+          echo "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e  /tmp/godot-bin/Godot_v4.7.2-stable_linux.x86_64" | sha256sum --check
+
+      - name: Bootstrap empty external project through Universal Bridge
+        run: |
+          rm -rf /tmp/arcont-bootstrap-game
+          mkdir -p /tmp/arcont-bootstrap-game
+          mkdir -p bootstrap-evidence
+          cat > /tmp/bootstrap-request.json <<'JSON'
+          {
+            "protocol":"arcont-bridge",
+            "version":1,
+            "request_id":"bootstrap-ci",
+            "operation":"project.bootstrap",
+            "arguments":{
+              "template":"godot-3d-minimal",
+              "intent":{
+                "protocol":"arcont-project-intent",
+                "version":1,
+                "project_id":"bootstrap_ci",
+                "title":"ARCONT Bootstrap CI",
+                "genre":"third-person action",
+                "targets":["Windows","Android"],
+                "visual_style":"minimal validation scene",
+                "goals":["Prove an empty directory becomes a runnable Godot project"],
+                "priorities":["correctness","asset provenance"],
+                "performance":{"target_fps":60,"resolution":"1280x720"},
+                "asset_policy":{
+                  "user_assets":true,
+                  "public_assets":false,
+                  "commercial_use_required":true,
+                  "allow_network_discovery":false,
+                  "allowed_licenses":["CC0","MIT"]
+                }
+              }
+            }
+          }
+          JSON
+          python tools/arcont_bridge.py \
+            --project /tmp/arcont-bootstrap-game \
+            --request /tmp/bootstrap-request.json \
+            --allow-project-write | tee bootstrap-evidence/bootstrap.json
+
+      - name: Stage user-provided asset with declared provenance
+        run: |
+          cat > /tmp/arcont-bootstrap-game/incoming/user_icon.svg <<'SVG'
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+            <rect width="32" height="32" fill="#808080"/>
+            <circle cx="16" cy="16" r="8" fill="#d0d0d0"/>
+          </svg>
+          SVG
+          cat > /tmp/asset-inspect.json <<'JSON'
+          {
+            "protocol":"arcont-bridge",
+            "version":1,
+            "request_id":"asset-inspect-ci",
+            "operation":"asset.user.inspect",
+            "arguments":{"source":"incoming/user_icon.svg"}
+          }
+          JSON
+          cat > /tmp/asset-stage.json <<'JSON'
+          {
+            "protocol":"arcont-bridge",
+            "version":1,
+            "request_id":"asset-stage-ci",
+            "operation":"asset.user.stage",
+            "arguments":{
+              "asset_id":"user_icon",
+              "source":"incoming/user_icon.svg",
+              "rights":{
+                "basis":"user-owned",
+                "commercial_use":true,
+                "redistribution":false,
+                "license_name":null,
+                "attribution":null,
+                "notes":"CI fixture declared as user-owned."
+              }
+            }
+          }
+          JSON
+          cat > /tmp/asset-list.json <<'JSON'
+          {"protocol":"arcont-bridge","version":1,"request_id":"asset-list-ci","operation":"asset.user.list","arguments":{}}
+          JSON
+          python tools/arcont_bridge.py --project /tmp/arcont-bootstrap-game --request /tmp/asset-inspect.json | tee bootstrap-evidence/asset-inspect.json
+          python tools/arcont_bridge.py --project /tmp/arcont-bootstrap-game --request /tmp/asset-stage.json --allow-project-write | tee bootstrap-evidence/asset-stage.json
+          python tools/arcont_bridge.py --project /tmp/arcont-bootstrap-game --request /tmp/asset-list.json | tee bootstrap-evidence/asset-list.json
+
+      - name: Import and launch generated project in Godot
+        env:
+          GODOT_BIN: /tmp/godot-bin/Godot_v4.7.2-stable_linux.x86_64
+        run: |
+          "$GODOT_BIN" --headless --path /tmp/arcont-bootstrap-game --editor --import --quit > bootstrap-evidence/godot-import.log 2>&1
+          if grep -E 'ERROR:|Parse Error|Failed to load' bootstrap-evidence/godot-import.log; then
+            cat bootstrap-evidence/godot-import.log
+            exit 1
+          fi
+          "$GODOT_BIN" --headless --path /tmp/arcont-bootstrap-game --quit-after 3 > bootstrap-evidence/godot-run.log 2>&1
+          if grep -E 'ERROR:|Parse Error|Failed to load' bootstrap-evidence/godot-run.log; then
+            cat bootstrap-evidence/godot-run.log
+            exit 1
+          fi
+
+      - name: Verify bootstrap and provenance receipts
+        run: |
+          cat > /tmp/project-inspect.json <<'JSON'
+          {"protocol":"arcont-bridge","version":1,"request_id":"project-inspect-ci","operation":"project.inspect","arguments":{"max_files":1000}}
+          JSON
+          cat > /tmp/intent-read.json <<'JSON'
+          {"protocol":"arcont-bridge","version":1,"request_id":"intent-read-ci","operation":"project.intent.read","arguments":{}}
+          JSON
+          python tools/arcont_bridge.py --project /tmp/arcont-bootstrap-game --request /tmp/project-inspect.json > bootstrap-evidence/project-inspect.json
+          python tools/arcont_bridge.py --project /tmp/arcont-bootstrap-game --request /tmp/intent-read.json > bootstrap-evidence/intent.json
+          cp /tmp/arcont-bootstrap-game/.arcont/bootstrap.json bootstrap-evidence/bootstrap-receipt.json
+          cp /tmp/arcont-bootstrap-game/.arcont/assets/user/user_icon.asset.json bootstrap-evidence/user-icon.asset.json
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          base=Path("bootstrap-evidence")
+          bootstrap=json.load(open(base/"bootstrap.json"))
+          inspect=json.load(open(base/"project-inspect.json"))
+          intent=json.load(open(base/"intent.json"))
+          asset=json.load(open(base/"asset-stage.json"))
+          listed=json.load(open(base/"asset-list.json"))
+          record=json.load(open(base/"user-icon.asset.json"))
+
+          assert bootstrap["ok"]
+          assert bootstrap["result"]["result"]["write_performed"] is True
+          assert inspect["ok"] and inspect["result"]["project"]["engine"]=="godot"
+          assert intent["ok"] and intent["result"]["intent"]["project_id"]=="bootstrap_ci"
+          assert asset["ok"] and asset["result"]["result"]["write_performed"] is True
+          assert record["id"]=="user_icon"
+          assert record["origin"]=="user-provided"
+          assert record["rights_status"]=="user-declared-not-verified-by-arcont"
+          assert record["network_access"] is False
+          assert listed["ok"] and listed["result"]["result"]["count"]==1
+
+          staged=Path("/tmp/arcont-bootstrap-game")/record["staged_path"]
+          digest=hashlib.sha256(staged.read_bytes()).hexdigest()
+          assert digest==record["sha256"]
+          assert Path("/tmp/arcont-bootstrap-game/scenes/main.tscn").is_file()
+          assert Path("/tmp/arcont-bootstrap-game/project.godot").is_file()
+          PY
+
+      - name: Preserve bootstrap evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arcont-project-bootstrap-${{ github.sha }}
+          path: bootstrap-evidence/
+          include-hidden-files: true
+          retention-days: 30

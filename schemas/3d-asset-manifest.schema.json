@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arcont.local/schemas/3d-asset-manifest.schema.json",
+  "title": "ARCONT 3D Asset Manifest",
+  "type": "object",
+  "required": ["version","id","class","source","delivery","geometry","materials","lods","license"],
+  "properties": {
+    "version": {"type":"string"},
+    "id": {"type":"string","pattern":"^[a-z0-9][a-z0-9_.-]+$"},
+    "class": {"enum":["hero","troop","creep","structure","prop","vegetation","creature"]},
+    "source": {"type":"object","required":["authoring_tool"],"properties":{"authoring_tool":{"type":"string"},"source_file":{"type":["string","null"]}}},
+    "delivery": {"type":"object","required":["format","scale_meters"],"properties":{"format":{"const":"glb"},"scale_meters":{"type":"number","exclusiveMinimum":0},"forward":{"type":"string"},"up":{"type":"string"}}},
+    "geometry": {"type":"object","required":["lod0_triangles"],"properties":{"lod0_triangles":{"type":"integer","minimum":1}}},
+    "materials": {"type":"object","required":["slots"],"properties":{"slots":{"type":"integer","minimum":1},"texture_max":{"type":"integer","minimum":1}}},
+    "lods": {"type":"array","minItems":1,"items":{"type":"object","required":["name","ratio"],"properties":{"name":{"type":"string"},"ratio":{"type":"number","exclusiveMinimum":0,"maximum":1}}}},
+    "skeleton": {"type":["object","null"]},
+    "animations": {"type":"array","items":{"type":"string"}},
+    "license": {"type":"object","required":["kind","commercial"],"properties":{"kind":{"type":"string"},"commercial":{"type":"boolean"},"source_url":{"type":["string","null"]}}},
+    "semantic_tags": {"type":"array","items":{"type":"string"}},
+    "notes": {"type":"array","items":{"type":"string"}}
+  },
+  "additionalProperties": true
+}

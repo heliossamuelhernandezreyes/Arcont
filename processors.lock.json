@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "platforms": {
+    "linux-x86_64": {
+      "gltf_validator": {
+        "version": "2.0.0-dev.3.10",
+        "sha256": "5cba1e097935c9efd929d24a49610824259b030f0ae45672273bfbcbb5b87a62",
+        "archive_sha256": "168eba887964125abe17ae97899b38d0b3cfd73c266c78424c194929ddcbc522",
+        "url": "https://github.com/KhronosGroup/glTF-Validator/releases/download/2.0.0-dev.3.10/gltf_validator-2.0.0-dev.3.10-linux64.tar.xz"
+      },
+      "gltfpack": {
+        "version": "1.2",
+        "sha256": "7e0dc08489835df804a83ca111c2cac6f8431f5a7b0e5453d94d6749a988b32f",
+        "archive_sha256": "ebc236f5f6c08c7e5c5750476a187d24805d44d8c680449c4b7369c333f817b1",
+        "url": "https://github.com/zeux/meshoptimizer/releases/download/v1.2/gltfpack-ubuntu.zip"
+      }
+    }
+  }
+}

@@ -9,7 +9,7 @@
     "schema_version": {"const": 1},
     "id": {"type": "string", "pattern": "^[A-Z0-9][A-Z0-9._:-]{2,127}$"},
     "title": {"type": "string", "minLength": 1},
-    "asset_type": {"type": ["string", "null"]},
+    "asset_type": {"type": "string", "minLength": 1},
     "dimensions": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
     "themes": {"type": "array", "items": {"type": "string"}},
     "styles": {"type": "array", "items": {"type": "string"}},
@@ -55,7 +55,8 @@
           "level": {"type": "string", "enum": ["inferred", "format", "runtime"]},
           "basis": {"type": ["string", "null"]},
           "tested_at": {"type": ["string", "null"]},
-          "evidence_ref": {"type": ["string", "null"]}
+          "evidence_ref": {"type": ["string", "null"]},
+          "evidence_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}
         }
       }
     },

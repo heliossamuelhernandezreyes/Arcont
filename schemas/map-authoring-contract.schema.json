@@ -30,7 +30,7 @@
           "id": {"type": "string", "minLength": 1},
           "kind": {"type": "string", "minLength": 1},
           "position": {"$ref": "#/$defs/vec3"},
-          "team": {"type": "string"},
+          "team": {"type": ["string", "null"]},
           "radius": {"type": "number", "minimum": 0}
         }
       }

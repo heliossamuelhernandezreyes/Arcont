@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import re
 import statistics
 import sys
@@ -102,12 +103,13 @@ def canonical_engine_commit(root: Path) -> str | None:
 
 
 def iter_text_files(root: Path):
-    ignored = {".git", "__pycache__"}
-    for path in root.rglob("*"):
-        if any(part in ignored for part in path.parts):
-            continue
-        if path.is_file() and path.suffix.lower() in {".md", ".yaml", ".yml", ".json", ".py"}:
-            yield path
+    ignored = {".git", "__pycache__", "node_modules", ".venv", "venv", ".godot", ".arcont", "dist", "build", ".pytest_cache"}
+    for directory, subdirs, files in os.walk(root, followlinks=False):
+        subdirs[:] = [d for d in subdirs if d not in ignored and not (Path(directory) / d).is_symlink()]
+        for name in files:
+            path = Path(directory) / name
+            if not path.is_symlink() and path.suffix.lower() in {".md", ".yaml", ".yml", ".json", ".py"}:
+                yield path
 
 
 def validate(root: Path) -> tuple[list[str], list[str]]:
@@ -135,6 +137,7 @@ def validate(root: Path) -> tuple[list[str], list[str]]:
     # errors when the same graph declares the same node more than once.
     graph_dir = root / "docs" / "godot" / "knowledge"
     canonical_commit = canonical_engine_commit(root)
+    all_nodes, all_edges = {}, []
     if graph_dir.exists():
         for graph_path in sorted(graph_dir.glob("*.y*ml")):
             graph = parse_simple_graph(graph_path)
@@ -145,6 +148,15 @@ def validate(root: Path) -> tuple[list[str], list[str]]:
             if len(ids) != len(set(ids)):
                 errors.append(f"duplicate-node-id: {rel}")
             node_ids = set(ids)
+            for node in nodes:
+                identity = node.get("id")
+                if not isinstance(identity, str) or not ARC_ID_RE.fullmatch(identity):
+                    errors.append(f"invalid-node-id: {rel}: {identity}")
+                    continue
+                if identity in all_nodes:
+                    errors.append(f"duplicate-node-id: {rel}: {identity}")
+                all_nodes[identity] = {**node, "_engine_commit": graph.get("engine_commit")}
+            all_edges.extend(edges)
             for node in nodes:
                 node_id = node.get("id", "<missing-id>")
                 kind = node.get("kind")
@@ -158,10 +170,6 @@ def validate(root: Path) -> tuple[list[str], list[str]]:
             for edge in edges:
                 src = edge.get("from")
                 dst = edge.get("to")
-                if src not in node_ids:
-                    errors.append(f"dangling-edge-from: {rel}: {src}")
-                if dst not in node_ids:
-                    errors.append(f"dangling-edge-to: {rel}: {dst}")
                 if not edge.get("relation"):
                     errors.append(f"missing-edge-relation: {rel}: {edge}")
             graph_commit = str(graph.get("engine_commit") or "").lower()
@@ -170,6 +178,16 @@ def validate(root: Path) -> tuple[list[str], list[str]]:
                     f"engine-commit-mismatch: {rel}: graph={graph_commit} canonical={canonical_commit}"
                 )
 
+    for edge in all_edges:
+        if edge.get("from") not in all_nodes:
+            errors.append(f"dangling-edge-from: {edge.get('from')}")
+        if edge.get("to") not in all_nodes:
+            errors.append(f"dangling-edge-to: {edge.get('to')}")
+    try:
+        from tools.knowledge_graph_validation import validate_semantics
+    except ModuleNotFoundError:
+        from knowledge_graph_validation import validate_semantics
+    errors.extend(validate_semantics(root, all_nodes, all_edges))
     return errors, warnings
 
 
@@ -218,7 +236,13 @@ def impact(root: Path, changed_paths: list[str]) -> dict[str, Any]:
                 q.append(dependent)
 
     ordered = sorted(impacted)
+    documents = {p.relative_to(root).as_posix() for p in iter_text_files(root / "docs") if p.suffix == ".md"}
+    represented = {str(n.get(field, "")).split("#", 1)[0] for n in nodes.values() for field in ("evidence", "document")}
     return {
+        "coverage": {"nodes": len(nodes), "edges": len(edges),
+                     "documents": len(documents), "represented_documents": len(documents & represented),
+                     "unrepresented_documents": sorted(documents - represented)},
+        "coverage_note": "No match does not prove no impact. Only explicit graph relationships are traversed.",
         "changed_paths": sorted(normalized),
         "matched_source_nodes": sorted(starts),
         "impacted_nodes": [
@@ -297,68 +321,81 @@ def get_nested(obj: dict[str, Any], path: str) -> Any:
     return cur
 
 
-def compatibility(a: dict[str, Any], b: dict[str, Any]) -> tuple[bool, list[str]]:
+COMPARISON_AXES = {"engine.version", "engine.commit", "experiment.value"}
+
+
+def compatibility(a: dict[str, Any], b: dict[str, Any], varying: tuple[str, ...] = ()) -> tuple[bool, list[str]]:
+    if set(varying) - COMPARISON_AXES:
+        raise ValueError("unsupported comparison axis")
     controlled = [
-        "benchmark_id",
-        "platform.os",
-        "platform.device",
-        "platform.cpu",
-        "platform.gpu",
-        "runtime.renderer",
-        "runtime.resolution",
-        "runtime.build_type",
+        "benchmark_id", "engine.name", "engine.version", "engine.commit",
+        "platform.os", "platform.device", "platform.cpu", "platform.gpu",
+        "runtime.renderer", "runtime.resolution", "runtime.build_type", "runtime.vsync",
+        "experiment.variable", "experiment.value", "experiment.warmup_seconds",
+        "experiment.sample_seconds", "experiment.controls",
     ]
     mismatches = []
     for field in controlled:
-        va = get_nested(a, field)
-        vb = get_nested(b, field)
-        if va is not None and vb is not None and va != vb:
+        va, vb = get_nested(a, field), get_nested(b, field)
+        if va is None or vb is None:
+            mismatches.append(f"{field}: missing control")
+        elif field not in varying and (type(va) is not type(vb) or va != vb):
             mismatches.append(f"{field}: {va!r} != {vb!r}")
+    if a.get("aborted") is not False or b.get("aborted") is not False:
+        mismatches.append("both runs must be completed (aborted=false)")
     return not mismatches, mismatches
 
 
 def pct_delta(old: Any, new: Any) -> float | None:
-    if not isinstance(old, (int, float)) or not isinstance(new, (int, float)) or old == 0:
+    if type(old) not in (int, float) or type(new) not in (int, float):
+        return None
+    if not math.isfinite(old) or not math.isfinite(new) or old == 0:
         return None
     return round((new - old) / old * 100.0, 3)
 
 
-def compare_results(a: dict[str, Any], b: dict[str, Any]) -> dict[str, Any]:
-    direct, mismatches = compatibility(a, b)
-    metrics = [
-        "metrics.frame_time_ms.mean",
-        "metrics.frame_time_ms.median",
-        "metrics.frame_time_ms.p95",
-        "metrics.frame_time_ms.p99",
-        "metrics.frame_time_ms.max",
-        "metrics.fps.mean",
-        "metrics.fps.median",
-        "metrics.memory_mb.rss",
-        "metrics.memory_mb.peak",
-        "metrics.cpu_ms",
-        "metrics.gpu_ms",
-        "metrics.draw_calls",
-        "metrics.objects",
-    ]
+def _metric_leaves(value, prefix="metrics"):
+    if isinstance(value, dict):
+        result = {}
+        for key, child in value.items():
+            if key not in {"unit", "status", "notes"}:
+                result.update(_metric_leaves(child, prefix + "." + key))
+        return result
+    return {prefix: value}
+
+
+def compare_results(a: dict[str, Any], b: dict[str, Any], varying: tuple[str, ...] = ()) -> dict[str, Any]:
+    direct, mismatches = compatibility(a, b, varying)
+    ma, mb = a.get("metrics", {}), b.get("metrics", {})
+    if not isinstance(ma, dict) or not isinstance(mb, dict):
+        ma, mb = {}, {}
+        mismatches.append("metrics must be objects")
+    incompatible_units = set()
+    for name in ma.keys() | mb.keys():
+        va, vb = ma.get(name), mb.get(name)
+        ua = va.get("unit") if isinstance(va, dict) else None
+        ub = vb.get("unit") if isinstance(vb, dict) else None
+        if ua != ub:
+            incompatible_units.add(name)
+            mismatches.append(f"metrics.{name}: incompatible or missing units {ua!r} / {ub!r}")
+        if isinstance(va, dict) != isinstance(vb, dict):
+            mismatches.append(f"metrics.{name}: different measurement shapes")
+    aa, bb = _metric_leaves(ma), _metric_leaves(mb)
     rows = []
-    for metric in metrics:
-        va = get_nested(a, metric)
-        vb = get_nested(b, metric)
-        if va is None and vb is None:
-            continue
-        rows.append({"metric": metric, "a": va, "b": vb, "delta_percent": pct_delta(va, vb)})
+    for metric in sorted(aa.keys() | bb.keys()):
+        va, vb = aa.get(metric), bb.get(metric)
+        delta = None if metric.split(".")[1] in incompatible_units else pct_delta(va, vb)
+        if (va is not None and (type(va) not in (int, float) or not math.isfinite(va))) or (vb is not None and (type(vb) not in (int, float) or not math.isfinite(vb))):
+            mismatches.append(f"{metric}: invalid measurement")
+            va = va if type(va) in (int, float) and math.isfinite(va) else None
+            vb = vb if type(vb) in (int, float) and math.isfinite(vb) else None
+        rows.append({"metric": metric, "a": va, "b": vb, "delta_percent": delta})
     return {
-        "directly_comparable": direct,
-        "compatibility_warnings": mismatches,
-        "run_a": a.get("run_id"),
-        "run_b": b.get("run_id"),
-        "engine_a": a.get("engine"),
-        "engine_b": b.get("engine"),
-        "metrics": rows,
-        "interpretation_guard": (
-            "Deltas are descriptive only. Do not label a regression without repeated samples, "
-            "dispersion/uncertainty, and an engineering threshold appropriate to the benchmark."
-        ),
+        "directly_comparable": direct and not mismatches,
+        "comparison_axes": list(varying), "compatibility_warnings": mismatches,
+        "run_a": a.get("run_id"), "run_b": b.get("run_id"),
+        "engine_a": a.get("engine"), "engine_b": b.get("engine"), "metrics": rows,
+        "interpretation_guard": "Deltas are descriptive only. Repeated samples, dispersion and engineering thresholds are required to claim a regression.",
     }
 
 
@@ -391,7 +428,7 @@ def cmd_confidence(args: argparse.Namespace) -> int:
 def cmd_compare(args: argparse.Namespace) -> int:
     a = json.loads(Path(args.a).read_text(encoding="utf-8"))
     b = json.loads(Path(args.b).read_text(encoding="utf-8"))
-    print(json.dumps(compare_results(a, b), indent=2))
+    print(json.dumps(compare_results(a, b, tuple(args.vary)), indent=2))
     return 0
 
 
@@ -420,6 +457,7 @@ def build_parser() -> argparse.ArgumentParser:
     r = sub.add_parser("compare", help="compare two canonical benchmark JSON results")
     r.add_argument("a")
     r.add_argument("b")
+    r.add_argument("--vary", action="append", choices=sorted(COMPARISON_AXES), default=[])
     r.set_defaults(func=cmd_compare)
 
     return p

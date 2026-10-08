@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arcont.local/schemas/agent-execution-plan.schema.json",
+  "title": "ARCONT bounded agent execution plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocol", "version", "id", "goal", "capability_allowlist", "steps"],
+  "properties": {
+    "protocol": {"const": "arcont-agent-plan"},
+    "version": {"const": 1},
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$"},
+    "goal": {"type": "string", "minLength": 1, "maxLength": 1000},
+    "permissions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {"project_write": {"type": "boolean"}}
+    },
+    "capability_allowlist": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 24,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "kind"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$"},
+          "kind": {"enum": ["inspect-project", "invoke"]},
+          "capability": {"type": "string"},
+          "request": {"type": "object"},
+          "max_files": {"type": "integer", "minimum": 1, "maximum": 200000},
+          "timeout_seconds": {"type": "integer", "minimum": 1, "maximum": 900},
+          "expect": {
+            "type": "array",
+            "maxItems": 16,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["pointer", "op"],
+              "properties": {
+                "pointer": {"type": "string", "pattern": "^/"},
+                "op": {"enum": ["exists", "equals", "not-equals", "truthy", "falsy"]},
+                "value": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

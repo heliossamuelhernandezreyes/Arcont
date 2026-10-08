@@ -1,0 +1,11 @@
+{
+  "protocol": "arcont-bridge",
+  "version": 1,
+  "request_id": "search-public-assets-001",
+  "operation": "asset.public.search",
+  "arguments": {
+    "query": "industrial",
+    "asset_type": "models",
+    "limit": 10
+  }
+}

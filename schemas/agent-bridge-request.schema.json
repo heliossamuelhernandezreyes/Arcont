@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arcont.local/schemas/agent-bridge-request.schema.json",
+  "title": "ARCONT Universal Agent Bridge request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol",
+    "version",
+    "request_id",
+    "operation"
+  ],
+  "properties": {
+    "protocol": {
+      "const": "arcont-bridge"
+    },
+    "version": {
+      "const": 1
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "operation": {
+      "enum": [
+        "discover",
+        "project.inspect",
+        "project.intent.read",
+        "project.bootstrap",
+        "assets.inspect",
+        "asset.user.inspect",
+        "asset.user.stage",
+        "asset.user.list",
+        "asset.public.providers",
+        "asset.public.search",
+        "asset.public.files",
+        "asset.public.stage",
+        "asset.public.list",
+        "authoring.catalog",
+        "godot.structured.validate",
+        "godot.script.inspect",
+        "godot.script.create",
+        "godot.script.replace",
+        "godot.script.function.replace",
+        "godot.scene.inspect",
+        "godot.scene.edit",
+        "godot.resource.inspect",
+        "godot.resource.edit",
+        "godot.input.action.set",
+        "development.session.capabilities",
+        "development.session.create",
+        "development.session.inspect",
+        "development.session.execute",
+        "authoring.document.read",
+        "hypothesis.evaluate",
+        "plan.execute"
+      ]
+    },
+    "arguments": {
+      "type": "object"
+    }
+  }
+}

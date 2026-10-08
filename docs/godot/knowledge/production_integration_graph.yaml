@@ -1,0 +1,69 @@
+engine: godot
+engine_version: 4.7.2-stable
+engine_commit: ed1daf0bf001b61586d9930840f2f1394092c079
+nodes:
+  - id: ARC-GODOT-SRC-NAVIGATION-SERVER-3D
+    kind: source-symbol
+    path: servers/navigation_3d/navigation_server_3d.cpp
+    symbol: NavigationServer3D
+  - id: ARC-GODOT-SRC-CAMERA-3D
+    kind: source-symbol
+    path: scene/3d/camera_3d.cpp
+    symbol: Camera3D
+  - id: ARC-GODOT-SRC-SKELETON-MODIFIER-3D
+    kind: source-symbol
+    path: scene/3d/skeleton_modifier_3d.cpp
+    symbol: SkeletonModifier3D
+  - id: ARC-GODOT-SRC-GLTF-DOCUMENT
+    kind: source-symbol
+    path: modules/gltf/gltf_document.cpp
+    symbol: GLTFDocument
+  - id: ARC-GODOT-OBS-MAP-NAV-0001
+    kind: observation
+    status: observed
+    evidence: docs/knowledge/observations/MAP_FORGE_NAVIGATION_FAILURE_RESEARCH_2026-09-13.md
+    claim: Revalidate the recorded route-query and synchronization experiments when the navigation server changes; scope is pinned Linux CI.
+  - id: ARC-OBS-FISURA-VISUAL-008
+    kind: observation
+    status: observed
+    evidence: docs/knowledge/observations/FISURA_V08_VISUAL_SHOT_OCCLUSION_2026-10-08.md
+    claim: Render-only decoration blocked a recorded camera view while collider-based checks passed.
+  - id: ARC-OBS-FISURA-COMPOSITION-008
+    kind: observation
+    status: observed
+    evidence: docs/knowledge/observations/FISURA_V08_SCREENSPACE_COMPOSITION_2026-10-08.md
+    claim: Revalidate actor screen projection and wall-clamped shots when camera projection changes.
+  - id: ARC-OBS-FISURA-ADDITIVE-006
+    kind: observation
+    status: observed
+    evidence: docs/knowledge/observations/FISURA_V06_ADDITIVE_ANIMATION_MOBILE_2026-10-08.md
+    claim: The Linux integration exercised a post-animation torso modifier; physical Android performance remains unmeasured.
+  - id: ARC-OBS-QUATERNIUS-IMPORT-001
+    kind: observation
+    status: observed
+    evidence: docs/knowledge/observations/QUATERNIUS_SKELETAL_ASSET_IMPORT_2026-10-08.md
+    claim: Revalidate the recorded skeleton and AnimationPlayer imports when glTF loading changes.
+  - id: ARC-DECISION-MOBILE-EVIDENCE-001
+    kind: decision
+    status: proposed
+    evidence: docs/knowledge/observations/FISURA_V06_ADDITIVE_ANIMATION_MOBILE_2026-10-08.md
+    claim: Require named-device runtime measurements before interpreting Linux animation or APK export as Android performance evidence.
+edges:
+  - from: ARC-GODOT-OBS-MAP-NAV-0001
+    relation: implemented_by
+    to: ARC-GODOT-SRC-NAVIGATION-SERVER-3D
+  - from: ARC-OBS-FISURA-VISUAL-008
+    relation: implemented_by
+    to: ARC-GODOT-SRC-CAMERA-3D
+  - from: ARC-OBS-FISURA-COMPOSITION-008
+    relation: implemented_by
+    to: ARC-GODOT-SRC-CAMERA-3D
+  - from: ARC-OBS-FISURA-ADDITIVE-006
+    relation: implemented_by
+    to: ARC-GODOT-SRC-SKELETON-MODIFIER-3D
+  - from: ARC-OBS-QUATERNIUS-IMPORT-001
+    relation: implemented_by
+    to: ARC-GODOT-SRC-GLTF-DOCUMENT
+  - from: ARC-DECISION-MOBILE-EVIDENCE-001
+    relation: derived_from
+    to: ARC-OBS-FISURA-ADDITIVE-006

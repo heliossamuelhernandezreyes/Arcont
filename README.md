@@ -4,6 +4,11 @@ ARCONT ya no es un videojuego.
 
 Desde septiembre de 2026, este repositorio funciona como **banco de información y laboratorio técnico para el desarrollo de videojuegos**: investigación, patrones de arquitectura, experimentos, decisiones, errores, aprendizajes y referencias reutilizables.
 
+**ARCONT 1.1:** la [guía de integración y fiabilidad](docs/RELIABILITY_1_1.md)
+reúne preparación, correcciones de la auditoría, validación nativa y límites de
+la evidencia. Incluye entrega completa de modelos y edición con exclusión entre
+escritores ARCONT.
+
 ## Godot como objeto de estudio
 
 ARCONT conserva una referencia canónica y reproducible al código fuente de **Godot Engine 4.7.2-stable** para poder analizar el motor de forma limpia, sin mezclar ese análisis con un juego concreto.
@@ -36,6 +41,19 @@ ARCONT incluye un contrato engine-neutral de misión: [`VERTICAL_SLICE_PRODUCTIO
 El antiguo juego/prototipo ejecutable de ARCONT fue retirado del estado actual del repositorio. No se mantienen aquí sus escenas, gameplay, assets, presets de exportación ni CI destinado a compilar aquel juego.
 
 El historial de Git permanece como registro técnico histórico, pero **HEAD/main representa el banco de conocimiento y laboratorio del motor**.
+
+## Acceso para agentes externos
+
+ARCONT incluye un Universal Agent Bridge y un gateway MCP oficial para que un
+agente compatible pueda descubrir capacidades, leer el contexto persistente de
+un proyecto externo y trabajar mediante Development Sessions acotadas.
+
+- [`docs/UNIVERSAL_AGENT_BRIDGE.md`](docs/UNIVERSAL_AGENT_BRIDGE.md)
+- [`docs/MCP_AGENT_GATEWAY.md`](docs/MCP_AGENT_GATEWAY.md)
+
+El gateway no convierte ARCONT en un juego ni concede escritura por defecto. La
+autoridad sobre un proyecto externo debe habilitarse explícitamente al iniciar
+el proceso.
 
 ## Índice
 

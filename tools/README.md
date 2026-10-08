@@ -4,6 +4,39 @@
 
 No ejecuta Godot, no contiene gameplay y no sustituye la revisión científica. Su trabajo es detectar incoherencias y reducir errores mecánicos.
 
+## Agent Control Plane
+
+ARCONT exposes a machine-readable control plane for AI agents. ARCONT itself remains read-only; registered external game projects can be edited only with explicit permission:
+
+```bash
+python tools/arcont_agent.py capabilities
+python tools/arcont_agent.py doctor
+python tools/arcont_agent.py inspect-project path/to/external/game
+python tools/arcont_agent.py invoke godot.authoring.control --project path/to/external/game --request request.json --allow-project-write
+python tools/arcont_agent.py invoke map-forge.editor.control --project path/to/external/game --request request.json --allow-project-write
+python tools/arcont_agent.py invoke production.control --project path/to/external/game --request request.json --allow-project-write
+python tools/arcont_agent.py invoke model-forge.control --project path/to/external/game --request request.json --allow-project-write
+python tools/arcont_agent.py run-plan --project path/to/external/game --plan plan.json --allow-project-write
+python tools/arcont_agent.py diagnose --policy policy.json --evidence evidence.json --require-match
+python tools/arcont_agent.py evaluate-proposal --proposal model-proposal.json --evidence evidence.json --require-match
+python tools/arcont_bridge.py --project path/to/external/game --request bridge-request.json
+python tools/arcont_bridge.py --project path/to/empty/game --request templates/agent/bootstrap-new-game.request.example.json --allow-project-write
+python tools/arcont_bridge.py --project path/to/game --request templates/agent/stage-user-asset.request.example.json --allow-project-write
+python tools/arcont_bridge.py --project path/to/game --request templates/agent/search-public-assets.request.example.json
+python tools/arcont_bridge.py --project path/to/game --request templates/agent/public-asset-files.request.example.json
+python tools/arcont_bridge.py --project path/to/game --request templates/agent/create-player-script.request.example.json --allow-project-write
+python tools/arcont_bridge.py --project path/to/game --request templates/agent/edit-main-scene.request.example.json --allow-project-write
+python tools/arcont_bridge.py --project path/to/game --request templates/agent/create-development-session.request.example.json --allow-project-write
+cd integrations/mcp && npm ci --ignore-scripts --no-audit --no-fund
+node integrations/mcp/server.mjs --project path/to/game --transport stdio
+node integrations/mcp/server.mjs --project path/to/game --transport stdio --allow-project-write
+```
+
+The canonical capability registry is `agent.capabilities.json`. Discovery reports repository guards, tool availability and access mode; `doctor` runs only explicitly whitelisted read-only diagnostics with bounded output and per-tool timeouts. `inspect-project` inventories an external repository without modifying it. `invoke` only accepts registered `external-project-write` tools, rejects projects embedded inside ARCONT, and requires `--allow-project-write` on every call. `run-plan` adds a bounded, revision-aware sequence layer with a capability allowlist, prior-step bindings, expectations, SHA-256 plan/registry receipts and fail-closed execution. `diagnose` is read-only: it evaluates declarative evidence/hypothesis policies, rejects ambiguous spatial selections, and can compile a repair plan that must still pass through the normal write-permission boundary. `evaluate-proposal` is the narrower model-facing gate: it accepts a novel hypothesis, permits only bounded repair primitives, and lets ARCONT add the writer, stable target path, current-value tests and revision binding. `arcont_bridge.py` is the transport-neutral front door for a fresh external agent: discovery, persistent project intent, local/user asset intake, provider-scoped public asset discovery, hypothesis evaluation and bounded plan execution all reuse the same existing control-plane safety boundary.
+`integrations/mcp/server.mjs` is the provider-neutral MCP adapter over that same bridge. It serves official MCP v2 stdio and Streamable HTTP, fixes project-write authority at process startup, and does not expose shell execution or a second writer path. See `docs/MCP_AGENT_GATEWAY.md`.
+
+The full boundary and extension rules live in `docs/AGENT_CONTROL_PLANE.md`.
+
 ## Validación
 
 ```bash

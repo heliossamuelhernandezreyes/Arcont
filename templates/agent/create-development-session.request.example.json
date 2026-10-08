@@ -1,0 +1,32 @@
+{
+  "protocol": "arcont-bridge",
+  "version": 1,
+  "request_id": "create-development-session-001",
+  "operation": "development.session.create",
+  "arguments": {
+    "spec": {
+      "id": "prototype",
+      "goal": "Build a small playable third-person prototype.",
+      "capability_allowlist": ["godot.structured.control"],
+      "permissions": {"project_write": true},
+      "budgets": {
+        "max_plan_runs": 6,
+        "max_execution_steps": 48,
+        "max_write_steps": 24,
+        "max_failed_runs": 2
+      },
+      "milestones": [
+        {
+          "id": "movement",
+          "goal": "Create input and player movement.",
+          "acceptance": ["Player code validates and the Player is in the main scene."]
+        },
+        {
+          "id": "verification",
+          "goal": "Inspect and refine the movement implementation.",
+          "acceptance": ["Final script and scene expectations pass."]
+        }
+      ]
+    }
+  }
+}
