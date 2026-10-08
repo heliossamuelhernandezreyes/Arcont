@@ -56,6 +56,12 @@ ARCONT no intenta copiar Internet. Conserva referencias, procedencia, extracció
 - [`DECISION_ENGINE.md`](DECISION_ENGINE.md) — transformación de evidencia en recomendaciones condicionadas y revalidables.
 - [`VALIDATOR_SPEC.md`](VALIDATOR_SPEC.md) — especificación del validador de trazabilidad, evidencia, vigencia y coherencia del grafo.
 
+## Control del editor Map Forge
+
+- [`knowledge/MAP_FORGE_EDITOR_CONTROL.md`](knowledge/MAP_FORGE_EDITOR_CONTROL.md) — interfaz para que un autor o asistente opere el editor, con edición completa, revisiones, validación y capturas; sin generador ni servicio de IA.
+- [`../tools/map_forge_control.py`](../tools/map_forge_control.py) — CLI portable de control.
+- [`../schemas/map-forge-control.schema.json`](../schemas/map-forge-control.schema.json) — contrato de solicitudes.
+
 ## Herramientas operativas
 
 - [`../tools/arcont_lab.py`](../tools/arcont_lab.py) — CLI para integridad, análisis de impacto, confianza heurística y comparación de resultados.
@@ -114,3 +120,4 @@ Godot se conserva como **objeto de estudio del motor**, no como videojuego. El u
 Este repositorio no debe volver a contener un juego completo. Los proyectos futuros pueden consultar ARCONT y reutilizar conocimiento, pero su código de producción debe vivir en repositorios propios.
 
 Los experimentos de ARCONT deben permanecer mínimos, aislados y reproducibles. El runtime ejecutable de benchmarks vive fuera de ARCONT y entrega resultados mediante el esquema canónico con procedencia y hashes verificables.
+
