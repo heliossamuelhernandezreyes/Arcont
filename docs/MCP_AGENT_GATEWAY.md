@@ -205,6 +205,10 @@ HTTP requests are checked for:
 - allowed `Origin` when Origin is present;
 - bearer token when configured.
 
+The bearer secret is compared with a constant-time equality primitive and is
+removed from the environment used to launch `arcont_bridge.py`; transport
+authentication secrets therefore do not flow into ARCONT capability processes.
+
 The gateway deliberately does not implement its own OAuth authorization server.
 A production Internet deployment should terminate TLS and identity at a
 reviewed reverse proxy or use the official MCP authorization stack rather than
