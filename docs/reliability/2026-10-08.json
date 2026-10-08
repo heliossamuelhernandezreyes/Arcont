@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "record_type": "local-tooling-acceptance-summary",
+  "date": "2026-10-08",
+  "integration_inputs": {
+    "main": "29cbb0d27f49b86afd982ccc3c8a6277dfe2b59a",
+    "gateway": "2f6592208ba56a7bb400f6c8c0fbf3952ea77d22"
+  },
+  "environment": {
+    "os": "Linux",
+    "architecture": "x86_64",
+    "python": "3.12.14",
+    "node": "v24.19.0",
+    "godot": "4.7.2.stable.official.ed1daf0bf",
+    "godot_sha256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e"
+  },
+  "processor_lock_sha256": "ecf74829cafbedf6f227eea7e39cdfbb9e5682f7fb422285e103bccfbeff5398",
+  "native_suites": {
+    "structured": {
+      "ok": true,
+      "assertion_count": 6,
+      "assertions": {
+        "player_node_created": true,
+        "player_mesh_created": true,
+        "script_attached": true,
+        "resource_size_roundtripped": true,
+        "function_patch_changed_revision": true,
+        "runtime_input_moved_player": true
+      },
+      "local_summary_sha256": "8d3986217e4ea7de169538b5348869fc2f0f6e7cb161018aa6f9511b5fc327e5"
+    },
+    "development_session": {
+      "ok": true,
+      "assertion_count": 11,
+      "assertions": {
+        "two_bounded_plans_executed": true,
+        "two_milestones_completed": true,
+        "session_completed": true,
+        "session_revision_advanced": true,
+        "receipts_persisted": true,
+        "intent_pin_still_matches": true,
+        "registry_pin_still_matches": true,
+        "toolchain_pin_still_matches": true,
+        "milestone_evidence_persisted": true,
+        "run_evidence_verified": true,
+        "runtime_player_moved": true
+      },
+      "local_summary_sha256": "270964aec9ad5ccfa773519bc35adcc51f6ea40859f5bad91053799927da0d85"
+    },
+    "mcp_gateway": {
+      "ok": true,
+      "assertion_count": 19,
+      "assertions": {
+        "project_tree_must_be_disjoint": true,
+        "mcp_tools_discoverable": true,
+        "universal_bridge_discovered": true,
+        "readonly_server_cannot_escalate": true,
+        "stdio_modern_auto_negotiated": true,
+        "stdio_legacy_2025_compatible": true,
+        "mcp_bootstrapped_external_project": true,
+        "project_context_available": true,
+        "development_session_created": true,
+        "mcp_executed_bounded_session_plan": true,
+        "mcp_completion_evidence_persisted": true,
+        "stdio_persisted_session_reinspectable": true,
+        "http_nonloopback_requires_token": true,
+        "http_wildcard_requires_allowed_host": true,
+        "http_bearer_auth_enforced": true,
+        "http_host_validation_enforced": true,
+        "http_modern_2026_protocol": true,
+        "http_modern_auto_negotiated": true,
+        "http_and_stdio_share_same_arcont_state": true
+      },
+      "local_summary_sha256": "e4d6a8997dee9f125a8cb38d6d07ef2a8ca81909e975dadfcd7c476227d14419"
+    },
+    "reliability_native": {
+      "ok": true,
+      "assertion_count": 11,
+      "assertions": {
+        "script_same_revision_one_writer": true,
+        "scene_same_revision_one_writer": true,
+        "resource_same_revision_one_writer": true,
+        "input_same_revision_one_writer": true,
+        "function_scope_preserved": true,
+        "complete_gltf_bundle_spec_validated": true,
+        "strip_budget_rejected": true,
+        "pinned_processing_spec_roundtrip": true,
+        "khronos_rejects_invalid_reference": true,
+        "godot_reopens_staged_and_processed_models": true,
+        "godot_confirms_1000_strip_faces": true
+      },
+      "local_summary_sha256": "3578bd550b13c0776b3805aa1d631669f20993e24e322844dc722d2dc6c57e8b",
+      "native_face_counts": [
+        1,
+        1000,
+        1
+      ]
+    }
+  },
+  "limits": [
+    "Local execution, not a GitHub Actions attestation.",
+    "Summary hashes identify local receipts; full local receipts are not bundled in this record.",
+    "CI reruns acceptance and uploads full receipts for the exact PR revision.",
+    "No physical Android performance, artistic quality or full catalogue runtime certification."
+  ],
+  "unit_tests": {
+    "command": "python -m unittest discover -s tests",
+    "passed": 326,
+    "failures": 0,
+    "log_sha256": "497a17eaf381c9e737fde6226013d92765a3dba0ecc692b02c59912a13047dd3"
+  },
+  "doctor_after_npm_ci": {
+    "ok": true,
+    "checks": {
+      "knowledge.validate": "passed",
+      "repository.hardening.validate": "passed",
+      "observability.validate": "passed",
+      "runtime.plan.validate": "passed",
+      "asset-vault.validate": "passed",
+      "asset-trust.validate": "passed"
+    }
+  },
+  "catalog": {
+    "total_records": 4643,
+    "polyhaven_corrected_records": 2384,
+    "polyhaven_types": {
+      "hdri": 997,
+      "texture": 866,
+      "model": 521
+    }
+  }
+}

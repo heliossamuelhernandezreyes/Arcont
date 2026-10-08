@@ -2,7 +2,11 @@
 
 ARCONT se organiza por conocimientos reutilizables, no por un juego concreto.
 
-## ARCONT 1.0
+## ARCONT 1.1
+
+- [`RELIABILITY_1_1.md`](RELIABILITY_1_1.md) — integración del gateway, cierre de hallazgos, preparación reproducible y límites de aceptación.
+- [`reliability/2026-10-08.json`](reliability/2026-10-08.json) — resumen verificable de las pruebas de esta revisión.
+- [`../processors.lock.json`](../processors.lock.json) — versiones y hashes de los procesadores de modelos.
 
 - [`../arcont.manifest.json`](../arcont.manifest.json) — manifiesto canónico de versión, rol del repositorio, motor fijado y contratos de integridad.
 - [`MATURITY_MODEL.md`](MATURITY_MODEL.md) — niveles L0–L7 y reglas de promoción/degradación del conocimiento.
@@ -58,6 +62,43 @@ ARCONT no intenta copiar Internet. Conserva referencias, procedencia, extracció
 
 ## Herramientas operativas
 
+- [`AGENT_CONTROL_PLANE.md`](AGENT_CONTROL_PLANE.md) — protocolo machine-readable para descubrimiento de capacidades, `doctor` e inspección estática de proyectos externos.
+- [`../agent.capabilities.json`](../agent.capabilities.json) — registro canónico de capacidades disponibles para agentes y sus modos de acceso.
+- [`../tools/arcont_agent.py`](../tools/arcont_agent.py) — punto de entrada unificado para discovery/doctor/inspection, writers externos y planes acotados con permiso explícito.
+- [`../tools/agent_execution_loop.py`](../tools/agent_execution_loop.py) — ejecutor determinista de planes con bindings, expectativas, hashes y parada fail-closed.
+- [`../tools/agent_diagnosis.py`](../tools/agent_diagnosis.py) — motor declarativo read-only de observaciones → hipótesis → repair-plan revisionado.
+- [`../tools/agent_hypothesis_gate.py`](../tools/agent_hypothesis_gate.py) — puerta de seguridad para hipótesis nuevas generadas por modelo y compilación a reparaciones acotadas.
+- [`UNIVERSAL_AGENT_BRIDGE.md`](UNIVERSAL_AGENT_BRIDGE.md) — interfaz universal JSON/stdio para que agentes externos descubran y operen ARCONT sin conocer sus scripts internos.
+- [`PROJECT_BOOTSTRAP_ASSET_INTAKE.md`](PROJECT_BOOTSTRAP_ASSET_INTAKE.md) — creación segura de proyectos Godot externos vacíos e ingestión de assets proporcionados por el usuario.
+- [`PUBLIC_ASSET_DISCOVERY.md`](PUBLIC_ASSET_DISCOVERY.md) — descubrimiento de assets públicos mediante proveedores explícitos, binding de manifiestos y procedencia verificable.
+- [`STRUCTURED_GODOT_EDITING.md`](STRUCTURED_GODOT_EDITING.md) — edición genérica revisionada de GDScript, escenas, recursos e input para proyectos Godot recién creados.
+- [`DEVELOPMENT_SESSION.md`](DEVELOPMENT_SESSION.md) — sesiones persistentes por milestones con presupuestos, receipts y ejecución de un plan acotado por iteración.
+- [`MCP_AGENT_GATEWAY.md`](MCP_AGENT_GATEWAY.md) — servidor MCP oficial para conectar agentes externos por stdio o Streamable HTTP sin saltarse el Universal Bridge.
+- [`../tools/development_session.py`](../tools/development_session.py) — orquestador durable sobre el execution loop existente, sin retries silenciosos.
+- [`../tools/godot_structured_editing.py`](../tools/godot_structured_editing.py) — control estructurado de gameplay con validación Godot y rollback.
+- [`../tools/public_asset_discovery.py`](../tools/public_asset_discovery.py) — adaptador Poly Haven v1 con búsqueda, file manifests y staging verificado.
+- [`../tools/project_bootstrap_control.py`](../tools/project_bootstrap_control.py) — bootstrap determinista 2D/3D en carpeta externa vacía.
+- [`../tools/user_asset_intake.py`](../tools/user_asset_intake.py) — inspección/staging local de assets con SHA-256 y procedencia declarada.
+- [`../tools/arcont_bridge.py`](../tools/arcont_bridge.py) — bridge transport-neutral para discovery, project intent, assets, hipótesis y planes acotados.
+- [`../schemas/project-intent.schema.json`](../schemas/project-intent.schema.json) — contrato persistente de intención del videojuego.
+- [`../schemas/agent-hypothesis-proposal.schema.json`](../schemas/agent-hypothesis-proposal.schema.json) — contrato machine-readable de propuestas de hipótesis generadas por IA/humano.
+- [`../templates/agent/model-spatial-repair.proposal.example.json`](../templates/agent/model-spatial-repair.proposal.example.json) — ejemplo de propuesta de reparación generada por modelo.
+- [`../schemas/agent-diagnosis-policy.schema.json`](../schemas/agent-diagnosis-policy.schema.json) — contrato machine-readable de políticas de diagnóstico.
+- [`../templates/agent/spatial-collider-repair.policy.example.json`](../templates/agent/spatial-collider-repair.policy.example.json) — ejemplo genérico de diagnóstico espacial y propuesta de reparación.
+- [`../schemas/agent-execution-plan.schema.json`](../schemas/agent-execution-plan.schema.json) — contrato machine-readable de planes de ejecución del agente.
+- [`../templates/agent/inspect-playtest.plan.example.json`](../templates/agent/inspect-playtest.plan.example.json) — ejemplo revision-aware de inspect → playtest.
+- [`knowledge/GODOT_AUTHORING_CONTROL.md`](knowledge/GODOT_AUTHORING_CONTROL.md) — authoring Godot revisionado mediante adaptadores propiedad del juego.
+- [`knowledge/GODOT_PLAYTEST_CONTROL.md`](knowledge/GODOT_PLAYTEST_CONTROL.md) — sesiones acotadas de input/observación sobre bundles aceptados.
+- [`knowledge/MAP_FORGE_EDITOR_CONTROL.md`](knowledge/MAP_FORGE_EDITOR_CONTROL.md) — control revisionado de edición de mapas y adaptadores.
+- [`knowledge/ROAD_NETWORK_AUTHORING.md`](knowledge/ROAD_NETWORK_AUTHORING.md) — contrato explícito de redes viales sin generación oculta.
+- [`../tools/godot_authoring_control.py`](../tools/godot_authoring_control.py) — writer/build/playtest para proyectos Godot externos.
+- [`../tools/map_forge_control.py`](../tools/map_forge_control.py) — editor Map Forge revisionado para proyectos externos.
+- [`../tools/production_control.py`](../tools/production_control.py) — superficie unificada para preparación, revisión y publicación técnica de assets externos.
+- [`../tools/model_forge_control.py`](../tools/model_forge_control.py) — control local acotado para inspección, budgets, colisión y staging GLTF/GLB.
+- [`knowledge/3D_PRODUCTION_STANDARD.md`](knowledge/3D_PRODUCTION_STANDARD.md) — estándar de producción 3D reusable.
+- [`knowledge/TPS_MOBILE_FINISH.md`](knowledge/TPS_MOBILE_FINISH.md) — revisión cuantificable de cadencia/contactos para TPS móvil.
+- [`knowledge/NATIVE_SCENE_BUNDLES.md`](knowledge/NATIVE_SCENE_BUNDLES.md) — publicación verificable de bundles de escenas nativas.
+- [`knowledge/NATIVE_MOTION_AUDIO.md`](knowledge/NATIVE_MOTION_AUDIO.md) — contratos de movimiento nativo y revisión de audio.
 - [`../tools/arcont_lab.py`](../tools/arcont_lab.py) — CLI para integridad, análisis de impacto, confianza heurística y comparación de resultados.
 - [`../tools/arcont_hardening.py`](../tools/arcont_hardening.py) — validador de manifiesto, contratos de evidencia, SHA-256 y madurez.
 - [`../tools/runtime_evidence.py`](../tools/runtime_evidence.py) — puente entre campañas prerregistradas y resultados producidos por el harness externo.

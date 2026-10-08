@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arcont.local/schemas/project-intent.schema.json",
+  "title": "ARCONT Project Intent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocol", "version", "project_id", "title", "genre"],
+  "properties": {
+    "protocol": {"const": "arcont-project-intent"},
+    "version": {"const": 1},
+    "project_id": {"type": "string", "minLength": 1, "maxLength": 200},
+    "title": {"type": "string", "minLength": 1, "maxLength": 200},
+    "genre": {"type": "string", "minLength": 1, "maxLength": 200},
+    "targets": {"type": "array", "maxItems": 64, "items": {"type": "string", "minLength": 1, "maxLength": 500}},
+    "visual_style": {"type": "string", "maxLength": 500},
+    "references": {"type": "array", "maxItems": 64, "items": {"type": "string", "minLength": 1, "maxLength": 500}},
+    "goals": {"type": "array", "maxItems": 64, "items": {"type": "string", "minLength": 1, "maxLength": 500}},
+    "priorities": {"type": "array", "maxItems": 64, "items": {"type": "string", "minLength": 1, "maxLength": 500}},
+    "scope": {"type": "string", "maxLength": 1000},
+    "performance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "target_fps": {"type": "number", "exclusiveMinimum": 0, "maximum": 1000},
+        "resolution": {"type": "string", "maxLength": 500},
+        "platform_notes": {"type": "string", "maxLength": 500}
+      }
+    },
+    "asset_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "user_assets": {"type": "boolean"},
+        "public_assets": {"type": "boolean"},
+        "commercial_use_required": {"type": "boolean"},
+        "allow_network_discovery": {"type": "boolean"},
+        "allowed_licenses": {"type": "array", "maxItems": 64, "items": {"type": "string", "minLength": 1}},
+        "forbidden_licenses": {"type": "array", "maxItems": 64, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "constraints": {"type": "array", "maxItems": 64, "items": {"type": "string", "minLength": 1, "maxLength": 500}},
+    "notes": {"type": "string", "maxLength": 4000}
+  }
+}

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 from pathlib import Path
 from typing import Any
@@ -139,18 +140,22 @@ def runner_manifest(plan: dict[str, Any], benchmark_id: str) -> dict[str, Any]:
 def _metric_has_numeric_measurement(metric: Any) -> bool:
     if not isinstance(metric, dict):
         return False
-    if metric.get("status") in {"not-instrumented-yet", "unknown-metric", "missing"}:
+    status = metric.get("status")
+    if status is not None and (not isinstance(status, str) or status in {"not-instrumented-yet", "unknown-metric", "missing"}):
         return False
     numeric_keys = ("value", "mean", "p50", "p95", "p99", "min", "max")
     values = [metric[k] for k in numeric_keys if k in metric]
-    return bool(values) and all(isinstance(v, (int, float)) and not isinstance(v, bool) for v in values)
+    return bool(values) and all(type(v) in (int, float) and math.isfinite(v) for v in values)
 
 
 def validate_against_plan(result: dict[str, Any], plan: dict[str, Any]) -> list[str]:
     errors = list(validate_result(result))
+    if not isinstance(result, dict) or any(key in result and not isinstance(result[key], dict)
+            for key in ("engine", "platform", "runtime", "experiment", "metrics", "provenance")):
+        return errors
     benches = benchmark_map(plan)
     bid = result.get("benchmark_id")
-    if bid not in benches:
+    if not isinstance(bid, str) or bid not in benches:
         errors.append(f"result: benchmark_id {bid!r} is not registered in the canonical campaign")
         return errors
     bench = benches[bid]
@@ -161,7 +166,7 @@ def validate_against_plan(result: dict[str, Any], plan: dict[str, Any]) -> list[
 
     platform = result.get("platform") or {}
     for key in ("os", "device", "cpu", "gpu"):
-        if not platform.get(key):
+        if not isinstance(platform.get(key), str) or not platform[key].strip():
             errors.append(f"result: platform.{key} required for runtime evidence")
     runtime = result.get("runtime") or {}
     for key in ("renderer", "resolution", "build_type", "vsync"):
@@ -175,10 +180,10 @@ def validate_against_plan(result: dict[str, Any], plan: dict[str, Any]) -> list[
         errors.append("result: experiment.hypothesis_ref does not match benchmark plan")
     if experiment.get("variable") != bench.get("variable"):
         errors.append("result: experiment.variable does not match benchmark plan")
-    if experiment.get("value") not in bench.get("sweep", []):
+    if not any(type(experiment.get("value")) is type(value) and experiment.get("value") == value for value in bench.get("sweep", [])):
         errors.append("result: experiment.value is outside benchmark sweep")
     repetition = experiment.get("repetition")
-    if not isinstance(repetition, int) or repetition < 1 or repetition > bench.get("repetitions", 0):
+    if type(repetition) is not int or repetition < 1 or repetition > bench.get("repetitions", 0):
         errors.append("result: experiment.repetition outside planned range")
     if experiment.get("warmup_seconds") != bench.get("warmup_seconds"):
         errors.append("result: warmup_seconds differs from preregistered plan")
@@ -188,7 +193,7 @@ def validate_against_plan(result: dict[str, Any], plan: dict[str, Any]) -> list[
         errors.append("result: experiment.controls must exactly match preregistered controls")
 
     metrics = result.get("metrics") or {}
-    if not result.get("aborted"):
+    if result.get("aborted") is False:
         for metric_name in bench.get("metrics", []):
             if metric_name not in metrics:
                 errors.append(f"result: planned metric {metric_name!r} missing")
@@ -196,7 +201,7 @@ def validate_against_plan(result: dict[str, Any], plan: dict[str, Any]) -> list[
                 errors.append(f"result: planned metric {metric_name!r} lacks a complete numeric measurement")
 
     provenance = result.get("provenance") or {}
-    if not result.get("aborted"):
+    if result.get("aborted") is False:
         if not HEX40.fullmatch(str(provenance.get("harness_commit", ""))):
             errors.append("result: valid provenance.harness_commit required")
         if not HEX64.fullmatch(str(provenance.get("raw_data_sha256", ""))):

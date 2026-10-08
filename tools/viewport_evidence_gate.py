@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
 """ARCONT visual-evidence file integrity, not an artistic or AAA quality score.
 
-Checks independently captured PNGs exist, meet resolution/byte floor,
-have coherent IHDR headers, and are not four identical outputs.
+Checks complete PNG decoding, bounded size, resolution and distinct pixels.
 Rendering provenance must still be established by the game's own CI logs.
 """
 from __future__ import annotations
 import argparse
-import hashlib
 from pathlib import Path
-import struct
 import zlib
 
-PNG = b"\x89PNG\r\n\x1a\n"
-
+try:
+    from tools.png_integrity import decode_frame
+except ModuleNotFoundError:
+    from png_integrity import decode_frame
 
 def validate_viewpoints(paths: list[Path], min_width: int = 700,
                         min_height: int = 400, min_bytes: int = 30_000) -> list[str]:
@@ -24,32 +23,25 @@ def validate_viewpoints(paths: list[Path], min_width: int = 700,
     hashes = []
     for path in paths:
         try:
-            data = path.read_bytes()
+            size = path.stat().st_size
         except OSError as exc:
             problems.append(f"{path}: not readable ({exc})")
             continue
-        if len(data) < min_bytes:
+        if size < min_bytes:
             problems.append(f"{path}: too few bytes to be a substantial framebuffer evidence file")
-        if len(data) < 33 or data[:8] != PNG or data[12:16] != b"IHDR":
-            problems.append(f"{path}: invalid PNG header")
+        try:
+            width, height, pixel_hash = decode_frame(path)
+        except (OSError, ValueError, zlib.error) as exc:
+            problems.append(f"{path}: invalid PNG ({exc})")
             continue
-        length = struct.unpack(">I", data[8:12])[0]
-        if length != 13:
-            problems.append(f"{path}: invalid IHDR length")
-            continue
-        expected_crc = struct.unpack(">I", data[29:33])[0]
-        if zlib.crc32(data[12:29]) != expected_crc:
-            problems.append(f"{path}: corrupt IHDR CRC")
-            continue
-        width, height = struct.unpack(">II", data[16:24])
         shapes.append((width, height))
         if width < min_width or height < min_height:
             problems.append(f"{path}: inadequate viewport size {width}x{height}")
-        hashes.append(hashlib.sha256(data).hexdigest())
+        hashes.append(pixel_hash)
     if len(set(shapes)) > 1:
         problems.append("viewpoints use mismatched resolutions")
     if len(hashes) != len(set(hashes)):
-        problems.append("duplicate frame bytes across viewpoints")
+        problems.append("duplicate decoded frame pixels across viewpoints")
     return problems
 
 

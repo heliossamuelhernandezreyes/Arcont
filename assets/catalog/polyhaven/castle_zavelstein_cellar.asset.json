@@ -5,7 +5,7 @@
     "sha256": null,
     "size_bytes": null
   },
-  "asset_type": "unknown",
+  "asset_type": "hdri",
   "compatibility": {
     "android": true,
     "godot": true,

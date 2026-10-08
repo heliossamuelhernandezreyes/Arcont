@@ -20,22 +20,28 @@ def _vec3(value: Any) -> bool:
     return (
         isinstance(value, list)
         and len(value) == 3
-        and all(isinstance(v, (int, float)) and math.isfinite(float(v)) for v in value)
+        and all(_finite_number(v) for v in value)
     )
 
 
 def _positive_number(value: Any) -> bool:
-    return isinstance(value, (int, float)) and math.isfinite(float(value)) and float(value) > 0
+    return _finite_number(value) and value > 0
+
+
+def _finite_number(value: Any) -> bool:
+    return type(value) in (int, float) and math.isfinite(value)
 
 
 def validate_contract(data: dict[str, Any]) -> list[str]:
     errors: list[str] = []
+    if not isinstance(data, dict):
+        return ["root must be an object"]
 
     for key in REQUIRED_TOP_LEVEL:
         if key not in data:
             errors.append(f"missing top-level key '{key}'")
 
-    if not isinstance(data.get("version"), int) or int(data.get("version", 0)) < 1:
+    if type(data.get("version")) is not int or data["version"] < 1:
         errors.append("version must be an integer >= 1")
 
     map_id = data.get("id")
@@ -49,6 +55,10 @@ def validate_contract(data: dict[str, Any]) -> list[str]:
         for axis in ("width", "depth"):
             if not _positive_number(bounds.get(axis)):
                 errors.append(f"bounds.{axis} must be a finite positive number")
+        if "height" in bounds and not _positive_number(bounds["height"]):
+            errors.append("bounds.height must be a finite positive number")
+    if "display_name" in data and not isinstance(data["display_name"], str):
+        errors.append("display_name must be a string")
 
     seen: set[str] = set()
     for collection in ("anchors", "routes", "regions"):
@@ -78,9 +88,11 @@ def validate_contract(data: dict[str, Any]) -> list[str]:
             if not _vec3(anchor.get("position")):
                 errors.append(f"anchors[{index}].position must be [x,y,z]")
             if "radius" in anchor and (
-                not isinstance(anchor["radius"], (int, float)) or float(anchor["radius"]) < 0
+                not _finite_number(anchor["radius"]) or anchor["radius"] < 0
             ):
-                errors.append(f"anchors[{index}].radius cannot be negative")
+                errors.append(f"anchors[{index}].radius must be finite and nonnegative")
+            if "team" in anchor and anchor["team"] is not None and not isinstance(anchor["team"], str):
+                errors.append(f"anchors[{index}].team must be a string or null for neutral anchors")
 
     routes = data.get("routes", [])
     if isinstance(routes, list):
@@ -108,6 +120,8 @@ def validate_contract(data: dict[str, Any]) -> list[str]:
                 errors.append(f"regions[{index}].size must be [x,y,z]")
             if "width" in region and not _positive_number(region["width"]):
                 errors.append(f"regions[{index}].width must be positive")
+            if "radius" in region and (not _finite_number(region["radius"]) or region["radius"] < 0):
+                errors.append(f"regions[{index}].radius must be finite and nonnegative")
 
     authoring = data.get("authoring")
     if not isinstance(authoring, dict):
@@ -116,12 +130,18 @@ def validate_contract(data: dict[str, Any]) -> list[str]:
         for collection in ("structure_guides", "scatter_zones"):
             if collection in authoring and not isinstance(authoring[collection], list):
                 errors.append(f"authoring.{collection} must be an array")
+            elif collection in authoring and not all(isinstance(item, dict) for item in authoring[collection]):
+                errors.append(f"authoring.{collection} items must be objects")
         providers = authoring.get("providers")
-        if providers is not None and not isinstance(providers, dict):
+        if "providers" in authoring and not isinstance(providers, dict):
             errors.append("authoring.providers must be an object when present")
+        elif isinstance(providers, dict) and any(v is not None and not isinstance(v, str) for v in providers.values()):
+            errors.append("authoring.providers values must be strings or null")
+        if "terrain" in authoring and not isinstance(authoring["terrain"], dict):
+            errors.append("authoring.terrain must be an object")
 
         navigation = authoring.get("navigation")
-        if navigation is not None:
+        if "navigation" in authoring:
             if not isinstance(navigation, dict):
                 errors.append("authoring.navigation must be an object when present")
             else:
@@ -130,11 +150,11 @@ def validate_contract(data: dict[str, Any]) -> list[str]:
                         errors.append(f"authoring.navigation.{field} must be a finite positive number")
                 if "agent_max_climb" in navigation:
                     value = navigation["agent_max_climb"]
-                    if not isinstance(value, (int, float)) or not math.isfinite(float(value)) or float(value) < 0:
+                    if not _finite_number(value) or value < 0:
                         errors.append("authoring.navigation.agent_max_climb must be finite and >= 0")
                 if "agent_max_slope" in navigation:
                     value = navigation["agent_max_slope"]
-                    if not isinstance(value, (int, float)) or not math.isfinite(float(value)) or not 0 <= float(value) <= 90:
+                    if not _finite_number(value) or not 0 <= value <= 90:
                         errors.append("authoring.navigation.agent_max_slope must be between 0 and 90")
 
     return errors

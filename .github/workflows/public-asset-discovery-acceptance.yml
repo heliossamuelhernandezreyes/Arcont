@@ -1,0 +1,198 @@
+name: Public Asset Discovery Acceptance
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  public-assets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout ARCONT
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install exact Godot
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1 libx11-6 libxcursor1 libxinerama1 libxrandr2 libxi6 libasound2t64 unzip
+          curl -L --fail --retry 3 -o /tmp/godot.zip https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -q /tmp/godot.zip -d /tmp/godot-bin
+          chmod +x /tmp/godot-bin/Godot_v4.7.2-stable_linux.x86_64
+          echo "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e  /tmp/godot-bin/Godot_v4.7.2-stable_linux.x86_64" | sha256sum --check
+
+      - name: Bootstrap network-enabled external project
+        run: |
+          rm -rf /tmp/arcont-public-game
+          mkdir -p /tmp/arcont-public-game public-asset-evidence
+          cat > /tmp/bootstrap-public.json <<'JSON'
+          {
+            "protocol":"arcont-bridge",
+            "version":1,
+            "request_id":"public-bootstrap",
+            "operation":"project.bootstrap",
+            "arguments":{
+              "template":"godot-3d-minimal",
+              "intent":{
+                "protocol":"arcont-project-intent",
+                "version":1,
+                "project_id":"public_asset_ci",
+                "title":"ARCONT Public Asset CI",
+                "genre":"third-person action",
+                "targets":["Windows"],
+                "asset_policy":{
+                  "user_assets":true,
+                  "public_assets":true,
+                  "commercial_use_required":true,
+                  "allow_network_discovery":true,
+                  "allowed_licenses":["CC0"]
+                }
+              }
+            }
+          }
+          JSON
+          python tools/arcont_bridge.py \
+            --project /tmp/arcont-public-game \
+            --request /tmp/bootstrap-public.json \
+            --allow-project-write > public-asset-evidence/bootstrap.json
+
+      - name: Discover Poly Haven asset and bind live file manifest
+        run: |
+          cat > /tmp/providers.json <<'JSON'
+          {"protocol":"arcont-bridge","version":1,"request_id":"providers","operation":"asset.public.providers","arguments":{}}
+          JSON
+          cat > /tmp/search.json <<'JSON'
+          {
+            "protocol":"arcont-bridge",
+            "version":1,
+            "request_id":"search-sunset",
+            "operation":"asset.public.search",
+            "arguments":{"query":"sunset_jhbcentral","asset_type":"all","limit":5}
+          }
+          JSON
+          cat > /tmp/files.json <<'JSON'
+          {
+            "protocol":"arcont-bridge",
+            "version":1,
+            "request_id":"files-sunset",
+            "operation":"asset.public.files",
+            "arguments":{"asset_id":"sunset_jhbcentral"}
+          }
+          JSON
+          python tools/arcont_bridge.py --project /tmp/arcont-public-game --request /tmp/providers.json > public-asset-evidence/providers.json
+          python tools/arcont_bridge.py --project /tmp/arcont-public-game --request /tmp/search.json > public-asset-evidence/search.json
+          python tools/arcont_bridge.py --project /tmp/arcont-public-game --request /tmp/files.json > public-asset-evidence/files.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          search=json.load(open("public-asset-evidence/search.json"))
+          files=json.load(open("public-asset-evidence/files.json"))
+          assert search["ok"] and files["ok"]
+          search_result=search["result"]["result"]
+          assert search_result["provider"]["id"]=="polyhaven"
+          assert search_result["provider"]["asset_license"]=="CC0"
+          assert search_result["provider"]["api_attribution_required"] is True
+          assert any(row["provider_asset_id"]=="sunset_jhbcentral" for row in search_result["results"])
+
+          manifest=files["result"]["result"]
+          candidates=[
+              row for row in manifest["files"]
+              if row["extension"]==".hdr"
+              and row["download_host_allowed"]
+              and row["stage_extension_allowed"]
+              and isinstance(row.get("size"), int)
+              and row["size"] <= 10 * 1024 * 1024
+          ]
+          if not candidates:
+              raise SystemExit("No bounded stageable HDR candidate returned by live Poly Haven API")
+          candidates.sort(key=lambda row: (0 if "/1k/" in row["file_key"] else 1, row["size"], row["file_key"]))
+          selected=candidates[0]
+          request={
+              "protocol":"arcont-bridge",
+              "version":1,
+              "request_id":"stage-public-sky",
+              "operation":"asset.public.stage",
+              "arguments":{
+                  "semantic_id":"polyhaven_sky",
+                  "asset_id":"sunset_jhbcentral",
+                  "file_key":selected["file_key"],
+                  "manifest_sha256":manifest["manifest_sha256"],
+              },
+          }
+          Path("/tmp/stage-public.json").write_text(json.dumps(request), encoding="utf-8")
+          Path("public-asset-evidence/selected-file.json").write_text(
+              json.dumps({"manifest_sha256":manifest["manifest_sha256"],"selected":selected}, indent=2),
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Stage exact public file with verified provenance
+        run: |
+          python tools/arcont_bridge.py \
+            --project /tmp/arcont-public-game \
+            --request /tmp/stage-public.json \
+            --allow-project-write > public-asset-evidence/stage.json
+          cat > /tmp/public-list.json <<'JSON'
+          {"protocol":"arcont-bridge","version":1,"request_id":"public-list","operation":"asset.public.list","arguments":{}}
+          JSON
+          python tools/arcont_bridge.py --project /tmp/arcont-public-game --request /tmp/public-list.json > public-asset-evidence/list.json
+          cp /tmp/arcont-public-game/.arcont/assets/public/polyhaven_sky.asset.json public-asset-evidence/polyhaven_sky.asset.json
+
+      - name: Verify staged asset and import it in Godot
+        env:
+          GODOT_BIN: /tmp/godot-bin/Godot_v4.7.2-stable_linux.x86_64
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          stage=json.load(open("public-asset-evidence/stage.json"))
+          listed=json.load(open("public-asset-evidence/list.json"))
+          selected=json.load(open("public-asset-evidence/selected-file.json"))
+          record=json.load(open("public-asset-evidence/polyhaven_sky.asset.json"))
+
+          assert stage["ok"]
+          assert stage["result"]["result"]["write_performed"] is True
+          child=stage["result"]["result"]["result"]
+          assert child["id"]=="polyhaven_sky"
+          assert record==child
+          assert record["provider"]=="Poly Haven"
+          assert record["provider_id"]=="polyhaven"
+          assert record["asset_license"]=="CC0"
+          assert record["commercial_use"] is True
+          assert record["asset_attribution_required"] is False
+          assert record["api_attribution_required"] is True
+          assert record["provider_credit"]=="Poly Haven"
+          assert record["files_manifest_sha256"]==selected["manifest_sha256"]
+          assert record["archive_extracted"] is False
+          assert record["provenance_status"]=="provider-api-and-download-integrity-verified"
+
+          path=Path("/tmp/arcont-public-game")/record["staged_path"]
+          assert path.is_file()
+          assert hashlib.sha256(path.read_bytes()).hexdigest()==record["sha256"]
+          assert listed["ok"] and listed["result"]["result"]["count"]==1
+          PY
+          "$GODOT_BIN" --headless --path /tmp/arcont-public-game --editor --import --quit > public-asset-evidence/godot-import.log 2>&1
+          if grep -E 'ERROR:|Parse Error|Failed to load' public-asset-evidence/godot-import.log; then
+            cat public-asset-evidence/godot-import.log
+            exit 1
+          fi
+
+      - name: Preserve public asset evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arcont-public-asset-${{ github.sha }}
+          path: public-asset-evidence/
+          include-hidden-files: true
+          retention-days: 30

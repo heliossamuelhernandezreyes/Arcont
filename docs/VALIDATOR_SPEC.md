@@ -2,7 +2,7 @@
 
 El validador revisa la coherencia interna del banco de conocimiento. No decide si una afirmación es verdadera por sí solo; detecta problemas de trazabilidad, estructura y vigencia.
 
-## Chequeos obligatorios
+## Contrato objetivo
 
 ### Identidad
 - IDs duplicados.
@@ -56,3 +56,26 @@ findings:
 ## Invariante
 
 El validador nunca transforma automáticamente una hipótesis en regla ni una regla en verdad. Solo verifica que el conocimiento respete el contrato epistemológico de ARCONT.
+
+## Cobertura implementada en 1.1
+
+`arcont_lab validate` comprueba documentos propios, IDs globales y los registros
+del grafo tipado en `docs/godot/knowledge/`: referencias colgantes, ciclos de
+derivación/dependencia y evidencia por ID, caminos de reglas/decisiones a
+fuentes u observaciones y dependencias falsificadas o sustituidas. Los símbolos
+de implementación necesitan un commit fijado. Los benchmarks completados
+necesitan resultados válidos; los prerregistrados no necesitan fingir una
+ejecución. Una regla validada debe superar los requisitos acumulativos de L7.
+
+Los niveles de madurez comprueban tipos y umbrales de metadatos declarados; no
+certifican por sí solos que se ejecutaron los experimentos contados. El ledger
+y las afirmaciones en prosa no se convierten automáticamente en nodos tipados.
+El análisis de impacto informa cobertura y documentos sin representación;
+continúa siendo parcial. El contrato objetivo anterior incluye revisiones
+humanas que el CLI aún no automatiza.
+
+`arcont_lab compare` exige controles comparables, incluido VSync, motor y
+duración. Los ejes intencionales se declaran con `--vary`; se informan métricas
+anidadas y se anula el delta de unidades incompatibles. Las unidades no se
+convierten automáticamente. La evidencia runtime se valida además contra su
+prerregistro mediante `runtime_evidence.py`.

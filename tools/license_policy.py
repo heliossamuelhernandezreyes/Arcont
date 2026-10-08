@@ -94,12 +94,13 @@ ALIASES = {
 
 
 def normalize_license_name(raw: str) -> str | None:
+    if not isinstance(raw, str):
+        return None
     text = " ".join(raw.lower().replace("_", " ").split())
+    if raw.strip().upper() in POLICIES:
+        return raw.strip().upper()
     if text in ALIASES:
         return ALIASES[text]
-    for alias, canonical in sorted(ALIASES.items(), key=lambda kv: len(kv[0]), reverse=True):
-        if alias in text:
-            return canonical
     return None
 
 

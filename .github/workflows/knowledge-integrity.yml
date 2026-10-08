@@ -18,6 +18,223 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Validate agent capability discovery
+        run: python tools/arcont_agent.py capabilities > /tmp/arcont-agent-capabilities.json
+      - name: Validate agent control plane doctor
+        run: python tools/arcont_agent.py doctor --timeout 60
+      - name: Validate bounded agent execution loop
+        shell: bash
+        run: |
+          mkdir -p /tmp/arcont-agent-fixture
+          printf '[application]\nconfig/name="fixture"\n' > /tmp/arcont-agent-fixture/project.godot
+          cat > /tmp/arcont-readonly-plan.json <<'JSON'
+          {
+            "protocol":"arcont-agent-plan",
+            "version":1,
+            "id":"ci_inspect",
+            "goal":"Verify bounded read-only plan execution",
+            "permissions":{"project_write":false},
+            "capability_allowlist":["godot.authoring.control"],
+            "steps":[
+              {
+                "id":"inventory",
+                "kind":"inspect-project",
+                "max_files":100,
+                "expect":[{"pointer":"/project/engine","op":"equals","value":"godot"}]
+              }
+            ]
+          }
+          JSON
+          python tools/arcont_agent.py run-plan --project /tmp/arcont-agent-fixture --plan /tmp/arcont-readonly-plan.json
+      - name: Validate declarative diagnosis and repair-plan compilation
+        shell: bash
+        run: |
+          cat > /tmp/arcont-diagnosis-evidence.json <<'JSON'
+          {
+            "signals":{"interaction_ok":false,"traversal_state":"free"},
+            "observations":{"position":[0.0,0.0,0.0]},
+            "context":{"map_id":"fixture"},
+            "limits":{"max_height":1.35},
+            "baseline":{"height":1.14,"center_y":0.57},
+            "world":{"objects":[
+              {"id":"near_box","type":"box","collision":true,"position":[0.5,0.85,0.0],"size":[4.0,1.7,0.56]}
+            ]}
+          }
+          JSON
+          python tools/arcont_agent.py diagnose \
+            --policy templates/agent/spatial-collider-repair.policy.example.json \
+            --evidence /tmp/arcont-diagnosis-evidence.json \
+            --require-match > /tmp/arcont-diagnosis.json
+          python - <<'PY'
+          import json
+          report=json.load(open("/tmp/arcont-diagnosis.json"))
+          assert report["ok"] and report["matched"]
+          assert report["hypothesis"]["candidate"]["id"]=="near_box"
+          plan=report["hypothesis"]["repair_plan"]
+          assert plan["protocol"]=="arcont-agent-plan"
+          assert plan["steps"][1]["request"]["patch"][0]["path"]=="/map/authoring/objects/@near_box/size/1"
+          PY
+      - name: Validate model-authored hypothesis safety gate
+        shell: bash
+        run: |
+          python tools/arcont_agent.py evaluate-proposal \
+            --proposal templates/agent/model-spatial-repair.proposal.example.json \
+            --evidence /tmp/arcont-diagnosis-evidence.json \
+            --require-match > /tmp/arcont-model-proposal.json
+          python - <<'PY'
+          import json
+          report=json.load(open("/tmp/arcont-model-proposal.json"))
+          assert report["ok"]
+          diagnosis=report["diagnosis"]
+          assert diagnosis["matched"]
+          assert diagnosis["hypothesis"]["candidate"]["id"]=="near_box"
+          plan=diagnosis["hypothesis"]["repair_plan"]
+          assert plan["capability_allowlist"]==["map-forge.editor.control"]
+          patch=plan["steps"][1]["request"]["patch"]
+          assert [row["op"] for row in patch]==["test","replace","test","replace"]
+          assert patch[0]["path"]=="/map/authoring/objects/@near_box/size/1"
+          assert patch[1]["value"]==1.14
+          PY
+      - name: Negative control - unsafe model repair primitive must fail
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open("templates/agent/model-spatial-repair.proposal.example.json"))
+          p["hypothesis"]["repair"]["kind"]="shell"
+          json.dump(p,open("/tmp/unsafe-model-proposal.json","w"))
+          PY
+          if python tools/arcont_agent.py evaluate-proposal \
+            --proposal /tmp/unsafe-model-proposal.json \
+            --evidence /tmp/arcont-diagnosis-evidence.json; then
+            echo "Hypothesis gate accepted an arbitrary repair primitive"
+            exit 1
+          fi
+      - name: Validate universal agent bridge fresh-agent flow
+        shell: bash
+        run: |
+          mkdir -p /tmp/arcont-bridge-fixture/assets /tmp/arcont-bridge-fixture/authoring/recipes /tmp/arcont-bridge-fixture/authoring/scenarios
+          printf '[application]\nconfig/name="Bridge CI Fixture"\n' > /tmp/arcont-bridge-fixture/project.godot
+          printf 'fixture-model' > /tmp/arcont-bridge-fixture/assets/hero.glb
+          printf '{}' > /tmp/arcont-bridge-fixture/godot-authoring.json
+          printf '{"version":1,"id":"bridge_scene","purpose":"ci"}\n' > /tmp/arcont-bridge-fixture/authoring/recipes/bridge_scene.json
+          printf '{"version":1,"id":"bridge_route","commands":[]}\n' > /tmp/arcont-bridge-fixture/authoring/scenarios/bridge_route.json
+          cat > /tmp/arcont-bridge-fixture/project.intent.json <<'JSON'
+          {
+            "protocol":"arcont-project-intent",
+            "version":1,
+            "project_id":"bridge_ci",
+            "title":"Bridge CI",
+            "genre":"third-person action",
+            "targets":["Android","Windows"],
+            "visual_style":"dark industrial",
+            "priorities":["movement","combat","performance"],
+            "performance":{"target_fps":60,"resolution":"1280x720"},
+            "asset_policy":{
+              "user_assets":true,
+              "public_assets":true,
+              "commercial_use_required":true,
+              "allow_network_discovery":false,
+              "allowed_licenses":["CC0","MIT"]
+            }
+          }
+          JSON
+          cat > /tmp/bridge-discover.json <<'JSON'
+          {"protocol":"arcont-bridge","version":1,"request_id":"ci-discover","operation":"discover","arguments":{}}
+          JSON
+          cat > /tmp/bridge-intent.json <<'JSON'
+          {"protocol":"arcont-bridge","version":1,"request_id":"ci-intent","operation":"project.intent.read","arguments":{}}
+          JSON
+          cat > /tmp/bridge-assets.json <<'JSON'
+          {"protocol":"arcont-bridge","version":1,"request_id":"ci-assets","operation":"assets.inspect","arguments":{"max_assets":100}}
+          JSON
+          cat > /tmp/bridge-authoring-catalog.json <<'JSON'
+          {"protocol":"arcont-bridge","version":1,"request_id":"ci-authoring-catalog","operation":"authoring.catalog","arguments":{}}
+          JSON
+          cat > /tmp/bridge-authoring-read.json <<'JSON'
+          {"protocol":"arcont-bridge","version":1,"request_id":"ci-authoring-read","operation":"authoring.document.read","arguments":{"path":"authoring/recipes/bridge_scene.json"}}
+          JSON
+          cat > /tmp/bridge-plan.json <<'JSON'
+          {
+            "protocol":"arcont-bridge",
+            "version":1,
+            "request_id":"ci-plan",
+            "operation":"plan.execute",
+            "arguments":{"plan":{
+              "protocol":"arcont-agent-plan",
+              "version":1,
+              "id":"bridge_ci_readonly",
+              "goal":"Prove a fresh external agent can execute a bounded plan through the bridge.",
+              "permissions":{"project_write":false},
+              "capability_allowlist":["godot.authoring.control"],
+              "steps":[
+                {
+                  "id":"inventory",
+                  "kind":"inspect-project",
+                  "max_files":100,
+                  "expect":[{"pointer":"/project/engine","op":"equals","value":"godot"}]
+                }
+              ]
+            }}
+          }
+          JSON
+          python tools/arcont_bridge.py --project /tmp/arcont-bridge-fixture --request /tmp/bridge-discover.json > /tmp/bridge-discover.out.json
+          python tools/arcont_bridge.py --project /tmp/arcont-bridge-fixture --request /tmp/bridge-intent.json > /tmp/bridge-intent.out.json
+          python tools/arcont_bridge.py --project /tmp/arcont-bridge-fixture --request /tmp/bridge-assets.json > /tmp/bridge-assets.out.json
+          python tools/arcont_bridge.py --project /tmp/arcont-bridge-fixture --request /tmp/bridge-authoring-catalog.json > /tmp/bridge-authoring-catalog.out.json
+          python tools/arcont_bridge.py --project /tmp/arcont-bridge-fixture --request /tmp/bridge-authoring-read.json > /tmp/bridge-authoring-read.out.json
+          python tools/arcont_bridge.py --project /tmp/arcont-bridge-fixture --request /tmp/bridge-plan.json > /tmp/bridge-plan.out.json
+          python - <<'PY'
+          import json
+          discover=json.load(open("/tmp/bridge-discover.out.json"))
+          intent=json.load(open("/tmp/bridge-intent.out.json"))
+          assets=json.load(open("/tmp/bridge-assets.out.json"))
+          catalog=json.load(open("/tmp/bridge-authoring-catalog.out.json"))
+          document=json.load(open("/tmp/bridge-authoring-read.out.json"))
+          plan=json.load(open("/tmp/bridge-plan.out.json"))
+          assert discover["ok"]
+          assert "plan.execute" in discover["result"]["bridge"]["operations"]
+          assert discover["result"]["bridge"]["mutation_boundary"]["bridge_creates_new_writer_primitives"] is False
+          assert intent["ok"] and intent["result"]["present"]
+          assert intent["result"]["intent"]["performance"]["target_fps"]==60
+          assert assets["ok"] and assets["result"]["asset_count"]==1
+          assert assets["result"]["assets"][0]["path"]=="assets/hero.glb"
+          assert catalog["ok"] and catalog["result"]["document_count"]==2
+          assert any(row["path"]=="authoring/recipes/bridge_scene.json" for row in catalog["result"]["documents"])
+          assert document["ok"] and document["result"]["document"]["id"]=="bridge_scene"
+          assert plan["ok"] and plan["result"]["write_steps"]==0
+          PY
+      - name: Negative control - bridge cannot grant project write permission
+        shell: bash
+        run: |
+          cat > /tmp/bridge-write-without-optin.json <<'JSON'
+          {
+            "protocol":"arcont-bridge",
+            "version":1,
+            "request_id":"ci-write-refusal",
+            "operation":"plan.execute",
+            "arguments":{"plan":{
+              "protocol":"arcont-agent-plan",
+              "version":1,
+              "id":"bridge_ci_write_refusal",
+              "goal":"Prove bridge cannot grant itself project-write permission.",
+              "permissions":{"project_write":true},
+              "capability_allowlist":["map-forge.editor.control"],
+              "steps":[
+                {
+                  "id":"inspect_map",
+                  "kind":"invoke",
+                  "capability":"map-forge.editor.control",
+                  "request":{"protocol_version":1,"operation":"inspect","map_id":"missing"}
+                }
+              ]
+            }}
+          }
+          JSON
+          if python tools/arcont_bridge.py --project /tmp/arcont-bridge-fixture --request /tmp/bridge-write-without-optin.json; then
+            echo "Bridge executed a writer-capability plan without explicit project-write opt-in"
+            exit 1
+          fi
       - name: Validate knowledge bank
         run: python tools/arcont_lab.py validate
       - name: Validate ARCONT 1.0 manifest and evidence contracts

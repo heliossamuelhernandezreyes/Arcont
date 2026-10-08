@@ -5,7 +5,7 @@
     "sha256": null,
     "size_bytes": null
   },
-  "asset_type": "2",
+  "asset_type": "model",
   "compatibility": {
     "android": true,
     "godot": true,
@@ -46,8 +46,6 @@
     }
   },
   "dimensions": [
-    "shared",
-    "2d",
     "2_5d",
     "3d"
   ],
@@ -97,7 +95,7 @@
     "font_formats": [],
     "formats": [],
     "lods": null,
-    "pbr": false,
+    "pbr": true,
     "rigged": null,
     "texture_resolution": null,
     "triangle_count": 26406

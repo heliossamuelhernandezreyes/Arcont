@@ -1,0 +1,60 @@
+name: Development Session Acceptance
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  development-session:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout ARCONT
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install exact Godot
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1 libx11-6 libxcursor1 libxinerama1 libxrandr2 libxi6 libasound2t64 unzip
+          curl -L --fail --retry 3 -o /tmp/godot.zip https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -q /tmp/godot.zip -d /tmp/godot-bin
+          chmod +x /tmp/godot-bin/Godot_v4.7.2-stable_linux.x86_64
+          echo "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e  /tmp/godot-bin/Godot_v4.7.2-stable_linux.x86_64" | sha256sum --check
+
+      - name: Run bounded multi-milestone development session
+        env:
+          GODOT_BIN: /tmp/godot-bin/Godot_v4.7.2-stable_linux.x86_64
+        run: |
+          rm -rf /tmp/arcont-development-session-game
+          mkdir -p /tmp/arcont-development-session-game development-session-evidence
+          python tests/development_session_live_acceptance.py \
+            --arcont "$PWD" \
+            --project /tmp/arcont-development-session-game \
+            --evidence "$PWD/development-session-evidence"
+
+      - name: Final Godot import
+        env:
+          GODOT_BIN: /tmp/godot-bin/Godot_v4.7.2-stable_linux.x86_64
+        run: |
+          "$GODOT_BIN" --headless --path /tmp/arcont-development-session-game --editor --import --quit > development-session-evidence/final-import.log 2>&1
+          if grep -E 'ERROR:|Parse Error|Failed to load' development-session-evidence/final-import.log; then
+            cat development-session-evidence/final-import.log
+            exit 1
+          fi
+
+      - name: Preserve development session evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arcont-development-session-${{ github.sha }}
+          path: development-session-evidence/
+          include-hidden-files: true
+          retention-days: 30
