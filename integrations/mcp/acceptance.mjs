@@ -8,6 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
+const ARCONT_ROOT = path.resolve(HERE, "../..");
 const SERVER = path.join(HERE, "server.mjs");
 
 function parseArgs(argv) {
@@ -83,6 +84,28 @@ async function connectStdio(project, allowWrite, name) {
   await client.connect(transport);
   if (client.getProtocolEra() !== "modern") throw new Error("stdio did not negotiate modern MCP era");
   return { client, transport };
+}
+
+async function expectGatewayStartupFailure(project, extraArgs = [], timeoutMs = 10_000) {
+  const child = spawn(
+    process.execPath,
+    [SERVER, "--project", project, ...extraArgs],
+    { stdio: ["ignore", "ignore", "pipe"], env: inheritedStringEnvironment() }
+  );
+  let stderr = "";
+  child.stderr.on("data", chunk => {
+    stderr += chunk.toString("utf8");
+    if (stderr.length > 20000) stderr = stderr.slice(-20000);
+  });
+  const code = await Promise.race([
+    new Promise((resolve, reject) => {
+      child.once("exit", resolve);
+      child.once("error", reject);
+    }),
+    new Promise((_, reject) => setTimeout(() => reject(new Error("expected MCP gateway startup refusal timed out")), timeoutMs))
+  ]);
+  if (code === 0) throw new Error("MCP gateway unexpectedly started successfully");
+  return { exit_code: code, stderr };
 }
 
 async function expectHttpStartupFailure(project, extraArgs, envPatch = {}, timeoutMs = 10_000) {
@@ -184,6 +207,19 @@ async function main() {
     flushEvidence();
     return value;
   };
+
+  // 0. Project target must be fully disjoint from ARCONT.
+  {
+    const overlap = await expectGatewayStartupFailure(
+      path.dirname(ARCONT_ROOT),
+      ["--transport", "stdio"]
+    );
+    record("project_tree_overlap_refusal", overlap);
+    if (!overlap.stderr.includes("neither path may contain the other")) {
+      throw new Error("MCP gateway did not reject a project root containing ARCONT");
+    }
+    assertions.project_tree_must_be_disjoint = true;
+  }
 
   // 1. Read-only authority cannot bootstrap a project.
   {
