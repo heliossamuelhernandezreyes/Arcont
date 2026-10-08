@@ -5,7 +5,7 @@
     "sha256": null,
     "size_bytes": null
   },
-  "asset_type": "2",
+  "asset_type": "1",
   "compatibility": {
     "android": true,
     "godot": true,
@@ -51,7 +51,7 @@
     "2_5d",
     "3d"
   ],
-  "id": "ARC-ASSET-POLYHAVEN-87C695D9D2BA3FCA",
+  "id": "ARC-ASSET-POLYHAVEN-FE1EC7FA8F63009E",
   "license": {
     "ai_training_allowed": true,
     "attribution_required": false,
@@ -72,19 +72,26 @@
   },
   "schema_version": 1,
   "source": {
-    "acquired_at": "2026-09-12T09:45:21Z",
-    "asset_url": "https://polyhaven.com/a/pastic_torch_6v",
+    "acquired_at": "2026-10-08T06:02:09Z",
+    "asset_url": "https://polyhaven.com/a/herringbone_concrete_tile_03",
     "author": "All",
     "download_url": null,
-    "external_id": "pastic_torch_6v",
+    "external_id": "herringbone_concrete_tile_03",
     "provider": "Poly Haven"
   },
   "styles": [],
   "tags": [
-    "plastic",
-    "lighting",
-    "flashlight",
-    "spotlight"
+    "herringbone",
+    "weathered",
+    "wet patches",
+    "herringbone pattern",
+    "exterior",
+    "urban",
+    "concrete pavers",
+    "concrete blocks",
+    "mottled",
+    "discolored",
+    "retaining wall"
   ],
   "technical": {
     "animated": null,
@@ -98,14 +105,12 @@
     "pbr": false,
     "rigged": null,
     "texture_resolution": null,
-    "triangle_count": 4352
+    "triangle_count": null
   },
   "themes": [
-    "collection: project_lighthouse",
-    "lighting",
-    "tools",
-    "electronics",
-    "props"
+    "man made",
+    "outdoor",
+    "plaster-concrete"
   ],
-  "title": "Plastic Torch 6V"
+  "title": "Herringbone Concrete Tile 03"
 }

@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-05T12:33:48Z",
-  "record_count": 4638,
+  "generated_at": "2026-10-08T06:04:41Z",
+  "record_count": 4643,
   "records": [
     {
       "archive": {
@@ -42569,6 +42569,122 @@
         "plaster-concrete"
       ],
       "title": "Herringbone Concrete Tile 02"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "1",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "compatibility_evidence": {
+        "android": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "godot": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unity": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unreal": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "web": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        }
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
+      "id": "ARC-ASSET-POLYHAVEN-FE1EC7FA8F63009E",
+      "license": {
+        "ai_training_allowed": true,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "notes": "Asset license is CC0. Live API usage has separate service attribution/User-Agent terms.",
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "version": "1.0"
+      },
+      "review": {
+        "last_checked": "2026-10-08T06:02:09Z",
+        "license_verified": true,
+        "metadata_verified": false,
+        "notes": "Imported from Poly Haven public API metadata."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-10-08T06:02:09Z",
+        "asset_url": "https://polyhaven.com/a/herringbone_concrete_tile_03",
+        "author": "All",
+        "download_url": null,
+        "external_id": "herringbone_concrete_tile_03",
+        "provider": "Poly Haven"
+      },
+      "styles": [],
+      "tags": [
+        "herringbone",
+        "weathered",
+        "wet patches",
+        "herringbone pattern",
+        "exterior",
+        "urban",
+        "concrete pavers",
+        "concrete blocks",
+        "mottled",
+        "discolored",
+        "retaining wall"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_formats": [],
+        "formats": [],
+        "lods": null,
+        "pbr": false,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "man made",
+        "outdoor",
+        "plaster-concrete"
+      ],
+      "title": "Herringbone Concrete Tile 03"
     },
     {
       "archive": {
@@ -137138,117 +137254,6 @@
         "2_5d",
         "3d"
       ],
-      "id": "ARC-ASSET-POLYHAVEN-87C695D9D2BA3FCA",
-      "license": {
-        "ai_training_allowed": true,
-        "attribution_required": false,
-        "commercial_use": true,
-        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
-        "modification": true,
-        "name": "CC0-1.0",
-        "notes": "Asset license is CC0. Live API usage has separate service attribution/User-Agent terms.",
-        "redistribution_allowed": true,
-        "share_alike": false,
-        "version": "1.0"
-      },
-      "review": {
-        "last_checked": "2026-09-12T11:02:08Z",
-        "license_verified": true,
-        "metadata_verified": false,
-        "notes": "Imported from Poly Haven public API metadata."
-      },
-      "schema_version": 1,
-      "source": {
-        "acquired_at": "2026-09-12T09:45:21Z",
-        "asset_url": "https://polyhaven.com/a/pastic_torch_6v",
-        "author": "All",
-        "download_url": null,
-        "external_id": "pastic_torch_6v",
-        "provider": "Poly Haven"
-      },
-      "styles": [],
-      "tags": [
-        "plastic",
-        "lighting",
-        "flashlight",
-        "spotlight"
-      ],
-      "technical": {
-        "animated": null,
-        "animation_count": null,
-        "audio_channels": null,
-        "audio_sample_rate": null,
-        "collision": null,
-        "font_formats": [],
-        "formats": [],
-        "lods": null,
-        "pbr": false,
-        "rigged": null,
-        "texture_resolution": null,
-        "triangle_count": 4352
-      },
-      "themes": [
-        "collection: project_lighthouse",
-        "lighting",
-        "tools",
-        "electronics",
-        "props"
-      ],
-      "title": "Pastic Torch 6v"
-    },
-    {
-      "archive": {
-        "local_path": null,
-        "mirrored_in_arcont": false,
-        "sha256": null,
-        "size_bytes": null
-      },
-      "asset_type": "2",
-      "compatibility": {
-        "android": true,
-        "godot": true,
-        "unity": true,
-        "unreal": true,
-        "web": true
-      },
-      "compatibility_evidence": {
-        "android": {
-          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
-          "evidence_ref": null,
-          "level": "inferred",
-          "tested_at": null
-        },
-        "godot": {
-          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
-          "evidence_ref": null,
-          "level": "inferred",
-          "tested_at": null
-        },
-        "unity": {
-          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
-          "evidence_ref": null,
-          "level": "inferred",
-          "tested_at": null
-        },
-        "unreal": {
-          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
-          "evidence_ref": null,
-          "level": "inferred",
-          "tested_at": null
-        },
-        "web": {
-          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
-          "evidence_ref": null,
-          "level": "inferred",
-          "tested_at": null
-        }
-      },
-      "dimensions": [
-        "shared",
-        "2d",
-        "2_5d",
-        "3d"
-      ],
       "id": "ARC-ASSET-POLYHAVEN-5264E86B7BFF52D5",
       "license": {
         "ai_training_allowed": true,
@@ -139647,6 +139652,117 @@
         "containers"
       ],
       "title": "Plastic Thermos"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "2",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "compatibility_evidence": {
+        "android": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "godot": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unity": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unreal": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "web": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        }
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
+      "id": "ARC-ASSET-POLYHAVEN-87C695D9D2BA3FCA",
+      "license": {
+        "ai_training_allowed": true,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "notes": "Asset license is CC0. Live API usage has separate service attribution/User-Agent terms.",
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "version": "1.0"
+      },
+      "review": {
+        "last_checked": "2026-10-08T06:02:09Z",
+        "license_verified": true,
+        "metadata_verified": false,
+        "notes": "Imported from Poly Haven public API metadata."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-09-12T09:45:21Z",
+        "asset_url": "https://polyhaven.com/a/pastic_torch_6v",
+        "author": "All",
+        "download_url": null,
+        "external_id": "pastic_torch_6v",
+        "provider": "Poly Haven"
+      },
+      "styles": [],
+      "tags": [
+        "plastic",
+        "lighting",
+        "flashlight",
+        "spotlight"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_formats": [],
+        "formats": [],
+        "lods": null,
+        "pbr": false,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": 4352
+      },
+      "themes": [
+        "collection: project_lighthouse",
+        "lighting",
+        "tools",
+        "electronics",
+        "props"
+      ],
+      "title": "Plastic Torch 6V"
     },
     {
       "archive": {
@@ -172226,6 +172342,375 @@
         "2D"
       ],
       "title": "Yellow Paint Pack"
+    },
+    {
+      "archive": {
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "3d_model",
+      "compatibility": {
+        "android": null,
+        "godot": true,
+        "unity": null,
+        "unreal": null,
+        "web": null
+      },
+      "compatibility_evidence": {
+        "godot": {
+          "basis": "Godot 4.7.2 Linux CI imported meshes and inspected AnimationPlayer and Skeleton3D; does not establish performance, collision or frame pacing.",
+          "evidence_ref": "heliossamuelhernandezreyes/Godot-juegos-3d.- Actions run 37728531689",
+          "level": "runtime",
+          "tested_at": "2026-10-08"
+        }
+      },
+      "dimensions": [
+        "3d"
+      ],
+      "id": "ARC-ASSET-QUATERNIUS-ENEMY-EYEDRONE",
+      "license": {
+        "ai_training_allowed": true,
+        "attribution_required": false,
+        "commercial_use": true,
+        "drm_risk": false,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "policy_tier": "green",
+        "portable_commercial_default": true,
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "source_label": "Embedded Quaternius License_Standard.txt + official creator pack page"
+      },
+      "review": {
+        "last_checked": "2026-10-08",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Third-party source mirror pinned to db3df04d1e4714298a09510b26fb6de6645138a2; only selected binaries vendored in FISURA game with sha256 provenance. Do not infer source is official Quaternius hosting."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-10-08T04:39:06Z",
+        "asset_url": "https://quaternius.com/packs/scifiessentialskit.html",
+        "author": "Quaternius",
+        "download_url": "https://raw.githubusercontent.com/agentkaerf/FreeModels/db3df04d1e4714298a09510b26fb6de6645138a2/Sci-Fi%20Essentials%20Kit%5BStandard%5D/glTF/Enemy_EyeDrone.gltf",
+        "external_id": "Enemy_EyeDrone",
+        "provider": "Quaternius"
+      },
+      "styles": [
+        "stylized"
+      ],
+      "tags": [
+        "enemy",
+        "drone",
+        "robot",
+        "skeletal",
+        "idle",
+        "attack",
+        "hit"
+      ],
+      "technical": {
+        "animated": true,
+        "animation_count": 6,
+        "collision": "no collision mesh; use gameplay proxy",
+        "formats": [
+          "gltf",
+          "bin",
+          "png"
+        ],
+        "lods": null,
+        "pbr": true,
+        "rigged": true,
+        "texture_resolution": null,
+        "triangle_count": 3530
+      },
+      "themes": [
+        "sci-fi",
+        "industrial"
+      ],
+      "title": "Quaternius EyeDrone"
+    },
+    {
+      "archive": {
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "3d_model",
+      "compatibility": {
+        "android": null,
+        "godot": true,
+        "unity": null,
+        "unreal": null,
+        "web": null
+      },
+      "compatibility_evidence": {
+        "godot": {
+          "basis": "Godot 4.7.2 Linux CI imported meshes and inspected AnimationPlayer and Skeleton3D; does not establish performance, collision or frame pacing.",
+          "evidence_ref": "heliossamuelhernandezreyes/Godot-juegos-3d.- Actions run 37728531689",
+          "level": "runtime",
+          "tested_at": "2026-10-08"
+        }
+      },
+      "dimensions": [
+        "3d"
+      ],
+      "id": "ARC-ASSET-QUATERNIUS-ENEMY-QUADSHELL",
+      "license": {
+        "ai_training_allowed": true,
+        "attribution_required": false,
+        "commercial_use": true,
+        "drm_risk": false,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "policy_tier": "green",
+        "portable_commercial_default": true,
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "source_label": "Embedded Quaternius License_Standard.txt + official creator pack page"
+      },
+      "review": {
+        "last_checked": "2026-10-08",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Third-party source mirror pinned to db3df04d1e4714298a09510b26fb6de6645138a2; only selected binaries vendored in FISURA game with sha256 provenance. Do not infer source is official Quaternius hosting."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-10-08T04:39:06Z",
+        "asset_url": "https://quaternius.com/packs/scifiessentialskit.html",
+        "author": "Quaternius",
+        "download_url": "https://raw.githubusercontent.com/agentkaerf/FreeModels/db3df04d1e4714298a09510b26fb6de6645138a2/Sci-Fi%20Essentials%20Kit%5BStandard%5D/glTF/Enemy_QuadShell.gltf",
+        "external_id": "Enemy_QuadShell",
+        "provider": "Quaternius"
+      },
+      "styles": [
+        "stylized"
+      ],
+      "tags": [
+        "enemy",
+        "robot",
+        "quadruped",
+        "skeletal",
+        "walk",
+        "run",
+        "attack",
+        "hit"
+      ],
+      "technical": {
+        "animated": true,
+        "animation_count": 8,
+        "collision": "no collision mesh; use gameplay proxy",
+        "formats": [
+          "gltf",
+          "bin",
+          "png"
+        ],
+        "lods": null,
+        "pbr": true,
+        "rigged": true,
+        "texture_resolution": null,
+        "triangle_count": 7494
+      },
+      "themes": [
+        "sci-fi",
+        "industrial"
+      ],
+      "title": "Quaternius QuadShell robot"
+    },
+    {
+      "archive": {
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "3d_model",
+      "compatibility": {
+        "android": null,
+        "godot": true,
+        "unity": null,
+        "unreal": null,
+        "web": null
+      },
+      "compatibility_evidence": {
+        "godot": {
+          "basis": "Godot 4.7.2 Linux CI imported meshes and inspected AnimationPlayer and Skeleton3D; does not establish performance, collision or frame pacing.",
+          "evidence_ref": "heliossamuelhernandezreyes/Godot-juegos-3d.- Actions run 37728531689",
+          "level": "runtime",
+          "tested_at": "2026-10-08"
+        }
+      },
+      "dimensions": [
+        "3d"
+      ],
+      "id": "ARC-ASSET-QUATERNIUS-GUN-RIFLE",
+      "license": {
+        "ai_training_allowed": true,
+        "attribution_required": false,
+        "commercial_use": true,
+        "drm_risk": false,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "policy_tier": "green",
+        "portable_commercial_default": true,
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "source_label": "Embedded Quaternius License_Standard.txt + official creator pack page"
+      },
+      "review": {
+        "last_checked": "2026-10-08",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Third-party source mirror pinned to db3df04d1e4714298a09510b26fb6de6645138a2; only selected binaries vendored in FISURA game with sha256 provenance. Do not infer source is official Quaternius hosting."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-10-08T04:39:06Z",
+        "asset_url": "https://quaternius.com/packs/scifiessentialskit.html",
+        "author": "Quaternius",
+        "download_url": "https://raw.githubusercontent.com/agentkaerf/FreeModels/db3df04d1e4714298a09510b26fb6de6645138a2/Sci-Fi%20Essentials%20Kit%5BStandard%5D/glTF/Gun_Rifle.gltf",
+        "external_id": "Gun_Rifle",
+        "provider": "Quaternius"
+      },
+      "styles": [
+        "stylized"
+      ],
+      "tags": [
+        "rifle",
+        "weapon",
+        "sci-fi",
+        "3d",
+        "pbr"
+      ],
+      "technical": {
+        "animated": false,
+        "animation_count": 0,
+        "collision": "no collision mesh; use gameplay proxy",
+        "formats": [
+          "gltf",
+          "bin",
+          "png"
+        ],
+        "lods": null,
+        "pbr": true,
+        "rigged": false,
+        "texture_resolution": null,
+        "triangle_count": 6194
+      },
+      "themes": [
+        "sci-fi",
+        "industrial"
+      ],
+      "title": "Quaternius Sci-Fi Rifle"
+    },
+    {
+      "archive": {
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "3d_model",
+      "compatibility": {
+        "android": null,
+        "godot": true,
+        "unity": null,
+        "unreal": null,
+        "web": null
+      },
+      "compatibility_evidence": {
+        "godot": {
+          "basis": "Godot 4.7.2 Linux Actions run 37730621172: 62 bones, 4 meshes/10558 triangles, 24 imported clips; script plays Run and validates Idle→Run→Run_Shoot→Roll→HitRecieve→Death in live scene. Linux only.",
+          "evidence_ref": "https://github.com/heliossamuelhernandezreyes/Godot-juegos-3d.-/actions/runs/37730621172",
+          "level": "runtime",
+          "tested_at": "2026-10-08"
+        }
+      },
+      "dimensions": [
+        "3d"
+      ],
+      "id": "ARC-ASSET-QUATERNIUS-SPACESUIT",
+      "license": {
+        "ai_training_allowed": true,
+        "attribution_required": false,
+        "commercial_use": true,
+        "drm_risk": false,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "policy_tier": "green",
+        "portable_commercial_default": true,
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "source_label": "Quaternius Ultimate Modular Men source License.txt, verified with SHA256 in separate game provenance"
+      },
+      "review": {
+        "last_checked": "2026-10-08",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Exact download URL, source SHA and license SHA saved in the separate FISURA production repository. No data proving Android performance or commercial AAA visual quality."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-10-08T05:02:35Z",
+        "asset_url": "https://github.com/agentkaerf/FreeModels/blob/db3df04d1e4714298a09510b26fb6de6645138a2/Ultimate%20Modular%20Men-%20Feb%202022/Individual%20Characters/glTF/Spacesuit.gltf",
+        "author": "Quaternius",
+        "download_url": null,
+        "external_id": "Ultimate Modular Men/Individual Characters/glTF/Spacesuit.gltf",
+        "provider": "Quaternius (via source-pinned FreeModels mirror)"
+      },
+      "styles": [
+        "stylized"
+      ],
+      "tags": [
+        "humanoid",
+        "player",
+        "spacesuit",
+        "skeleton",
+        "rig",
+        "run",
+        "shoot",
+        "roll",
+        "hit",
+        "death",
+        "native-animations"
+      ],
+      "technical": {
+        "animated": true,
+        "animation_count": 24,
+        "bone_count": 62,
+        "character_scale_inference": "do not assume dimensions without inspection",
+        "collision": "independent physics proxy in FISURA; source mesh does not define gameplay collider",
+        "formats": [
+          "gltf"
+        ],
+        "lods": null,
+        "mesh_count": 4,
+        "native_animation_clips": [
+          "Idle_Gun",
+          "Run",
+          "Run_Back",
+          "Run_Left",
+          "Run_Right",
+          "Run_Shoot",
+          "Gun_Shoot",
+          "Roll",
+          "HitRecieve",
+          "Death"
+        ],
+        "pbr": false,
+        "rigged": true,
+        "skeleton_count": 1,
+        "texture_resolution": null,
+        "triangle_count": 10558
+      },
+      "themes": [
+        "sci-fi",
+        "industrial"
+      ],
+      "title": "Quaternius Spacesuit — humanoid Vanguard rig"
     },
     {
       "archive": {
@@ -242958,6 +243443,7 @@
           "latin",
           "latin-ext",
           "menu",
+          "symbols2",
           "vietnamese"
         ]
       },
@@ -242975,7 +243461,7 @@
         "version": "1.1"
       },
       "review": {
-        "last_checked": "2026-09-12T09:45:24Z",
+        "last_checked": "2026-10-08T06:02:13Z",
         "license_verified": true,
         "metadata_verified": true,
         "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
@@ -242998,6 +243484,7 @@
         "latin-ext",
         "menu",
         "ofl",
+        "symbols2",
         "typography",
         "vietnamese"
       ],

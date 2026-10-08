@@ -43,6 +43,7 @@
       "latin",
       "latin-ext",
       "menu",
+      "symbols2",
       "vietnamese"
     ]
   },
@@ -60,7 +61,7 @@
     "version": "1.1"
   },
   "review": {
-    "last_checked": "2026-09-12T09:45:24Z",
+    "last_checked": "2026-10-08T06:02:13Z",
     "license_verified": true,
     "metadata_verified": true,
     "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
@@ -83,6 +84,7 @@
     "latin-ext",
     "menu",
     "ofl",
+    "symbols2",
     "typography",
     "vietnamese"
   ],
