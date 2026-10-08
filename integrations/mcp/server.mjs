@@ -12,7 +12,7 @@ import { toNodeHandler } from "@modelcontextprotocol/node";
 import * as z from "zod/v4";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const ARCONT_ROOT = path.resolve(HERE, "../..");
+const ARCONT_ROOT = fs.realpathSync(path.resolve(HERE, "../.."));
 const SERVER_VERSION = "0.1.0";
 const MAX_BRIDGE_STDOUT = 32 * 1024 * 1024;
 const MAX_BRIDGE_STDERR = 2 * 1024 * 1024;
@@ -64,9 +64,16 @@ function parseCli(argv) {
   config.project = fs.realpathSync(path.resolve(config.project));
   const stat = fs.statSync(config.project);
   if (!stat.isDirectory()) fail("--project must resolve to a directory");
-  const relative = path.relative(ARCONT_ROOT, config.project);
-  if (relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative))) {
-    fail("project must be external to ARCONT");
+  const arcontToProject = path.relative(ARCONT_ROOT, config.project);
+  const projectToArcont = path.relative(config.project, ARCONT_ROOT);
+  const projectInsideArcont =
+    arcontToProject === "" ||
+    (!arcontToProject.startsWith("..") && !path.isAbsolute(arcontToProject));
+  const arcontInsideProject =
+    projectToArcont === "" ||
+    (!projectToArcont.startsWith("..") && !path.isAbsolute(projectToArcont));
+  if (projectInsideArcont || arcontInsideProject) {
+    fail("project must be disjoint from ARCONT; neither path may contain the other");
   }
   return config;
 }
