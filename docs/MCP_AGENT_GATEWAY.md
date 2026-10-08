@@ -35,6 +35,8 @@ The gateway uses the official MCP TypeScript SDK v2:
 - `@modelcontextprotocol/node@2.1.1`
 - `zod@4.6.5`
 
+`integrations/mcp/package-lock.json` pins the resolved transitive dependency graph used by CI.
+
 The tested modern protocol revision is `2026-07-28`.
 
 The official SDK entries used here are:
@@ -124,7 +126,7 @@ Install dependencies once:
 
 ```bash
 cd integrations/mcp
-npm install --ignore-scripts --no-audit --no-fund
+npm ci --ignore-scripts --no-audit --no-fund
 ```
 
 Start a read-only server:
