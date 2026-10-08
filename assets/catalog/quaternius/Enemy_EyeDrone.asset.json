@@ -72,12 +72,6 @@
       "basis": "Godot 4.7.2 Linux CI imported meshes and inspected AnimationPlayer and Skeleton3D; does not establish performance, collision or frame pacing.",
       "tested_at": "2026-10-08",
       "evidence_ref": "heliossamuelhernandezreyes/Godot-juegos-3d.- Actions run 37728531689"
-    },
-    "android": {
-      "level": "inferred",
-      "basis": "glTF compatible format only; no device or APK test",
-      "tested_at": null,
-      "evidence_ref": null
     }
   },
   "archive": {
