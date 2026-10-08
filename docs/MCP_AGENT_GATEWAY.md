@@ -148,6 +148,10 @@ node integrations/mcp/server.mjs \
 
 The flag is a process-level ceiling. A model/tool call cannot enable it later.
 
+The selected project tree must also be fully disjoint from the ARCONT checkout:
+neither project-inside-ARCONT nor ARCONT-inside-project is accepted. This is
+enforced again by the Universal Bridge and writer control plane.
+
 ## Streamable HTTP
 
 Localhost is the default:
