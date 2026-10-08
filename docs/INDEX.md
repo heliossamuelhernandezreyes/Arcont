@@ -82,6 +82,8 @@ La suite runtime permanece separada del banco de conocimiento. Produce datos; AR
 
 ## Observaciones de producción externas
 
+- [FISURA 0.6: puntería post-animación y exportación Android](knowledge/observations/FISURA_AIM_ANDROID_EXPORT_2026-10-08.md) — huesos reales Torso/Chest/Wrist.R, trayectoria balística 3D, dos dedos y build ARM64; aún falta test físico.
+
 - [`knowledge/observations/FISURA_PRODUCTION_OBSERVATION_2026-10-07.md`](knowledge/observations/FISURA_PRODUCTION_OBSERVATION_2026-10-07.md) — experimento FISURA 0.3: contrato de mapas, navegación A*, materiales CC0, evidencias Godot y errores de cámara; el código jugable permanece fuera de ARCONT.
 
 ## Motor — Godot
