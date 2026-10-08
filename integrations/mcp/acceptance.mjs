@@ -136,6 +136,17 @@ async function main() {
 
   const assertions = {};
   const evidence = {};
+  const flushEvidence = () => {
+    fs.writeFileSync(
+      path.join(args.evidence, "details.partial.json"),
+      JSON.stringify({ assertions, evidence }, null, 2) + "\n"
+    );
+  };
+  const record = (key, value) => {
+    evidence[key] = value;
+    flushEvidence();
+    return value;
+  };
 
   // 1. Read-only authority cannot bootstrap a project.
   {
@@ -143,7 +154,7 @@ async function main() {
     try {
       const tools = await client.listTools();
       const names = tools.tools.map(tool => tool.name).sort();
-      evidence.readonly_tools = names;
+      record("readonly_tools", names);
       for (const expected of [
         "arcont_discover",
         "arcont_project_context",
@@ -158,7 +169,7 @@ async function main() {
 
       const discoverCall = await client.callTool({ name: "arcont_discover", arguments: {} });
       const discover = toolJson(discoverCall);
-      evidence.discover = discover;
+      record("discover", discover);
       if (discover?.ok !== true) throw new Error("arcont_discover failed");
       assertions.universal_bridge_discovered = true;
 
@@ -185,7 +196,7 @@ async function main() {
           }
         }
       });
-      evidence.readonly_write_attempt = toolJson(refused);
+      record("readonly_write_attempt", toolJson(refused));
       if (refused.isError !== true) throw new Error("read-only MCP server allowed project bootstrap");
       assertions.readonly_server_cannot_escalate = true;
     } finally {
@@ -222,7 +233,7 @@ async function main() {
           }
         }
       });
-      evidence.bootstrap = toolJson(bootstrapCall);
+      record("bootstrap", toolJson(bootstrapCall));
       if (bootstrapCall.isError) throw new Error("writable MCP bootstrap failed");
       assertions.mcp_bootstrapped_external_project = true;
 
@@ -230,7 +241,7 @@ async function main() {
         name: "arcont_project_context",
         arguments: { max_files: 2000, max_assets: 100 }
       });
-      evidence.context = toolJson(contextCall);
+      record("context", toolJson(contextCall));
       if (contextCall.isError) throw new Error("project context tool failed");
       assertions.project_context_available = true;
 
@@ -262,7 +273,7 @@ async function main() {
         }
       });
       const created = toolJson(createCall);
-      evidence.session_create = created;
+      record("session_create", created);
       if (createCall.isError) throw new Error("MCP session create failed");
       const createdSession = findSession(created);
       if (!createdSession) throw new Error("could not locate created development session");
@@ -365,8 +376,10 @@ func _physics_process(_delta):
         }
       });
       const executed = toolJson(executeCall);
-      evidence.session_execute = executed;
-      if (executeCall.isError) throw new Error("MCP session execute failed");
+      record("session_execute", executed);
+      if (executeCall.isError) {
+        throw new Error("MCP session execute failed: " + JSON.stringify(executed).slice(0, 12000));
+      }
       const completedSession = findSession(executed);
       if (!completedSession || completedSession.status !== "completed") {
         throw new Error("MCP-driven development session did not complete");
@@ -382,7 +395,7 @@ func _physics_process(_delta):
         arguments: { session_id: "mcp_build" }
       });
       const inspected = toolJson(inspectCall);
-      evidence.session_inspect_stdio = inspected;
+      record("session_inspect_stdio", inspected);
       const inspectedSession = findSession(inspected);
       if (!inspectedSession || inspectedSession.revision !== completedSession.revision) {
         throw new Error("MCP session inspect did not return persisted final revision");
@@ -418,11 +431,11 @@ func _physics_process(_delta):
     );
     try {
       const started = await waitForHttpServer(child);
-      evidence.http_server = started;
+      record("http_server", started);
       if (started.token_required !== true) throw new Error("HTTP MCP server did not enable bearer auth");
 
       const unauth = await rawStatus(started.url);
-      evidence.http_unauthorized_status = unauth;
+      record("http_unauthorized_status", unauth);
       if (unauth !== 401) throw new Error(`HTTP MCP unauthenticated request returned ${unauth}`);
       assertions.http_bearer_auth_enforced = true;
 
@@ -430,7 +443,7 @@ func _physics_process(_delta):
         Authorization: `Bearer ${token}`,
         Host: "attacker.invalid"
       });
-      evidence.http_bad_host_status = hostRejected;
+      record("http_bad_host_status", hostRejected);
       if (hostRejected !== 403) throw new Error(`HTTP MCP bad Host returned ${hostRejected}`);
       assertions.http_host_validation_enforced = true;
 
@@ -452,7 +465,7 @@ func _physics_process(_delta):
           arguments: { session_id: "mcp_build" }
         });
         const inspected = toolJson(inspectCall);
-        evidence.session_inspect_http = inspected;
+        record("session_inspect_http", inspected);
         const session = findSession(inspected);
         if (!session || session.status !== "completed") throw new Error("HTTP MCP could not inspect completed session");
         assertions.http_and_stdio_share_same_arcont_state = true;
