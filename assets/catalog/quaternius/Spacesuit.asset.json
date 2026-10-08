@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "id": "ARC-ASSET-QUATERNIUS-SPACESUIT",
+  "title": "Quaternius Spacesuit — humanoid Vanguard rig",
+  "asset_type": "3d_model",
+  "dimensions": [
+    "3d"
+  ],
+  "themes": [
+    "sci-fi",
+    "industrial"
+  ],
+  "styles": [
+    "stylized"
+  ],
+  "tags": [
+    "humanoid",
+    "player",
+    "spacesuit",
+    "skeleton",
+    "rig",
+    "run",
+    "shoot",
+    "roll",
+    "hit",
+    "death",
+    "native-animations"
+  ],
+  "source": {
+    "provider": "Quaternius (via source-pinned FreeModels mirror)",
+    "author": "Quaternius",
+    "external_id": "Ultimate Modular Men/Individual Characters/glTF/Spacesuit.gltf",
+    "asset_url": "https://github.com/agentkaerf/FreeModels/blob/db3df04d1e4714298a09510b26fb6de6645138a2/Ultimate%20Modular%20Men-%20Feb%202022/Individual%20Characters/glTF/Spacesuit.gltf",
+    "download_url": null,
+    "acquired_at": "2026-10-08T05:02:35Z"
+  },
+  "license": {
+    "name": "CC0-1.0",
+    "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "commercial_use": true,
+    "modification": true,
+    "attribution_required": false,
+    "redistribution_allowed": true,
+    "share_alike": false,
+    "ai_training_allowed": true,
+    "policy_tier": "green",
+    "drm_risk": false,
+    "portable_commercial_default": true,
+    "source_label": "Quaternius Ultimate Modular Men source License.txt, verified with SHA256 in separate game provenance"
+  },
+  "technical": {
+    "formats": [
+      "gltf"
+    ],
+    "triangle_count": 10558,
+    "rigged": true,
+    "animated": true,
+    "animation_count": 24,
+    "skeleton_count": 1,
+    "bone_count": 62,
+    "mesh_count": 4,
+    "pbr": false,
+    "texture_resolution": null,
+    "collision": "independent physics proxy in FISURA; source mesh does not define gameplay collider",
+    "native_animation_clips": [
+      "Idle_Gun",
+      "Run",
+      "Run_Back",
+      "Run_Left",
+      "Run_Right",
+      "Run_Shoot",
+      "Gun_Shoot",
+      "Roll",
+      "HitRecieve",
+      "Death"
+    ],
+    "character_scale_inference": "do not assume dimensions without inspection",
+    "lods": null
+  },
+  "compatibility": {
+    "godot": true,
+    "android": null,
+    "unity": null,
+    "unreal": null,
+    "web": null
+  },
+  "compatibility_evidence": {
+    "godot": {
+      "level": "runtime",
+      "basis": "Godot 4.7.2 Linux Actions run 37730621172: 62 bones, 4 meshes/10558 triangles, 24 imported clips; script plays Run and validates Idle→Run→Run_Shoot→Roll→HitRecieve→Death in live scene. Linux only.",
+      "tested_at": "2026-10-08",
+      "evidence_ref": "https://github.com/heliossamuelhernandezreyes/Godot-juegos-3d.-/actions/runs/37730621172"
+    }
+  },
+  "archive": {
+    "mirrored_in_arcont": false,
+    "sha256": null,
+    "size_bytes": null
+  },
+  "review": {
+    "license_verified": true,
+    "metadata_verified": true,
+    "last_checked": "2026-10-08",
+    "notes": "Exact download URL, source SHA and license SHA saved in the separate FISURA production repository. No data proving Android performance or commercial AAA visual quality."
+  }
+}
