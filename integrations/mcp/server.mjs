@@ -162,12 +162,19 @@ function runBridge(config, operation, args = {}, timeoutMs = DEFAULT_TIMEOUT_MS)
     // HTTP authentication belongs to the MCP transport boundary. Do not leak
     // the bearer secret into the Python bridge or any capability subprocess.
     delete childEnv[config.tokenEnv];
-    const child = spawn(config.python, commandArgs, {
-      cwd: ARCONT_ROOT,
-      stdio: ["pipe", "pipe", "pipe"],
-      shell: false,
-      env: childEnv
-    });
+    let child;
+    try {
+      child = spawn(config.python, commandArgs, {
+        cwd: ARCONT_ROOT,
+        stdio: ["pipe", "pipe", "pipe"],
+        shell: false,
+        env: childEnv
+      });
+    } catch (error) {
+      activeBridgeProcesses = Math.max(0, activeBridgeProcesses - 1);
+      reject(error);
+      return;
+    }
     let stdout = "";
     let stderr = "";
     let settled = false;
@@ -230,6 +237,12 @@ function runBridge(config, operation, args = {}, timeoutMs = DEFAULT_TIMEOUT_MS)
         };
       }
       resolve(parsed);
+    });
+    child.stdin.on("error", error => {
+      if (settled) return;
+      finish();
+      clearTimeout(timer);
+      reject(error);
     });
     child.stdin.end(JSON.stringify(request));
   });
