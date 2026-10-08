@@ -277,10 +277,12 @@ It proves:
 6. execution/completion of a real structured-Godot milestone through MCP;
 7. criterion-to-step completion evidence persists;
 8. the same session can be re-inspected through stdio;
-9. Streamable HTTP rejects unauthenticated requests when token auth is enabled;
-10. Streamable HTTP rejects a malicious Host header;
-11. the official client negotiates the modern 2026 protocol;
-12. stdio and HTTP observe the same persisted ARCONT session state.
+9. non-loopback HTTP without a bearer token refuses startup;
+10. wildcard HTTP bind without an explicit allowed Host refuses startup;
+11. Streamable HTTP rejects unauthenticated requests when token auth is enabled;
+12. Streamable HTTP rejects a malicious Host header;
+13. the official client negotiates the modern 2026 protocol;
+14. stdio and HTTP observe the same persisted ARCONT session state.
 
 This is interoperability evidence for the tested SDK/client on Linux CI. It is
 not a claim that every proprietary MCP host exposes identical UI or connection
