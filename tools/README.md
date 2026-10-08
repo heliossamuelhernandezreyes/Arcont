@@ -27,7 +27,7 @@ python tools/arcont_bridge.py --project path/to/game --request templates/agent/p
 python tools/arcont_bridge.py --project path/to/game --request templates/agent/create-player-script.request.example.json --allow-project-write
 python tools/arcont_bridge.py --project path/to/game --request templates/agent/edit-main-scene.request.example.json --allow-project-write
 python tools/arcont_bridge.py --project path/to/game --request templates/agent/create-development-session.request.example.json --allow-project-write
-cd integrations/mcp && npm install --ignore-scripts --no-audit --no-fund
+cd integrations/mcp && npm ci --ignore-scripts --no-audit --no-fund
 node integrations/mcp/server.mjs --project path/to/game --transport stdio
 node integrations/mcp/server.mjs --project path/to/game --transport stdio --allow-project-write
 ```
