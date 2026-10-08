@@ -39,3 +39,16 @@ Follow `MOBILE_PERFORMANCE_FOUNDATIONS.md`: record p50/p95/p99 frame intervals, 
 5. Explicitly reject conflating APK package success with install/launch/presentation success.
 
 **Evidence level:** automated runtime behavior for the torso correction; Android export packaging is a separate gate and may remain pending/failed until a workflow proves otherwise. No AAA claim.
+
+
+## Android export failures observed in GitHub Actions
+
+During the first Android packaging experiments, CI found three separate environment/configuration problems, **not gameplay defects**:
+
+1. An Android setup action tried to install the obsolete SDK `tools` package; bypassed by using the runner's existing `cmdline-tools/*/bin/sdkmanager`.
+2. `sdkmanager` was installed but not on the default shell PATH; resolved by discovering its absolute path from `ANDROID_HOME`.
+3. Godot 4.7.2 refused Android export with the explicit error: `ETC2/ASTC texture compression is required`. The corresponding game project flag is `rendering/textures/vram_compression/import_etc2_astc=true` (under `[rendering]` in `project.godot`).
+
+These examples show why ARCONT should use **real exporter invocation**, verify the specific target-platform texture-import path, and collect tool logs. Source-only project validation and Linux runtime smoke would not detect these Android packaging prerequisites.
+
+No inference about physical-device performance follows from these fixes.
