@@ -85,6 +85,33 @@ async function connectStdio(project, allowWrite, name) {
   return { client, transport };
 }
 
+async function expectHttpStartupFailure(project, extraArgs, envPatch = {}, timeoutMs = 10_000) {
+  const env = inheritedStringEnvironment();
+  for (const [key, value] of Object.entries(envPatch)) {
+    if (value === null) delete env[key];
+    else env[key] = value;
+  }
+  const child = spawn(
+    process.execPath,
+    [SERVER, "--project", project, "--transport", "http", "--port", "0", ...extraArgs],
+    { stdio: ["ignore", "ignore", "pipe"], env }
+  );
+  let stderr = "";
+  child.stderr.on("data", chunk => {
+    stderr += chunk.toString("utf8");
+    if (stderr.length > 20000) stderr = stderr.slice(-20000);
+  });
+  const code = await Promise.race([
+    new Promise((resolve, reject) => {
+      child.once("exit", resolve);
+      child.once("error", reject);
+    }),
+    new Promise((_, reject) => setTimeout(() => reject(new Error("expected HTTP startup refusal timed out")), timeoutMs))
+  ]);
+  if (code === 0) throw new Error("HTTP gateway unexpectedly started successfully");
+  return { exit_code: code, stderr };
+}
+
 async function waitForHttpServer(child, timeoutMs = 20_000) {
   return await new Promise((resolve, reject) => {
     let buffer = "";
@@ -416,7 +443,32 @@ func _physics_process(_delta):
     }
   }
 
-  // 3. Serve the same project over current Streamable HTTP with auth and Host protection.
+  // 3. Fail closed before exposing non-loopback HTTP.
+  {
+    const noToken = await expectHttpStartupFailure(
+      args.project,
+      ["--host", "0.0.0.0", "--token-env", "ARCONT_MCP_MISSING_TOKEN"],
+      { ARCONT_MCP_MISSING_TOKEN: null }
+    );
+    record("http_nonloopback_no_token_refusal", noToken);
+    if (!noToken.stderr.includes("non-loopback HTTP requires a bearer token")) {
+      throw new Error("non-loopback HTTP refusal did not report missing bearer token");
+    }
+    assertions.http_nonloopback_requires_token = true;
+
+    const wildcardNoHost = await expectHttpStartupFailure(
+      args.project,
+      ["--host", "0.0.0.0", "--token-env", "ARCONT_MCP_TEST_TOKEN"],
+      { ARCONT_MCP_TEST_TOKEN: "present-but-no-host" }
+    );
+    record("http_wildcard_no_allowed_host_refusal", wildcardNoHost);
+    if (!wildcardNoHost.stderr.includes("requires at least one --allowed-host")) {
+      throw new Error("wildcard HTTP refusal did not report missing allowed Host");
+    }
+    assertions.http_wildcard_requires_allowed_host = true;
+  }
+
+  // 4. Serve the same project over current Streamable HTTP with auth and Host protection.
   {
     const token = "arcont-mcp-acceptance-token";
     const child = spawn(
