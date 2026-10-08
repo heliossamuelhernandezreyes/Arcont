@@ -125,3 +125,8 @@ Los experimentos de ARCONT deben permanecer mínimos, aislados y reproducibles. 
 
 - [`knowledge/VERTICAL_SLICE_PRODUCTION_CONTRACT.md`](knowledge/VERTICAL_SLICE_PRODUCTION_CONTRACT.md) — especificaciones engine-neutral de fases, objetivos, encounters, limites, evidencia y pruebas negativas.
 - [`../schemas/vertical-slice-contract.schema.json`](../schemas/vertical-slice-contract.schema.json), [`../tools/vertical_slice_contract.py`](../tools/vertical_slice_contract.py) y [`../templates/mission_slice/mission_contract.example.json`](../templates/mission_slice/mission_contract.example.json) — formato, validador y ejemplo reusable; sin escenas ni gameplay dentro de Arcont.
+
+## Visual evidence QA
+
+- [FISURA 0.8 screenshot-based visual QA](knowledge/observations/FISURA_V08_SCREENSHOT_LED_ART_QA_2026-10-08.md): multiple real Godot viewpoints, visual defects and platform evidence boundaries.
+- [Generic screenshot integrity gate](../tools/viewport_evidence_gate.py) with [negative regression tests](../tests/test_viewport_evidence_gate.py). Distinct PNG captures are not an AAA visual-quality guarantee.
