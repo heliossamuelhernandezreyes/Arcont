@@ -74,8 +74,7 @@ def validate_contract(data: Any) -> list[str]:
             if wave_cap > global_cap:
                 report("caps", "spawns_per_wave exceeds global_hostiles")
 
-    # IDs are unique globally to avoid contradictory anchor/phase/objective references.
-    records: dict[str, dict[str, Any]] = {}
+    # IDs are unique inside each namespace; e.g. phase 'insertion' and zone 'insertion' are valid.
     sets: dict[str, dict[str, dict[str, Any]]] = {}
     for collection in ("zones", "anchors", "roles", "objectives", "phases", "encounters", "transitions", "qa_gates"):
         values = data.get(collection)
@@ -94,11 +93,10 @@ def validate_contract(data: Any) -> list[str]:
             identifier = item.get("id")
             if not _identifier(identifier):
                 report(where, "non-empty id required")
-            elif identifier in records:
-                report(where, f"duplicate global id '{identifier}' also in {records[identifier]['collection']}")
+            elif identifier in items:
+                report(where, f"duplicate id '{identifier}' within {collection}")
             else:
                 items[identifier] = item
-                records[identifier] = {"collection": collection}
         sets[collection] = items
 
     zones = sets["zones"]
