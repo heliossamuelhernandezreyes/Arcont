@@ -172,7 +172,9 @@
     "mcp_gateway_lockfile": "integrations/mcp/package-lock.json",
     "mcp_dependencies_locked": true,
     "mcp_http_constant_time_bearer_compare": true,
-    "mcp_bearer_forwarded_to_bridge": false
+    "mcp_bearer_forwarded_to_bridge": false,
+    "external_project_tree_must_be_disjoint_from_arcont": true,
+    "mcp_project_tree_must_be_disjoint_from_arcont": true
   },
   "integrity": {
     "validator": "tools/arcont_lab.py",
