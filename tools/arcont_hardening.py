@@ -94,6 +94,7 @@ def validate_manifest(repo: Path) -> list[str]:
         m.get("agent_control", {}).get("development_session_documentation"),
         m.get("agent_control", {}).get("mcp_gateway"),
         m.get("agent_control", {}).get("mcp_gateway_package"),
+        m.get("agent_control", {}).get("mcp_gateway_lockfile"),
         m.get("agent_control", {}).get("mcp_gateway_documentation"),
         m.get("integrity", {}).get("validator"),
         m.get("integrity", {}).get("hardening_validator"),
