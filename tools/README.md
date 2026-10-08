@@ -27,9 +27,13 @@ python tools/arcont_bridge.py --project path/to/game --request templates/agent/p
 python tools/arcont_bridge.py --project path/to/game --request templates/agent/create-player-script.request.example.json --allow-project-write
 python tools/arcont_bridge.py --project path/to/game --request templates/agent/edit-main-scene.request.example.json --allow-project-write
 python tools/arcont_bridge.py --project path/to/game --request templates/agent/create-development-session.request.example.json --allow-project-write
+cd integrations/mcp && npm install --ignore-scripts --no-audit --no-fund
+node integrations/mcp/server.mjs --project path/to/game --transport stdio
+node integrations/mcp/server.mjs --project path/to/game --transport stdio --allow-project-write
 ```
 
 The canonical capability registry is `agent.capabilities.json`. Discovery reports repository guards, tool availability and access mode; `doctor` runs only explicitly whitelisted read-only diagnostics with bounded output and per-tool timeouts. `inspect-project` inventories an external repository without modifying it. `invoke` only accepts registered `external-project-write` tools, rejects projects embedded inside ARCONT, and requires `--allow-project-write` on every call. `run-plan` adds a bounded, revision-aware sequence layer with a capability allowlist, prior-step bindings, expectations, SHA-256 plan/registry receipts and fail-closed execution. `diagnose` is read-only: it evaluates declarative evidence/hypothesis policies, rejects ambiguous spatial selections, and can compile a repair plan that must still pass through the normal write-permission boundary. `evaluate-proposal` is the narrower model-facing gate: it accepts a novel hypothesis, permits only bounded repair primitives, and lets ARCONT add the writer, stable target path, current-value tests and revision binding. `arcont_bridge.py` is the transport-neutral front door for a fresh external agent: discovery, persistent project intent, local/user asset intake, provider-scoped public asset discovery, hypothesis evaluation and bounded plan execution all reuse the same existing control-plane safety boundary.
+`integrations/mcp/server.mjs` is the provider-neutral MCP adapter over that same bridge. It serves official MCP v2 stdio and Streamable HTTP, fixes project-write authority at process startup, and does not expose shell execution or a second writer path. See `docs/MCP_AGENT_GATEWAY.md`.
 
 The full boundary and extension rules live in `docs/AGENT_CONTROL_PLANE.md`.
 
