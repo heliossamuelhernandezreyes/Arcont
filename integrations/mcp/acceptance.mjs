@@ -58,6 +58,12 @@ function findSession(value) {
   );
 }
 
+function inheritedStringEnvironment() {
+  return Object.fromEntries(
+    Object.entries(process.env).filter(([, value]) => typeof value === "string")
+  );
+}
+
 function modernClient(name) {
   return new Client(
     { name, version: "1.0.0" },
@@ -69,7 +75,11 @@ async function connectStdio(project, allowWrite, name) {
   const client = modernClient(name);
   const args = [SERVER, "--project", project, "--transport", "stdio"];
   if (allowWrite) args.push("--allow-project-write");
-  const transport = new StdioClientTransport({ command: process.execPath, args });
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args,
+    env: inheritedStringEnvironment()
+  });
   await client.connect(transport);
   if (client.getProtocolEra() !== "modern") throw new Error("stdio did not negotiate modern MCP era");
   return { client, transport };
