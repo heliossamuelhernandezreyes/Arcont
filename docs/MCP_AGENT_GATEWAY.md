@@ -270,6 +270,11 @@ MCP Gateway v1 does **not**:
 The Python process launched by the gateway is always
 `tools/arcont_bridge.py` with fixed argv construction and `shell=false`.
 
+Each gateway process permits at most four concurrent Bridge subprocesses.
+Read-oriented Bridge calls use a 120-second ceiling; write/engine/session calls
+retain the 900-second bounded ceiling. The HTTP listener also bounds header
+receive time, request receive time, keep-alive duration and header count.
+
 ## Acceptance
 
 `.github/workflows/mcp-agent-gateway-acceptance.yml` uses the official MCP
