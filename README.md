@@ -27,6 +27,10 @@ Esto no convierte ARCONT otra vez en un proyecto de Godot: aquí estudiamos el m
 
 Map Forge no convierte ARCONT en un editor ejecutable ni en un proyecto Godot. ARCONT conserva el estándar, contrato, validación, evidencia y patrones de adaptadores; cada juego implementa su editor físico y runtime bridge en su propio repositorio.
 
+## Diseño de vertical slices
+
+ARCONT incluye un contrato engine-neutral de misión: [`VERTICAL_SLICE_PRODUCTION_CONTRACT.md`](docs/knowledge/VERTICAL_SLICE_PRODUCTION_CONTRACT.md). Su validador comprueba la coherencia de objetivos, transiciones, zonas y límites de encuentros; no genera un juego ni demuestra calidad AAA o rendimiento Android. Los contratos reales de las misiones se conservan en sus repositorios de juego, no aquí.
+
 ## Qué ya no vive aquí
 
 El antiguo juego/prototipo ejecutable de ARCONT fue retirado del estado actual del repositorio. No se mantienen aquí sus escenas, gameplay, assets, presets de exportación ni CI destinado a compilar aquel juego.
