@@ -82,6 +82,9 @@ La suite runtime permanece separada del banco de conocimiento. Produce datos; AR
 
 ## Observaciones de producción externas
 
+- [FISURA 0.8: pruebas visuales, cámara y arte industrial](knowledge/observations/FISURA_V08_VISUAL_SHOT_OCCLUSION_2026-10-08.md) — los meshes decorativos sin colisión pueden tapar la cámara aunque mapa, navegación y física pasen CI.
+
+
 - [FISURA 0.6: corrección aditiva post-animación y QA móvil](knowledge/observations/FISURA_V06_ADDITIVE_ANIMATION_MOBILE_2026-10-08.md) — ANIM-004 en Godot 4.7.2, entrada multitáctil simulada y límites de la evidencia APK.
 
 - [`knowledge/observations/FISURA_PRODUCTION_OBSERVATION_2026-10-07.md`](knowledge/observations/FISURA_PRODUCTION_OBSERVATION_2026-10-07.md) — experimento FISURA 0.3: contrato de mapas, navegación A*, materiales CC0, evidencias Godot y errores de cámara; el código jugable permanece fuera de ARCONT.
