@@ -1,0 +1,82 @@
+name: MCP Agent Gateway Acceptance
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mcp-gateway:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout ARCONT
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install exact MCP gateway dependencies
+        working-directory: integrations/mcp
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm ls --depth=0
+          node - <<'NODE'
+          const p=require('./package.json');
+          const expected={
+            '@modelcontextprotocol/server':'2.3.1',
+            '@modelcontextprotocol/client':'2.3.1',
+            '@modelcontextprotocol/node':'2.1.1',
+            'zod':'4.6.5'
+          };
+          for (const [name,version] of Object.entries(expected)) {
+            if (p.dependencies[name] !== version) throw new Error(`${name} is not pinned to ${version}`);
+          }
+          NODE
+
+      - name: Install exact Godot
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1 libx11-6 libxcursor1 libxinerama1 libxrandr2 libxi6 libasound2t64 unzip
+          curl -L --fail --retry 3 -o /tmp/godot.zip https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -q /tmp/godot.zip -d /tmp/godot-bin
+          chmod +x /tmp/godot-bin/Godot_v4.7.2-stable_linux.x86_64
+
+      - name: Drive ARCONT through official MCP clients
+        env:
+          GODOT_BIN: /tmp/godot-bin/Godot_v4.7.2-stable_linux.x86_64
+        run: |
+          rm -rf /tmp/arcont-mcp-game
+          mkdir -p /tmp/arcont-mcp-game mcp-gateway-evidence
+          node integrations/mcp/acceptance.mjs \
+            --project /tmp/arcont-mcp-game \
+            --evidence "$PWD/mcp-gateway-evidence"
+          cp integrations/mcp/package-lock.json mcp-gateway-evidence/package-lock.committed.json
+
+      - name: Final Godot import
+        env:
+          GODOT_BIN: /tmp/godot-bin/Godot_v4.7.2-stable_linux.x86_64
+        run: |
+          "$GODOT_BIN" --headless --path /tmp/arcont-mcp-game --editor --import --quit > mcp-gateway-evidence/final-import.log 2>&1
+          if grep -E 'SCRIPT ERROR|Parse Error|Failed to load script' mcp-gateway-evidence/final-import.log; then
+            cat mcp-gateway-evidence/final-import.log
+            exit 1
+          fi
+
+      - name: Preserve MCP gateway evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arcont-mcp-gateway-${{ github.sha }}
+          path: mcp-gateway-evidence/
+          include-hidden-files: true
+          retention-days: 30

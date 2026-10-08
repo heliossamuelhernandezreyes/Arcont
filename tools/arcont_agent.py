@@ -225,8 +225,10 @@ def invoke_capability(
     if not project.is_dir():
         raise FileNotFoundError(f"project root is not a directory: {project}")
     arcont = root.resolve()
-    if project == arcont or arcont in project.parents:
-        raise ValueError("refusing to operate on ARCONT itself or an embedded project inside ARCONT")
+    if project == arcont or arcont in project.parents or project in arcont.parents:
+        raise ValueError(
+            "refusing overlapping ARCONT/project trees; neither path may contain the other"
+        )
 
     entrypoint = item.get("entrypoint")
     if not isinstance(entrypoint, str):

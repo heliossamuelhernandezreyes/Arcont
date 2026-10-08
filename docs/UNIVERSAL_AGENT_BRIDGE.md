@@ -20,9 +20,10 @@ A fresh compatible agent should be able to:
 8. execute an existing bounded ARCONT plan;
 9. receive normal ARCONT evidence and receipts.
 
-The bridge uses one-request JSON over stdin/stdout. MCP, HTTP, local sockets or
-provider-specific adapters can wrap this protocol later without duplicating
-ARCONT's execution/security logic.
+The bridge uses one-request JSON over stdin/stdout. The official MCP adapter in
+`integrations/mcp/server.mjs` now wraps it over stdio and Streamable HTTP without
+duplicating ARCONT's execution/security logic. Other provider adapters should
+follow the same pattern rather than adding a second control plane.
 
 ## Invocation
 
@@ -227,6 +228,8 @@ The bridge is a common doorway to the control plane, not a bypass around it.
 ## Extension path
 
 The next bridge capabilities should be added only when backed by tested ARCONT
-subsystems. Planned directions include project bootstrapping, user asset intake,
-license-aware public asset discovery, structured code edits, visual/feel
-evidence and provider-specific MCP/HTTP adapters.
+subsystems. Project bootstrap, user asset intake, public asset discovery,
+structured Godot editing, Development Sessions and an official MCP stdio/HTTP
+adapter are now present. Remaining directions include stronger visual/feel
+evidence, broader runtime observation and additional provider adapters that
+reuse this bridge rather than bypassing it.

@@ -82,8 +82,10 @@ def _project(project: Path) -> Path:
     resolved = Path(project).resolve()
     if not resolved.is_dir():
         raise SessionError("external project root must exist")
-    if resolved == root or root in resolved.parents:
-        raise SessionError("refusing ARCONT itself or an embedded project")
+    if resolved == root or root in resolved.parents or resolved in root.parents:
+        raise SessionError(
+            "refusing overlapping ARCONT/project trees; neither path may contain the other"
+        )
     return resolved
 
 

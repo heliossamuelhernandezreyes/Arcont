@@ -146,7 +146,41 @@
     "development_session_state_max_bytes": 8388608,
     "development_session_pending_max_bytes": 65536,
     "development_session_receipt_max_bytes": 33554432,
-    "development_session_receipt_symlink_traversal_allowed": false
+    "development_session_receipt_symlink_traversal_allowed": false,
+    "mcp_gateway": "integrations/mcp/server.mjs",
+    "mcp_gateway_package": "integrations/mcp/package.json",
+    "mcp_gateway_documentation": "docs/MCP_AGENT_GATEWAY.md",
+    "mcp_protocol_revision": "2026-07-28",
+    "mcp_transports": [
+      "stdio",
+      "streamable-http"
+    ],
+    "mcp_sdk": {
+      "server": "2.3.1",
+      "client_acceptance": "2.3.1",
+      "node": "2.1.1",
+      "zod": "4.6.5"
+    },
+    "mcp_bridge_operation": "tools/arcont_bridge.py",
+    "mcp_gateway_adds_writer_primitives": false,
+    "mcp_project_write_fixed_at_process_start": true,
+    "mcp_model_can_escalate_write_authority": false,
+    "mcp_http_loopback_default": true,
+    "mcp_http_non_loopback_requires_bearer": true,
+    "mcp_http_host_origin_validation": true,
+    "mcp_arbitrary_shell_execution_allowed": false,
+    "mcp_gateway_lockfile": "integrations/mcp/package-lock.json",
+    "mcp_dependencies_locked": true,
+    "mcp_http_constant_time_bearer_compare": true,
+    "mcp_bearer_forwarded_to_bridge": false,
+    "external_project_tree_must_be_disjoint_from_arcont": true,
+    "mcp_project_tree_must_be_disjoint_from_arcont": true,
+    "mcp_max_bridge_concurrency": 4,
+    "mcp_read_timeout_seconds": 120,
+    "mcp_long_operation_timeout_seconds": 900,
+    "mcp_http_headers_timeout_seconds": 10,
+    "mcp_http_request_timeout_seconds": 30,
+    "mcp_http_max_headers": 100
   },
   "integrity": {
     "validator": "tools/arcont_lab.py",
