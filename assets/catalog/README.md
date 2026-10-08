@@ -13,3 +13,7 @@ Canonical workflow:
 5. keep binaries upstream unless redistribution is explicitly allowed and mirroring has a technical reason.
 
 The first live provider adapter is Poly Haven. Other sources use verified manifests until a stable, license-preserving API adapter exists.
+
+## Quaternius animated asset evidence
+
+The `quaternius/` catalog holds creator-source-licensed CC0 references to sci-fi robots and a rifle, with import evidence from the FISURA Godot 4.7.2 CI. The original files remain outside ARCONT, in FISURA's source-pinned game asset vendor folder; compatibility claims only cover actual CI-observed import and skeleton availability. See [evidence report](../../docs/knowledge/observations/QUATERNIUS_SKELETAL_ASSET_IMPORT_2026-10-08.md).
