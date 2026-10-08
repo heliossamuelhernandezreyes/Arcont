@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process";
 import { createServer as createNodeHttpServer } from "node:http";
+import { timingSafeEqual } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import fs from "node:fs";
@@ -106,6 +107,15 @@ function validateHttpExposure(config) {
   return { token, hosts };
 }
 
+function constantTimeTokenMatch(actual, expected) {
+  if (typeof actual !== "string" || typeof expected !== "string") return false;
+  const actualBytes = Buffer.from(actual, "utf8");
+  const expectedBytes = Buffer.from(expected, "utf8");
+  if (actualBytes.length !== expectedBytes.length) return false;
+  return timingSafeEqual(actualBytes, expectedBytes);
+}
+
+
 function boundedAppend(current, chunk, limit, label, child) {
   const next = current + chunk.toString("utf8");
   if (Buffer.byteLength(next, "utf8") > limit) {
@@ -132,11 +142,15 @@ function runBridge(config, operation, args = {}, timeoutMs = DEFAULT_TIMEOUT_MS)
       "-"
     ];
     if (config.allowProjectWrite) commandArgs.push("--allow-project-write");
+    const childEnv = { ...process.env, PYTHONUNBUFFERED: "1" };
+    // HTTP authentication belongs to the MCP transport boundary. Do not leak
+    // the bearer secret into the Python bridge or any capability subprocess.
+    delete childEnv[config.tokenEnv];
     const child = spawn(config.python, commandArgs, {
       cwd: ARCONT_ROOT,
       stdio: ["pipe", "pipe", "pipe"],
       shell: false,
-      env: { ...process.env, PYTHONUNBUFFERED: "1" }
+      env: childEnv
     });
     let stdout = "";
     let stderr = "";
@@ -426,7 +440,7 @@ async function serveHttp(config) {
 
       if (exposure.token) {
         const authorization = req.headers.authorization || "";
-        if (authorization !== `Bearer ${exposure.token}`) {
+        if (!constantTimeTokenMatch(authorization, `Bearer ${exposure.token}`)) {
           res.writeHead(401, {
             "content-type": "application/json",
             "www-authenticate": 'Bearer realm="arcont-mcp"'
