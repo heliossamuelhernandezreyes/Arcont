@@ -69,6 +69,7 @@ ARCONT no intenta copiar Internet. Conserva referencias, procedencia, extracció
 - [`PUBLIC_ASSET_DISCOVERY.md`](PUBLIC_ASSET_DISCOVERY.md) — descubrimiento de assets públicos mediante proveedores explícitos, binding de manifiestos y procedencia verificable.
 - [`STRUCTURED_GODOT_EDITING.md`](STRUCTURED_GODOT_EDITING.md) — edición genérica revisionada de GDScript, escenas, recursos e input para proyectos Godot recién creados.
 - [`DEVELOPMENT_SESSION.md`](DEVELOPMENT_SESSION.md) — sesiones persistentes por milestones con presupuestos, receipts y ejecución de un plan acotado por iteración.
+- [`MCP_AGENT_GATEWAY.md`](MCP_AGENT_GATEWAY.md) — servidor MCP oficial para conectar agentes externos por stdio o Streamable HTTP sin saltarse el Universal Bridge.
 - [`../tools/development_session.py`](../tools/development_session.py) — orquestador durable sobre el execution loop existente, sin retries silenciosos.
 - [`../tools/godot_structured_editing.py`](../tools/godot_structured_editing.py) — control estructurado de gameplay con validación Godot y rollback.
 - [`../tools/public_asset_discovery.py`](../tools/public_asset_discovery.py) — adaptador Poly Haven v1 con búsqueda, file manifests y staging verificado.
