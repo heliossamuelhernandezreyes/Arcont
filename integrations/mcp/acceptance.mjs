@@ -68,7 +68,19 @@ function inheritedStringEnvironment() {
 function modernClient(name) {
   return new Client(
     { name, version: "1.0.0" },
-    { versionNegotiation: { mode: { pin: "2026-07-28" } } }
+    {
+      versionNegotiation: {
+        mode: "auto",
+        probe: { timeoutMs: 10_000, maxRetries: 0 }
+      }
+    }
+  );
+}
+
+function legacyClient(name) {
+  return new Client(
+    { name, version: "1.0.0" },
+    { versionNegotiation: { mode: "legacy" } }
   );
 }
 
@@ -272,6 +284,34 @@ async function main() {
       record("readonly_write_attempt", toolJson(refused));
       if (refused.isError !== true) throw new Error("read-only MCP server allowed project bootstrap");
       assertions.readonly_server_cannot_escalate = true;
+      assertions.stdio_modern_auto_negotiated = client.getProtocolEra() === "modern";
+      if (!assertions.stdio_modern_auto_negotiated) {
+        throw new Error("stdio auto negotiation did not select modern MCP era");
+      }
+    } finally {
+      await client.close();
+    }
+  }
+
+  // The same v2 server entrypoint must also serve the 2025-era initialize handshake.
+  {
+    const client = legacyClient("arcont-legacy-stdio-acceptance");
+    const transport = new StdioClientTransport({
+      command: process.execPath,
+      args: [SERVER, "--project", args.project, "--transport", "stdio"],
+      env: inheritedStringEnvironment()
+    });
+    try {
+      await client.connect(transport);
+      if (client.getProtocolEra() !== "legacy") {
+        throw new Error("stdio legacy client did not negotiate legacy MCP era");
+      }
+      const tools = await client.listTools();
+      if (!tools.tools.some(tool => tool.name === "arcont_discover")) {
+        throw new Error("legacy MCP tool list missing arcont_discover");
+      }
+      assertions.stdio_legacy_2025_compatible = true;
+      record("legacy_stdio_tools", tools.tools.map(tool => tool.name).sort());
     } finally {
       await client.close();
     }
@@ -553,6 +593,7 @@ func _physics_process(_delta):
         await client.connect(transport);
         if (client.getProtocolEra() !== "modern") throw new Error("HTTP did not negotiate modern MCP era");
         assertions.http_modern_2026_protocol = true;
+        assertions.http_modern_auto_negotiated = true;
 
         const tools = await client.listTools();
         if (!tools.tools.some(tool => tool.name === "arcont_session_inspect")) {
