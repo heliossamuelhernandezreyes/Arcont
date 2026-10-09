@@ -249,6 +249,11 @@ jobs:
         run: python tools/asset_trust.py
       - name: Build Asset Vault index
         run: python tools/asset_vault_indexer.py build --output /tmp/arcont-asset-index.json
+      - name: Validate ARCONT 1.2 visual-production proposal (P0 and P1)
+        run: |
+          python -m pip install --disable-pip-version-check jsonschema==4.25.1
+          python tools/visual_production_contract.py templates/visual-production/industrial_arena.example.json
+          python -m unittest discover -s tests -p 'test_visual_production.py' -v
       - name: Run unit tests
         run: python -m unittest discover -s tests -v
       - name: Negative control - invalid benchmark result must fail
