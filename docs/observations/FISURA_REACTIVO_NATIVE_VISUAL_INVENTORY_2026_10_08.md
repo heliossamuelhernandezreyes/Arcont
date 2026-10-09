@@ -79,3 +79,17 @@ lighting budgets or material variation.
 
 **Maturity:** observed under one Linux Godot 4.7.2 CI context, not yet reproduced
 across hardware; no ARCONT 1.2 release claim.
+
+## P1 follow-up: spatial light and Map Forge collision reconciliation
+
+Follow-up FISURA run: [workflow 37876895542](https://github.com/heliossamuelhernandezreyes/Godot-juegos-3d.-/actions/runs/37876895542), with external ARCONT `visual.scene.diagnose` and native `world_position` / box collider size observations.
+
+- Five linked mission anchors sampled at radii 9 / 9 / 9 / 11 / 9 m, with mesh-center counts `20 / 25 / 24 / 52 / 28`.
+- Lights whose range contains the anchor center: insertion **3**, Node A **2**, Node B **2**, reactor **4**, extraction **3**. Insertion and extraction exceed their declared **2 local lights** per-zone planning budgets. The result is a **warning to review**, not a measured lighting failure.
+- The earlier stage-path heuristic detected **18 physical nodes** inside industrial art. Source review of `scripts/art_stage.gd` proved these are actually **9 valid gameplay-owned StaticBody3D and CollisionShape3D pairs** generated from `maps/reactivo_13.json` `authoring.world_props`.
+- Corrected P1 reconciles all 18 nodes with the map IDs, body positions, collider centers and exact BoxShape3D dimensions. **0 unmapped art-stage collider nodes**, **0 shape/position mismatches** and **0 missing size observations**. This false-positive correction is a primary reason to join visual audit data against game-owned semantics rather than trusting scene-tree folder names.
+- Geometry resource instances: **451 BoxMesh**, **384 ArrayMesh**, **19 CylinderMesh**, **3 TorusMesh**, **1 SphereMesh**. The ArrayMesh category includes 336 instanced floor tiles, so the ratios cannot be read directly as distinct hero assets.
+- Material descriptors **604**, distinct parameter signatures **80**, unique albedo texture paths **10**; repeated parameter values are not automatically an aesthetic defect.
+- The untrusted JSON supplied by the game is still marked external/unverified by Arcont in isolation; the Actions commit-bound receipt and hashed artifact are retained alongside the report.
+
+**Engineering outcome:** first cross-linked diagnosis is real and catches two possible light-range/budget excesses while clearing false physics warnings through Map Forge authority. It is not an Android frame rate test, screen-space illumination measurement or image-quality acceptance.
