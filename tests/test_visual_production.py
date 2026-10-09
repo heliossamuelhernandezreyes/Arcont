@@ -326,6 +326,35 @@ mesh = SubResource("box")
         with self.assertRaisesRegex(ValueError, "mismatch"):
             analyze(self.project, "scenes/demo.tscn", path, intent)
 
+    def test_diagnostics_recognizes_game_owned_map_colliders_in_art_stage(self):
+        native_file, intent_file = self.diagnostic_fixture()
+        game_map = json.loads(self.map_file.read_text())
+        game_map["authoring"] = {"world_props":[
+            {"id":"crate_a", "position":[6,0,2], "collider_size":[1.4,1.4,1.4]}
+        ]}
+        self.map_file.write_text(json.dumps(game_map))
+        snap = json.loads(native_file.read_text())
+        snap["nodes"].extend([
+            {"path":"World/Direccion artistica - Crisol/crate_a colision",
+             "type":"StaticBody3D", "world_position":[6,0,2]},
+            {"path":"World/Direccion artistica - Crisol/crate_a colision/@CollisionShape3D@23",
+             "type":"CollisionShape3D", "world_position":[6,0.7,2],
+             "box_shape_size":[1.4,1.4,1.4]}
+        ])
+        native_file.write_text(json.dumps(snap))
+        report = analyze(self.project,"scenes/demo.tscn",native_file,intent_file)
+        facts = report["facts"]
+        self.assertEqual(facts["gameplay_semantic_collision_nodes_in_art_stage"],2)
+        self.assertEqual(facts["total_suspicious_colliders"],0)
+        self.assertEqual(facts["semantic_collider_mismatches"],[])
+        self.assertFalse(any(w["code"]=="PHYSICS_INSIDE_RENDER_STAGES" for w in report["budget_warnings"]))
+        snap["nodes"][-1]["box_shape_size"] = [2,2,2]
+        native_file.write_text(json.dumps(snap))
+        report = analyze(self.project,"scenes/demo.tscn",native_file,intent_file)
+        self.assertEqual(report["facts"]["gameplay_semantic_collision_nodes_in_art_stage"],1)
+        self.assertEqual(len(report["facts"]["semantic_collider_mismatches"]),1)
+        self.assertTrue(any(w["code"]=="GAMEPLAY_MAP_COLLIDER_MISMATCH" for w in report["budget_warnings"]))
+
     def test_diagnostics_warn_on_art_stage_collision_nodes(self):
         path, intent = self.diagnostic_fixture()
         native = json.loads(path.read_text())
