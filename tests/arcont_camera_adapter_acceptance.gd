@@ -22,7 +22,7 @@ func _run() -> void:
     if adapter == null:
         _fail("unable to load ARCONT Godot camera exporter")
         return
-    var report: Dictionary = adapter.capture(cam,stage,"res://camera-evidence.json")
+    var report: Dictionary = adapter.capture(cam,stage,"res://camera-evidence.json",Vector2i(1280,720))
     if not report.get("ok",false):
         _fail(str(report.get("error","missing export result")))
         return
