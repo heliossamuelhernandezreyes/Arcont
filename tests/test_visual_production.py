@@ -202,8 +202,9 @@ mesh = SubResource("box")
         operations = manifest["bridge"]["operations"]
         self.assertIn("visual.intent.validate", operations)
         self.assertIn("visual.scene.inventory", operations)
+        self.assertIn("visual.scene.diagnose", operations)
         capability = {x["id"]: x for x in manifest["agent_control"]["capabilities"]}
-        for name in ("visual.intent.validate", "visual.scene.inventory"):
+        for name in ("visual.intent.validate", "visual.scene.inventory", "visual.scene.diagnose"):
             self.assertTrue(capability[name]["available"])
             self.assertEqual(capability[name]["access"], "read-only")
 
@@ -224,6 +225,20 @@ mesh = SubResource("box")
         self.assertTrue(report["ok"], report)
         self.assertEqual(report["result"]["static_source"]["node_count"], 3)
         self.assertFalse(report["result"]["engine_executed"])
+
+    def test_bridge_diagnostic_is_readonly_and_bound_to_project(self):
+        from tools.arcont_bridge import handle_request
+        snapshot, visual_intent = self.diagnostic_fixture()
+        reply = handle_request(ROOT, self.project, {
+            "protocol":"arcont-bridge","version":1,"request_id":"diagnose",
+            "operation":"visual.scene.diagnose",
+            "arguments":{"scene":"scenes/demo.tscn","intent_path":visual_intent.name,
+                         "snapshot_path":snapshot.name}
+        }, allow_project_write=False)
+        self.assertTrue(reply["ok"])
+        self.assertEqual(reply["result"]["facts"]["all_light_count"],2)
+        self.assertFalse(reply["result"]["writes_performed"])
+        self.assertFalse(reply["result"]["engine_executed"])
 
     def test_bridge_refuses_visual_path_escape_and_argument_smuggling(self):
         from tools.arcont_bridge import handle_request, BridgeError
