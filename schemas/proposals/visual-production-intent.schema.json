@@ -225,6 +225,24 @@
           "lighting_profile_id": {
             "type": "string",
             "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+          },
+          "anchor_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional map-owned anchor for lighting/geometry spatial sampling; not a gameplay mutation."
+          },
+          "sample_radius_m": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 200,
+            "description": "Read-only center-distance sampling radius; not a guaranteed visibility or lighting impact."
           }
         }
       }
