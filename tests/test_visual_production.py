@@ -195,6 +195,46 @@ mesh = SubResource("box")
         inspect_scene(self.project, "scenes/demo.tscn")
         self.assertEqual(before, self.scene_file.read_bytes())
 
+    def test_bridge_discovers_readonly_visual_ops(self):
+        from tools.arcont_bridge import discover
+        manifest = discover(ROOT, self.project)
+        operations = manifest["bridge"]["operations"]
+        self.assertIn("visual.intent.validate", operations)
+        self.assertIn("visual.scene.inventory", operations)
+        capability = {x["id"]: x for x in manifest["agent_control"]["capabilities"]}
+        for name in ("visual.intent.validate", "visual.scene.inventory"):
+            self.assertTrue(capability[name]["available"])
+            self.assertEqual(capability[name]["access"], "read-only")
+
+    def test_bridge_executes_visual_ops_without_write_optin(self):
+        from tools.arcont_bridge import handle_request
+        intent_file = self.project / "visual.intent.json"
+        intent_file.write_text(json.dumps(self.intent))
+        def invoke(op, args):
+            return handle_request(ROOT, self.project, {
+                "protocol":"arcont-bridge", "version":1,
+                "request_id":"visual_ci", "operation":op, "arguments":args,
+            }, allow_project_write=False)
+        report = invoke("visual.intent.validate", {"path":"visual.intent.json"})
+        self.assertTrue(report["ok"], report)
+        self.assertFalse(report["result"]["writes_performed"])
+        report = invoke("visual.scene.inventory", {"scene":"scenes/demo.tscn",
+                                                   "intent_path":"visual.intent.json"})
+        self.assertTrue(report["ok"], report)
+        self.assertEqual(report["result"]["static_source"]["node_count"], 3)
+        self.assertFalse(report["result"]["engine_executed"])
+
+    def test_bridge_refuses_visual_path_escape_and_argument_smuggling(self):
+        from tools.arcont_bridge import handle_request, BridgeError
+        req = {"protocol":"arcont-bridge","version":1,"request_id":"bad",
+               "operation":"visual.intent.validate","arguments":{"path":"../../outside.json"}}
+        with self.assertRaises(ValueError):
+            handle_request(ROOT, self.project, req, allow_project_write=False)
+        req["operation"] = "visual.scene.inventory"
+        req["arguments"] = {"scene":"scenes/demo.tscn","execute_script":True}
+        with self.assertRaises(BridgeError):
+            handle_request(ROOT, self.project, req, allow_project_write=False)
+
 
 if __name__ == "__main__":
     unittest.main()
