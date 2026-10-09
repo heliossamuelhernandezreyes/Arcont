@@ -84,7 +84,7 @@ La interfaz pública es portable; los adaptadores Godot específicos quedan en A
 | `visual.budget.evaluate` | contadores + render/device traces opcionales | pronóstico marcado como estimado + mediciones p50/p95/p99 si existen | P2, lectura |
 | `visual.plan.stage` | plan validado + revisiones + permiso explícito | solicitud para editores existentes y recibos; ninguna escritura genérica nueva | P3, escritura externa autorizada |
 
-**Estado operacional por fases:** `visual.intent.validate` y `visual.scene.inventory` ahora existen como operaciones read-only del Bridge (candidatas P0/P1), con CLI, pruebas y registro en `agent.capabilities.json`. Las otras siete siguen propuestas; no se han implementado adaptadores de escritura, captura nativa de FISURA ni la comparación visual P2. El manifiesto general sigue en 1.1.0. Ninguna de estas operaciones acredita por sí sola calidad artística o Android.
+**Estado operacional por fases:** `visual.intent.validate`, `visual.scene.inventory` y `visual.scene.diagnose` existen como operaciones read-only del Bridge (candidatas P0/P1), con CLI, pruebas y registro en `agent.capabilities.json`. Las otras seis siguen propuestas; no se han implementado adaptadores de escritura, captura nativa de FISURA ni la comparación visual P2. El manifiesto general sigue en 1.1.0. Ninguna de estas operaciones acredita por sí sola calidad artística o Android.
 
 ## 4. Modelo de datos: visual-production-intent v1
 
