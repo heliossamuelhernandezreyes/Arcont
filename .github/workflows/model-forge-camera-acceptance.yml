@@ -8,6 +8,7 @@ on:
       - 'tools/arcont_bridge.py'
       - 'tests/test_model_forge_camera.py'
       - 'tests/test_camera_bridge.py'
+      - 'tests/test_model_archive_bridge.py'
       - 'tests/arcont_camera_adapter_acceptance.gd'
       - 'integrations/godot/arcont_camera_shot_exporter.gd'
       - '.github/workflows/model-forge-camera-acceptance.yml'
@@ -26,7 +27,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Unit and negative gate controls
-        run: python -m unittest discover -s tests -p 'test_model_forge_camera.py' -v && python -m unittest discover -s tests -p 'test_camera_bridge.py' -v
+        run: python -m unittest discover -s tests -p 'test_model_forge_camera.py' -v && python -m unittest discover -s tests -p 'test_camera_bridge.py' -v && python -m unittest discover -s tests -p 'test_model_archive_bridge.py' -v
       - name: Acquire original creator-published Kenney Factory Kit 3.0
         run: |
           curl --fail --location --retry 3 --max-time 180 \
