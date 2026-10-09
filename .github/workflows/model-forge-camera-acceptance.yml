@@ -1,0 +1,122 @@
+name: ARCONT P2 Real Asset + Godot Intake Acceptance
+
+on:
+  pull_request:
+    paths:
+      - 'tools/model_forge_pack_select.py'
+      - 'tools/visual_camera_diagnostics.py'
+      - 'tools/arcont_bridge.py'
+      - 'tests/test_model_forge_camera.py'
+      - 'tests/test_camera_bridge.py'
+      - 'tests/test_model_archive_bridge.py'
+      - 'tests/arcont_camera_adapter_acceptance.gd'
+      - 'integrations/godot/arcont_camera_shot_exporter.gd'
+      - '.github/workflows/model-forge-camera-acceptance.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  kenney-source-and-godot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Unit and negative gate controls
+        run: python -m unittest discover -s tests -p 'test_model_forge_camera.py' -v && python -m unittest discover -s tests -p 'test_camera_bridge.py' -v && python -m unittest discover -s tests -p 'test_model_archive_bridge.py' -v
+      - name: Acquire original creator-published Kenney Factory Kit 3.0
+        run: |
+          curl --fail --location --retry 3 --max-time 180 \
+            --user-agent 'ARCONT/1.2-ModelForge-P2 (creator CC0 acceptance)' \
+            -o /tmp/kenney-factory.zip \
+            'https://opengameart.org/sites/default/files/kenney_factory-kit_3.0.zip'
+          echo '7e31fb2308e90304672bd15cd18fa9d9f02c03731a8cbc57a8e3e1c181dfb0a7  /tmp/kenney-factory.zip' | sha256sum --check -
+      - name: Build bounded real production asset closure from ARCONT Asset Vault metadata
+        run: |
+          python tools/model_forge_pack_select.py \
+            --archive /tmp/kenney-factory.zip \
+            --record assets/catalog/kenney/factory-kit.asset.json \
+            --expected-sha256 7e31fb2308e90304672bd15cd18fa9d9f02c03731a8cbc57a8e3e1c181dfb0a7 \
+            --prefix 'Models/GLB format' \
+            --model machine-fortified.glb \
+            --model machine-window.glb \
+            --model pipe-large-valve.glb \
+            --model pipe-large-long.glb \
+            --model pipe-glass-large-valve.glb \
+            --model robot-arm-a.glb \
+            --model conveyor-long.glb \
+            --model catwalk-straight.glb \
+            --out /tmp/arcont-real-game-vendor > /tmp/model-forge-p2-result.json
+          python - <<'PY'
+          import json,pathlib
+          d=json.load(open('/tmp/arcont-real-game-vendor/PROVENANCE.json'))
+          root=pathlib.Path('/tmp/arcont-real-game-vendor')
+          assert len(d['models']) == 8
+          assert 'Textures/colormap.png' in d['files']
+          assert (root/'Textures/colormap.png').is_file()
+          assert (root/'SOURCE_LICENSE.txt').is_file()
+          assert all(m['inspection']['triangles']>0 for m in d['models'].values())
+          print('ARCONT REAL SOURCE CLOSURE PASS',len(d['models']),'models',len(d['files']),'source files')
+          PY
+      - name: Run Godot native import in disposable external game project
+        run: |
+          curl --fail --location --retry 3 --max-time 180 \
+            -o /tmp/godot.zip \
+            https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -q /tmp/godot.zip -d /tmp/godot-bin
+          chmod +x /tmp/godot-bin/Godot_v4.7.2-stable_linux.x86_64
+          mkdir -p /tmp/arcont-external-godot/assets
+          cp -a /tmp/arcont-real-game-vendor/. /tmp/arcont-external-godot/assets/
+          printf 'config_version=5\n[application]\nconfig/name="ARCONT P2 GLB closure acceptance"\n' > /tmp/arcont-external-godot/project.godot
+          /tmp/godot-bin/Godot_v4.7.2-stable_linux.x86_64 \
+            --headless --path /tmp/arcont-external-godot --editor --import --quit > /tmp/godot-kenney-import.log 2>&1 || { cat /tmp/godot-kenney-import.log; exit 1; }
+          tail -n 35 /tmp/godot-kenney-import.log
+          ! grep -E 'SCRIPT ERROR|Parse Error|Failed to load|ERROR:' /tmp/godot-kenney-import.log
+          echo 'ARCONT REAL KENNEY PALETTE GODOT IMPORT PASS'
+      - name: Execute native Godot Camera3D and actual world AABB export into disposable game
+        run: |
+          cp integrations/godot/arcont_camera_shot_exporter.gd /tmp/arcont-external-godot/
+          cp tests/arcont_camera_adapter_acceptance.gd /tmp/arcont-external-godot/
+          /tmp/godot-bin/Godot_v4.7.2-stable_linux.x86_64 \
+            --headless --path /tmp/arcont-external-godot --script res://arcont_camera_adapter_acceptance.gd > /tmp/native-camera.log 2>&1 || { cat /tmp/native-camera.log; exit 1; }
+          cat /tmp/native-camera.log
+          grep -q 'ARCONT NATIVE GODOT CAMERA EXPORT PASS' /tmp/native-camera.log
+          test -s /tmp/arcont-external-godot/camera-evidence.json
+          python tools/visual_camera_diagnostics.py /tmp/arcont-external-godot/camera-evidence.json > /tmp/native-camera-report.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/native-camera-report.json'))
+          assert d['capture_source']=='native-godot-self-reported'
+          assert len(d['projected_objects'])==2, d['projected_objects']
+          kinds={a['kind'] for a in d['alerts']}
+          assert {'large_screen_obstruction','reticle_region_intersection','possible_target_occlusion'}.issubset(kinds),kinds
+          print('ARCONT NATIVE CAMERA -> VISUAL DIRECTOR PASS',len(d['alerts']),'candidate findings; no FISURA/Android proof')
+          PY
+      - name: Demonstrate camera-space obstruction analysis (synthetic, not native game)
+        run: |
+          python tools/visual_camera_diagnostics.py templates/visual-production/camera-obstruction.example.json > /tmp/camera-report.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/camera-report.json'))
+          names={a['kind'] for a in d['alerts']}
+          assert {'large_screen_obstruction','reticle_region_intersection','possible_target_occlusion'}.issubset(names)
+          assert d['capture_source']=='synthetic-reference-not-native'
+          print('ARCONT CAMERA PROJECTION PASS',len(d['alerts']),'geometric candidate findings; NOT native view evidence')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: arcont-p2-kenney-camera-receipts
+          path: |
+            /tmp/model-forge-p2-result.json
+            /tmp/arcont-real-game-vendor/PROVENANCE.json
+            /tmp/godot-kenney-import.log
+            /tmp/camera-report.json
+            /tmp/native-camera.log
+            /tmp/native-camera-report.json
+            /tmp/arcont-external-godot/camera-evidence.json
+          if-no-files-found: ignore

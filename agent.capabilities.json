@@ -385,6 +385,26 @@
       "doctor": false,
       "requires_arguments": true,
       "invocable": false
+    },
+    {
+      "id": "visual.camera.analyze",
+      "description": "Project-local read-only camera-space AABB occlusion proxy: projected screen fraction, reticle interference and potential target occlusion, never a pixel visibility or artistic quality proof.",
+      "access": "read-only",
+      "entrypoint": "tools/visual_camera_diagnostics.py",
+      "output": "json",
+      "doctor": false,
+      "requires_arguments": true,
+      "invocable": false
+    },
+    {
+      "id": "model-forge.archive-select",
+      "description": "Explicitly SHA-pinned, license-gated local ZIP model selection that stages complete external image and buffer dependency closure into an external game without network access.",
+      "access": "external-project-write",
+      "entrypoint": "tools/model_forge_pack_select.py",
+      "output": "json",
+      "doctor": false,
+      "requires_arguments": true,
+      "invocable": false
     }
   ]
 }

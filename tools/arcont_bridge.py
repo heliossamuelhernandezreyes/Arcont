@@ -316,6 +316,7 @@ def discover(arcont_root: Path, project: Path) -> dict[str, Any]:
                 "visual.intent.validate",
                 "visual.scene.inventory",
                 "visual.scene.diagnose",
+                "visual.camera.analyze",
                 "asset.user.inspect",
                 "asset.user.stage",
                 "asset.user.list",
@@ -323,6 +324,7 @@ def discover(arcont_root: Path, project: Path) -> dict[str, Any]:
                 "asset.public.search",
                 "asset.public.files",
                 "asset.public.stage",
+                "model.archive.stage",
                 "asset.public.list",
                 "godot.structured.validate",
                 "godot.script.inspect",
@@ -346,7 +348,7 @@ def discover(arcont_root: Path, project: Path) -> dict[str, Any]:
             "mutation_boundary": {
                 "bridge_creates_new_writer_primitives": False,
                 "direct_writer_operations": [
-                    "project.bootstrap", "asset.user.stage", "asset.public.stage",
+                    "project.bootstrap", "asset.user.stage", "asset.public.stage", "model.archive.stage",
                     "godot.script.create", "godot.script.replace", "godot.script.function.replace",
                     "godot.scene.inspect", "godot.scene.edit", "godot.resource.inspect", "godot.resource.edit",
                     "godot.input.action.set",
@@ -381,9 +383,10 @@ def handle_request(
     operation = request.get("operation")
     if operation not in {
         "discover", "project.inspect", "project.intent.read", "project.bootstrap", "assets.inspect",
-        "visual.intent.validate", "visual.scene.inventory", "visual.scene.diagnose",
+        "visual.intent.validate", "visual.scene.inventory", "visual.scene.diagnose", "visual.camera.analyze",
         "asset.user.inspect", "asset.user.stage", "asset.user.list",
         "asset.public.providers", "asset.public.search", "asset.public.files", "asset.public.stage", "asset.public.list",
+        "model.archive.stage",
         "godot.structured.validate", "godot.script.inspect", "godot.script.create", "godot.script.replace",
         "godot.script.function.replace", "godot.scene.inspect", "godot.scene.edit",
         "godot.resource.inspect", "godot.resource.edit", "godot.input.action.set",
@@ -477,6 +480,55 @@ def handle_request(
         path_intent = _safe_path(project, args["intent_path"])
         path_snapshot = _safe_path(project, args["snapshot_path"])
         result = analyze(project, args["scene"], path_snapshot, path_intent)
+    elif operation == "visual.camera.analyze":
+        if set(args) != {"shot_path"} or not isinstance(args.get("shot_path"), str):
+            raise BridgeError("visual.camera.analyze requires one project-relative shot_path")
+        try:
+            from tools.visual_production_contract import _safe_path
+            from tools.visual_camera_diagnostics import analyze_shot
+        except ModuleNotFoundError:
+            from visual_production_contract import _safe_path
+            from visual_camera_diagnostics import analyze_shot
+        shot_path = _safe_path(project, args["shot_path"])
+        if shot_path.suffix != ".json" or not shot_path.is_file() or shot_path.is_symlink() or shot_path.stat().st_size > 2*1024*1024:
+            raise BridgeError("shot file must be bounded readable project JSON")
+        result = analyze_shot(json.loads(shot_path.read_text(encoding="utf-8")))
+    elif operation == "model.archive.stage":
+        # Explicit game-owned mutation opt-in, same boundary as asset.public.stage.
+        # The archive stays local; the catalog record comes from ARCONT's own
+        # verified Asset Vault, never from arbitrary untrusted caller JSON.
+        if not allow_project_write:
+            raise BridgeError("model.archive.stage requires explicit --allow-project-write")
+        required = {"archive_path", "catalog_path", "expected_sha256",
+                    "prefix", "models", "destination"}
+        if set(args) != required or not all(
+            isinstance(args.get(k), str)
+            for k in ("archive_path", "catalog_path", "expected_sha256", "prefix", "destination")
+        ) or not isinstance(args.get("models"), list):
+            raise BridgeError("model.archive.stage requires archive_path, catalog_path, exact SHA, prefix, models and destination")
+        catalog_path = args["catalog_path"]
+        if not catalog_path.startswith("assets/catalog/") or not catalog_path.endswith(".asset.json"):
+            raise BridgeError("catalog record must belong to ARCONT Asset Vault")
+        try:
+            from tools.visual_production_contract import _safe_path
+            from tools.model_forge_pack_select import stage_archive
+        except ModuleNotFoundError:
+            from visual_production_contract import _safe_path
+            from model_forge_pack_select import stage_archive
+        source_archive = _safe_path(project, args["archive_path"])
+        destination = _safe_path(project, args["destination"])
+        catalog_file = _safe_path(arcont_root, catalog_path)
+        if not catalog_file.is_file() or catalog_file.is_symlink():
+            raise BridgeError("reviewed ARCONT catalog record does not exist")
+        receipt = stage_archive(
+            source_archive,
+            record=json.loads(catalog_file.read_text(encoding="utf-8")),
+            expected_sha256=args["expected_sha256"], prefix=args["prefix"],
+            model_members=args["models"], destination=destination,
+        )
+        result = {"ok": True, "write_performed": True,
+                  "delivery_status": receipt["delivery_status"],
+                  "bundle": receipt, "game_destination": args["destination"]}
     elif operation == "asset.user.inspect":
         if set(args) != {"source"}:
             raise BridgeError("asset.user.inspect requires exactly one source")

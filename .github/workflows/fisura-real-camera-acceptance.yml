@@ -1,0 +1,104 @@
+name: ARCONT P2 FISURA Real Camera Acceptance
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/fisura-real-camera-acceptance.yml'
+      - 'tools/visual_camera_diagnostics.py'
+      - 'integrations/godot/arcont_camera_shot_exporter.gd'
+      - 'tests/arcont_fisura_camera_native_acceptance.gd'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  actual-reactivo13-native-scene:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout ARCONT diagnostic implementation
+        uses: actions/checkout@v4
+      - name: Checkout source-pinned external FISURA game (read-only upstream)
+        uses: actions/checkout@v4
+        with:
+          repository: heliossamuelhernandezreyes/Godot-juegos-3d.-
+          ref: dad2f97a0dee570b097448143fff263fe203ea80
+          path: fisura_source
+          persist-credentials: false
+      - name: Confirm exact approved FISURA source revision, before running any game code
+        run: |
+          test "$(git -C fisura_source rev-parse HEAD)" = dad2f97a0dee570b097448143fff263fe203ea80
+          test -s fisura_source/scenes/reactivo_13.tscn
+          test -s fisura_source/scripts/reactivo_cinematic_stage.gd
+          sha256sum fisura_source/scenes/reactivo_13.tscn | tee fisura-native-scene-sha256.txt
+      - name: Download matching Godot 4.7.2 game engine for real project import
+        run: |
+          curl --fail --location --retry 3 --max-time 180 \
+            -o /tmp/godot-4.7.2.zip \
+            https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -q /tmp/godot-4.7.2.zip -d /tmp/godot-4.7.2
+          chmod +x /tmp/godot-4.7.2/Godot_v4.7.2-stable_linux.x86_64
+      - name: Stage opt-in ARCONT adapter in disposable FISURA checkout (not upstream)
+        run: |
+          cp integrations/godot/arcont_camera_shot_exporter.gd fisura_source/
+          cp tests/arcont_fisura_camera_native_acceptance.gd fisura_source/
+          echo "ARCONT camera adapter staged in transient CI checkout only"
+      - name: Import genuine FISURA shaders textures third-party GLBs and Godot scene
+        run: |
+          /tmp/godot-4.7.2/Godot_v4.7.2-stable_linux.x86_64 \
+            --headless --path fisura_source --editor --import --quit > fisura-import.log 2>&1 || { cat fisura-import.log; exit 1; }
+          tail -n 25 fisura-import.log
+          ! grep -E "SCRIPT ERROR|Parse Error|ERROR:" fisura-import.log
+      - name: Capture native Reactivo-13 tactical camera mesh bounds without changing game physics
+        env:
+          FISURA_PINNED_SHA: dad2f97a0dee570b097448143fff263fe203ea80
+        run: |
+          /tmp/godot-4.7.2/Godot_v4.7.2-stable_linux.x86_64 \
+            --headless --path fisura_source \
+            --script res://arcont_fisura_camera_native_acceptance.gd > fisura-native-camera.log 2>&1 || { cat fisura-native-camera.log; exit 1; }
+          cat fisura-native-camera.log
+          grep -q "ARCONT REAL FISURA CAMERA P2 PASS" fisura-native-camera.log
+          test -s fisura_source/arcont-fisura-camera-native.json
+          ! grep -E "SCRIPT ERROR|Parse Error|ERROR:" fisura-native-camera.log
+      - name: Diagnose actual FISURA camera space using the checked-out ARCONT implementation
+        run: |
+          python3 tools/visual_camera_diagnostics.py \
+            fisura_source/arcont-fisura-camera-native.json > fisura-native-camera-analysis.json || { cat fisura-native-camera-analysis.json; exit 1; }
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json
+          shot_path=Path('fisura_source/arcont-fisura-camera-native.json')
+          shot=json.loads(shot_path.read_text())
+          report=json.loads(Path('fisura-native-camera-analysis.json').read_text())
+          assert shot['capture_source']=='native-godot-self-reported'
+          assert shot['camera']['viewport']==[1280,720]
+          assert shot['camera']['viewport_source']=='explicit-headless-fixture'
+          assert len(shot['objects'])>30
+          assert report['ok'] and report['shot_sha256']==hashlib.sha256(json.dumps(shot,sort_keys=True,allow_nan=False,separators=(',',':')).encode()).hexdigest()
+          assert report['summary']['input_objects']==len(shot['objects'])
+          receipt={'protocol':'arcont-external-fisura-camera-evidence','version':1,
+             'fisura_commit':'dad2f97a0dee570b097448143fff263fe203ea80',
+             'scene_sha256':hashlib.sha256(Path('fisura_source/scenes/reactivo_13.tscn').read_bytes()).hexdigest(),
+             'shot_sha256':hashlib.sha256(shot_path.read_bytes()).hexdigest(),
+             'read_only':True,'backend':'Godot 4.7.2 headless',
+             'quality':'AABB geometry proxy, not real pixel occlusion nor device FPS',
+             'mesh_count':len(shot['objects']),
+             'alert_count':len(report['alerts']),
+             'near_camera_requires_geometry_review':len(report['needs_geometry_review']),
+             'alert_preview':report['alerts'][:12],
+             'uncertain_preview':report['needs_geometry_review'][:12]}
+          Path('fisura-native-camera-receipt.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          print('ARCONT REAL FISURA CAMERA -> VISUAL DIRECTOR PASS',receipt['mesh_count'],'meshes,',receipt['alert_count'],'screen candidates,',receipt['near_camera_requires_geometry_review'],'near-camera geometry-review cases, zero game writes')
+          PY
+      - name: Upload original FISURA camera evidence, findings and source hashes
+        uses: actions/upload-artifact@v4
+        with:
+          name: arcont-p2-real-fisura-reactivo-camera-evidence
+          path: |
+            fisura_source/arcont-fisura-camera-native.json
+            fisura-native-camera-analysis.json
+            fisura-native-camera-receipt.json
+            fisura-native-scene-sha256.txt
+            fisura-native-camera.log
+          if-no-files-found: error
