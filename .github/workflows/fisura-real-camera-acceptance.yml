@@ -85,9 +85,11 @@ jobs:
              'quality':'AABB geometry proxy, not real pixel occlusion nor device FPS',
              'mesh_count':len(shot['objects']),
              'alert_count':len(report['alerts']),
-             'alert_preview':report['alerts'][:12]}
+             'near_camera_requires_geometry_review':len(report['needs_geometry_review']),
+             'alert_preview':report['alerts'][:12],
+             'uncertain_preview':report['needs_geometry_review'][:12]}
           Path('fisura-native-camera-receipt.json').write_text(json.dumps(receipt,indent=2)+'\n')
-          print('ARCONT REAL FISURA CAMERA -> VISUAL DIRECTOR PASS',receipt['mesh_count'],'meshes,',receipt['alert_count'],'potential alerts, zero game writes')
+          print('ARCONT REAL FISURA CAMERA -> VISUAL DIRECTOR PASS',receipt['mesh_count'],'meshes,',receipt['alert_count'],'screen candidates,',receipt['near_camera_requires_geometry_review'],'near-camera geometry-review cases, zero game writes')
           PY
       - name: Upload original FISURA camera evidence, findings and source hashes
         uses: actions/upload-artifact@v4
