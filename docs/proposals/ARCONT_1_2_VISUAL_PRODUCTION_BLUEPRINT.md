@@ -1,6 +1,7 @@
 # ARCONT 1.2 — Visual Production Orchestration (propuesta técnica)
 
-**Estado:** BLUEPRINT / propuesta L1 (no hay implementación ni lanzamiento 1.2).
+**Estado:** BLUEPRINT con P0/P1 experimentales implementados en la rama de PR; NO hay lanzamiento ARCONT 1.2.
+**Implementación P0/P1:** `tools/visual_production_contract.py`, `tools/visual_scene_inventory.py`, operaciones read-only del Bridge y pruebas `tests/test_visual_production.py`; ver [`VISUAL_P0_P1_IMPLEMENTATION.md`](VISUAL_P0_P1_IMPLEMENTATION.md). La captura **nativa** del árbol de Godot en FISURA y su certificación CI siguen pendientes.
 **Fecha:** 2026-10-08.
 **Repositorio:** ARCONT = laboratorio de conocimiento y contratos; los juegos permanecen externos.
 **Caso de aceptación inicial:** FISURA Reactivo-13, únicamente como consumidor externo; no se incorporan assets, escenas ni código de FISURA a ARCONT.
@@ -83,7 +84,7 @@ La interfaz pública es portable; los adaptadores Godot específicos quedan en A
 | `visual.budget.evaluate` | contadores + render/device traces opcionales | pronóstico marcado como estimado + mediciones p50/p95/p99 si existen | P2, lectura |
 | `visual.plan.stage` | plan validado + revisiones + permiso explícito | solicitud para editores existentes y recibos; ninguna escritura genérica nueva | P3, escritura externa autorizada |
 
-**En 1.2, añadir estas operaciones requiere** registros reales en agent.capabilities.json, contratos de entrada/salida, adaptadores bridge/MCP y tests. Esta tabla es una interfaz **propuesta**, no capacidades operativas actuales. Nunca añadir un identificador al manifiesto anunciándolo implementado sin pruebas.
+**Estado operacional por fases:** `visual.intent.validate` y `visual.scene.inventory` ahora existen como operaciones read-only del Bridge (candidatas P0/P1), con CLI, pruebas y registro en `agent.capabilities.json`. Las otras siete siguen propuestas; no se han implementado adaptadores de escritura, captura nativa de FISURA ni la comparación visual P2. El manifiesto general sigue en 1.1.0. Ninguna de estas operaciones acredita por sí sola calidad artística o Android.
 
 ## 4. Modelo de datos: visual-production-intent v1
 
