@@ -47,6 +47,7 @@ static func capture(camera: Camera3D, game_root: Node, path: String = "user://ar
                         role = "structure"
                     records.append({
                         "id": _bounded_identifier(str(m.get_path())),
+                        "label": _bounded_label(str(m.get_meta("semantic_art_tag", m.name))),
                         "center": _vector((hi + lo) * 0.5),
                         "size": _vector(bounds),
                         "role": role
@@ -76,6 +77,14 @@ static func capture(camera: Camera3D, game_root: Node, path: String = "user://ar
     file.close()
     return {"ok": true, "path": path, "objects": records.size(),
             "limitations": "Self-reported native camera; external CI must attest frame, build, renderer and source revision"}
+
+static func _bounded_label(original: String) -> String:
+    # Scene-generated art often has better semantic tags than Godot's
+    # automatically renumbered MeshInstance3D names. Preserve these for review.
+    var display: String = original.strip_edges()
+    if display.is_empty():
+        display = "unnamed-render-mesh"
+    return display.substr(0, 128)
 
 static func _bounded_identifier(original: String) -> String:
     # Deep, source-imported GLB node paths can exceed the diagnostic protocol's
