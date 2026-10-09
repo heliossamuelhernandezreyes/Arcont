@@ -51,6 +51,20 @@ Camera shot protocol: arcont-camera-shot v1. Fields: camera.position, camera.tar
 
 A native Godot adapter must export real camera transforms and world-space object AABBs under test. The included example is **synthetic**, not native FISURA data.
 
+## Agent Bridge: explicit permission to stage a project-local archive
+
+A second operation, model.archive.stage, connects Model Forge to the normal ARCONT Bridge. It accepts only an archive already inside the external game, a catalog_path inside ARCONT assets/catalog, a caller-supplied exact source SHA-256, a prefix, selected members and a new game-relative destination.
+
+Invoking the operation **without --allow-project-write** fails before creating any folder. The existing project boundary, license gate, ZIP safety checks, source closure and no-overwrite guard all still apply. This is not an unbounded internet downloader or permission to modify existing gameplay.
+
+Example (the ZIP has already been obtained and its source SHA independently reviewed):
+
+~~~json
+{"protocol":"arcont-bridge","version":1,"request_id":"stage-kenney","operation":"model.archive.stage","arguments":{"archive_path":"sources/kenney_factory-kit_3.0.zip","catalog_path":"assets/catalog/kenney/factory-kit.asset.json","expected_sha256":"7e31fb2308e90304672bd15cd18fa9d9f02c03731a8cbc57a8e3e1c181dfb0a7","prefix":"Models/GLB format","models":["machine-window.glb"],"destination":"assets/vendor/arcont_kenney_candidate"}}
+~~~
+
+Security and claim limitation: a SHA-256 supplied by an agent **only verifies consistency with its declared bytes**, not independent upstream authenticity. Official source/download verification remains the external producer's duty. A bundle is only source-closure-and-geometry validated, NOT game-approved or Android-certified.
+
 ## CI and acceptance
 
 - Synthetic Kenney-style GLB references a shared palette PNG; imported models pass existing ARCONT inspectors, and archive malicious/partial cases are refused.
