@@ -174,7 +174,8 @@ class CameraDirectorTests(unittest.TestCase):
         case["camera"]["target"]=[0,1,10]
         report=analyze_shot(case)
         self.assertEqual(report["summary"]["visible_aabb_projections"], 1)
-        self.assertFalse(report["alerts"])
+        self.assertFalse(any(alert["object_id"] == "central_pillar" for alert in report["alerts"]))
+        self.assertTrue(any(alert["object_id"] == "behind_camera" for alert in report["alerts"]))
 
     def test_nonfinite_coordinate_rejected(self):
         case=shot()
