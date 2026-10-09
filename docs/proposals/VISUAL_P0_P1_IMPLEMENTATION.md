@@ -95,6 +95,44 @@ La integración posterior en FISURA debe materializar una captura de inventario
 dentro del proceso Godot CI, con origen de commit y SHA-256 del .tscn, entregarla
 como artefacto y auditarla aquí. Eso no se entrega ni se finge en P1.
 
+## Integración ARCONT Agent / Universal Bridge
+
+Dos capacidades ya están registradas en `agent.capabilities.json` como **read-only**:
+`visual.intent.validate` y `visual.scene.inventory`. Su uso desde un agente externo
+pasa por las operaciones homónimas de `tools/arcont_bridge.py`, sin permiso
+de project-write. No son primitivas de edición ni permiten shell arbitrario.
+
+Ejemplo de petición para validar `visual.intent.json` del proyecto:
+
+```json
+{
+  "protocol": "arcont-bridge",
+  "version": 1,
+  "request_id": "validate-intent-01",
+  "operation": "visual.intent.validate",
+  "arguments": {"path": "visual.intent.json"}
+}
+```
+
+Para inspeccionar una escena, usar la operación `visual.scene.inventory`:
+
+```json
+{
+  "protocol": "arcont-bridge",
+  "version": 1,
+  "request_id": "inspect-scene-01",
+  "operation": "visual.scene.inventory",
+  "arguments": {
+    "scene": "scenes/main.tscn",
+    "intent_path": "visual.intent.json"
+  }
+}
+```
+
+Ambas rechazan argumentos desconocidos y accesos que escapen del proyecto,
+incluidos enlaces simbólicos resueltos fuera. El Bridge sigue separado de ARCONT
+para cualquier juego y nunca publica automáticamente un parche.
+
 ## Gates automatizados
 
 `tests/test_visual_production.py` incluye pruebas positivas y negativas:
