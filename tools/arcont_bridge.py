@@ -313,6 +313,8 @@ def discover(arcont_root: Path, project: Path) -> dict[str, Any]:
                 "project.intent.read",
                 "project.bootstrap",
                 "assets.inspect",
+                "visual.intent.validate",
+                "visual.scene.inventory",
                 "asset.user.inspect",
                 "asset.user.stage",
                 "asset.user.list",
@@ -378,6 +380,7 @@ def handle_request(
     operation = request.get("operation")
     if operation not in {
         "discover", "project.inspect", "project.intent.read", "project.bootstrap", "assets.inspect",
+        "visual.intent.validate", "visual.scene.inventory",
         "asset.user.inspect", "asset.user.stage", "asset.user.list",
         "asset.public.providers", "asset.public.search", "asset.public.files", "asset.public.stage", "asset.public.list",
         "godot.structured.validate", "godot.script.inspect", "godot.script.create", "godot.script.replace",
@@ -425,6 +428,42 @@ def handle_request(
         if unknown:
             raise BridgeError(f"assets.inspect has unsupported arguments: {sorted(unknown)}")
         result = inspect_assets(project, args.get("max_assets", MAX_ASSETS_DEFAULT))
+    elif operation == "visual.intent.validate":
+        if set(args) != {"path"} or not isinstance(args.get("path"), str):
+            raise BridgeError("visual.intent.validate requires exactly one project-relative path")
+        try:
+            from tools.visual_production_contract import _safe_path, validate_intent
+        except ModuleNotFoundError:
+            from visual_production_contract import _safe_path, validate_intent
+        intent_path = _safe_path(project, args["path"])
+        payload = json.loads(intent_path.read_text(encoding="utf-8"))
+        errors, warnings = validate_intent(payload, project)
+        result = {
+            "ok": not errors, "protocol": "arcont-visual-intent-validation",
+            "schema_version": 1, "errors": errors, "warnings": warnings,
+            "writes_performed": False, "runtime_measured": False,
+        }
+    elif operation == "visual.scene.inventory":
+        if set(args) - {"scene", "intent_path", "snapshot_path"} or not isinstance(args.get("scene"), str):
+            raise BridgeError("visual.scene.inventory requires scene and optional intent_path/snapshot_path")
+        try:
+            from tools.visual_production_contract import _safe_path
+            from tools.visual_scene_inventory import inspect_scene
+        except ModuleNotFoundError:
+            from visual_production_contract import _safe_path
+            from visual_scene_inventory import inspect_scene
+        optional_intent = None
+        if "intent_path" in args:
+            if not isinstance(args["intent_path"], str):
+                raise BridgeError("visual.scene.inventory intent_path must be a relative string")
+            intent_file = _safe_path(project, args["intent_path"])
+            optional_intent = json.loads(intent_file.read_text(encoding="utf-8"))
+        optional_snapshot = None
+        if "snapshot_path" in args:
+            if not isinstance(args["snapshot_path"], str):
+                raise BridgeError("visual.scene.inventory snapshot_path must be a relative string")
+            optional_snapshot = _safe_path(project, args["snapshot_path"])
+        result = inspect_scene(project, args["scene"], optional_intent, optional_snapshot)
     elif operation == "asset.user.inspect":
         if set(args) != {"source"}:
             raise BridgeError("asset.user.inspect requires exactly one source")
