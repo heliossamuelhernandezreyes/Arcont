@@ -9,6 +9,7 @@ from pathlib import Path
 
 from tools.visual_production_contract import validate_intent
 from tools.visual_scene_inventory import inspect_scene
+from tools.visual_scene_diagnostics import analyze
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = json.loads((ROOT / "templates/visual-production/industrial_arena.example.json").read_text(encoding="utf-8"))
@@ -22,7 +23,7 @@ class VisualProductionTests(unittest.TestCase):
         (self.project / "maps").mkdir(parents=True)
         (self.project / "scenes").mkdir()
         self.map_file = self.project / "maps/test_foundry.json"
-        self.map_file.write_text(json.dumps({"regions": [{"id": "entry_region"}, {"id": "core_region"}]}))
+        self.map_file.write_text(json.dumps({"anchors": [{"id":"entry_point","position":[0,0,0]},{"id":"core_point","position":[18,0,0]}], "regions": [{"id": "entry_region"}, {"id": "core_region"}]}))
         self.scene_file = self.project / "scenes/demo.tscn"
         self.scene_file.write_text("""[gd_scene load_steps=3 format=3]
 
@@ -234,6 +235,92 @@ mesh = SubResource("box")
         req["arguments"] = {"scene":"scenes/demo.tscn","execute_script":True}
         with self.assertRaises(BridgeError):
             handle_request(ROOT, self.project, req, allow_project_write=False)
+
+
+    def test_sampling_anchor_cross_reference(self):
+        self.intent["zones"][0]["anchor_id"] = "no_such_objective"
+        errors, _ = self.validate()
+        self.assertTrue(any("unknown semantic anchor" in x for x in errors))
+        self.intent["zones"][0]["anchor_id"] = "entry_point"
+        self.intent["zones"][0]["sample_radius_m"] = 8
+        self.assertEqual(self.validate()[0], [])
+
+    def diagnostic_fixture(self):
+        native = self.snapshot()
+        native["nodes"] = [
+            {"path":"World/Light","type":"DirectionalLight3D",
+             "world_position":[0,8,0],"shadow_enabled":True,
+             "light_energy":1.2,"light_color":"ffffff"},
+            {"path":"World/Art/Omni","type":"OmniLight3D",
+             "world_position":[0,0,0],"shadow_enabled":False,
+             "light_energy":2.2,"light_range":14,"light_color":"66aaff"},
+            {"path":"World/Floor","type":"MeshInstance3D","world_position":[0,0,1],
+             "instance_count":1,"geometry_type":"BoxMesh","material_paths":[],
+             "material_descriptors":[{"kind":"StandardMaterial3D",
+                                     "albedo_color":"aabbccff","roughness":0.5,
+                                     "normal_enabled":True,"emission_enabled":False}]},
+            {"path":"World/Art/Dressing","type":"MultiMeshInstance3D",
+             "world_position":[0,0,2],"instance_count":30,"geometry_type":"ArrayMesh",
+             "material_paths":[],"material_descriptors":[{"kind":"StandardMaterial3D",
+                                 "albedo_color":"aabbccff","roughness":0.5,
+                                 "normal_enabled":True,"emission_enabled":False}]},
+            {"path":"World/Decor/Polygon","type":"MeshInstance3D",
+             "world_position":[40,0,0],"instance_count":1,"geometry_type":"CylinderMesh",
+             "material_paths":[],"material_descriptors":[{"kind":"StandardMaterial3D",
+                                "albedo_color":"eeccbbff","normal_enabled":False,
+                                "emission_enabled":True}]}
+        ]
+        file = self.project / "snapshot-diagnostics.json"
+        file.write_text(json.dumps(native))
+        self.intent["zones"][0]["anchor_id"] = "entry_point"
+        self.intent["zones"][0]["sample_radius_m"] = 8
+        self.intent["zones"][1]["anchor_id"] = "core_point"
+        intent_file = self.project / "visual.intent.json"
+        intent_file.write_text(json.dumps(self.intent))
+        return file, intent_file
+
+    def test_diagnostic_metrics_and_zone_sampling(self):
+        path, intent = self.diagnostic_fixture()
+        report = analyze(self.project, "scenes/demo.tscn", path, intent)
+        self.assertTrue(report["ok"])
+        facts = report["facts"]
+        self.assertEqual(facts["node_count"], 5)
+        self.assertEqual(facts["mesh_nodes"], 3)
+        self.assertEqual(facts["total_mesh_instances"], 32)
+        self.assertEqual(facts["materials"]["observed_descriptors"], 3)
+        self.assertEqual(facts["materials"]["unique_parameter_signatures"], 2)
+        self.assertEqual(facts["local_light_count"], 1)
+        self.assertEqual(facts["shadowed_light_count"], 1)
+        self.assertEqual(report["zones"][0]["mesh_centers_in_radius"], 2)
+        self.assertEqual(report["zones"][0]["lights_reaching_anchor"], 1)
+        self.assertEqual(report["zones"][1]["lights_reaching_anchor"], 0)
+        self.assertTrue(any(w["code"]=="ZONE_WITHOUT_LOCAL_LIGHT_AT_ANCHOR" for w in report["budget_warnings"]))
+        self.assertFalse(report["writes_performed"])
+        self.assertEqual(report["evidence_status"], "externally_supplied_runtime_snapshot_unverified")
+
+    def test_diagnostics_reject_invalid_positions_and_snapshot_hash(self):
+        path, intent = self.diagnostic_fixture()
+        native = json.loads(path.read_text())
+        native["nodes"][1]["world_position"] = [float("nan"),0,0]
+        path.write_text(json.dumps(native))
+        with self.assertRaisesRegex(ValueError, "finite"):
+            analyze(self.project, "scenes/demo.tscn", path, intent)
+        native = self.snapshot()
+        native["scene_sha256"] = "f"*64
+        path.write_text(json.dumps(native))
+        with self.assertRaisesRegex(ValueError, "mismatch"):
+            analyze(self.project, "scenes/demo.tscn", path, intent)
+
+    def test_diagnostics_warn_on_art_stage_collision_nodes(self):
+        path, intent = self.diagnostic_fixture()
+        native = json.loads(path.read_text())
+        native["nodes"].append({"path":"World/cinematic industrial dressing/CollisionShape3D",
+                                "type":"CollisionShape3D"})
+        path.write_text(json.dumps(native))
+        report=analyze(self.project, "scenes/demo.tscn", path, intent)
+        self.assertEqual(report["facts"]["total_suspicious_colliders"],1)
+        self.assertTrue(any(w["code"]=="PHYSICS_INSIDE_RENDER_STAGES" for w in report["budget_warnings"]))
+
 
 
 if __name__ == "__main__":
