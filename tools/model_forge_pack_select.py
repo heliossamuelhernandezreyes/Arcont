@@ -65,7 +65,7 @@ def _json_model(data: bytes, extension: str) -> dict:
         doc = json.loads(data[20:20 + json_length].decode("utf-8"))
     else:
         raise ValueError("only glTF 2.0 or GLB v2")
-    if not isinstance(doc, dict) or doc.get("asset", {}).get("version") != "2.0":
+    if not isinstance(doc, dict) or not isinstance(doc.get("asset"), dict) or doc["asset"].get("version") != "2.0":
         raise ValueError("invalid glTF asset version")
     return doc
 
@@ -138,7 +138,11 @@ def stage_archive(archive: Path, *, record: dict, expected_sha256: str,
         if license_path is None:
             raise ValueError("original creator license file absent")
         license_bytes = z.read(license_path)
-        if b"CC0" not in license_bytes and b"Creative Commons" not in license_bytes:
+        # Merely mentioning "Creative Commons" is not enough: that family
+        # includes attribution/share-alike licenses that are not CC0.
+        # A reviewed Vault record and the archive's own evidence must agree.
+        normalized_license = license_bytes.upper().replace(b" ", b"").replace(b"-", b"")
+        if b"CC0" not in normalized_license:
             raise ValueError("source license text does not identify CC0")
         originals = [prefix.rstrip("/") + "/" + x for x in model_members]
         chosen = set(originals)
@@ -154,6 +158,10 @@ def stage_archive(archive: Path, *, record: dict, expected_sha256: str,
         for original in sorted(chosen):
             relative = PurePosixPath(original).relative_to(PurePosixPath(prefix.rstrip("/"))).as_posix()
             _name(relative)
+            # Never allow a source image/buffer to masquerade as the generated
+            # ARCONT audit receipt or the copied original creator license.
+            if relative in {"PROVENANCE.json", "SOURCE_LICENSE.txt"}:
+                raise ValueError("archive dependency uses reserved receipt filename")
             if relative in rel_files:
                 raise ValueError("destination bundle collision")
             rel_files[relative] = z.read(original)
