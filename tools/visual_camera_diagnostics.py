@@ -86,6 +86,9 @@ def analyze_shot(data: dict) -> dict:
         if not isinstance(oid,str) or not oid or len(oid)>128 or oid in identifiers:
             raise ValueError("object ID empty, repeated or oversize")
         identifiers.add(oid)
+        label=obj.get("label",oid)
+        if not isinstance(label,str) or not label.strip() or len(label)>128:
+            raise ValueError("object visual label must be nonempty and <=128 characters")
         center=_vec(obj.get("center"),oid+".center")
         size=_vec(obj.get("size"),oid+".size",positive=True)
         role=obj.get("role","structure")
@@ -115,7 +118,7 @@ def analyze_shot(data: dict) -> dict:
         area=_bbox_area(rect)
         if area<=0:
             continue
-        records.append({"id":oid,"role":role,"rect_px":[round(v,3) for v in rect],
+        records.append({"id":oid,"label":label,"role":role,"rect_px":[round(v,3) for v in rect],
                         "_rect":rect,"_nearest_depth":min(depths),
                         "_furthest_depth":max(depths),
                         "screen_fraction":round(area/(w*h),6),
@@ -123,26 +126,35 @@ def analyze_shot(data: dict) -> dict:
                         "near_plane_uncertain":near_cross})
     visible_by_id={p["id"]:p for p in records}
     alerts=[]
+    uncertain=[]
     targets=[p for p in records if p["role"] in {"enemy","objective"}]
     for shape in records:
         if shape["role"] in {"enemy","objective","player"}:
             continue
+        if shape["near_plane_uncertain"]:
+            # A box spanning the near camera plane was conservatively assigned
+            # the entire screen. Claiming this is a 100% occlusion would be a
+            # severe false-positive. Require geometry/depth inspection instead.
+            uncertain.append({"id":shape["id"],"label":shape["label"],
+                              "kind":"camera_near_plane_intersection",
+                              "needs":"native depth buffer or geometry ray test"})
+            continue
         frac=shape["screen_fraction"]
         if frac>=0.12:
-            alerts.append({"kind":"large_screen_obstruction","object_id":shape["id"],"screen_fraction":frac,
+            alerts.append({"kind":"large_screen_obstruction","object_id":shape["id"],"label":shape["label"],"screen_fraction":frac,
                            "basis":"projected world-space AABB; not pixel visibility"})
         if shape["reticle_overlap_fraction"]>=0.35 and shape["_nearest_depth"]>NEAR:
-            alerts.append({"kind":"reticle_region_intersection","object_id":shape["id"],
+            alerts.append({"kind":"reticle_region_intersection","object_id":shape["id"],"label":shape["label"],
                            "region_fraction":shape["reticle_overlap_fraction"],
                            "basis":"projected AABB, not geometry raycast"})
         for actor in targets:
-            if actor["id"]==shape["id"] or shape["_nearest_depth"]>=actor["_furthest_depth"]:
+            if actor["id"]==shape["id"] or actor["near_plane_uncertain"] or shape["_nearest_depth"]>=actor["_furthest_depth"]:
                 continue
             overlap=_bbox_intersection(shape["_rect"],actor["_rect"])
             frac_target=overlap/max(1,_bbox_area(actor["_rect"]))
             if frac_target>=0.20:
                 classification="likely_depth_order" if shape["_furthest_depth"]<actor["_nearest_depth"] else "ambiguous_depth_order"
-                alerts.append({"kind":"possible_target_occlusion","object_id":shape["id"],"target_id":actor["id"],
+                alerts.append({"kind":"possible_target_occlusion","object_id":shape["id"],"label":shape["label"],"target_id":actor["id"],"target_label":actor["label"],
                                "target_rect_overlap_fraction":round(frac_target,6),
                                "depth_classification":classification,
                                "basis":"AABB screen overlap and interval depth, NOT actual visible pixels"})
@@ -153,10 +165,11 @@ def analyze_shot(data: dict) -> dict:
             "shot_sha256":digest,"capture_source":data.get("capture_source","unspecified"),
             "engine_executed":False,"writes_performed":False,
             "camera":{"viewport":viewport,"fov_y_degrees":fov},
-            "projected_objects":clean,"alerts":alerts,
+            "projected_objects":clean,"alerts":alerts,"needs_geometry_review":uncertain,
             "summary":{"input_objects":len(objects),"visible_aabb_projections":len(records),
-                       "potential_issues":len(alerts)},
+                       "potential_issues":len(alerts),"uncertain_near_plane_cases":len(uncertain)},
             "limitations":["Projective proxy only; no triangle depth/occlusion test or pixel segmentation",
+                           "Near-plane-crossing AABBs are review cases, not claimed as full-screen visual obstruction",
                            "No automatic beauty score, AAA claim or performance measurement",
                            "Caller must independently verify shot's native Godot provenance and camera transform"]}
 
