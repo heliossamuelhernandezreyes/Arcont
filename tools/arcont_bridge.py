@@ -315,6 +315,7 @@ def discover(arcont_root: Path, project: Path) -> dict[str, Any]:
                 "assets.inspect",
                 "visual.intent.validate",
                 "visual.scene.inventory",
+                "visual.scene.diagnose",
                 "asset.user.inspect",
                 "asset.user.stage",
                 "asset.user.list",
@@ -380,7 +381,7 @@ def handle_request(
     operation = request.get("operation")
     if operation not in {
         "discover", "project.inspect", "project.intent.read", "project.bootstrap", "assets.inspect",
-        "visual.intent.validate", "visual.scene.inventory",
+        "visual.intent.validate", "visual.scene.inventory", "visual.scene.diagnose",
         "asset.user.inspect", "asset.user.stage", "asset.user.list",
         "asset.public.providers", "asset.public.search", "asset.public.files", "asset.public.stage", "asset.public.list",
         "godot.structured.validate", "godot.script.inspect", "godot.script.create", "godot.script.replace",
@@ -464,6 +465,18 @@ def handle_request(
                 raise BridgeError("visual.scene.inventory snapshot_path must be a relative string")
             optional_snapshot = _safe_path(project, args["snapshot_path"])
         result = inspect_scene(project, args["scene"], optional_intent, optional_snapshot)
+    elif operation == "visual.scene.diagnose":
+        if set(args) != {"scene", "intent_path", "snapshot_path"} or not all(isinstance(args.get(k), str) for k in ("scene", "intent_path", "snapshot_path")):
+            raise BridgeError("visual.scene.diagnose requires scene, intent_path and snapshot_path")
+        try:
+            from tools.visual_production_contract import _safe_path
+            from tools.visual_scene_diagnostics import analyze
+        except ModuleNotFoundError:
+            from visual_production_contract import _safe_path
+            from visual_scene_diagnostics import analyze
+        path_intent = _safe_path(project, args["intent_path"])
+        path_snapshot = _safe_path(project, args["snapshot_path"])
+        result = analyze(project, args["scene"], path_snapshot, path_intent)
     elif operation == "asset.user.inspect":
         if set(args) != {"source"}:
             raise BridgeError("asset.user.inspect requires exactly one source")
