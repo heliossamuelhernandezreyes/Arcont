@@ -74,6 +74,25 @@ jobs:
           tail -n 35 /tmp/godot-kenney-import.log
           ! grep -E 'SCRIPT ERROR|Parse Error|Failed to load|ERROR:' /tmp/godot-kenney-import.log
           echo 'ARCONT REAL KENNEY PALETTE GODOT IMPORT PASS'
+      - name: Execute native Godot Camera3D and actual world AABB export into disposable game
+        run: |
+          cp integrations/godot/arcont_camera_shot_exporter.gd /tmp/arcont-external-godot/
+          cp tests/arcont_camera_adapter_acceptance.gd /tmp/arcont-external-godot/
+          /tmp/godot-bin/Godot_v4.7.2-stable_linux.x86_64 \
+            --headless --path /tmp/arcont-external-godot --script res://arcont_camera_adapter_acceptance.gd > /tmp/native-camera.log 2>&1 || { cat /tmp/native-camera.log; exit 1; }
+          cat /tmp/native-camera.log
+          grep -q 'ARCONT NATIVE GODOT CAMERA EXPORT PASS' /tmp/native-camera.log
+          test -s /tmp/arcont-external-godot/camera-evidence.json
+          python tools/visual_camera_diagnostics.py /tmp/arcont-external-godot/camera-evidence.json > /tmp/native-camera-report.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/native-camera-report.json'))
+          assert d['capture_source']=='native-godot-self-reported'
+          assert len(d['projected_objects'])==2, d['projected_objects']
+          kinds={a['kind'] for a in d['alerts']}
+          assert {'large_screen_obstruction','reticle_region_intersection','possible_target_occlusion'}.issubset(kinds),kinds
+          print('ARCONT NATIVE CAMERA -> VISUAL DIRECTOR PASS',len(d['alerts']),'candidate findings; no FISURA/Android proof')
+          PY
       - name: Demonstrate camera-space obstruction analysis (synthetic, not native game)
         run: |
           python tools/visual_camera_diagnostics.py templates/visual-production/camera-obstruction.example.json > /tmp/camera-report.json
@@ -94,4 +113,7 @@ jobs:
             /tmp/arcont-real-game-vendor/PROVENANCE.json
             /tmp/godot-kenney-import.log
             /tmp/camera-report.json
+            /tmp/native-camera.log
+            /tmp/native-camera-report.json
+            /tmp/arcont-external-godot/camera-evidence.json
           if-no-files-found: ignore
