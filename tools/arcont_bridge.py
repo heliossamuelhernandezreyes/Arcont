@@ -316,6 +316,7 @@ def discover(arcont_root: Path, project: Path) -> dict[str, Any]:
                 "visual.intent.validate",
                 "visual.scene.inventory",
                 "visual.scene.diagnose",
+                "visual.camera.analyze",
                 "asset.user.inspect",
                 "asset.user.stage",
                 "asset.user.list",
@@ -381,7 +382,7 @@ def handle_request(
     operation = request.get("operation")
     if operation not in {
         "discover", "project.inspect", "project.intent.read", "project.bootstrap", "assets.inspect",
-        "visual.intent.validate", "visual.scene.inventory", "visual.scene.diagnose",
+        "visual.intent.validate", "visual.scene.inventory", "visual.scene.diagnose", "visual.camera.analyze",
         "asset.user.inspect", "asset.user.stage", "asset.user.list",
         "asset.public.providers", "asset.public.search", "asset.public.files", "asset.public.stage", "asset.public.list",
         "godot.structured.validate", "godot.script.inspect", "godot.script.create", "godot.script.replace",
@@ -477,6 +478,19 @@ def handle_request(
         path_intent = _safe_path(project, args["intent_path"])
         path_snapshot = _safe_path(project, args["snapshot_path"])
         result = analyze(project, args["scene"], path_snapshot, path_intent)
+    elif operation == "visual.camera.analyze":
+        if set(args) != {"shot_path"} or not isinstance(args.get("shot_path"), str):
+            raise BridgeError("visual.camera.analyze requires one project-relative shot_path")
+        try:
+            from tools.visual_production_contract import _safe_path
+            from tools.visual_camera_diagnostics import analyze_shot
+        except ModuleNotFoundError:
+            from visual_production_contract import _safe_path
+            from visual_camera_diagnostics import analyze_shot
+        shot_path = _safe_path(project, args["shot_path"])
+        if shot_path.suffix != ".json" or not shot_path.is_file() or shot_path.is_symlink() or shot_path.stat().st_size > 2*1024*1024:
+            raise BridgeError("shot file must be bounded readable project JSON")
+        result = analyze_shot(json.loads(shot_path.read_text(encoding="utf-8")))
     elif operation == "asset.user.inspect":
         if set(args) != {"source"}:
             raise BridgeError("asset.user.inspect requires exactly one source")
