@@ -122,6 +122,40 @@ class SourceClosureTests(unittest.TestCase):
             self.stage(record=bad)
         self.assertFalse(self.target.exists())
 
+    def test_cc_by_license_text_cannot_impersonate_cc0(self):
+        self.entries["License.txt"] = b"Creative Commons Attribution 4.0 International, attribution is required"
+        self.create_zip()
+        with self.assertRaisesRegex(ValueError, "does not identify CC0"):
+            self.stage()
+        self.assertFalse(self.target.exists())
+
+    def test_archive_dependency_cannot_replace_provenance_receipt(self):
+        self.entries["Models/GLB format/machine.glb"] = sample_glb("PROVENANCE.json")
+        self.entries["Models/GLB format/PROVENANCE.json"] = b"malicious counterfeit receipt"
+        self.create_zip()
+        with self.assertRaisesRegex(ValueError, "reserved receipt filename"):
+            self.stage()
+        self.assertFalse(self.target.exists())
+
+    def test_malformed_gltf_asset_metadata_rejected_cleanly(self):
+        raw = sample_glb()
+        parsed = {
+            "asset": None,
+            "images": [{"uri": "Textures/colormap.png"}],
+            "accessors": [{"count": 3, "type": "VEC3"}, {"count": 3, "type": "SCALAR", "componentType": 5123}],
+            "meshes": [{"primitives": [{"attributes": {"POSITION": 0}, "indices": 1}]}],
+        }
+        payload=json.dumps(parsed).encode()
+        payload += b" " * ((-len(payload)) % 4)
+        self.entries["Models/GLB format/machine.glb"] = (
+            b"glTF" + struct.pack("<II", 2, len(payload) + 20)
+            + struct.pack("<II", len(payload), 0x4E4F534A) + payload
+        )
+        self.create_zip()
+        with self.assertRaisesRegex(ValueError, "invalid glTF asset version"):
+            self.stage()
+        self.assertFalse(self.target.exists())
+
     def test_zip_symlink_denied(self):
         with zipfile.ZipFile(self.source, "w") as z:
             for k,v in self.entries.items():
