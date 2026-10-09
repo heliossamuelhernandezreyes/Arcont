@@ -49,7 +49,17 @@ Agents can use the read-only Bridge operation visual.camera.analyze with exactly
 
 Camera shot protocol: arcont-camera-shot v1. Fields: camera.position, camera.target, camera.up, camera.fov_y_degrees, camera.viewport; objects (id, center, size, role); optional reticle_region (normalized screen fractions). Camera Y FOV must be vertical, viewport dimensions in pixels, geometry in the same world coordinate system.
 
-A native Godot adapter must export real camera transforms and world-space object AABBs under test. The included example is **synthetic**, not native FISURA data.
+An opt-in native Godot adapter exports real camera transforms and world-space MeshInstance3D AABBs under test. The standalone example remains **synthetic**.
+
+## Real FISURA 0.9.8 acceptance
+
+The additional `.github/workflows/fisura-real-camera-acceptance.yml` checks out the **exact game source commit** `dad2f97a0dee570b097448143fff263fe203ea80` from the separate FISURA repository, imports its real Reactivo-13 third-person scene in Godot 4.7.2, freezes gameplay without changing collision or light nodes, and runs the shared ARCONT camera exporter over the original cinematic mesh subtree. It then passes that actual native shot to the standalone Visual Director Python analyzer.
+
+The first successful real-shot acceptance read **399 cinematic meshes**, with **247 projected into the viewing region**. Some geometry intersects the camera near clipping plane; the old conservative rectangle approach incorrectly marked several such pieces as occupying 100% of the screen. That has now been made a distinct `needs_geometry_review` category, with `near_plane_uncertain` warnings and **no asserted full-screen obstruction**. Original authored `semantic_art_tag` labels and stable SHA-bound IDs for deeply nested GLB nodes help match warnings to actual meshes.
+
+The CI output includes source commit, .tscn SHA-256, camera-shot SHA-256, read-only invariants and a bounded alert preview. The evidence is real Godot geometry/camera data, **not a color screenshot, GPU depth image, measured pixel occlusion, physical Android benchmark or autonomous level fix**. AABB screen/depth-overlap claims remain provisional. Reports need the original frame/image and gameplay-aware human review before modifying camera-sensitive level geometry.
+
+The scene is a **fixed external integration fixture**, not bundled into ARCONT and not edited in its source repository. To update acceptance to a newer FISURA revision, intentionally change and verify the pinned source SHA in the CI config.
 
 ## Agent Bridge: explicit permission to stage a project-local archive
 
