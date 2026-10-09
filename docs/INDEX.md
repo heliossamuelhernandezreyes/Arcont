@@ -2,6 +2,12 @@
 
 ARCONT se organiza por conocimientos reutilizables, no por un juego concreto.
 
+## Propuestas de ARCONT 1.2 (sin implementación)
+
+- [`proposals/ARCONT_1_2_VISUAL_PRODUCTION_BLUEPRINT.md`](proposals/ARCONT_1_2_VISUAL_PRODUCTION_BLUEPRINT.md) — arquitectura de orquestación visual, contratos, autoridad, evidencia, roadmap y gates; **diseño**, no versión liberada.
+- [`../schemas/proposals/visual-production-intent.schema.json`](../schemas/proposals/visual-production-intent.schema.json) — primer contrato JSON Schema 2020-12 en fase de revisión, no registrado como capability ejecutable.
+- [`../templates/visual-production/industrial_arena.example.json`](../templates/visual-production/industrial_arena.example.json) — ejemplo neutral y sintético, sin assets de juego.
+
 ## ARCONT 1.1
 
 - [`RELIABILITY_1_1.md`](RELIABILITY_1_1.md) — integración del gateway, cierre de hallazgos, preparación reproducible y límites de aceptación.
