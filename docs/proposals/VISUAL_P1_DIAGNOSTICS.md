@@ -55,7 +55,8 @@ spatial lighting or named-mesh-category conclusions.
   (`Direccion artistica - Crisol`, `cinematic industrial dressing`);
   fallback `gameplay_and_other`. Group names are **not** portable truth
   and may need project-specific adapters in future.
-- Suspicious physics/collision nodes nested under presentation-only stages.
+- Physical nodes inside industrial presentation subtrees are **cross-referenced with the canonical Map Forge `authoring.world_props`** by semantic object ID, parent path, body position, collider center and captured box dimensions. Confirmed game-owned colliders are reported as `gameplay_semantic_collision_nodes_in_art_stage`, **not** as suspicious decoration. Unmatched physics nodes are marked as review signals; mismatched positions/sizes produce `GAMEPLAY_MAP_COLLIDER_MISMATCH`.
+- This classification is intentionally conservative: an art-stage folder name alone cannot establish whether a collider is gameplay-owned or accidental.
 - Warnings when per-zone **planning budgets** are exceeded or when no local
   light's radius reaches an objective. These are *review signals*, not failures
   of image composition, safety, renderer capability, or actual brightness.
@@ -78,7 +79,8 @@ The output always declares
 - foreign map anchor, unsafe project path, renderer/scene/hash mismatch;
 - material signature counts, instance types, physically bounded zone sampling;
 - missing local light at a zone's center as **warning**;
-- physics node inside render-only stage as review signal;
+- unknown physics node inside a presentation stage as review signal, but authoritative `world_props` body/shape pairs are accepted;
+- mismatched game-owned collider dimensions are warned instead of silently normalized;
 - nonfinite native `world_position` refusal and read-only Bridge invocation.
 
 The existing ARCONT `Knowledge Integrity` workflow includes these tests;
