@@ -8,6 +8,7 @@ ARCONT se organiza por conocimientos reutilizables, no por un juego concreto.
 - [`../schemas/proposals/visual-production-intent.schema.json`](../schemas/proposals/visual-production-intent.schema.json) — primer contrato JSON Schema 2020-12 en fase de revisión, no registrado como capability ejecutable.
 - [`../templates/visual-production/industrial_arena.example.json`](../templates/visual-production/industrial_arena.example.json) — ejemplo neutral y sintético, sin assets de juego.
 - [`proposals/VISUAL_P0_P1_IMPLEMENTATION.md`](proposals/VISUAL_P0_P1_IMPLEMENTATION.md) — comandos, límites y casos adversariales de P0/P1.
+- [`proposals/VISUAL_P1_DIAGNOSTICS.md`](proposals/VISUAL_P1_DIAGNOSTICS.md) — análisis real de mezcla geométrica, firmas de materiales, luces sobre anclas y advertencias presupuestarias sin puntuaciones estéticas.
 - [`observations/FISURA_REACTIVO_NATIVE_VISUAL_INVENTORY_2026_10_08.md`](observations/FISURA_REACTIVO_NATIVE_VISUAL_INVENTORY_2026_10_08.md) — inventario real ejecutado bajo Godot (667 nodos, 13 luces, firmas de materiales, recibo externo) con limitaciones explícitas.
 - [`../tools/visual_production_contract.py`](../tools/visual_production_contract.py) y [`../tools/visual_scene_inventory.py`](../tools/visual_scene_inventory.py) — validación y auditoría sólo lectura, descubribles en el Bridge como `visual.intent.validate` y `visual.scene.inventory`.
 
