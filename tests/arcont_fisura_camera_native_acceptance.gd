@@ -57,8 +57,18 @@ func _run() -> void:
     if data.get("capture_source") != "native-godot-self-reported":
         _fail("native camera source unmarked")
         return
+    var stage_prefix: String = str(world.cinematic_stage.get_path()).substr(0, 48)
+    var ids: Dictionary = {}
     for mesh in meshes:
-        if not str(mesh["id"]).contains("cinematic industrial dressing"):
+        var mesh_id: String = str(mesh["id"])
+        if mesh_id.length() > 128 or mesh_id.is_empty():
+            _fail("camera evidence identifier violates bounded wire protocol")
+            return
+        if ids.has(mesh_id):
+            _fail("camera evidence identifier hash collision")
+            return
+        ids[mesh_id] = true
+        if not mesh_id.begins_with(stage_prefix):
             _fail("a mesh outside the original game-authored cinematic stage was exported")
             return
     if _collision_count(world) != physical_before or _lights(world) != lights_before:
