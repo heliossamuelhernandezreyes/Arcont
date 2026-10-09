@@ -7,6 +7,8 @@ ARCONT se organiza por conocimientos reutilizables, no por un juego concreto.
 - [`proposals/ARCONT_1_2_VISUAL_PRODUCTION_BLUEPRINT.md`](proposals/ARCONT_1_2_VISUAL_PRODUCTION_BLUEPRINT.md) — arquitectura de orquestación visual, contratos, autoridad, evidencia, roadmap y gates; **diseño**, no versión liberada.
 - [`../schemas/proposals/visual-production-intent.schema.json`](../schemas/proposals/visual-production-intent.schema.json) — primer contrato JSON Schema 2020-12 en fase de revisión, no registrado como capability ejecutable.
 - [`../templates/visual-production/industrial_arena.example.json`](../templates/visual-production/industrial_arena.example.json) — ejemplo neutral y sintético, sin assets de juego.
+- [`proposals/VISUAL_P0_P1_IMPLEMENTATION.md`](proposals/VISUAL_P0_P1_IMPLEMENTATION.md) — comandos, límites y casos adversariales de P0/P1.
+- [`../tools/visual_production_contract.py`](../tools/visual_production_contract.py) y [`../tools/visual_scene_inventory.py`](../tools/visual_scene_inventory.py) — validación y auditoría sólo lectura, descubribles en el Bridge como `visual.intent.validate` y `visual.scene.inventory`.
 
 ## ARCONT 1.1
 
