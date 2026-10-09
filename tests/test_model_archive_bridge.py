@@ -7,7 +7,7 @@ import zipfile
 from pathlib import Path
 
 from tools.arcont_bridge import BridgeError, handle_request
-from tests.test_model_forge_camera import sample_glb
+from test_model_forge_camera import sample_glb
 
 ROOT = Path(__file__).resolve().parents[1]
 
