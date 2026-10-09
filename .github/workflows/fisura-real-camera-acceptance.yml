@@ -64,7 +64,7 @@ jobs:
       - name: Diagnose actual FISURA camera space using the checked-out ARCONT implementation
         run: |
           python3 tools/visual_camera_diagnostics.py \
-            fisura_source/arcont-fisura-camera-native.json > fisura-native-camera-analysis.json
+            fisura_source/arcont-fisura-camera-native.json > fisura-native-camera-analysis.json || { cat fisura-native-camera-analysis.json; exit 1; }
           python3 - <<'PY'
           from pathlib import Path
           import hashlib, json
