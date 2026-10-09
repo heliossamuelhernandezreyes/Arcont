@@ -127,9 +127,12 @@ def validate_intent(intent: dict[str, Any], project_root: Path | None = None,
                 errors.append("semantic_map: SHA-256 does not match game-owned map")
             map_data = json.loads(map_path.read_text(encoding="utf-8"))
             region_ids = {r["id"] for r in map_data.get("regions", []) if isinstance(r, dict) and isinstance(r.get("id"), str)}
+            anchor_ids = {a["id"] for a in map_data.get("anchors", []) if isinstance(a, dict) and isinstance(a.get("id"), str)}
             for zone in intent["zones"]:
                 if zone["region_id"] is not None and zone["region_id"] not in region_ids:
                     errors.append(f"zones.{zone['id']}: unknown semantic region {zone['region_id']!r}")
+                if zone.get("anchor_id") is not None and zone["anchor_id"] not in anchor_ids:
+                    errors.append(f"zones.{zone['id']}: unknown semantic anchor {zone['anchor_id']!r}")
             if map_info["sha256"] is None:
                 warnings.append("semantic_map: no pinned SHA-256; reproducibility not established")
     except (OSError, ValueError, json.JSONDecodeError, TypeError) as exc:
