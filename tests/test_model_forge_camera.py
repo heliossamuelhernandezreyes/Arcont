@@ -211,6 +211,30 @@ class CameraDirectorTests(unittest.TestCase):
         self.assertFalse(any(alert["object_id"] == "central_pillar" for alert in report["alerts"]))
         self.assertTrue(any(alert["object_id"] == "behind_camera" for alert in report["alerts"]))
 
+    def test_near_camera_geometry_is_review_only_not_falsely_fullscreen(self):
+        case=shot()
+        case["objects"].append({
+            "id":"near_camera_duct","label":"Node A maintenance duct",
+            "center":[0.0,1.0,5.0],"size":[3.0,3.0,2.0],"role":"structure"
+        })
+        report=analyze_shot(case)
+        self.assertTrue(any(row["id"]=="near_camera_duct" for row in report["needs_geometry_review"]))
+        self.assertFalse(any(row["object_id"]=="near_camera_duct" for row in report["alerts"]))
+        self.assertGreaterEqual(report["summary"]["uncertain_near_plane_cases"],1)
+
+    def test_semantic_label_survives_camera_projection(self):
+        case=shot()
+        case["objects"][0]["label"]="Containment load-bearing pylon"
+        report=analyze_shot(case)
+        self.assertTrue(any(row.get("label")=="Containment load-bearing pylon"
+                            for row in report["alerts"]))
+
+    def test_oversize_label_is_rejected(self):
+        case=shot()
+        case["objects"][0]["label"]="x"*129
+        with self.assertRaisesRegex(ValueError,"visual label"):
+            analyze_shot(case)
+
     def test_nonfinite_coordinate_rejected(self):
         case=shot()
         case["objects"][0]["center"][0]=float("nan")
