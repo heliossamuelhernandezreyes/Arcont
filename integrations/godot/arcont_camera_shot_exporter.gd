@@ -8,12 +8,15 @@ const MAX_OBJECTS := 512
 const ALLOWED := ["structure", "functional", "dressing", "player",
                   "enemy", "objective", "cover"]
 
-static func capture(camera: Camera3D, game_root: Node, path: String = "user://arcont-camera-shot.json") -> Dictionary:
+static func capture(camera: Camera3D, game_root: Node, path: String = "user://arcont-camera-shot.json", viewport_override: Vector2i = Vector2i.ZERO) -> Dictionary:
     if camera == null or not camera.is_inside_tree():
         return {"ok": false, "error": "A native in-tree Camera3D is required"}
     if camera.keep_aspect != Camera3D.KEEP_HEIGHT:
         return {"ok": false, "error": "Only vertical-FOV KEEP_HEIGHT camera is supported"}
-    var viewport: Vector2 = camera.get_viewport().get_visible_rect().size
+    # Dedicated headless CI can have no window dimensions; an explicitly
+    # recorded synthetic viewport is permitted, never labelled measured.
+    var is_override: bool = viewport_override.x >= 128 and viewport_override.y >= 128
+    var viewport: Vector2 = Vector2(viewport_override) if is_override else camera.get_viewport().get_visible_rect().size
     if viewport.x < 128 or viewport.y < 128:
         return {"ok": false, "error": "Native viewport invalid"}
     var eye: Vector3 = camera.global_position
@@ -61,7 +64,8 @@ static func capture(camera: Camera3D, game_root: Node, path: String = "user://ar
             "target": _vector(eye + forward),
             "up": _vector(camera_up),
             "fov_y_degrees": camera.fov,
-            "viewport": [int(viewport.x), int(viewport.y)]
+            "viewport": [int(viewport.x), int(viewport.y)],
+            "viewport_source": "explicit-headless-fixture" if is_override else "native-camera-viewport"
         },
         "objects": records
     }
