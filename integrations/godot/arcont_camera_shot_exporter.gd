@@ -46,7 +46,7 @@ static func capture(camera: Camera3D, game_root: Node, path: String = "user://ar
                     if not ALLOWED.has(role):
                         role = "structure"
                     records.append({
-                        "id": str(m.get_path()),
+                        "id": _bounded_identifier(str(m.get_path())),
                         "center": _vector((hi + lo) * 0.5),
                         "size": _vector(bounds),
                         "role": role
@@ -76,6 +76,14 @@ static func capture(camera: Camera3D, game_root: Node, path: String = "user://ar
     file.close()
     return {"ok": true, "path": path, "objects": records.size(),
             "limitations": "Self-reported native camera; external CI must attest frame, build, renderer and source revision"}
+
+static func _bounded_identifier(original: String) -> String:
+    # Deep, source-imported GLB node paths can exceed the diagnostic protocol's
+    # 128-character ID bound. Preserve a recognizable prefix plus stable SHA-256,
+    # avoiding lossy truncation collisions across sibling imported meshes.
+    if original.length() <= 128:
+        return original
+    return original.substr(0, 56) + "#" + original.sha256_text()
 
 static func _vector(v: Vector3) -> Array:
     return [v.x, v.y, v.z]
