@@ -8,6 +8,8 @@ on:
       - 'tools/arcont_bridge.py'
       - 'tests/test_model_forge_camera.py'
       - 'tests/test_camera_bridge.py'
+      - 'tests/arcont_camera_adapter_acceptance.gd'
+      - 'integrations/godot/arcont_camera_shot_exporter.gd'
       - '.github/workflows/model-forge-camera-acceptance.yml'
   workflow_dispatch:
 
