@@ -80,6 +80,8 @@ def analyze(project: Path, scene_path: str, snapshot_path: Path, intent_path: Pa
         raise ValueError("renderer does not match visual intent")
     game_map = json.loads(_safe_path(root, intent["semantic_map"]["path"]).read_text(encoding="utf-8"))
     anchors = {row["id"]: row for row in game_map.get("anchors", [])}
+    semantic_props = {row["id"]: row for row in game_map.get("authoring", {}).get("world_props", [])
+                      if isinstance(row, dict) and isinstance(row.get("id"), str)}
     nodes = payload["nodes"]
     if len(nodes) > MAX_NODES:
         raise ValueError("node limit exceeded")
@@ -96,6 +98,9 @@ def analyze(project: Path, scene_path: str, snapshot_path: Path, intent_path: Pa
     local_lights: list[dict] = []
     all_lights: list[dict] = []
     suspicious_colliders: list[str] = []
+    semantic_collision_nodes: list[str] = []
+    semantic_collider_mismatches: list[str] = []
+    unmeasured_semantic_box_sizes = 0
     missing_light_positions = 0
 
     for node in nodes:
@@ -109,7 +114,30 @@ def analyze(project: Path, scene_path: str, snapshot_path: Path, intent_path: Pa
         if typ in ("StaticBody3D", "RigidBody3D", "CharacterBody3D", "CollisionShape3D", "Area3D"):
             stages[stage]["physical_or_area_nodes"] += 1
             if stage != "gameplay_and_other":
-                suspicious_colliders.append(node_path)
+                # An art authoring stage can contain legitimate GAMEPLAY colliders
+                # materialized from the canonical Map Forge world_props entries.
+                # Their placement and dimensions, not their subtree label, decide.
+                parts = node_path.split(STAGES["art"] + "/", 1)
+                suffix = parts[1].split("/") if len(parts) == 2 else []
+                prop_id = suffix[0][:-len(" colision")] if suffix and suffix[0].endswith(" colision") else None
+                semantic = semantic_props.get(prop_id) if stage == "industrial_art" else None
+                body_node = typ == "StaticBody3D" and len(suffix) == 1
+                box_node = typ == "CollisionShape3D" and len(suffix) == 2 and suffix[1].startswith("@CollisionShape3D")
+                if semantic is not None and (body_node or box_node):
+                    center = _vec3(semantic.get("position"), field=prop_id + ".position")
+                    declared_size = _vec3(semantic.get("collider_size"), field=prop_id + ".collider_size")
+                    observed = _vec3(node.get("world_position"), field=node_path)
+                    expected = center if body_node else (center[0], center[1] + declared_size[1] * 0.5, center[2])
+                    if observed is None or _distance(observed, expected) > 0.15:
+                        semantic_collider_mismatches.append(node_path + ": position disagrees with Map Forge")
+                    elif box_node and node.get("box_shape_size") is not None and _distance(_vec3(node["box_shape_size"], field=node_path), declared_size) > 0.02:
+                        semantic_collider_mismatches.append(node_path + ": collision dimensions disagree with Map Forge")
+                    else:
+                        semantic_collision_nodes.append(node_path)
+                        if box_node and node.get("box_shape_size") is None:
+                            unmeasured_semantic_box_sizes += 1
+                else:
+                    suspicious_colliders.append(node_path)
         if "Poly Haven CC0 |" in node_path:
             # A model has many child nodes. Report labels, NOT asset count.
             asset_source_labels.add(node_path.split("Poly Haven CC0 |", 1)[1].split("/", 1)[0])
@@ -244,6 +272,10 @@ def analyze(project: Path, scene_path: str, snapshot_path: Path, intent_path: Pa
         "source_labels": sorted(asset_source_labels)[:60],
         "suspicious_collider_paths_in_art_stages": suspicious_colliders[:40],
         "total_suspicious_colliders": len(suspicious_colliders),
+        "gameplay_semantic_collision_nodes_in_art_stage": len(semantic_collision_nodes),
+        "gameplay_semantic_collider_paths_in_art_stage": semantic_collision_nodes[:40],
+        "semantic_collider_mismatches": semantic_collider_mismatches[:40],
+        "unmeasured_semantic_box_sizes": unmeasured_semantic_box_sizes,
         "light_positions_missing": missing_light_positions,
     }
     observations = [
@@ -255,6 +287,10 @@ def analyze(project: Path, scene_path: str, snapshot_path: Path, intent_path: Pa
     if missing_light_positions:
         observations.append({"code": "MISSING_LIGHT_POSITIONS",
                              "note": "No safe spatial lighting claim for lights without world_position"})
+    if semantic_collider_mismatches:
+        budget_warnings.append({"code": "GAMEPLAY_MAP_COLLIDER_MISMATCH",
+                                "count": len(semantic_collider_mismatches),
+                                "message": "Game-owned collider differs from its Map Forge world_props position/size; verify before modifying"})
     if suspicious_colliders:
         budget_warnings.append({"code": "PHYSICS_INSIDE_RENDER_STAGES",
                                 "count": len(suspicious_colliders),
