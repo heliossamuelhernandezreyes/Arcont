@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-08T14:50:36Z",
-  "record_count": 4643,
+  "generated_at": "2026-10-12T19:11:39Z",
+  "record_count": 4645,
   "records": [
     {
       "archive": {
@@ -75976,7 +75976,7 @@
         "version": "1.1"
       },
       "review": {
-        "last_checked": "2026-09-12T09:45:24Z",
+        "last_checked": "2026-10-12T19:09:36Z",
         "license_verified": true,
         "metadata_verified": true,
         "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
@@ -76016,7 +76016,7 @@
         "audio_sample_rate": null,
         "collision": null,
         "font_files": [
-          "GoogleSansFlex[GRAD,ROND,opsz,slnt,wdth,wght].ttf"
+          "GoogleSansFlex[ROND,opsz,slnt,wdth,wght].ttf"
         ],
         "font_formats": [
           "ttf"
@@ -97272,7 +97272,7 @@
         "version": "1.1"
       },
       "review": {
-        "last_checked": "2026-09-12T09:45:25Z",
+        "last_checked": "2026-10-12T19:09:36Z",
         "license_verified": true,
         "metadata_verified": true,
         "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
@@ -97304,7 +97304,7 @@
         "audio_sample_rate": null,
         "collision": null,
         "font_files": [
-          "KodeMono[wght].ttf"
+          "KodeMono[ROND,wdth,wght].ttf"
         ],
         "font_formats": [
           "ttf"
@@ -201936,16 +201936,20 @@
       ],
       "font_metadata": {
         "copyright": [
-          "Copyright 2022-2024 The Tiny5 Project Authors (https://github.com/Gissio/font_tiny5)"
+          "Copyright 2026 The Tiny5 Project Authors (https://github.com/Gissio/font_tiny5)",
+          "Copyright 2026 The Tiny5 Project Authors (https://github.com/Gissio/font_tiny5)"
         ],
         "metadata_path": "ofl/tiny5/METADATA.pb",
         "subsets": [
+          "armenian",
           "cyrillic",
           "cyrillic-ext",
           "greek",
+          "greek-ext",
           "latin",
           "latin-ext",
-          "menu"
+          "menu",
+          "vietnamese"
         ]
       },
       "id": "ARC-ASSET-GOOGLEFONTS-B7935518C62106B9",
@@ -201962,7 +201966,7 @@
         "version": "1.1"
       },
       "review": {
-        "last_checked": "2026-09-12T09:45:28Z",
+        "last_checked": "2026-10-12T19:09:39Z",
         "license_verified": true,
         "metadata_verified": true,
         "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
@@ -201976,17 +201980,22 @@
         "external_id": "ofl/tiny5",
         "provider": "Google Fonts"
       },
-      "styles": [],
+      "styles": [
+        "variable"
+      ],
       "tags": [
+        "armenian",
         "cyrillic",
         "cyrillic-ext",
         "font",
         "greek",
+        "greek-ext",
         "latin",
         "latin-ext",
         "menu",
         "ofl",
-        "typography"
+        "typography",
+        "vietnamese"
       ],
       "technical": {
         "animated": null,
@@ -201995,12 +202004,13 @@
         "audio_sample_rate": null,
         "collision": null,
         "font_files": [
-          "Tiny5-Regular.ttf"
+          "Tiny5[BLED,JITT,ROND,wdth,wght].ttf",
+          "Tiny5-Italic[BLED,JITT,ROND,wdth,wght].ttf"
         ],
         "font_formats": [
           "ttf"
         ],
-        "font_variable": false,
+        "font_variable": true,
         "formats": [
           "ttf"
         ],
@@ -202011,7 +202021,7 @@
         "triangle_count": null
       },
       "themes": [
-        "SANS_SERIF"
+        "DISPLAY"
       ],
       "title": "Tiny5"
     },
@@ -360999,7 +361009,7 @@
           "3D"
         ],
         "features": "🎞️",
-        "file_count": 20,
+        "file_count": 40,
         "tile_size": null
       },
       "license": {
@@ -361015,7 +361025,7 @@
         "version": "1.0"
       },
       "review": {
-        "last_checked": "2026-09-12T10:00:15Z",
+        "last_checked": "2026-10-12T19:10:36Z",
         "license_verified": true,
         "metadata_verified": true,
         "notes": "Metadata extracted from the individual official Kenney asset page. Record created only when that page explicitly states Creative Commons CC0."
@@ -361045,7 +361055,7 @@
         "font_formats": [],
         "formats": [],
         "lods": null,
-        "pack_file_count": 20,
+        "pack_file_count": 40,
         "pbr": null,
         "rigged": null,
         "texture_resolution": null,
@@ -431939,6 +431949,125 @@
         "2_5d",
         "3d"
       ],
+      "id": "ARC-ASSET-POLYHAVEN-61DB1AECF9C20A89",
+      "license": {
+        "ai_training_allowed": true,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "notes": "Asset license is CC0. Live API usage has separate service attribution/User-Agent terms.",
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "version": "1.0"
+      },
+      "review": {
+        "last_checked": "2026-10-12T19:09:33Z",
+        "license_verified": true,
+        "metadata_verified": false,
+        "notes": "Imported from Poly Haven public API metadata."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-10-12T19:09:33Z",
+        "asset_url": "https://polyhaven.com/a/gravel_embedded_concrete_02",
+        "author": "All",
+        "download_url": null,
+        "external_id": "gravel_embedded_concrete_02",
+        "provider": "Poly Haven"
+      },
+      "styles": [],
+      "tags": [
+        "rough",
+        "concrete",
+        "pavement",
+        "coarse",
+        "cement",
+        "sidewalk",
+        "urban",
+        "stone embedded",
+        "gritty",
+        "granular",
+        "rough surface",
+        "pitted",
+        "embedded pebble",
+        "embedded rock"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_formats": [],
+        "formats": [],
+        "lods": null,
+        "pbr": true,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "floor",
+        "plaster-concrete",
+        "man made"
+      ],
+      "title": "Gravel Embedded Concrete 02"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "texture",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "compatibility_evidence": {
+        "android": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "godot": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unity": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unreal": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "web": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        }
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
       "id": "ARC-ASSET-POLYHAVEN-45B9A8BF5E9E1F89",
       "license": {
         "ai_training_allowed": true,
@@ -480458,6 +480587,123 @@
         "road"
       ],
       "title": "Square Floor Patern 01"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "texture",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "compatibility_evidence": {
+        "android": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "godot": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unity": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unreal": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "web": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        }
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
+      "id": "ARC-ASSET-POLYHAVEN-6FA209BE1DCF10A3",
+      "license": {
+        "ai_training_allowed": true,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "notes": "Asset license is CC0. Live API usage has separate service attribution/User-Agent terms.",
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "version": "1.0"
+      },
+      "review": {
+        "last_checked": "2026-10-12T19:09:33Z",
+        "license_verified": true,
+        "metadata_verified": false,
+        "notes": "Imported from Poly Haven public API metadata."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-10-12T19:09:33Z",
+        "asset_url": "https://polyhaven.com/a/square_pavers",
+        "author": "All",
+        "download_url": null,
+        "external_id": "square_pavers",
+        "provider": "Poly Haven"
+      },
+      "styles": [],
+      "tags": [
+        "brick",
+        "bricks",
+        "pavement",
+        "weathered",
+        "floor",
+        "paving",
+        "paving stones",
+        "recessed seams",
+        "rounded corners",
+        "walkway",
+        "exterior"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_formats": [],
+        "formats": [],
+        "lods": null,
+        "pbr": true,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "floor",
+        "man made",
+        "outdoor",
+        "brick"
+      ],
+      "title": "Square Pavers"
     },
     {
       "archive": {

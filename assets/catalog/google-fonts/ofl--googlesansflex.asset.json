@@ -52,7 +52,7 @@
     "version": "1.1"
   },
   "review": {
-    "last_checked": "2026-09-12T09:45:24Z",
+    "last_checked": "2026-10-12T19:09:36Z",
     "license_verified": true,
     "metadata_verified": true,
     "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
@@ -92,7 +92,7 @@
     "audio_sample_rate": null,
     "collision": null,
     "font_files": [
-      "GoogleSansFlex[GRAD,ROND,opsz,slnt,wdth,wght].ttf"
+      "GoogleSansFlex[ROND,opsz,slnt,wdth,wght].ttf"
     ],
     "font_formats": [
       "ttf"

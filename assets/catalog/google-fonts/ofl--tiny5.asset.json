@@ -21,16 +21,20 @@
   ],
   "font_metadata": {
     "copyright": [
-      "Copyright 2022-2024 The Tiny5 Project Authors (https://github.com/Gissio/font_tiny5)"
+      "Copyright 2026 The Tiny5 Project Authors (https://github.com/Gissio/font_tiny5)",
+      "Copyright 2026 The Tiny5 Project Authors (https://github.com/Gissio/font_tiny5)"
     ],
     "metadata_path": "ofl/tiny5/METADATA.pb",
     "subsets": [
+      "armenian",
       "cyrillic",
       "cyrillic-ext",
       "greek",
+      "greek-ext",
       "latin",
       "latin-ext",
-      "menu"
+      "menu",
+      "vietnamese"
     ]
   },
   "id": "ARC-ASSET-GOOGLEFONTS-B7935518C62106B9",
@@ -47,7 +51,7 @@
     "version": "1.1"
   },
   "review": {
-    "last_checked": "2026-09-12T09:45:28Z",
+    "last_checked": "2026-10-12T19:09:39Z",
     "license_verified": true,
     "metadata_verified": true,
     "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
@@ -61,17 +65,22 @@
     "external_id": "ofl/tiny5",
     "provider": "Google Fonts"
   },
-  "styles": [],
+  "styles": [
+    "variable"
+  ],
   "tags": [
+    "armenian",
     "cyrillic",
     "cyrillic-ext",
     "font",
     "greek",
+    "greek-ext",
     "latin",
     "latin-ext",
     "menu",
     "ofl",
-    "typography"
+    "typography",
+    "vietnamese"
   ],
   "technical": {
     "animated": null,
@@ -80,12 +89,13 @@
     "audio_sample_rate": null,
     "collision": null,
     "font_files": [
-      "Tiny5-Regular.ttf"
+      "Tiny5[BLED,JITT,ROND,wdth,wght].ttf",
+      "Tiny5-Italic[BLED,JITT,ROND,wdth,wght].ttf"
     ],
     "font_formats": [
       "ttf"
     ],
-    "font_variable": false,
+    "font_variable": true,
     "formats": [
       "ttf"
     ],
@@ -96,7 +106,7 @@
     "triangle_count": null
   },
   "themes": [
-    "SANS_SERIF"
+    "DISPLAY"
   ],
   "title": "Tiny5"
 }
