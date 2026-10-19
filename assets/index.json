@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-12T19:11:39Z",
-  "record_count": 4645,
+  "generated_at": "2026-10-19T16:35:51Z",
+  "record_count": 4655,
   "records": [
     {
       "archive": {
@@ -10919,6 +10919,88 @@
         "2D"
       ],
       "title": "Tiny Battle"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "2d_asset",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "dimensions": [
+        "2d",
+        "2_5d"
+      ],
+      "id": "ARC-ASSET-KENNEY-54805DB0ED928009",
+      "kenney_metadata": {
+        "category": [
+          "2D"
+        ],
+        "features": null,
+        "file_count": 130,
+        "tile_size": "16 × 16"
+      },
+      "license": {
+        "ai_training_allowed": null,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "notes": "Kenney states game assets on its asset pages are public-domain licensed (CC0); attribution is not required. This adapter additionally requires the individual asset page to contain an explicit Creative Commons CC0 marker before indexing it.",
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "version": "1.0"
+      },
+      "review": {
+        "last_checked": "2026-10-19T16:35:27Z",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Metadata extracted from the individual official Kenney asset page. Record created only when that page explicitly states Creative Commons CC0."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-10-19T16:35:27Z",
+        "asset_url": "https://kenney.nl/assets/tiny-city",
+        "author": "Kenney",
+        "download_url": null,
+        "external_id": "tiny-city",
+        "provider": "Kenney"
+      },
+      "styles": [],
+      "tags": [
+        "kenney",
+        "map"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "category_raw": "2D",
+        "collision": null,
+        "features_raw": null,
+        "font_formats": [],
+        "formats": [],
+        "lods": null,
+        "pack_file_count": 130,
+        "pbr": null,
+        "rigged": null,
+        "texture_resolution": "16 × 16",
+        "triangle_count": null
+      },
+      "themes": [
+        "2D"
+      ],
+      "title": "Tiny City"
     },
     {
       "archive": {
@@ -67839,6 +67921,106 @@
         "SANS_SERIF"
       ],
       "title": "Fira Sans Extra Condensed"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "font",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
+      "font_metadata": {
+        "copyright": [
+          "Copyright 2025 The Firjar Project Authors (https://github.com/Mestaratype/Firjar)"
+        ],
+        "metadata_path": "ofl/firjar/METADATA.pb",
+        "subsets": [
+          "arabic",
+          "latin",
+          "latin-ext",
+          "menu"
+        ]
+      },
+      "id": "ARC-ASSET-GOOGLEFONTS-2CCEE68FC73CEB42",
+      "license": {
+        "ai_training_allowed": null,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://openfontlicense.org/",
+        "modification": true,
+        "name": "OFL-1.1",
+        "notes": "SIL Open Font License. Redistribution/modification must preserve the applicable copyright/license terms; Reserved Font Names may apply per family.",
+        "redistribution_allowed": true,
+        "share_alike": true,
+        "version": "1.1"
+      },
+      "review": {
+        "last_checked": "2026-10-19T16:32:53Z",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-10-19T16:32:53Z",
+        "asset_url": "https://github.com/google/fonts/tree/main/ofl/firjar",
+        "author": "Yazeed Omar",
+        "download_url": null,
+        "external_id": "ofl/firjar",
+        "provider": "Google Fonts"
+      },
+      "styles": [
+        "variable"
+      ],
+      "tags": [
+        "arabic",
+        "font",
+        "latin",
+        "latin-ext",
+        "menu",
+        "ofl",
+        "typography"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_files": [
+          "Firjar[wdth,wght].ttf"
+        ],
+        "font_formats": [
+          "ttf"
+        ],
+        "font_variable": true,
+        "formats": [
+          "ttf"
+        ],
+        "lods": null,
+        "pbr": null,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "SANS_SERIF"
+      ],
+      "title": "Firjar"
     },
     {
       "archive": {
@@ -174680,6 +174862,706 @@
         "DISPLAY"
       ],
       "title": "Redacted Script"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "font",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
+      "font_metadata": {
+        "copyright": [
+          "Copyright 2019 The Redaction Project Authors (https://github.com/jeremymickel/Redaction)",
+          "Copyright 2019 The Redaction Project Authors (https://github.com/jeremymickel/Redaction)",
+          "Copyright 2019 The Redaction Project Authors (https://github.com/jeremymickel/Redaction)"
+        ],
+        "metadata_path": "ofl/redaction/METADATA.pb",
+        "subsets": [
+          "latin",
+          "latin-ext",
+          "menu"
+        ]
+      },
+      "id": "ARC-ASSET-GOOGLEFONTS-12A014CCECA903D3",
+      "license": {
+        "ai_training_allowed": null,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://openfontlicense.org/",
+        "modification": true,
+        "name": "OFL-1.1",
+        "notes": "SIL Open Font License. Redistribution/modification must preserve the applicable copyright/license terms; Reserved Font Names may apply per family.",
+        "redistribution_allowed": true,
+        "share_alike": true,
+        "version": "1.1"
+      },
+      "review": {
+        "last_checked": "2026-10-19T16:32:56Z",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-10-19T16:32:56Z",
+        "asset_url": "https://github.com/google/fonts/tree/main/ofl/redaction",
+        "author": "MCKL",
+        "download_url": null,
+        "external_id": "ofl/redaction",
+        "provider": "Google Fonts"
+      },
+      "styles": [],
+      "tags": [
+        "font",
+        "latin",
+        "latin-ext",
+        "menu",
+        "ofl",
+        "typography"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_files": [
+          "Redaction-Regular.ttf",
+          "Redaction-Italic.ttf",
+          "Redaction-Bold.ttf"
+        ],
+        "font_formats": [
+          "ttf"
+        ],
+        "font_variable": false,
+        "formats": [
+          "ttf"
+        ],
+        "lods": null,
+        "pbr": null,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "SERIF"
+      ],
+      "title": "Redaction"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "font",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
+      "font_metadata": {
+        "copyright": [
+          "Copyright 2019 The Redaction Project Authors (https://github.com/jeremymickel/Redaction)",
+          "Copyright 2019 The Redaction Project Authors (https://github.com/jeremymickel/Redaction)",
+          "Copyright 2019 The Redaction Project Authors (https://github.com/jeremymickel/Redaction)"
+        ],
+        "metadata_path": "ofl/redaction10/METADATA.pb",
+        "subsets": [
+          "latin",
+          "latin-ext",
+          "menu"
+        ]
+      },
+      "id": "ARC-ASSET-GOOGLEFONTS-567F7954CBC57C43",
+      "license": {
+        "ai_training_allowed": null,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://openfontlicense.org/",
+        "modification": true,
+        "name": "OFL-1.1",
+        "notes": "SIL Open Font License. Redistribution/modification must preserve the applicable copyright/license terms; Reserved Font Names may apply per family.",
+        "redistribution_allowed": true,
+        "share_alike": true,
+        "version": "1.1"
+      },
+      "review": {
+        "last_checked": "2026-10-19T16:32:56Z",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-10-19T16:32:56Z",
+        "asset_url": "https://github.com/google/fonts/tree/main/ofl/redaction10",
+        "author": "MCKL",
+        "download_url": null,
+        "external_id": "ofl/redaction10",
+        "provider": "Google Fonts"
+      },
+      "styles": [],
+      "tags": [
+        "font",
+        "latin",
+        "latin-ext",
+        "menu",
+        "ofl",
+        "typography"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_files": [
+          "Redaction10-Regular.ttf",
+          "Redaction10-Italic.ttf",
+          "Redaction10-Bold.ttf"
+        ],
+        "font_formats": [
+          "ttf"
+        ],
+        "font_variable": false,
+        "formats": [
+          "ttf"
+        ],
+        "lods": null,
+        "pbr": null,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "SERIF"
+      ],
+      "title": "Redaction 10"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "font",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
+      "font_metadata": {
+        "copyright": [
+          "Copyright 2019 The Redaction Project Authors (https://github.com/jeremymickel/Redaction)",
+          "Copyright 2019 The Redaction Project Authors (https://github.com/jeremymickel/Redaction)",
+          "Copyright 2019 The Redaction Project Authors (https://github.com/jeremymickel/Redaction)"
+        ],
+        "metadata_path": "ofl/redaction100/METADATA.pb",
+        "subsets": [
+          "latin",
+          "latin-ext",
+          "menu"
+        ]
+      },
+      "id": "ARC-ASSET-GOOGLEFONTS-7CFD6B1799BA89F7",
+      "license": {
+        "ai_training_allowed": null,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://openfontlicense.org/",
+        "modification": true,
+        "name": "OFL-1.1",
+        "notes": "SIL Open Font License. Redistribution/modification must preserve the applicable copyright/license terms; Reserved Font Names may apply per family.",
+        "redistribution_allowed": true,
+        "share_alike": true,
+        "version": "1.1"
+      },
+      "review": {
+        "last_checked": "2026-10-19T16:32:56Z",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-10-19T16:32:56Z",
+        "asset_url": "https://github.com/google/fonts/tree/main/ofl/redaction100",
+        "author": "MCKL",
+        "download_url": null,
+        "external_id": "ofl/redaction100",
+        "provider": "Google Fonts"
+      },
+      "styles": [],
+      "tags": [
+        "font",
+        "latin",
+        "latin-ext",
+        "menu",
+        "ofl",
+        "typography"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_files": [
+          "Redaction100-Regular.ttf",
+          "Redaction100-Italic.ttf",
+          "Redaction100-Bold.ttf"
+        ],
+        "font_formats": [
+          "ttf"
+        ],
+        "font_variable": false,
+        "formats": [
+          "ttf"
+        ],
+        "lods": null,
+        "pbr": null,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "DISPLAY"
+      ],
+      "title": "Redaction 100"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "font",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
+      "font_metadata": {
+        "copyright": [
+          "Copyright 2019 The Redaction Project Authors (https://github.com/jeremymickel/Redaction)",
+          "Copyright 2019 The Redaction Project Authors (https://github.com/jeremymickel/Redaction)",
+          "Copyright 2019 The Redaction Project Authors (https://github.com/jeremymickel/Redaction)"
+        ],
+        "metadata_path": "ofl/redaction20/METADATA.pb",
+        "subsets": [
+          "latin",
+          "latin-ext",
+          "menu"
+        ]
+      },
+      "id": "ARC-ASSET-GOOGLEFONTS-9F104FEEE168C481",
+      "license": {
+        "ai_training_allowed": null,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://openfontlicense.org/",
+        "modification": true,
+        "name": "OFL-1.1",
+        "notes": "SIL Open Font License. Redistribution/modification must preserve the applicable copyright/license terms; Reserved Font Names may apply per family.",
+        "redistribution_allowed": true,
+        "share_alike": true,
+        "version": "1.1"
+      },
+      "review": {
+        "last_checked": "2026-10-19T16:32:56Z",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-10-19T16:32:56Z",
+        "asset_url": "https://github.com/google/fonts/tree/main/ofl/redaction20",
+        "author": "MCKL",
+        "download_url": null,
+        "external_id": "ofl/redaction20",
+        "provider": "Google Fonts"
+      },
+      "styles": [],
+      "tags": [
+        "font",
+        "latin",
+        "latin-ext",
+        "menu",
+        "ofl",
+        "typography"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_files": [
+          "Redaction20-Regular.ttf",
+          "Redaction20-Italic.ttf",
+          "Redaction20-Bold.ttf"
+        ],
+        "font_formats": [
+          "ttf"
+        ],
+        "font_variable": false,
+        "formats": [
+          "ttf"
+        ],
+        "lods": null,
+        "pbr": null,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "SERIF"
+      ],
+      "title": "Redaction 20"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "font",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
+      "font_metadata": {
+        "copyright": [
+          "Copyright 2019 The Redaction Project Authors (https://github.com/jeremymickel/Redaction)",
+          "Copyright 2019 The Redaction Project Authors (https://github.com/jeremymickel/Redaction)",
+          "Copyright 2019 The Redaction Project Authors (https://github.com/jeremymickel/Redaction)"
+        ],
+        "metadata_path": "ofl/redaction35/METADATA.pb",
+        "subsets": [
+          "latin",
+          "latin-ext",
+          "menu"
+        ]
+      },
+      "id": "ARC-ASSET-GOOGLEFONTS-D58FC8DEAA8263F5",
+      "license": {
+        "ai_training_allowed": null,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://openfontlicense.org/",
+        "modification": true,
+        "name": "OFL-1.1",
+        "notes": "SIL Open Font License. Redistribution/modification must preserve the applicable copyright/license terms; Reserved Font Names may apply per family.",
+        "redistribution_allowed": true,
+        "share_alike": true,
+        "version": "1.1"
+      },
+      "review": {
+        "last_checked": "2026-10-19T16:32:56Z",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-10-19T16:32:56Z",
+        "asset_url": "https://github.com/google/fonts/tree/main/ofl/redaction35",
+        "author": "MCKL",
+        "download_url": null,
+        "external_id": "ofl/redaction35",
+        "provider": "Google Fonts"
+      },
+      "styles": [],
+      "tags": [
+        "font",
+        "latin",
+        "latin-ext",
+        "menu",
+        "ofl",
+        "typography"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_files": [
+          "Redaction35-Regular.ttf",
+          "Redaction35-Italic.ttf",
+          "Redaction35-Bold.ttf"
+        ],
+        "font_formats": [
+          "ttf"
+        ],
+        "font_variable": false,
+        "formats": [
+          "ttf"
+        ],
+        "lods": null,
+        "pbr": null,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "DISPLAY"
+      ],
+      "title": "Redaction 35"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "font",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
+      "font_metadata": {
+        "copyright": [
+          "Copyright 2019 The Redaction Project Authors (https://github.com/jeremymickel/Redaction)",
+          "Copyright 2019 The Redaction Project Authors (https://github.com/jeremymickel/Redaction)",
+          "Copyright 2019 The Redaction Project Authors (https://github.com/jeremymickel/Redaction)"
+        ],
+        "metadata_path": "ofl/redaction50/METADATA.pb",
+        "subsets": [
+          "latin",
+          "latin-ext",
+          "menu"
+        ]
+      },
+      "id": "ARC-ASSET-GOOGLEFONTS-850087A26EE9DE53",
+      "license": {
+        "ai_training_allowed": null,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://openfontlicense.org/",
+        "modification": true,
+        "name": "OFL-1.1",
+        "notes": "SIL Open Font License. Redistribution/modification must preserve the applicable copyright/license terms; Reserved Font Names may apply per family.",
+        "redistribution_allowed": true,
+        "share_alike": true,
+        "version": "1.1"
+      },
+      "review": {
+        "last_checked": "2026-10-19T16:32:56Z",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-10-19T16:32:56Z",
+        "asset_url": "https://github.com/google/fonts/tree/main/ofl/redaction50",
+        "author": "MCKL",
+        "download_url": null,
+        "external_id": "ofl/redaction50",
+        "provider": "Google Fonts"
+      },
+      "styles": [],
+      "tags": [
+        "font",
+        "latin",
+        "latin-ext",
+        "menu",
+        "ofl",
+        "typography"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_files": [
+          "Redaction50-Regular.ttf",
+          "Redaction50-Italic.ttf",
+          "Redaction50-Bold.ttf"
+        ],
+        "font_formats": [
+          "ttf"
+        ],
+        "font_variable": false,
+        "formats": [
+          "ttf"
+        ],
+        "lods": null,
+        "pbr": null,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "DISPLAY"
+      ],
+      "title": "Redaction 50"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "font",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
+      "font_metadata": {
+        "copyright": [
+          "Copyright 2019 The Redaction Project Authors (https://github.com/jeremymickel/Redaction)",
+          "Copyright 2019 The Redaction Project Authors (https://github.com/jeremymickel/Redaction)",
+          "Copyright 2019 The Redaction Project Authors (https://github.com/jeremymickel/Redaction)"
+        ],
+        "metadata_path": "ofl/redaction70/METADATA.pb",
+        "subsets": [
+          "latin",
+          "latin-ext",
+          "menu"
+        ]
+      },
+      "id": "ARC-ASSET-GOOGLEFONTS-A4D1530860476267",
+      "license": {
+        "ai_training_allowed": null,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://openfontlicense.org/",
+        "modification": true,
+        "name": "OFL-1.1",
+        "notes": "SIL Open Font License. Redistribution/modification must preserve the applicable copyright/license terms; Reserved Font Names may apply per family.",
+        "redistribution_allowed": true,
+        "share_alike": true,
+        "version": "1.1"
+      },
+      "review": {
+        "last_checked": "2026-10-19T16:32:56Z",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-10-19T16:32:56Z",
+        "asset_url": "https://github.com/google/fonts/tree/main/ofl/redaction70",
+        "author": "MCKL",
+        "download_url": null,
+        "external_id": "ofl/redaction70",
+        "provider": "Google Fonts"
+      },
+      "styles": [],
+      "tags": [
+        "font",
+        "latin",
+        "latin-ext",
+        "menu",
+        "ofl",
+        "typography"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_files": [
+          "Redaction70-Regular.ttf",
+          "Redaction70-Italic.ttf",
+          "Redaction70-Bold.ttf"
+        ],
+        "font_formats": [
+          "ttf"
+        ],
+        "font_variable": false,
+        "formats": [
+          "ttf"
+        ],
+        "lods": null,
+        "pbr": null,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "DISPLAY"
+      ],
+      "title": "Redaction 70"
     },
     {
       "archive": {
@@ -460285,6 +461167,126 @@
         "wood"
       ],
       "title": "Raw Plank Wall"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "texture",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "compatibility_evidence": {
+        "android": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "godot": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unity": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "unreal": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        },
+        "web": {
+          "basis": "provider metadata plus ARCONT format/platform mapping; not runtime tested",
+          "evidence_ref": null,
+          "level": "inferred",
+          "tested_at": null
+        }
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
+      "id": "ARC-ASSET-POLYHAVEN-20C503941573AFC3",
+      "license": {
+        "ai_training_allowed": true,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "notes": "Asset license is CC0. Live API usage has separate service attribution/User-Agent terms.",
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "version": "1.0"
+      },
+      "review": {
+        "last_checked": "2026-10-19T16:32:49Z",
+        "license_verified": true,
+        "metadata_verified": false,
+        "notes": "Imported from Poly Haven public API metadata."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-10-19T16:32:49Z",
+        "asset_url": "https://polyhaven.com/a/raw_wooden_floor_01",
+        "author": "All",
+        "download_url": null,
+        "external_id": "raw_wooden_floor_01",
+        "provider": "Poly Haven"
+      },
+      "styles": [],
+      "tags": [
+        "wood",
+        "planks",
+        "weathered",
+        "rough-sawn",
+        "unfinished",
+        "knotty",
+        "nail holes",
+        "worn",
+        "old",
+        "timber",
+        "hardwood",
+        "rustic flooring",
+        "farmhouse style"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_formats": [],
+        "formats": [],
+        "lods": null,
+        "pbr": true,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "wood",
+        "floor",
+        "man made",
+        "raw wood",
+        "dirty"
+      ],
+      "title": "Raw Wooden Floor 01"
     },
     {
       "archive": {
