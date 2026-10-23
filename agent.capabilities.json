@@ -355,6 +355,36 @@
         "collision.recipe",
         "stage"
       ]
+    },
+    {
+      "id": "visual.intent.validate",
+      "description": "Read-only visual intent Draft 2020-12, provenance, renderer, and semantic zone gate for external projects.",
+      "access": "read-only",
+      "entrypoint": "tools/visual_production_contract.py",
+      "output": "json",
+      "doctor": false,
+      "requires_arguments": true,
+      "invocable": false
+    },
+    {
+      "id": "visual.scene.inventory",
+      "description": "Bounded read-only static Godot .tscn scene inventory with explicitly unverified external runtime snapshot support.",
+      "access": "read-only",
+      "entrypoint": "tools/visual_scene_inventory.py",
+      "output": "json",
+      "doctor": false,
+      "requires_arguments": true,
+      "invocable": false
+    },
+    {
+      "id": "visual.scene.diagnose",
+      "description": "Read-only visual diagnostics of native Godot scene-tree evidence: lighting reach, material signatures, primitive mix and planning budgets (not aesthetic scores).",
+      "access": "read-only",
+      "entrypoint": "tools/visual_scene_diagnostics.py",
+      "output": "json",
+      "doctor": false,
+      "requires_arguments": true,
+      "invocable": false
     }
   ]
 }

@@ -1,0 +1,217 @@
+{
+  "protocol": "arcont-visual-production-intent",
+  "version": 1,
+  "project_id": "industrial_demo",
+  "scene_id": "test_foundry",
+  "semantic_map": {
+    "path": "maps/test_foundry.json",
+    "sha256": null
+  },
+  "render_profile": {
+    "engine": "Godot",
+    "engine_version": "4.7.2-stable",
+    "renderer": "gl_compatibility",
+    "target_platform": "Android",
+    "quality_tier": "balanced"
+  },
+  "visual_kit": {
+    "style_tags": [
+      "industrial",
+      "science_fiction",
+      "tactical_readability"
+    ],
+    "material_families": [
+      "painted_steel",
+      "worn_concrete",
+      "oxidized_copper"
+    ],
+    "palette": [
+      {
+        "id": "steel_base",
+        "color": "#344754",
+        "use": "base"
+      },
+      {
+        "id": "guidance_blue",
+        "color": "#58C8DE",
+        "use": "objective"
+      },
+      {
+        "id": "containment_orange",
+        "color": "#EB9659",
+        "use": "warning"
+      },
+      {
+        "id": "shadow_mass",
+        "color": "#152431",
+        "use": "shadow"
+      }
+    ],
+    "visual_story": "An industrial containment facility with a clear insertion lane, distinct reactor hazard and readable combat cover."
+  },
+  "zones": [
+    {
+      "id": "entry",
+      "region_id": null,
+      "role": "insertion",
+      "focus": "Safe entry route and readable silhouette",
+      "lighting_profile_id": "entry_cold"
+    },
+    {
+      "id": "core",
+      "region_id": null,
+      "role": "objective",
+      "focus": "Containment core as focal point without hiding enemies",
+      "lighting_profile_id": "core_alarm"
+    }
+  ],
+  "lighting_profiles": [
+    {
+      "id": "entry_cold",
+      "purpose": "Safe legibility with low-cost cool practical fill",
+      "key_color": "#9CCCE2",
+      "accent_color": "#58C8DE",
+      "local_light_budget": 2,
+      "shadow_budget": 0,
+      "compatibility_fallback": "One directional shadow key and emissive strips without expensive post effects."
+    },
+    {
+      "id": "core_alarm",
+      "purpose": "Warm hazard focal point against cool industrial background",
+      "key_color": "#EFA16A",
+      "accent_color": "#EB6553",
+      "local_light_budget": 3,
+      "shadow_budget": 0,
+      "compatibility_fallback": "Use static material emission and two low-range shadowless accents."
+    }
+  ],
+  "asset_roles": [
+    {
+      "id": "core_generator",
+      "role": "hero",
+      "status": "planned",
+      "category": "power_generator",
+      "source_record": null,
+      "sha256": null,
+      "placement_rule": "Center inside core objective zone; do not occlude camera to active enemy lanes.",
+      "desired_count": 1
+    },
+    {
+      "id": "wall_panels",
+      "role": "structure",
+      "status": "planned",
+      "category": "structural_panel",
+      "source_record": null,
+      "sha256": null,
+      "placement_rule": "Repeat by module with bounded variation; render-only skin over game-owned walls.",
+      "desired_count": 24
+    },
+    {
+      "id": "maintenance_carts",
+      "role": "clutter",
+      "status": "planned",
+      "category": "utility_cart",
+      "source_record": null,
+      "sha256": null,
+      "placement_rule": "Perimeter props outside nav routes and objective interaction volumes.",
+      "desired_count": 4
+    }
+  ],
+  "layers": [
+    {
+      "kind": "gameplay-semantic",
+      "collider_authority": "game-owned-semantic"
+    },
+    {
+      "kind": "structure",
+      "collider_authority": "render-only"
+    },
+    {
+      "kind": "functional-props",
+      "collider_authority": "render-only"
+    },
+    {
+      "kind": "dressing",
+      "collider_authority": "render-only"
+    },
+    {
+      "kind": "signage",
+      "collider_authority": "render-only"
+    },
+    {
+      "kind": "atmosphere",
+      "collider_authority": "render-only"
+    }
+  ],
+  "budgets": {
+    "target_fps": 60,
+    "fallback_fps": 30,
+    "max_local_lights": 5,
+    "max_shadowed_lights": 1,
+    "max_visible_instances": 450,
+    "max_texture_memory_mib": 128,
+    "measurement_status": "unmeasured"
+  },
+  "capture_plan": [
+    {
+      "id": "entry_shoulder",
+      "zone_id": "entry",
+      "camera_position": [
+        2,
+        2.3,
+        13
+      ],
+      "camera_target": [
+        0,
+        1.1,
+        9
+      ],
+      "fov_degrees": 60,
+      "width": 1280,
+      "height": 720,
+      "renderer": "gl_compatibility",
+      "scenario_state": "idle_character_frame_001",
+      "roi": {
+        "x": 0.2,
+        "y": 0.15,
+        "width": 0.65,
+        "height": 0.75
+      },
+      "baseline_sha256": null,
+      "candidate_sha256": null
+    },
+    {
+      "id": "core_hero",
+      "zone_id": "core",
+      "camera_position": [
+        2,
+        2.3,
+        -3
+      ],
+      "camera_target": [
+        0,
+        2,
+        -10
+      ],
+      "fov_degrees": 60,
+      "width": 1280,
+      "height": 720,
+      "renderer": "gl_compatibility",
+      "scenario_state": "objective_before_alarm_frame_001",
+      "roi": {
+        "x": 0.15,
+        "y": 0.1,
+        "width": 0.7,
+        "height": 0.8
+      },
+      "baseline_sha256": null,
+      "candidate_sha256": null
+    }
+  ],
+  "approval": {
+    "art_review_required": true,
+    "device_measurement_required": true,
+    "project_write_authorized": false,
+    "review_notes": "Synthetic design example. No external game modified. Numbers are planning budgets, not measurements."
+  }
+}
