@@ -1,0 +1,2303 @@
+{
+  "assertions": {
+    "project_tree_must_be_disjoint": true,
+    "mcp_tools_discoverable": true,
+    "universal_bridge_discovered": true,
+    "readonly_server_cannot_escalate": true,
+    "stdio_modern_auto_negotiated": true,
+    "stdio_legacy_2025_compatible": true,
+    "mcp_bootstrapped_external_project": true,
+    "project_context_available": true,
+    "development_session_created": true,
+    "mcp_executed_bounded_session_plan": true,
+    "mcp_completion_evidence_persisted": true,
+    "stdio_persisted_session_reinspectable": true,
+    "readonly_operation_override_refused_stdio": true,
+    "http_nonloopback_requires_token": true,
+    "http_wildcard_requires_allowed_host": true,
+    "http_bearer_auth_enforced": true,
+    "http_host_validation_enforced": true,
+    "http_modern_2026_protocol": true,
+    "http_modern_auto_negotiated": true,
+    "readonly_operation_override_refused_http": true
+  },
+  "evidence": {
+    "project_tree_overlap_refusal": {
+      "exit_code": 1,
+      "stderr": "ARCONT MCP fatal: Error: project must be disjoint from ARCONT; neither path may contain the other\n    at fail (file:///workspace/scratch/bfbeef95f39f/Arcont/integrations/mcp/server.mjs:33:9)\n    at parseCli (file:///workspace/scratch/bfbeef95f39f/Arcont/integrations/mcp/server.mjs:87:5)\n    at main (file:///workspace/scratch/bfbeef95f39f/Arcont/integrations/mcp/server.mjs:558:18)\n    at file:///workspace/scratch/bfbeef95f39f/Arcont/integrations/mcp/server.mjs:573:1\n    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async node:internal/modules/esm/loader:647:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)\n"
+    },
+    "readonly_tools": [
+      "arcont_call",
+      "arcont_discover",
+      "arcont_project_context",
+      "arcont_session_create",
+      "arcont_session_execute",
+      "arcont_session_inspect"
+    ],
+    "discover": {
+      "ok": true,
+      "operation": "discover",
+      "protocol": "arcont-bridge",
+      "request_id": "mcp-30-1793332282330-1",
+      "result": {
+        "agent_control": {
+          "capabilities": [
+            {
+              "access": "read-only",
+              "argv": [
+                "validate"
+              ],
+              "availability_status": "installed",
+              "available": true,
+              "description": "Validate ARCONT knowledge integrity and graph/link coherence.",
+              "doctor": true,
+              "entrypoint": "tools/arcont_lab.py",
+              "id": "knowledge.validate",
+              "output": "json",
+              "resolved_entrypoint": "tools/arcont_lab.py",
+              "runtime_verified": false
+            },
+            {
+              "access": "read-only",
+              "argv": [],
+              "availability_status": "installed",
+              "available": true,
+              "description": "Check local 2D capability/tool/test consistency without inferring remote runtime maturity.",
+              "doctor": true,
+              "entrypoint": "tools/capability_matrix.py",
+              "id": "knowledge.matrix.validate",
+              "output": "json",
+              "resolved_entrypoint": "tools/capability_matrix.py",
+              "runtime_verified": false
+            },
+            {
+              "access": "read-only",
+              "argv": [
+                "validate"
+              ],
+              "availability_status": "installed",
+              "available": true,
+              "description": "Validate the ARCONT manifest, evidence contracts, hashes and maturity constraints.",
+              "doctor": true,
+              "entrypoint": "tools/arcont_hardening.py",
+              "id": "repository.hardening.validate",
+              "output": "text-or-json",
+              "resolved_entrypoint": "tools/arcont_hardening.py",
+              "runtime_verified": false
+            },
+            {
+              "access": "read-only",
+              "argv": [],
+              "availability_status": "installed",
+              "available": true,
+              "description": "Validate the unified observability registry and evidence integration layer.",
+              "doctor": true,
+              "entrypoint": "tools/observability_integrity.py",
+              "id": "observability.validate",
+              "output": "text-or-json",
+              "resolved_entrypoint": "tools/observability_integrity.py",
+              "runtime_verified": false
+            },
+            {
+              "access": "read-only",
+              "argv": [
+                "validate-plan"
+              ],
+              "availability_status": "installed",
+              "available": true,
+              "description": "Validate the canonical preregistered runtime campaign without executing a game.",
+              "doctor": true,
+              "entrypoint": "tools/runtime_evidence.py",
+              "id": "runtime.plan.validate",
+              "output": "text-or-json",
+              "resolved_entrypoint": "tools/runtime_evidence.py",
+              "runtime_verified": false
+            },
+            {
+              "access": "read-only",
+              "argv": [
+                "validate"
+              ],
+              "availability_status": "installed",
+              "available": true,
+              "description": "Validate Asset Vault catalog records and policy constraints.",
+              "doctor": true,
+              "entrypoint": "tools/asset_vault_indexer.py",
+              "id": "asset-vault.validate",
+              "output": "text-or-json",
+              "resolved_entrypoint": "tools/asset_vault_indexer.py",
+              "runtime_verified": false
+            },
+            {
+              "access": "read-only",
+              "argv": [],
+              "availability_status": "installed",
+              "available": true,
+              "description": "Validate traceable compatibility and license trust evidence for catalog assets.",
+              "doctor": true,
+              "entrypoint": "tools/asset_trust.py",
+              "id": "asset-trust.validate",
+              "output": "text-or-json",
+              "resolved_entrypoint": "tools/asset_trust.py",
+              "runtime_verified": false
+            },
+            {
+              "access": "read-only",
+              "argv": [],
+              "availability_status": "installed",
+              "available": true,
+              "description": "Validate an external Map Forge authoring contract.",
+              "doctor": false,
+              "entrypoint": "tools/map_forge_contract.py",
+              "id": "map-forge.contract.validate",
+              "output": "text-or-json",
+              "requires_arguments": true,
+              "resolved_entrypoint": "tools/map_forge_contract.py",
+              "runtime_verified": false
+            },
+            {
+              "access": "read-only",
+              "argv": [],
+              "availability_status": "installed",
+              "available": true,
+              "description": "Audit external PNG sprite frames for production consistency without modifying them.",
+              "doctor": false,
+              "entrypoint": "tools/png_sprite_audit.py",
+              "id": "sprite.production.audit",
+              "output": "text-or-json",
+              "requires_arguments": true,
+              "resolved_entrypoint": "tools/png_sprite_audit.py",
+              "runtime_verified": false
+            },
+            {
+              "access": "read-only",
+              "availability_status": "installed",
+              "available": true,
+              "description": "Evaluate bounded declarative diagnosis policies against structured game evidence and compile repair plans without executing them.",
+              "doctor": false,
+              "entrypoint": "tools/agent_diagnosis.py",
+              "id": "agent.diagnosis",
+              "output": "json",
+              "requires_arguments": true,
+              "resolved_entrypoint": "tools/agent_diagnosis.py",
+              "runtime_verified": false
+            },
+            {
+              "access": "read-only",
+              "availability_status": "installed",
+              "available": true,
+              "description": "Validate model-authored hypotheses against structured evidence and compile only bounded safe repair proposals.",
+              "doctor": false,
+              "entrypoint": "tools/agent_hypothesis_gate.py",
+              "id": "agent.hypothesis-gate",
+              "output": "json",
+              "requires_arguments": true,
+              "resolved_entrypoint": "tools/agent_hypothesis_gate.py",
+              "runtime_verified": false
+            },
+            {
+              "access": "external-project-write",
+              "availability_status": "installed",
+              "available": true,
+              "description": "Create a minimal external Godot 2D/3D project from an explicitly authorized empty directory.",
+              "doctor": false,
+              "entrypoint": "tools/project_bootstrap_control.py",
+              "id": "project.bootstrap.control",
+              "invocable": true,
+              "operations": [
+                "capabilities",
+                "bootstrap"
+              ],
+              "output": "json",
+              "project_arg": "--project",
+              "request_arg": "--request",
+              "request_mode": "json-stdin",
+              "resolved_entrypoint": "tools/project_bootstrap_control.py",
+              "runtime_verified": false
+            },
+            {
+              "access": "external-project-write",
+              "availability_status": "installed",
+              "available": true,
+              "description": "Inspect and stage user-provided local assets from project/incoming with hashes and declared-rights provenance.",
+              "doctor": false,
+              "entrypoint": "tools/user_asset_intake.py",
+              "id": "asset-intake.control",
+              "invocable": true,
+              "operations": [
+                "capabilities",
+                "inspect",
+                "stage",
+                "list"
+              ],
+              "output": "json",
+              "project_arg": "--project",
+              "request_arg": "--request",
+              "request_mode": "json-stdin",
+              "resolved_entrypoint": "tools/user_asset_intake.py",
+              "runtime_verified": false
+            },
+            {
+              "access": "external-project-write",
+              "availability_status": "installed",
+              "available": true,
+              "description": "Provider-scoped public asset discovery and verified staging through official APIs with license/provenance records.",
+              "doctor": false,
+              "entrypoint": "tools/public_asset_discovery.py",
+              "id": "public-asset.control",
+              "invocable": true,
+              "operations": [
+                "capabilities",
+                "providers",
+                "search",
+                "files",
+                "stage",
+                "list"
+              ],
+              "output": "json",
+              "project_arg": "--project",
+              "request_arg": "--request",
+              "request_mode": "json-stdin",
+              "resolved_entrypoint": "tools/public_asset_discovery.py",
+              "runtime_verified": false
+            },
+            {
+              "access": "external-project-write",
+              "availability_status": "installed",
+              "available": true,
+              "description": "Revision-checked structured editing for fresh Godot projects: GDScript, scenes, resources and input actions with Godot validation and rollback.",
+              "doctor": false,
+              "entrypoint": "tools/godot_structured_editing.py",
+              "id": "godot.structured.control",
+              "invocable": true,
+              "operations": [
+                "capabilities",
+                "validate",
+                "script.inspect",
+                "script.create",
+                "script.replace",
+                "script.function.replace",
+                "scene.inspect",
+                "scene.edit",
+                "resource.inspect",
+                "resource.edit",
+                "input.action.set"
+              ],
+              "output": "json",
+              "project_arg": "--project",
+              "request_arg": "--request",
+              "request_mode": "json-stdin",
+              "resolved_entrypoint": "tools/godot_structured_editing.py",
+              "runtime_verified": false
+            },
+            {
+              "access": "external-project-write",
+              "availability_status": "installed",
+              "available": true,
+              "description": "Persistent bounded milestone orchestration over existing ARCONT plans with budgets, receipts, revision checks and no silent retries.",
+              "doctor": false,
+              "entrypoint": "tools/development_session.py",
+              "id": "development.session.control",
+              "invocable": true,
+              "operations": [
+                "capabilities",
+                "create",
+                "inspect",
+                "execute"
+              ],
+              "output": "json",
+              "project_arg": "--project",
+              "request_arg": "--request",
+              "request_mode": "json-stdin",
+              "resolved_entrypoint": "tools/development_session.py",
+              "runtime_verified": false
+            },
+            {
+              "access": "external-project-write",
+              "availability_status": "installed",
+              "available": true,
+              "description": "Transport-neutral JSON/stdio bridge for external AI agents to discover ARCONT, read project intent/assets, evaluate hypotheses and execute bounded plans.",
+              "doctor": false,
+              "entrypoint": "tools/arcont_bridge.py",
+              "id": "agent.bridge",
+              "invocable": false,
+              "operations": [
+                "discover",
+                "project.inspect",
+                "project.intent.read",
+                "project.bootstrap",
+                "assets.inspect",
+                "asset.user.inspect",
+                "asset.user.stage",
+                "asset.user.list",
+                "asset.public.providers",
+                "asset.public.search",
+                "asset.public.files",
+                "asset.public.stage",
+                "asset.public.list",
+                "authoring.catalog",
+                "godot.structured.validate",
+                "godot.script.inspect",
+                "godot.script.create",
+                "godot.script.replace",
+                "godot.script.function.replace",
+                "godot.scene.inspect",
+                "godot.scene.edit",
+                "godot.resource.inspect",
+                "godot.resource.edit",
+                "godot.input.action.set",
+                "development.session.capabilities",
+                "development.session.create",
+                "development.session.inspect",
+                "development.session.execute",
+                "authoring.document.read",
+                "hypothesis.evaluate",
+                "plan.execute"
+              ],
+              "output": "json",
+              "request_mode": "json-stdio",
+              "requires_arguments": true,
+              "resolved_entrypoint": "tools/arcont_bridge.py",
+              "runtime_verified": false
+            },
+            {
+              "access": "external-runtime",
+              "availability_status": "external-unconfigured",
+              "available": false,
+              "description": "Execute runtime experiments in the external ARCONT Runtime Lab repository; never inside ARCONT.",
+              "doctor": false,
+              "external_repository": "heliossamuelhernandezreyes/Nia-Tech",
+              "id": "runtime-lab.execute",
+              "output": "benchmark-result",
+              "runtime_verified": false
+            },
+            {
+              "access": "external-project-write",
+              "availability_status": "installed",
+              "available": true,
+              "description": "Operate revisioned Godot authoring, build and bounded playtest sessions in an external game repository.",
+              "doctor": false,
+              "entrypoint": "tools/godot_authoring_control.py",
+              "id": "godot.authoring.control",
+              "invocable": true,
+              "operations": [
+                "capabilities",
+                "discover",
+                "list",
+                "inspect",
+                "create",
+                "replace",
+                "patch",
+                "restore",
+                "build",
+                "playtest"
+              ],
+              "output": "json",
+              "project_arg": "--project",
+              "request_arg": "--request",
+              "request_mode": "json-stdin",
+              "resolved_entrypoint": "tools/godot_authoring_control.py",
+              "runtime_verified": false
+            },
+            {
+              "access": "external-project-write",
+              "availability_status": "installed",
+              "available": true,
+              "description": "Operate revisioned Map Forge editing, terrain brushes, validation, materialization and capture in an external game repository.",
+              "doctor": false,
+              "entrypoint": "tools/map_forge_control.py",
+              "id": "map-forge.editor.control",
+              "invocable": true,
+              "operations": [
+                "capabilities",
+                "list",
+                "inspect",
+                "validate",
+                "analyze",
+                "materialize",
+                "capture",
+                "create",
+                "replace",
+                "patch",
+                "brush",
+                "edit",
+                "restore"
+              ],
+              "output": "json",
+              "project_arg": "--project",
+              "request_arg": "--request",
+              "request_mode": "json-stdin",
+              "resolved_entrypoint": "tools/map_forge_control.py",
+              "runtime_verified": false
+            },
+            {
+              "access": "external-project-write",
+              "availability_status": "installed",
+              "available": true,
+              "description": "Expose the same Godot authoring API over dependency-free MCP stdio for a connected local agent client.",
+              "doctor": false,
+              "entrypoint": "tools/godot_authoring_mcp.py",
+              "id": "godot.authoring.mcp",
+              "invocable": false,
+              "output": "json-rpc",
+              "project_arg": "--project",
+              "request_mode": "mcp-stdio",
+              "resolved_entrypoint": "tools/godot_authoring_mcp.py",
+              "runtime_verified": false
+            },
+            {
+              "access": "external-project-write",
+              "availability_status": "installed",
+              "available": true,
+              "description": "Validate and stage production assets, review animation/sector/performance/TPS/audio evidence, and materialize verified native bundles in an external game repository.",
+              "doctor": false,
+              "entrypoint": "tools/production_control.py",
+              "id": "production.control",
+              "invocable": true,
+              "operations": [
+                "capabilities",
+                "assets.validate",
+                "assets.stage",
+                "animation.validate",
+                "sector.validate",
+                "performance.summarize",
+                "performance.compare",
+                "finish.review",
+                "audio.review",
+                "bundle.materialize"
+              ],
+              "output": "json",
+              "project_arg": "--project",
+              "request_arg": "--request",
+              "request_mode": "json-stdin",
+              "resolved_entrypoint": "tools/production_control.py",
+              "runtime_verified": false
+            },
+            {
+              "access": "external-project-write",
+              "availability_status": "installed",
+              "available": true,
+              "description": "Inspect, budget-check, derive collision policy, and stage local glTF/GLB candidates in an external game repository without network access.",
+              "doctor": false,
+              "entrypoint": "tools/model_forge_control.py",
+              "id": "model-forge.control",
+              "invocable": true,
+              "operations": [
+                "capabilities",
+                "inspect",
+                "validate",
+                "collision.recipe",
+                "stage"
+              ],
+              "output": "json",
+              "project_arg": "--project",
+              "request_arg": "--request",
+              "request_mode": "json-stdin",
+              "resolved_entrypoint": "tools/model_forge_control.py",
+              "runtime_verified": false
+            }
+          ],
+          "guards": {
+            "arcont_version": "1.2.0",
+            "embedded_godot_project_allowed": false,
+            "production_game_code_allowed": false,
+            "repository_role": "technical knowledge bank and reproducible game-engine laboratory"
+          },
+          "protocol": "arcont-agent-control",
+          "root": "/workspace/scratch/bfbeef95f39f/Arcont",
+          "schema_version": 1
+        },
+        "bridge": {
+          "mutation_boundary": {
+            "arbitrary_shell_execution_allowed": false,
+            "auto_retry_mutations_allowed": false,
+            "bridge_creates_new_writer_primitives": false,
+            "direct_writer_operations": [
+              "project.bootstrap",
+              "asset.user.stage",
+              "asset.public.stage",
+              "godot.script.create",
+              "godot.script.replace",
+              "godot.script.function.replace",
+              "godot.scene.inspect",
+              "godot.scene.edit",
+              "godot.resource.inspect",
+              "godot.resource.edit",
+              "godot.input.action.set",
+              "development.session.create",
+              "development.session.execute"
+            ],
+            "direct_writer_operations_require_explicit_write_opt_in": true,
+            "plan_execute_requires_explicit_write_opt_in": true
+          },
+          "operations": [
+            "discover",
+            "project.inspect",
+            "project.intent.read",
+            "project.bootstrap",
+            "assets.inspect",
+            "asset.user.inspect",
+            "asset.user.stage",
+            "asset.user.list",
+            "asset.public.providers",
+            "asset.public.search",
+            "asset.public.files",
+            "asset.public.stage",
+            "asset.public.list",
+            "godot.structured.validate",
+            "godot.script.inspect",
+            "godot.script.create",
+            "godot.script.replace",
+            "godot.script.function.replace",
+            "godot.scene.inspect",
+            "godot.scene.edit",
+            "godot.resource.inspect",
+            "godot.resource.edit",
+            "godot.input.action.set",
+            "development.session.capabilities",
+            "development.session.create",
+            "development.session.inspect",
+            "development.session.execute",
+            "authoring.catalog",
+            "authoring.document.read",
+            "hypothesis.evaluate",
+            "plan.execute"
+          ],
+          "protocol": "arcont-bridge",
+          "transport": "json-stdio",
+          "version": 1
+        },
+        "ok": true,
+        "project": {
+          "intent_path": "project.intent.json",
+          "root": "/workspace/scratch/bfbeef95f39f/validation-final/mcp-game"
+        }
+      },
+      "version": 1
+    },
+    "readonly_write_attempt": {
+      "error": "external project write permission is required",
+      "ok": false,
+      "protocol": "arcont-bridge",
+      "version": 1
+    },
+    "legacy_stdio_tools": [
+      "arcont_call",
+      "arcont_discover",
+      "arcont_project_context",
+      "arcont_session_create",
+      "arcont_session_execute",
+      "arcont_session_inspect"
+    ],
+    "bootstrap": {
+      "ok": true,
+      "operation": "project.bootstrap",
+      "protocol": "arcont-bridge",
+      "request_id": "mcp-58-1793332283268-1",
+      "result": {
+        "capability": "project.bootstrap.control",
+        "exit_code": 0,
+        "ok": true,
+        "operation": "invoke",
+        "permission": "explicit-project-write",
+        "project": "/workspace/scratch/bfbeef95f39f/validation-final/mcp-game",
+        "protocol": "arcont-agent-control",
+        "result": {
+          "ok": true,
+          "protocol_version": 1,
+          "result": {
+            "engine": "Godot",
+            "files": {
+              "authoring/README.md": "7f7a112825e1352919b46ff70d69a7677904e4d158feeb1742323f8a27b8229a",
+              "project.godot": "1f2bc4a9cfe98098f9daea7bd8ecb8596cf5420bab46e4525a1a58811edf8459",
+              "project.intent.json": "c35161a024f57c5d66d696aa87fcaedf3e15cae13af0c46aa6c3d4a832b57664",
+              "scenes/main.tscn": "edc6e69b2e119f66db5569564e09379d3400af73531d78be9f06c42cb62d3677"
+            },
+            "intent": "project.intent.json",
+            "main_scene": "scenes/main.tscn",
+            "network_access": false,
+            "production_project_location": "external",
+            "project_id": "mcp_acceptance",
+            "project_root": "/workspace/scratch/bfbeef95f39f/validation-final/mcp-game",
+            "protocol": "arcont-project-bootstrap",
+            "receipt": ".arcont/bootstrap.json",
+            "template": "godot-3d-minimal",
+            "version": 1
+          },
+          "write_performed": true
+        },
+        "schema_version": 1,
+        "status": "completed",
+        "stderr": null
+      },
+      "version": 1
+    },
+    "context": {
+      "ok": true,
+      "project": "/workspace/scratch/bfbeef95f39f/validation-final/mcp-game",
+      "authority": "read-write",
+      "context": {
+        "project.intent.read": {
+          "ok": true,
+          "operation": "project.intent.read",
+          "protocol": "arcont-bridge",
+          "request_id": "mcp-58-1793332283479-2",
+          "result": {
+            "intent": {
+              "asset_policy": {
+                "allow_network_discovery": false,
+                "commercial_use_required": true,
+                "public_assets": false,
+                "user_assets": true
+              },
+              "genre": "third-person action",
+              "goals": [
+                "Prove a current MCP client can drive ARCONT through a persistent development session."
+              ],
+              "priorities": [
+                "movement",
+                "evidence",
+                "bounded execution"
+              ],
+              "project_id": "mcp_acceptance",
+              "protocol": "arcont-project-intent",
+              "targets": [
+                "Windows"
+              ],
+              "title": "MCP Acceptance",
+              "version": 1
+            },
+            "ok": true,
+            "path": "project.intent.json",
+            "present": true,
+            "sha256": "f4f1b04e7b4b950cf6bd856775971f8ebb2206956243ce16429ff65c7810e8e0"
+          },
+          "version": 1
+        },
+        "project.inspect": {
+          "ok": true,
+          "operation": "project.inspect",
+          "protocol": "arcont-bridge",
+          "request_id": "mcp-58-1793332283583-3",
+          "result": {
+            "limitations": [
+              "Static inventory only; no engine execution, scene rendering, asset semantic review, or performance claim.",
+              "Symlinks and generated/cache directories are skipped."
+            ],
+            "ok": true,
+            "operation": "inspect-project",
+            "project": {
+              "categories": {
+                "scenes": 1
+              },
+              "detectors": {
+                "godot": true,
+                "unity": false,
+                "unreal": false
+              },
+              "engine": "godot",
+              "extensions": {
+                ".godot": 1,
+                ".json": 1,
+                ".md": 1,
+                ".tscn": 1
+              },
+              "file_count": 4,
+              "max_files": 2000,
+              "root": "/workspace/scratch/bfbeef95f39f/validation-final/mcp-game",
+              "scan_truncated": false,
+              "top_level_directories": {
+                "authoring": 1,
+                "scenes": 1
+              },
+              "total_bytes_observed": 1552
+            },
+            "protocol": "arcont-agent-control",
+            "schema_version": 1,
+            "write_performed": false
+          },
+          "version": 1
+        },
+        "assets.inspect": {
+          "ok": true,
+          "operation": "assets.inspect",
+          "protocol": "arcont-bridge",
+          "request_id": "mcp-58-1793332283685-4",
+          "result": {
+            "asset_count": 1,
+            "assets": [
+              {
+                "bytes": 513,
+                "extension": ".tscn",
+                "kind": "scene",
+                "path": "scenes/main.tscn",
+                "sha256": "edc6e69b2e119f66db5569564e09379d3400af73531d78be9f06c42cb62d3677"
+              }
+            ],
+            "counts": {
+              "scene": 1
+            },
+            "limitations": [
+              "Inventory identifies local project files only; it does not infer copyright/license rights from file contents.",
+              "assets.inspect inventories local files only; provider-scoped network discovery is available separately through asset.public.* when project policy allows it.",
+              "Technical inventory does not establish artistic quality, runtime cost, rig correctness or target-platform suitability."
+            ],
+            "max_assets": 100,
+            "ok": true,
+            "total_bytes_observed": 513,
+            "truncated": false
+          },
+          "version": 1
+        },
+        "authoring.catalog": {
+          "ok": true,
+          "operation": "authoring.catalog",
+          "protocol": "arcont-bridge",
+          "request_id": "mcp-58-1793332283795-5",
+          "result": {
+            "allowed_roots": [
+              "authoring/recipes",
+              "authoring/scenarios"
+            ],
+            "document_count": 0,
+            "documents": [],
+            "godot_authoring_contract_present": false,
+            "map_forge_contract_present": false,
+            "ok": true
+          },
+          "version": 1
+        },
+        "development.session.capabilities": {
+          "ok": true,
+          "operation": "development.session.capabilities",
+          "protocol": "arcont-bridge",
+          "request_id": "mcp-58-1793332283895-6",
+          "result": {
+            "ok": true,
+            "result": {
+              "budget_limits": {
+                "max_execution_steps": {
+                  "default": 96,
+                  "max": 256,
+                  "min": 1
+                },
+                "max_failed_runs": {
+                  "default": 4,
+                  "max": 8,
+                  "min": 0
+                },
+                "max_plan_runs": {
+                  "default": 12,
+                  "max": 32,
+                  "min": 1
+                },
+                "max_write_steps": {
+                  "default": 48,
+                  "max": 96,
+                  "min": 0
+                }
+              },
+              "eligible_capabilities": [
+                "asset-intake.control",
+                "godot.authoring.control",
+                "godot.structured.control",
+                "map-forge.editor.control",
+                "model-forge.control",
+                "production.control",
+                "project.bootstrap.control",
+                "public-asset.control"
+              ],
+              "execution_semantics": [
+                "one bounded ARCONT plan per execute request",
+                "no silent retry",
+                "failed plans stop and are recorded",
+                "session writes require exact session revision",
+                "plan capability allowlist must be a subset of session allowlist",
+                "project intent and ARCONT registry hashes are pinned for the session"
+              ],
+              "max_history": 32,
+              "max_milestones": 16,
+              "operations": [
+                "capabilities",
+                "create",
+                "inspect",
+                "execute"
+              ],
+              "protocol": "arcont-development-session",
+              "registry_sha256": "28e71a2a3373b99eb7299e15f3d8a0744d3ab17725f613faf11fffdcc490dc3f",
+              "version": 1
+            },
+            "write_performed": false
+          },
+          "version": 1
+        }
+      }
+    },
+    "session_create": {
+      "ok": true,
+      "operation": "development.session.create",
+      "protocol": "arcont-bridge",
+      "request_id": "mcp-58-1793332284010-7",
+      "result": {
+        "capability": "development.session.control",
+        "exit_code": 0,
+        "ok": true,
+        "operation": "invoke",
+        "permission": "explicit-project-write",
+        "project": "/workspace/scratch/bfbeef95f39f/validation-final/mcp-game",
+        "protocol": "arcont-agent-control",
+        "result": {
+          "ok": true,
+          "protocol_version": 1,
+          "result": {
+            "next_milestone": {
+              "acceptance": [
+                {
+                  "checks": [
+                    {
+                      "capability": "godot.structured.control",
+                      "expect": [
+                        {
+                          "op": "equals",
+                          "pointer": "/result/result/action",
+                          "value": "move_forward"
+                        }
+                      ],
+                      "kind": "invoke",
+                      "operation": "input.action.set",
+                      "request_match": {
+                        "action": "move_forward"
+                      }
+                    }
+                  ],
+                  "description": "move_forward is configured.",
+                  "verification_level": "static"
+                },
+                {
+                  "checks": [
+                    {
+                      "capability": "godot.structured.control",
+                      "expect": [
+                        {
+                          "op": "equals",
+                          "pointer": "/result/result/validation/ok",
+                          "value": true
+                        }
+                      ],
+                      "kind": "invoke",
+                      "operation": "script.create",
+                      "request_match": {
+                        "path": "scripts/player.gd"
+                      }
+                    },
+                    {
+                      "capability": "godot.structured.control",
+                      "expect": [
+                        {
+                          "op": "exists",
+                          "pointer": "/result/result/revision"
+                        }
+                      ],
+                      "kind": "invoke",
+                      "operation": "scene.edit",
+                      "request_match": {
+                        "scene": "scenes/main.tscn"
+                      }
+                    }
+                  ],
+                  "description": "Player script validates and scene edit commits.",
+                  "verification_level": "static"
+                }
+              ],
+              "completed_by_run": null,
+              "completion_evidence": null,
+              "completion_note": null,
+              "goal": "Create move_forward input, a Player script and attach Player to the main scene.",
+              "id": "movement",
+              "status": "active"
+            },
+            "remaining": {
+              "execution_steps": 16,
+              "failed_runs": 1,
+              "plan_runs": 3,
+              "write_steps": 10
+            },
+            "session": {
+              "budgets": {
+                "max_execution_steps": 16,
+                "max_failed_runs": 1,
+                "max_plan_runs": 3,
+                "max_write_steps": 10
+              },
+              "capability_allowlist": [
+                "godot.structured.control"
+              ],
+              "counters": {
+                "execution_steps": 0,
+                "failed_runs": 0,
+                "milestones_completed": 0,
+                "plan_runs": 0,
+                "write_steps": 0
+              },
+              "goal": "Create and verify a minimal player movement scaffold through MCP.",
+              "history": [],
+              "id": "mcp_build",
+              "milestones": [
+                {
+                  "acceptance": [
+                    {
+                      "checks": [
+                        {
+                          "capability": "godot.structured.control",
+                          "expect": [
+                            {
+                              "op": "equals",
+                              "pointer": "/result/result/action",
+                              "value": "move_forward"
+                            }
+                          ],
+                          "kind": "invoke",
+                          "operation": "input.action.set",
+                          "request_match": {
+                            "action": "move_forward"
+                          }
+                        }
+                      ],
+                      "description": "move_forward is configured.",
+                      "verification_level": "static"
+                    },
+                    {
+                      "checks": [
+                        {
+                          "capability": "godot.structured.control",
+                          "expect": [
+                            {
+                              "op": "equals",
+                              "pointer": "/result/result/validation/ok",
+                              "value": true
+                            }
+                          ],
+                          "kind": "invoke",
+                          "operation": "script.create",
+                          "request_match": {
+                            "path": "scripts/player.gd"
+                          }
+                        },
+                        {
+                          "capability": "godot.structured.control",
+                          "expect": [
+                            {
+                              "op": "exists",
+                              "pointer": "/result/result/revision"
+                            }
+                          ],
+                          "kind": "invoke",
+                          "operation": "scene.edit",
+                          "request_match": {
+                            "scene": "scenes/main.tscn"
+                          }
+                        }
+                      ],
+                      "description": "Player script validates and scene edit commits.",
+                      "verification_level": "static"
+                    }
+                  ],
+                  "completed_by_run": null,
+                  "completion_evidence": null,
+                  "completion_note": null,
+                  "goal": "Create move_forward input, a Player script and attach Player to the main scene.",
+                  "id": "movement",
+                  "status": "active"
+                }
+              ],
+              "permissions": {
+                "project_write": true
+              },
+              "project_execution_sha256": "168ebf993d18e093bb6ab4361e0723c7430ce6d98b24d4a493161a9236daf488",
+              "project_intent_sha256": "f4f1b04e7b4b950cf6bd856775971f8ebb2206956243ce16429ff65c7810e8e0",
+              "project_root": "/workspace/scratch/bfbeef95f39f/validation-final/mcp-game",
+              "protocol": "arcont-development-session",
+              "registry_sha256": "28e71a2a3373b99eb7299e15f3d8a0744d3ab17725f613faf11fffdcc490dc3f",
+              "revision": "da86c0403f0cdf6eb5f9aa7897b0308562af06969e3a6eee3ebbf2df8f4bd24c",
+              "sequence": 0,
+              "status": "active",
+              "stop_reason": null,
+              "toolchain_sha256": "42f85cb7c19031ede4f13bfe903d723d1ca71fbdaf338c29ac5ed8b7ee6abd1b",
+              "version": 1
+            }
+          },
+          "write_performed": true
+        },
+        "schema_version": 1,
+        "status": "completed",
+        "stderr": null
+      },
+      "version": 1
+    },
+    "session_execute": {
+      "ok": true,
+      "operation": "development.session.execute",
+      "protocol": "arcont-bridge",
+      "request_id": "mcp-58-1793332284349-8",
+      "result": {
+        "capability": "development.session.control",
+        "exit_code": 0,
+        "ok": true,
+        "operation": "invoke",
+        "permission": "explicit-project-write",
+        "project": "/workspace/scratch/bfbeef95f39f/validation-final/mcp-game",
+        "protocol": "arcont-agent-control",
+        "result": {
+          "ok": true,
+          "protocol_version": 1,
+          "result": {
+            "completion_evidence": [
+              {
+                "criterion": {
+                  "checks": [
+                    {
+                      "capability": "godot.structured.control",
+                      "expect": [
+                        {
+                          "op": "equals",
+                          "pointer": "/result/result/action",
+                          "value": "move_forward"
+                        }
+                      ],
+                      "kind": "invoke",
+                      "operation": "input.action.set",
+                      "request_match": {
+                        "action": "move_forward"
+                      }
+                    }
+                  ],
+                  "description": "move_forward is configured.",
+                  "verification_level": "static"
+                },
+                "criterion_index": 0,
+                "ok": true,
+                "step_ids": [
+                  "forward"
+                ],
+                "steps": [
+                  {
+                    "evidence_ok": true,
+                    "matching_checks": [
+                      0
+                    ],
+                    "step_id": "forward"
+                  }
+                ],
+                "verification_level": "static"
+              },
+              {
+                "criterion": {
+                  "checks": [
+                    {
+                      "capability": "godot.structured.control",
+                      "expect": [
+                        {
+                          "op": "equals",
+                          "pointer": "/result/result/validation/ok",
+                          "value": true
+                        }
+                      ],
+                      "kind": "invoke",
+                      "operation": "script.create",
+                      "request_match": {
+                        "path": "scripts/player.gd"
+                      }
+                    },
+                    {
+                      "capability": "godot.structured.control",
+                      "expect": [
+                        {
+                          "op": "exists",
+                          "pointer": "/result/result/revision"
+                        }
+                      ],
+                      "kind": "invoke",
+                      "operation": "scene.edit",
+                      "request_match": {
+                        "scene": "scenes/main.tscn"
+                      }
+                    }
+                  ],
+                  "description": "Player script validates and scene edit commits.",
+                  "verification_level": "static"
+                },
+                "criterion_index": 1,
+                "ok": true,
+                "step_ids": [
+                  "script",
+                  "scene_edit"
+                ],
+                "steps": [
+                  {
+                    "evidence_ok": true,
+                    "matching_checks": [
+                      0
+                    ],
+                    "step_id": "script"
+                  },
+                  {
+                    "evidence_ok": true,
+                    "matching_checks": [
+                      1
+                    ],
+                    "step_id": "scene_edit"
+                  }
+                ],
+                "verification_level": "static"
+              }
+            ],
+            "execution": {
+              "duration_ms": 1548.499,
+              "goal": "Create a bounded forward input and Player movement scaffold.",
+              "ok": true,
+              "operation": "run-plan",
+              "plan_id": "mcp_movement",
+              "plan_sha256": "3a96339ad1b0c975033ffc8b7dd2ce9f200d27ce1ee328c1def0c022b474aff0",
+              "project": "/workspace/scratch/bfbeef95f39f/validation-final/mcp-game",
+              "protocol": "arcont-agent-plan",
+              "registry_sha256": "28e71a2a3373b99eb7299e15f3d8a0744d3ab17725f613faf11fffdcc490dc3f",
+              "schema_version": 1,
+              "status": "completed",
+              "steps": [
+                {
+                  "capability": "godot.structured.control",
+                  "duration_ms": 269.944,
+                  "execution_ok": true,
+                  "expectations": [
+                    {
+                      "actual": true,
+                      "exists": true,
+                      "expected": true,
+                      "ok": true,
+                      "op": "equals",
+                      "pointer": "/result/ok"
+                    }
+                  ],
+                  "expectations_ok": true,
+                  "id": "validate",
+                  "index": 0,
+                  "kind": "invoke",
+                  "ok": true,
+                  "output": {
+                    "capability": "godot.structured.control",
+                    "exit_code": 0,
+                    "ok": true,
+                    "operation": "invoke",
+                    "permission": "explicit-project-write",
+                    "project": "/workspace/scratch/bfbeef95f39f/validation-final/mcp-game",
+                    "protocol": "arcont-agent-control",
+                    "result": {
+                      "ok": true,
+                      "protocol_version": 1,
+                      "result": {
+                        "engine_identity": {
+                          "executable": "/workspace/scratch/bfbeef95f39f/runtime-tools/godot",
+                          "identity_level": "binary-verified",
+                          "sha256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e",
+                          "version": "4.7.2.stable.official.ed1daf0bf"
+                        },
+                        "godot_bin": "/workspace/scratch/bfbeef95f39f/runtime-tools/godot",
+                        "project_import_verified": false,
+                        "project_revision": "1f2bc4a9cfe98098f9daea7bd8ecb8596cf5420bab46e4525a1a58811edf8459",
+                        "validation_scope": "engine identity and project configuration fingerprint; project import not executed"
+                      },
+                      "write_performed": false
+                    },
+                    "schema_version": 1,
+                    "status": "completed",
+                    "stderr": null
+                  },
+                  "resolved_request": {
+                    "operation": "validate",
+                    "protocol_version": 1
+                  },
+                  "write_performed": false
+                },
+                {
+                  "capability": "godot.structured.control",
+                  "duration_ms": 257.508,
+                  "execution_ok": true,
+                  "expectations": [],
+                  "expectations_ok": true,
+                  "id": "forward",
+                  "index": 1,
+                  "kind": "invoke",
+                  "ok": true,
+                  "output": {
+                    "capability": "godot.structured.control",
+                    "exit_code": 0,
+                    "ok": true,
+                    "operation": "invoke",
+                    "permission": "explicit-project-write",
+                    "project": "/workspace/scratch/bfbeef95f39f/validation-final/mcp-game",
+                    "protocol": "arcont-agent-control",
+                    "result": {
+                      "ok": true,
+                      "protocol_version": 1,
+                      "result": {
+                        "action": "move_forward",
+                        "engine": {
+                          "evidence": ".arcont/runs/structured/fa75b1c1780248ba820d3497c0a10127",
+                          "exit_code": 0,
+                          "ok": true,
+                          "result": {
+                            "action": "move_forward",
+                            "deadzone": 0.2,
+                            "event_count": 1,
+                            "ok": true
+                          },
+                          "stderr_tail": "",
+                          "stdout_tail": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\n"
+                        },
+                        "previous_revision": "1f2bc4a9cfe98098f9daea7bd8ecb8596cf5420bab46e4525a1a58811edf8459",
+                        "revision": "596d15e805b31d0eefeee7a518c5c50b3e7e6cf4945ec83eae25f0e2061ca41b"
+                      },
+                      "write_performed": true
+                    },
+                    "schema_version": 1,
+                    "status": "completed",
+                    "stderr": null
+                  },
+                  "resolved_request": {
+                    "action": "move_forward",
+                    "deadzone": 0.2,
+                    "events": [
+                      {
+                        "keycode": "W",
+                        "physical": true,
+                        "type": "key"
+                      }
+                    ],
+                    "if_revision": "1f2bc4a9cfe98098f9daea7bd8ecb8596cf5420bab46e4525a1a58811edf8459",
+                    "operation": "input.action.set",
+                    "protocol_version": 1
+                  },
+                  "write_performed": true
+                },
+                {
+                  "capability": "godot.structured.control",
+                  "duration_ms": 276.338,
+                  "execution_ok": true,
+                  "expectations": [
+                    {
+                      "actual": "da17a0cb679526f138a87ba0d2c198e4d9333b437029603a05d89317ec3d010d",
+                      "exists": true,
+                      "expected": null,
+                      "ok": true,
+                      "op": "exists",
+                      "pointer": "/result/result/revision"
+                    }
+                  ],
+                  "expectations_ok": true,
+                  "id": "script",
+                  "index": 2,
+                  "kind": "invoke",
+                  "ok": true,
+                  "output": {
+                    "capability": "godot.structured.control",
+                    "exit_code": 0,
+                    "ok": true,
+                    "operation": "invoke",
+                    "permission": "explicit-project-write",
+                    "project": "/workspace/scratch/bfbeef95f39f/validation-final/mcp-game",
+                    "protocol": "arcont-agent-control",
+                    "result": {
+                      "ok": true,
+                      "protocol_version": 1,
+                      "result": {
+                        "path": "scripts/player.gd",
+                        "previous_revision": null,
+                        "revision": "da17a0cb679526f138a87ba0d2c198e4d9333b437029603a05d89317ec3d010d",
+                        "validation": {
+                          "evidence": ".arcont/runs/structured/bd5be60424034bfb9233658c1427edab",
+                          "exit_code": 0,
+                          "ok": true,
+                          "result": {
+                            "class": "GDScript",
+                            "ok": true
+                          },
+                          "stderr_tail": "",
+                          "stdout_tail": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\n"
+                        }
+                      },
+                      "write_performed": true
+                    },
+                    "schema_version": 1,
+                    "status": "completed",
+                    "stderr": null
+                  },
+                  "resolved_request": {
+                    "if_revision": null,
+                    "operation": "script.create",
+                    "path": "scripts/player.gd",
+                    "protocol_version": 1,
+                    "source": "extends CharacterBody3D\n\n@export var speed: float = 4.0\n\nfunc _physics_process(_delta):\n    var input_vector := Input.get_vector(\"move_left\", \"move_right\", \"move_forward\", \"move_back\")\n    velocity = Vector3(input_vector.x, 0.0, input_vector.y) * speed\n    move_and_slide()\n"
+                  },
+                  "write_performed": true
+                },
+                {
+                  "capability": "godot.structured.control",
+                  "duration_ms": 372.337,
+                  "execution_ok": true,
+                  "expectations": [
+                    {
+                      "actual": "edc6e69b2e119f66db5569564e09379d3400af73531d78be9f06c42cb62d3677",
+                      "exists": true,
+                      "expected": null,
+                      "ok": true,
+                      "op": "exists",
+                      "pointer": "/result/result/revision"
+                    }
+                  ],
+                  "expectations_ok": true,
+                  "id": "scene_before",
+                  "index": 3,
+                  "kind": "invoke",
+                  "ok": true,
+                  "output": {
+                    "capability": "godot.structured.control",
+                    "exit_code": 0,
+                    "ok": true,
+                    "operation": "invoke",
+                    "permission": "explicit-project-write",
+                    "project": "/workspace/scratch/bfbeef95f39f/validation-final/mcp-game",
+                    "protocol": "arcont-agent-control",
+                    "result": {
+                      "ok": true,
+                      "protocol_version": 1,
+                      "result": {
+                        "engine": {
+                          "evidence": ".arcont/runs/structured/b515d5fa7d814dc29a998e76dd72da3d",
+                          "exit_code": 0,
+                          "ok": true,
+                          "result": {
+                            "nodes": [
+                              {
+                                "name": "Main",
+                                "path": ".",
+                                "script": "",
+                                "type": "Node3D"
+                              },
+                              {
+                                "name": "DirectionalLight3D",
+                                "path": "DirectionalLight3D",
+                                "script": "",
+                                "type": "DirectionalLight3D"
+                              },
+                              {
+                                "name": "Camera3D",
+                                "path": "Camera3D",
+                                "script": "",
+                                "type": "Camera3D"
+                              },
+                              {
+                                "name": "BootstrapMesh",
+                                "path": "BootstrapMesh",
+                                "script": "",
+                                "type": "MeshInstance3D"
+                              }
+                            ],
+                            "ok": true,
+                            "root_name": "Main",
+                            "root_type": "Node3D"
+                          },
+                          "stderr_tail": "",
+                          "stdout_tail": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\n"
+                        },
+                        "revision": "edc6e69b2e119f66db5569564e09379d3400af73531d78be9f06c42cb62d3677",
+                        "scene": "scenes/main.tscn"
+                      },
+                      "write_performed": false
+                    },
+                    "schema_version": 1,
+                    "status": "completed",
+                    "stderr": null
+                  },
+                  "resolved_request": {
+                    "operation": "scene.inspect",
+                    "protocol_version": 1,
+                    "scene": "scenes/main.tscn"
+                  },
+                  "write_performed": false
+                },
+                {
+                  "capability": "godot.structured.control",
+                  "duration_ms": 372.302,
+                  "execution_ok": true,
+                  "expectations": [
+                    {
+                      "actual": "1638dd04d22c3ff75d9c5b98cf37426be7e5e8822b24c61023780c3d368b0556",
+                      "exists": true,
+                      "expected": null,
+                      "ok": true,
+                      "op": "exists",
+                      "pointer": "/result/result/revision"
+                    }
+                  ],
+                  "expectations_ok": true,
+                  "id": "scene_edit",
+                  "index": 4,
+                  "kind": "invoke",
+                  "ok": true,
+                  "output": {
+                    "capability": "godot.structured.control",
+                    "exit_code": 0,
+                    "ok": true,
+                    "operation": "invoke",
+                    "permission": "explicit-project-write",
+                    "project": "/workspace/scratch/bfbeef95f39f/validation-final/mcp-game",
+                    "protocol": "arcont-agent-control",
+                    "result": {
+                      "ok": true,
+                      "protocol_version": 1,
+                      "result": {
+                        "engine": {
+                          "evidence": ".arcont/runs/structured/13fae17228fa40898c0321a0445e0623",
+                          "exit_code": 0,
+                          "ok": true,
+                          "result": {
+                            "nodes": [
+                              {
+                                "name": "Main",
+                                "path": ".",
+                                "script": "",
+                                "type": "Node3D"
+                              },
+                              {
+                                "name": "DirectionalLight3D",
+                                "path": "DirectionalLight3D",
+                                "script": "",
+                                "type": "DirectionalLight3D"
+                              },
+                              {
+                                "name": "Camera3D",
+                                "path": "Camera3D",
+                                "script": "",
+                                "type": "Camera3D"
+                              },
+                              {
+                                "name": "BootstrapMesh",
+                                "path": "BootstrapMesh",
+                                "script": "",
+                                "type": "MeshInstance3D"
+                              },
+                              {
+                                "name": "Player",
+                                "path": "Player",
+                                "script": "res://scripts/player.gd",
+                                "type": "CharacterBody3D"
+                              }
+                            ],
+                            "ok": true
+                          },
+                          "stderr_tail": "",
+                          "stdout_tail": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\n"
+                        },
+                        "path": "scenes/main.tscn",
+                        "previous_revision": "edc6e69b2e119f66db5569564e09379d3400af73531d78be9f06c42cb62d3677",
+                        "revision": "1638dd04d22c3ff75d9c5b98cf37426be7e5e8822b24c61023780c3d368b0556"
+                      },
+                      "write_performed": true
+                    },
+                    "schema_version": 1,
+                    "status": "completed",
+                    "stderr": null
+                  },
+                  "resolved_request": {
+                    "changes": [
+                      {
+                        "name": "Player",
+                        "op": "add",
+                        "parent": ".",
+                        "type": "CharacterBody3D"
+                      },
+                      {
+                        "op": "attach_script",
+                        "path": "Player",
+                        "script": "res://scripts/player.gd"
+                      }
+                    ],
+                    "if_revision": "edc6e69b2e119f66db5569564e09379d3400af73531d78be9f06c42cb62d3677",
+                    "operation": "scene.edit",
+                    "protocol_version": 1,
+                    "scene": "scenes/main.tscn"
+                  },
+                  "write_performed": true
+                }
+              ],
+              "steps_completed": 5,
+              "write_steps": 3
+            },
+            "next_action": "session-complete",
+            "next_milestone": null,
+            "remaining": {
+              "execution_steps": 11,
+              "failed_runs": 1,
+              "plan_runs": 2,
+              "write_steps": 7
+            },
+            "run": {
+              "completion_evidence_ok": true,
+              "failed_step": null,
+              "milestone_id": "movement",
+              "ok": true,
+              "plan_id": "mcp_movement",
+              "plan_sha256": "3a96339ad1b0c975033ffc8b7dd2ce9f200d27ce1ee328c1def0c022b474aff0",
+              "receipt": ".arcont/development-sessions/mcp_build/runs/run-001-26aabb05abdd.json",
+              "receipt_sha256": "b36d0d62c6aa6674145f5e0261cadf122ce58ba14ee6d9d99ea6411f54af7ebc",
+              "run_id": "run-001-26aabb05abdd",
+              "status": "completed",
+              "steps_completed": 5,
+              "write_steps": 3
+            },
+            "session": {
+              "budgets": {
+                "max_execution_steps": 16,
+                "max_failed_runs": 1,
+                "max_plan_runs": 3,
+                "max_write_steps": 10
+              },
+              "capability_allowlist": [
+                "godot.structured.control"
+              ],
+              "counters": {
+                "execution_steps": 5,
+                "failed_runs": 0,
+                "milestones_completed": 1,
+                "plan_runs": 1,
+                "write_steps": 3
+              },
+              "goal": "Create and verify a minimal player movement scaffold through MCP.",
+              "history": [
+                {
+                  "completion_evidence_ok": true,
+                  "failed_step": null,
+                  "milestone_id": "movement",
+                  "ok": true,
+                  "plan_id": "mcp_movement",
+                  "plan_sha256": "3a96339ad1b0c975033ffc8b7dd2ce9f200d27ce1ee328c1def0c022b474aff0",
+                  "receipt": ".arcont/development-sessions/mcp_build/runs/run-001-26aabb05abdd.json",
+                  "receipt_sha256": "b36d0d62c6aa6674145f5e0261cadf122ce58ba14ee6d9d99ea6411f54af7ebc",
+                  "run_id": "run-001-26aabb05abdd",
+                  "status": "completed",
+                  "steps_completed": 5,
+                  "write_steps": 3
+                }
+              ],
+              "id": "mcp_build",
+              "milestones": [
+                {
+                  "acceptance": [
+                    {
+                      "checks": [
+                        {
+                          "capability": "godot.structured.control",
+                          "expect": [
+                            {
+                              "op": "equals",
+                              "pointer": "/result/result/action",
+                              "value": "move_forward"
+                            }
+                          ],
+                          "kind": "invoke",
+                          "operation": "input.action.set",
+                          "request_match": {
+                            "action": "move_forward"
+                          }
+                        }
+                      ],
+                      "description": "move_forward is configured.",
+                      "verification_level": "static"
+                    },
+                    {
+                      "checks": [
+                        {
+                          "capability": "godot.structured.control",
+                          "expect": [
+                            {
+                              "op": "equals",
+                              "pointer": "/result/result/validation/ok",
+                              "value": true
+                            }
+                          ],
+                          "kind": "invoke",
+                          "operation": "script.create",
+                          "request_match": {
+                            "path": "scripts/player.gd"
+                          }
+                        },
+                        {
+                          "capability": "godot.structured.control",
+                          "expect": [
+                            {
+                              "op": "exists",
+                              "pointer": "/result/result/revision"
+                            }
+                          ],
+                          "kind": "invoke",
+                          "operation": "scene.edit",
+                          "request_match": {
+                            "scene": "scenes/main.tscn"
+                          }
+                        }
+                      ],
+                      "description": "Player script validates and scene edit commits.",
+                      "verification_level": "static"
+                    }
+                  ],
+                  "completed_by_run": "run-001-26aabb05abdd",
+                  "completion_evidence": [
+                    {
+                      "criterion": {
+                        "checks": [
+                          {
+                            "capability": "godot.structured.control",
+                            "expect": [
+                              {
+                                "op": "equals",
+                                "pointer": "/result/result/action",
+                                "value": "move_forward"
+                              }
+                            ],
+                            "kind": "invoke",
+                            "operation": "input.action.set",
+                            "request_match": {
+                              "action": "move_forward"
+                            }
+                          }
+                        ],
+                        "description": "move_forward is configured.",
+                        "verification_level": "static"
+                      },
+                      "criterion_index": 0,
+                      "ok": true,
+                      "step_ids": [
+                        "forward"
+                      ],
+                      "steps": [
+                        {
+                          "evidence_ok": true,
+                          "matching_checks": [
+                            0
+                          ],
+                          "step_id": "forward"
+                        }
+                      ],
+                      "verification_level": "static"
+                    },
+                    {
+                      "criterion": {
+                        "checks": [
+                          {
+                            "capability": "godot.structured.control",
+                            "expect": [
+                              {
+                                "op": "equals",
+                                "pointer": "/result/result/validation/ok",
+                                "value": true
+                              }
+                            ],
+                            "kind": "invoke",
+                            "operation": "script.create",
+                            "request_match": {
+                              "path": "scripts/player.gd"
+                            }
+                          },
+                          {
+                            "capability": "godot.structured.control",
+                            "expect": [
+                              {
+                                "op": "exists",
+                                "pointer": "/result/result/revision"
+                              }
+                            ],
+                            "kind": "invoke",
+                            "operation": "scene.edit",
+                            "request_match": {
+                              "scene": "scenes/main.tscn"
+                            }
+                          }
+                        ],
+                        "description": "Player script validates and scene edit commits.",
+                        "verification_level": "static"
+                      },
+                      "criterion_index": 1,
+                      "ok": true,
+                      "step_ids": [
+                        "script",
+                        "scene_edit"
+                      ],
+                      "steps": [
+                        {
+                          "evidence_ok": true,
+                          "matching_checks": [
+                            0
+                          ],
+                          "step_id": "script"
+                        },
+                        {
+                          "evidence_ok": true,
+                          "matching_checks": [
+                            1
+                          ],
+                          "step_id": "scene_edit"
+                        }
+                      ],
+                      "verification_level": "static"
+                    }
+                  ],
+                  "completion_note": "MCP-driven plan completed with machine-backed acceptance evidence.",
+                  "goal": "Create move_forward input, a Player script and attach Player to the main scene.",
+                  "id": "movement",
+                  "status": "completed"
+                }
+              ],
+              "permissions": {
+                "project_write": true
+              },
+              "project_execution_sha256": "168ebf993d18e093bb6ab4361e0723c7430ce6d98b24d4a493161a9236daf488",
+              "project_intent_sha256": "f4f1b04e7b4b950cf6bd856775971f8ebb2206956243ce16429ff65c7810e8e0",
+              "project_root": "/workspace/scratch/bfbeef95f39f/validation-final/mcp-game",
+              "protocol": "arcont-development-session",
+              "registry_sha256": "28e71a2a3373b99eb7299e15f3d8a0744d3ab17725f613faf11fffdcc490dc3f",
+              "revision": "12b137eb7778784bb705ff513881635165daecf82d4ab6ac0c853097119754e3",
+              "sequence": 1,
+              "status": "completed",
+              "stop_reason": "all-milestones-completed",
+              "toolchain_sha256": "42f85cb7c19031ede4f13bfe903d723d1ca71fbdaf338c29ac5ed8b7ee6abd1b",
+              "version": 1
+            }
+          },
+          "write_performed": true
+        },
+        "schema_version": 1,
+        "status": "completed",
+        "stderr": null
+      },
+      "version": 1
+    },
+    "session_inspect_stdio": {
+      "ok": true,
+      "operation": "development.session.inspect",
+      "protocol": "arcont-bridge",
+      "request_id": "mcp-58-1793332286421-9",
+      "result": {
+        "ok": true,
+        "result": {
+          "environment": {
+            "current_project_intent_sha256": "f4f1b04e7b4b950cf6bd856775971f8ebb2206956243ce16429ff65c7810e8e0",
+            "current_registry_sha256": "28e71a2a3373b99eb7299e15f3d8a0744d3ab17725f613faf11fffdcc490dc3f",
+            "current_toolchain_sha256": "42f85cb7c19031ede4f13bfe903d723d1ca71fbdaf338c29ac5ed8b7ee6abd1b",
+            "intent_matches": true,
+            "project_execution_matches": true,
+            "registry_matches": true,
+            "toolchain_matches": true
+          },
+          "next_milestone": null,
+          "pending_run": null,
+          "remaining": {
+            "execution_steps": 11,
+            "failed_runs": 1,
+            "plan_runs": 2,
+            "write_steps": 7
+          },
+          "session": {
+            "budgets": {
+              "max_execution_steps": 16,
+              "max_failed_runs": 1,
+              "max_plan_runs": 3,
+              "max_write_steps": 10
+            },
+            "capability_allowlist": [
+              "godot.structured.control"
+            ],
+            "counters": {
+              "execution_steps": 5,
+              "failed_runs": 0,
+              "milestones_completed": 1,
+              "plan_runs": 1,
+              "write_steps": 3
+            },
+            "goal": "Create and verify a minimal player movement scaffold through MCP.",
+            "history": [
+              {
+                "completion_evidence_ok": true,
+                "failed_step": null,
+                "milestone_id": "movement",
+                "ok": true,
+                "plan_id": "mcp_movement",
+                "plan_sha256": "3a96339ad1b0c975033ffc8b7dd2ce9f200d27ce1ee328c1def0c022b474aff0",
+                "receipt": ".arcont/development-sessions/mcp_build/runs/run-001-26aabb05abdd.json",
+                "receipt_sha256": "b36d0d62c6aa6674145f5e0261cadf122ce58ba14ee6d9d99ea6411f54af7ebc",
+                "run_id": "run-001-26aabb05abdd",
+                "status": "completed",
+                "steps_completed": 5,
+                "write_steps": 3
+              }
+            ],
+            "id": "mcp_build",
+            "milestones": [
+              {
+                "acceptance": [
+                  {
+                    "checks": [
+                      {
+                        "capability": "godot.structured.control",
+                        "expect": [
+                          {
+                            "op": "equals",
+                            "pointer": "/result/result/action",
+                            "value": "move_forward"
+                          }
+                        ],
+                        "kind": "invoke",
+                        "operation": "input.action.set",
+                        "request_match": {
+                          "action": "move_forward"
+                        }
+                      }
+                    ],
+                    "description": "move_forward is configured.",
+                    "verification_level": "static"
+                  },
+                  {
+                    "checks": [
+                      {
+                        "capability": "godot.structured.control",
+                        "expect": [
+                          {
+                            "op": "equals",
+                            "pointer": "/result/result/validation/ok",
+                            "value": true
+                          }
+                        ],
+                        "kind": "invoke",
+                        "operation": "script.create",
+                        "request_match": {
+                          "path": "scripts/player.gd"
+                        }
+                      },
+                      {
+                        "capability": "godot.structured.control",
+                        "expect": [
+                          {
+                            "op": "exists",
+                            "pointer": "/result/result/revision"
+                          }
+                        ],
+                        "kind": "invoke",
+                        "operation": "scene.edit",
+                        "request_match": {
+                          "scene": "scenes/main.tscn"
+                        }
+                      }
+                    ],
+                    "description": "Player script validates and scene edit commits.",
+                    "verification_level": "static"
+                  }
+                ],
+                "completed_by_run": "run-001-26aabb05abdd",
+                "completion_evidence": [
+                  {
+                    "criterion": {
+                      "checks": [
+                        {
+                          "capability": "godot.structured.control",
+                          "expect": [
+                            {
+                              "op": "equals",
+                              "pointer": "/result/result/action",
+                              "value": "move_forward"
+                            }
+                          ],
+                          "kind": "invoke",
+                          "operation": "input.action.set",
+                          "request_match": {
+                            "action": "move_forward"
+                          }
+                        }
+                      ],
+                      "description": "move_forward is configured.",
+                      "verification_level": "static"
+                    },
+                    "criterion_index": 0,
+                    "ok": true,
+                    "step_ids": [
+                      "forward"
+                    ],
+                    "steps": [
+                      {
+                        "evidence_ok": true,
+                        "matching_checks": [
+                          0
+                        ],
+                        "step_id": "forward"
+                      }
+                    ],
+                    "verification_level": "static"
+                  },
+                  {
+                    "criterion": {
+                      "checks": [
+                        {
+                          "capability": "godot.structured.control",
+                          "expect": [
+                            {
+                              "op": "equals",
+                              "pointer": "/result/result/validation/ok",
+                              "value": true
+                            }
+                          ],
+                          "kind": "invoke",
+                          "operation": "script.create",
+                          "request_match": {
+                            "path": "scripts/player.gd"
+                          }
+                        },
+                        {
+                          "capability": "godot.structured.control",
+                          "expect": [
+                            {
+                              "op": "exists",
+                              "pointer": "/result/result/revision"
+                            }
+                          ],
+                          "kind": "invoke",
+                          "operation": "scene.edit",
+                          "request_match": {
+                            "scene": "scenes/main.tscn"
+                          }
+                        }
+                      ],
+                      "description": "Player script validates and scene edit commits.",
+                      "verification_level": "static"
+                    },
+                    "criterion_index": 1,
+                    "ok": true,
+                    "step_ids": [
+                      "script",
+                      "scene_edit"
+                    ],
+                    "steps": [
+                      {
+                        "evidence_ok": true,
+                        "matching_checks": [
+                          0
+                        ],
+                        "step_id": "script"
+                      },
+                      {
+                        "evidence_ok": true,
+                        "matching_checks": [
+                          1
+                        ],
+                        "step_id": "scene_edit"
+                      }
+                    ],
+                    "verification_level": "static"
+                  }
+                ],
+                "completion_note": "MCP-driven plan completed with machine-backed acceptance evidence.",
+                "goal": "Create move_forward input, a Player script and attach Player to the main scene.",
+                "id": "movement",
+                "status": "completed"
+              }
+            ],
+            "permissions": {
+              "project_write": true
+            },
+            "project_execution_sha256": "168ebf993d18e093bb6ab4361e0723c7430ce6d98b24d4a493161a9236daf488",
+            "project_intent_sha256": "f4f1b04e7b4b950cf6bd856775971f8ebb2206956243ce16429ff65c7810e8e0",
+            "project_root": "/workspace/scratch/bfbeef95f39f/validation-final/mcp-game",
+            "protocol": "arcont-development-session",
+            "registry_sha256": "28e71a2a3373b99eb7299e15f3d8a0744d3ab17725f613faf11fffdcc490dc3f",
+            "revision": "12b137eb7778784bb705ff513881635165daecf82d4ab6ac0c853097119754e3",
+            "sequence": 1,
+            "status": "completed",
+            "stop_reason": "all-milestones-completed",
+            "toolchain_sha256": "42f85cb7c19031ede4f13bfe903d723d1ca71fbdaf338c29ac5ed8b7ee6abd1b",
+            "version": 1
+          }
+        },
+        "write_performed": false
+      },
+      "version": 1
+    },
+    "http_nonloopback_no_token_refusal": {
+      "exit_code": 1,
+      "stderr": "ARCONT MCP fatal: Error: non-loopback HTTP requires a bearer token in ARCONT_MCP_MISSING_TOKEN\n    at fail (file:///workspace/scratch/bfbeef95f39f/Arcont/integrations/mcp/server.mjs:33:9)\n    at validateHttpExposure (file:///workspace/scratch/bfbeef95f39f/Arcont/integrations/mcp/server.mjs:122:17)\n    at serveHttp (file:///workspace/scratch/bfbeef95f39f/Arcont/integrations/mcp/server.mjs:470:20)\n    at main (file:///workspace/scratch/bfbeef95f39f/Arcont/integrations/mcp/server.mjs:570:9)\n    at file:///workspace/scratch/bfbeef95f39f/Arcont/integrations/mcp/server.mjs:573:1\n    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async node:internal/modules/esm/loader:647:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)\n"
+    },
+    "http_wildcard_no_allowed_host_refusal": {
+      "exit_code": 1,
+      "stderr": "ARCONT MCP fatal: Error: non-loopback wildcard bind requires at least one --allowed-host\n    at fail (file:///workspace/scratch/bfbeef95f39f/Arcont/integrations/mcp/server.mjs:33:9)\n    at validateHttpExposure (file:///workspace/scratch/bfbeef95f39f/Arcont/integrations/mcp/server.mjs:123:27)\n    at serveHttp (file:///workspace/scratch/bfbeef95f39f/Arcont/integrations/mcp/server.mjs:470:20)\n    at main (file:///workspace/scratch/bfbeef95f39f/Arcont/integrations/mcp/server.mjs:570:9)\n    at file:///workspace/scratch/bfbeef95f39f/Arcont/integrations/mcp/server.mjs:573:1\n    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async node:internal/modules/esm/loader:647:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)\n"
+    },
+    "http_server": {
+      "url": "http://127.0.0.1:35655/mcp",
+      "authority": "read-only",
+      "token_required": true
+    },
+    "http_unauthorized_status": 401,
+    "http_bad_host_status": 403,
+    "session_inspect_http": {
+      "ok": true,
+      "operation": "development.session.inspect",
+      "protocol": "arcont-bridge",
+      "request_id": "mcp-195-1793332288082-3",
+      "result": {
+        "ok": true,
+        "result": {
+          "environment": {
+            "current_project_intent_sha256": "f4f1b04e7b4b950cf6bd856775971f8ebb2206956243ce16429ff65c7810e8e0",
+            "current_registry_sha256": "28e71a2a3373b99eb7299e15f3d8a0744d3ab17725f613faf11fffdcc490dc3f",
+            "current_toolchain_sha256": "42f85cb7c19031ede4f13bfe903d723d1ca71fbdaf338c29ac5ed8b7ee6abd1b",
+            "intent_matches": true,
+            "project_execution_matches": true,
+            "registry_matches": true,
+            "toolchain_matches": true
+          },
+          "next_milestone": null,
+          "pending_run": {
+            "milestone_id": "movement",
+            "plan_id": "mcp_movement",
+            "plan_sha256": "3a96339ad1b0c975033ffc8b7dd2ce9f200d27ce1ee328c1def0c022b474aff0",
+            "protocol": "arcont-development-session-pending",
+            "run_id": "run-001-26aabb05abdd",
+            "session_id": "mcp_build",
+            "session_revision_before": "da86c0403f0cdf6eb5f9aa7897b0308562af06969e3a6eee3ebbf2df8f4bd24c",
+            "version": 1
+          },
+          "remaining": {
+            "execution_steps": 11,
+            "failed_runs": 1,
+            "plan_runs": 2,
+            "write_steps": 7
+          },
+          "session": {
+            "budgets": {
+              "max_execution_steps": 16,
+              "max_failed_runs": 1,
+              "max_plan_runs": 3,
+              "max_write_steps": 10
+            },
+            "capability_allowlist": [
+              "godot.structured.control"
+            ],
+            "counters": {
+              "execution_steps": 5,
+              "failed_runs": 0,
+              "milestones_completed": 1,
+              "plan_runs": 1,
+              "write_steps": 3
+            },
+            "goal": "Create and verify a minimal player movement scaffold through MCP.",
+            "history": [
+              {
+                "completion_evidence_ok": true,
+                "failed_step": null,
+                "milestone_id": "movement",
+                "ok": true,
+                "plan_id": "mcp_movement",
+                "plan_sha256": "3a96339ad1b0c975033ffc8b7dd2ce9f200d27ce1ee328c1def0c022b474aff0",
+                "receipt": ".arcont/development-sessions/mcp_build/runs/run-001-26aabb05abdd.json",
+                "receipt_sha256": "b36d0d62c6aa6674145f5e0261cadf122ce58ba14ee6d9d99ea6411f54af7ebc",
+                "run_id": "run-001-26aabb05abdd",
+                "status": "completed",
+                "steps_completed": 5,
+                "write_steps": 3
+              }
+            ],
+            "id": "mcp_build",
+            "milestones": [
+              {
+                "acceptance": [
+                  {
+                    "checks": [
+                      {
+                        "capability": "godot.structured.control",
+                        "expect": [
+                          {
+                            "op": "equals",
+                            "pointer": "/result/result/action",
+                            "value": "move_forward"
+                          }
+                        ],
+                        "kind": "invoke",
+                        "operation": "input.action.set",
+                        "request_match": {
+                          "action": "move_forward"
+                        }
+                      }
+                    ],
+                    "description": "move_forward is configured.",
+                    "verification_level": "static"
+                  },
+                  {
+                    "checks": [
+                      {
+                        "capability": "godot.structured.control",
+                        "expect": [
+                          {
+                            "op": "equals",
+                            "pointer": "/result/result/validation/ok",
+                            "value": true
+                          }
+                        ],
+                        "kind": "invoke",
+                        "operation": "script.create",
+                        "request_match": {
+                          "path": "scripts/player.gd"
+                        }
+                      },
+                      {
+                        "capability": "godot.structured.control",
+                        "expect": [
+                          {
+                            "op": "exists",
+                            "pointer": "/result/result/revision"
+                          }
+                        ],
+                        "kind": "invoke",
+                        "operation": "scene.edit",
+                        "request_match": {
+                          "scene": "scenes/main.tscn"
+                        }
+                      }
+                    ],
+                    "description": "Player script validates and scene edit commits.",
+                    "verification_level": "static"
+                  }
+                ],
+                "completed_by_run": "run-001-26aabb05abdd",
+                "completion_evidence": [
+                  {
+                    "criterion": {
+                      "checks": [
+                        {
+                          "capability": "godot.structured.control",
+                          "expect": [
+                            {
+                              "op": "equals",
+                              "pointer": "/result/result/action",
+                              "value": "move_forward"
+                            }
+                          ],
+                          "kind": "invoke",
+                          "operation": "input.action.set",
+                          "request_match": {
+                            "action": "move_forward"
+                          }
+                        }
+                      ],
+                      "description": "move_forward is configured.",
+                      "verification_level": "static"
+                    },
+                    "criterion_index": 0,
+                    "ok": true,
+                    "step_ids": [
+                      "forward"
+                    ],
+                    "steps": [
+                      {
+                        "evidence_ok": true,
+                        "matching_checks": [
+                          0
+                        ],
+                        "step_id": "forward"
+                      }
+                    ],
+                    "verification_level": "static"
+                  },
+                  {
+                    "criterion": {
+                      "checks": [
+                        {
+                          "capability": "godot.structured.control",
+                          "expect": [
+                            {
+                              "op": "equals",
+                              "pointer": "/result/result/validation/ok",
+                              "value": true
+                            }
+                          ],
+                          "kind": "invoke",
+                          "operation": "script.create",
+                          "request_match": {
+                            "path": "scripts/player.gd"
+                          }
+                        },
+                        {
+                          "capability": "godot.structured.control",
+                          "expect": [
+                            {
+                              "op": "exists",
+                              "pointer": "/result/result/revision"
+                            }
+                          ],
+                          "kind": "invoke",
+                          "operation": "scene.edit",
+                          "request_match": {
+                            "scene": "scenes/main.tscn"
+                          }
+                        }
+                      ],
+                      "description": "Player script validates and scene edit commits.",
+                      "verification_level": "static"
+                    },
+                    "criterion_index": 1,
+                    "ok": true,
+                    "step_ids": [
+                      "script",
+                      "scene_edit"
+                    ],
+                    "steps": [
+                      {
+                        "evidence_ok": true,
+                        "matching_checks": [
+                          0
+                        ],
+                        "step_id": "script"
+                      },
+                      {
+                        "evidence_ok": true,
+                        "matching_checks": [
+                          1
+                        ],
+                        "step_id": "scene_edit"
+                      }
+                    ],
+                    "verification_level": "static"
+                  }
+                ],
+                "completion_note": "MCP-driven plan completed with machine-backed acceptance evidence.",
+                "goal": "Create move_forward input, a Player script and attach Player to the main scene.",
+                "id": "movement",
+                "status": "completed"
+              }
+            ],
+            "permissions": {
+              "project_write": true
+            },
+            "project_execution_sha256": "168ebf993d18e093bb6ab4361e0723c7430ce6d98b24d4a493161a9236daf488",
+            "project_intent_sha256": "f4f1b04e7b4b950cf6bd856775971f8ebb2206956243ce16429ff65c7810e8e0",
+            "project_root": "/workspace/scratch/bfbeef95f39f/validation-final/mcp-game",
+            "protocol": "arcont-development-session",
+            "registry_sha256": "28e71a2a3373b99eb7299e15f3d8a0744d3ab17725f613faf11fffdcc490dc3f",
+            "revision": "12b137eb7778784bb705ff513881635165daecf82d4ab6ac0c853097119754e3",
+            "sequence": 1,
+            "status": "completed",
+            "stop_reason": "all-milestones-completed",
+            "toolchain_sha256": "42f85cb7c19031ede4f13bfe903d723d1ca71fbdaf338c29ac5ed8b7ee6abd1b",
+            "version": 1
+          }
+        },
+        "write_performed": false
+      },
+      "version": 1
+    }
+  }
+}

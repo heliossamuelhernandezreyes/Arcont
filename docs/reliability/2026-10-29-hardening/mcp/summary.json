@@ -1,0 +1,55 @@
+{
+  "ok": true,
+  "protocol_revision": "2026-07-28",
+  "sdk": {
+    "server": "2.3.1",
+    "client": "2.3.1",
+    "node": "2.1.1"
+  },
+  "assertions": {
+    "project_tree_must_be_disjoint": true,
+    "mcp_tools_discoverable": true,
+    "universal_bridge_discovered": true,
+    "readonly_server_cannot_escalate": true,
+    "stdio_modern_auto_negotiated": true,
+    "stdio_legacy_2025_compatible": true,
+    "mcp_bootstrapped_external_project": true,
+    "project_context_available": true,
+    "development_session_created": true,
+    "mcp_executed_bounded_session_plan": true,
+    "mcp_completion_evidence_persisted": true,
+    "stdio_persisted_session_reinspectable": true,
+    "readonly_operation_override_refused_stdio": true,
+    "http_nonloopback_requires_token": true,
+    "http_wildcard_requires_allowed_host": true,
+    "http_bearer_auth_enforced": true,
+    "http_host_validation_enforced": true,
+    "http_modern_2026_protocol": true,
+    "http_modern_auto_negotiated": true,
+    "readonly_operation_override_refused_http": true,
+    "http_and_stdio_share_same_arcont_state": true
+  },
+  "evidence_files": [
+    "project_tree_overlap_refusal",
+    "readonly_tools",
+    "discover",
+    "readonly_write_attempt",
+    "legacy_stdio_tools",
+    "bootstrap",
+    "context",
+    "session_create",
+    "session_execute",
+    "session_inspect_stdio",
+    "http_nonloopback_no_token_refusal",
+    "http_wildcard_no_allowed_host_refusal",
+    "http_server",
+    "http_unauthorized_status",
+    "http_bad_host_status",
+    "session_inspect_http"
+  ],
+  "limits": [
+    "The MCP gateway exposes the existing Universal Bridge; it does not add a writer primitive.",
+    "Project-write authority is fixed when the server process starts and cannot be escalated by a tool call.",
+    "The acceptance proves current MCP stdio and Streamable HTTP interoperability on Linux CI; it does not establish compatibility with every proprietary MCP host UI."
+  ]
+}

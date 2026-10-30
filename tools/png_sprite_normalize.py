@@ -28,78 +28,11 @@ def _paeth(a: int, b: int, c: int) -> int:
 
 
 def _decode_rgba_png(path: Path) -> tuple[int, int, list[bytes]]:
-    data = path.read_bytes()
-    if not data.startswith(PNG_SIGNATURE):
-        raise ValueError("invalid PNG signature")
-    pos = len(PNG_SIGNATURE)
-    width = height = bit_depth = color_type = interlace = None
-    idat = bytearray()
-    while pos + 12 <= len(data):
-        length = struct.unpack(">I", data[pos:pos + 4])[0]
-        kind = data[pos + 4:pos + 8]
-        payload = data[pos + 8:pos + 8 + length]
-        crc_bytes = data[pos + 8 + length:pos + 12 + length]
-        if len(payload) != length or len(crc_bytes) != 4:
-            raise ValueError("truncated PNG chunk")
-        expected_crc = struct.unpack(">I", crc_bytes)[0]
-        actual_crc = binascii.crc32(kind + payload) & 0xFFFFFFFF
-        if actual_crc != expected_crc:
-            raise ValueError(f"CRC mismatch in {kind.decode('ascii', errors='replace')} chunk")
-        pos += length + 12
-        if kind == b"IHDR":
-            width, height, bit_depth, color_type, compression, filtering, interlace = struct.unpack(
-                ">IIBBBBB", payload
-            )
-            if compression != 0 or filtering != 0:
-                raise ValueError("unsupported PNG compression/filter method")
-        elif kind == b"IDAT":
-            idat.extend(payload)
-        elif kind == b"IEND":
-            break
-    if None in (width, height, bit_depth, color_type, interlace):
-        raise ValueError("missing IHDR")
-    if bit_depth != 8 or color_type != 6 or interlace != 0:
-        raise ValueError(
-            f"source must be non-interlaced 8-bit RGBA PNG "
-            f"(bit_depth={bit_depth}, color_type={color_type}, interlace={interlace})"
-        )
-    assert width is not None and height is not None
-    if not idat:
-        raise ValueError("missing IDAT data")
-    raw = zlib.decompress(bytes(idat))
-    row_bytes, bpp = width * 4, 4
-    if len(raw) != height * (row_bytes + 1):
-        raise ValueError("unexpected decompressed PNG size")
-
-    rows: list[bytes] = []
-    prev = bytearray(row_bytes)
-    cursor = 0
-    for _ in range(height):
-        filt = raw[cursor]
-        cursor += 1
-        src = raw[cursor:cursor + row_bytes]
-        cursor += row_bytes
-        dst = bytearray(row_bytes)
-        for i, value in enumerate(src):
-            left = dst[i - bpp] if i >= bpp else 0
-            up = prev[i]
-            upper_left = prev[i - bpp] if i >= bpp else 0
-            if filt == 0:
-                out = value
-            elif filt == 1:
-                out = value + left
-            elif filt == 2:
-                out = value + up
-            elif filt == 3:
-                out = value + ((left + up) // 2)
-            elif filt == 4:
-                out = value + _paeth(left, up, upper_left)
-            else:
-                raise ValueError(f"unsupported PNG filter {filt}")
-            dst[i] = out & 0xFF
-        rows.append(bytes(dst))
-        prev = dst
-    return width, height, rows
+    try:
+        from tools.png_integrity import decode_rgba
+    except ModuleNotFoundError:
+        from png_integrity import decode_rgba
+    return decode_rgba(path, require_rgba=True)
 
 
 def _chunk(kind: bytes, payload: bytes) -> bytes:
@@ -179,8 +112,10 @@ def _pair(value: Any, name: str) -> tuple[float, float]:
 
 
 def _canvas(value: Any, name: str = "target_canvas") -> tuple[int, int]:
-    if not (isinstance(value, list) and len(value) == 2 and all(isinstance(v, int) and v > 0 for v in value)):
+    if not (isinstance(value, list) and len(value) == 2 and all(type(v) is int and v > 0 for v in value)):
         raise ValueError(f"{name} must be [positive_int, positive_int]")
+    if value[0] * value[1] > 16_777_216:
+        raise ValueError("target canvas exceeds decoded pixel budget")
     return int(value[0]), int(value[1])
 
 
@@ -188,12 +123,11 @@ def _resolve(root: Path, value: str) -> Path:
     if not isinstance(value, str) or not value:
         raise ValueError("path must be a non-empty string")
     rel = value.removeprefix("res://") if value.startswith("res://") else value
-    candidate = (root / rel).resolve()
     try:
-        candidate.relative_to(root.resolve())
-    except ValueError as exc:
-        raise ValueError(f"path escapes project root: {value}") from exc
-    return candidate
+        from tools.project_paths import project_path
+    except ModuleNotFoundError:
+        from project_paths import project_path
+    return project_path(root, rel)
 
 
 def normalize_frame(
@@ -207,8 +141,9 @@ def normalize_frame(
     source_anchor_x: str = "canvas_center",
     source_pivot: tuple[float, float] | None = None,
 ) -> tuple[bytes, dict[str, Any]]:
-    if target_visual_height <= 0:
+    if isinstance(target_visual_height, bool) or not isinstance(target_visual_height, (int, float)) or not math.isfinite(target_visual_height) or target_visual_height <= 0:
         raise ValueError("target_visual_height must be > 0")
+    _canvas(list(target_canvas))
     if not 0 <= alpha_threshold <= 254:
         raise ValueError("alpha_threshold must be between 0 and 254")
     if padding_px < 0:

@@ -1,0 +1,77 @@
+{
+  "ok": true,
+  "operation": "godot.scene.edit",
+  "protocol": "arcont-bridge",
+  "request_id": "godot-scene-edit",
+  "result": {
+    "capability": "godot.structured.control",
+    "exit_code": 0,
+    "ok": true,
+    "operation": "invoke",
+    "permission": "explicit-project-write",
+    "project": "/workspace/scratch/bfbeef95f39f/validation-final/structured-game",
+    "protocol": "arcont-agent-control",
+    "result": {
+      "ok": true,
+      "protocol_version": 1,
+      "result": {
+        "engine": {
+          "evidence": ".arcont/runs/structured/23d857fc2e074ee6ad06643f892d034f",
+          "exit_code": 0,
+          "ok": true,
+          "result": {
+            "nodes": [
+              {
+                "name": "Main",
+                "path": ".",
+                "script": "",
+                "type": "Node3D"
+              },
+              {
+                "name": "DirectionalLight3D",
+                "path": "DirectionalLight3D",
+                "script": "",
+                "type": "DirectionalLight3D"
+              },
+              {
+                "name": "Camera3D",
+                "path": "Camera3D",
+                "script": "",
+                "type": "Camera3D"
+              },
+              {
+                "name": "BootstrapMesh",
+                "path": "BootstrapMesh",
+                "script": "",
+                "type": "MeshInstance3D"
+              },
+              {
+                "name": "Player",
+                "path": "Player",
+                "script": "res://scripts/player.gd",
+                "type": "CharacterBody3D"
+              },
+              {
+                "name": "PlayerBody",
+                "path": "Player/PlayerBody",
+                "script": "",
+                "type": "MeshInstance3D"
+              }
+            ],
+            "ok": true
+          },
+          "stderr_tail": "",
+          "stdout_tail": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\n"
+        },
+        "path": "scenes/main.tscn",
+        "previous_revision": "edc6e69b2e119f66db5569564e09379d3400af73531d78be9f06c42cb62d3677",
+        "revision": "6b7de820323779f84ae5b90d0e2b6186448e03ed58f753537756a8c47917ff78"
+      },
+      "write_performed": true
+    },
+    "schema_version": 1,
+    "status": "completed",
+    "stderr": null
+  },
+  "version": 1
+}

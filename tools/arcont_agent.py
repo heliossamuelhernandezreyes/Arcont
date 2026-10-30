@@ -19,6 +19,11 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
+try:
+    from tools.process_supervisor import run as run_supervised
+except ModuleNotFoundError:
+    from process_supervisor import run as run_supervised
+
 REGISTRY_FILENAME = "agent.capabilities.json"
 MANIFEST_FILENAME = "arcont.manifest.json"
 PROTOCOL = "arcont-agent-control"
@@ -94,7 +99,7 @@ def capability_snapshot(root: Path) -> dict[str, Any]:
     rows = []
     for item in registry["capabilities"]:
         entrypoint = item.get("entrypoint")
-        available = True
+        available = bool(entrypoint)
         resolved_entrypoint = None
         if entrypoint:
             candidate = (root / entrypoint).resolve()
@@ -107,6 +112,8 @@ def capability_snapshot(root: Path) -> dict[str, Any]:
                 resolved_entrypoint = entrypoint
         row = dict(item)
         row["available"] = available
+        row["availability_status"] = "installed" if available else "external-unconfigured" if item.get("external_repository") else "missing"
+        row["runtime_verified"] = False
         if resolved_entrypoint:
             row["resolved_entrypoint"] = resolved_entrypoint
         rows.append(row)
@@ -247,7 +254,7 @@ def invoke_capability(
         raise ValueError("invalid invocation argument contract")
     command = [sys.executable, str(script), project_arg, str(project), request_arg, "-"]
     try:
-        proc = subprocess.run(
+        proc = run_supervised(
             command,
             cwd=arcont,
             input=json.dumps(request, ensure_ascii=False),
@@ -264,7 +271,8 @@ def invoke_capability(
             "capability": capability_id,
             "project": str(project),
             "ok": False,
-            "status": "timeout",
+            "status": "timeout" if getattr(exc, "process_tree_terminated", False) else "indeterminate",
+            "process_tree_terminated": getattr(exc, "process_tree_terminated", False),
             "timeout_seconds": timeout_seconds,
             "stdout": _clip((exc.stdout or "") if isinstance(exc.stdout, str) else ""),
             "stderr": _clip((exc.stderr or "") if isinstance(exc.stderr, str) else ""),

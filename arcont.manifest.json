@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "arcont_version": "1.1.0",
+  "arcont_version": "1.2.0",
   "repository_role": "technical knowledge bank and reproducible game-engine laboratory",
   "canonical_branch": "main",
   "production_game_code_allowed": false,
@@ -9,6 +9,9 @@
     "godot": {
       "version": "4.7.2-stable",
       "commit": "ed1daf0bf001b61586d9930840f2f1394092c079",
+      "binary_sha256": {
+        "linux": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e"
+      },
       "upstream": "https://github.com/godotengine/godot"
     }
   },
@@ -180,7 +183,14 @@
     "mcp_long_operation_timeout_seconds": 900,
     "mcp_http_headers_timeout_seconds": 10,
     "mcp_http_request_timeout_seconds": 30,
-    "mcp_http_max_headers": 100
+    "mcp_http_max_headers": 100,
+    "bridge_reserved_arguments_rejected": true,
+    "process_supervisor": "tools/process_supervisor.py",
+    "process_deadline_propagated": true,
+    "development_session_typed_acceptance_required_for_completion": true,
+    "development_session_project_adapter_pin": true,
+    "map_forge_publication": "immutable-state-with-atomic-head-v2",
+    "knowledge_matrix_validator": "tools/capability_matrix.py"
   },
   "integrity": {
     "validator": "tools/arcont_lab.py",

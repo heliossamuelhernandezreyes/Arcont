@@ -1,0 +1,208 @@
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: get_action_raw_strength (core/input/input.cpp:553)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_right" doesn't exist. Did you mean "ui_right"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)
+ERROR: The InputMap action "move_left" doesn't exist. Did you mean "ui_left"?
+   at: action_get_deadzone (core/input/input_map.cpp:191)
+   GDScript backtrace (most recent call first):
+       [0] _physics_process (res://scripts/player.gd:6)

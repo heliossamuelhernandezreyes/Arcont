@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any
 
 try:
+    from tools.project_paths import project_path, read_project_bytes
     from tools.arcont_agent import (
         capability_snapshot,
         inspect_project,
@@ -28,6 +29,7 @@ try:
     from tools.agent_execution_loop import execute_plan
     from tools.agent_hypothesis_gate import evaluate_proposal
 except ModuleNotFoundError:
+    from project_paths import project_path, read_project_bytes
     from arcont_agent import capability_snapshot, inspect_project, invoke_capability, load_registry, repo_root
     from agent_execution_loop import execute_plan
     from agent_hypothesis_gate import evaluate_proposal
@@ -40,6 +42,26 @@ MAX_ASSETS_HARD = 10000
 HASH_FILE_LIMIT = 64 * 1024 * 1024
 AUTHORING_JSON_LIMIT = 2 * 1024 * 1024
 AUTHORING_ROOTS = ("authoring/recipes", "authoring/scenarios")
+
+# The public operation, never an argument supplied by its caller, owns dispatch.
+STRUCTURED_FIELDS = {
+    "godot.structured.validate": (set(), set()),
+    "godot.script.inspect": ({"path"}, {"path"}),
+    "godot.script.create": ({"path", "source", "if_revision"}, {"path", "source", "if_revision"}),
+    "godot.script.replace": ({"path", "source", "if_revision"}, {"path", "source", "if_revision"}),
+    "godot.script.function.replace": ({"path", "function", "source", "if_revision"}, {"path", "function", "source", "if_revision"}),
+    "godot.scene.inspect": ({"scene"}, {"scene"}),
+    "godot.scene.edit": ({"scene", "if_revision", "changes"}, {"scene", "if_revision", "changes", "root_type", "root_name"}),
+    "godot.resource.inspect": ({"resource"}, {"resource", "properties"}),
+    "godot.resource.edit": ({"resource", "if_revision", "changes"}, {"resource", "if_revision", "changes", "resource_type"}),
+    "godot.input.action.set": ({"action", "if_revision", "events"}, {"action", "if_revision", "events", "deadzone"}),
+}
+DIRECT_WRITE_OPERATIONS = {
+    "project.bootstrap", "asset.user.stage", "asset.public.stage",
+    "godot.script.create", "godot.script.replace", "godot.script.function.replace",
+    "godot.scene.inspect", "godot.scene.edit", "godot.resource.inspect", "godot.resource.edit",
+    "godot.input.action.set", "development.session.create", "development.session.execute",
+}
 
 ASSET_KINDS = {
     ".png": "texture", ".jpg": "texture", ".jpeg": "texture", ".webp": "texture",
@@ -142,7 +164,7 @@ def validate_intent(intent: Any) -> dict[str, Any]:
 
 
 def read_intent(project: Path) -> dict[str, Any]:
-    path = project / INTENT_FILENAME
+    path = project_path(project, INTENT_FILENAME)
     if not path.is_file():
         return {
             "ok": True,
@@ -151,7 +173,7 @@ def read_intent(project: Path) -> dict[str, Any]:
             "intent": None,
             "limitations": ["No persistent project intent is available; the agent must not infer missing product requirements from ARCONT."],
         }
-    intent = validate_intent(_load_object(path, "project intent"))
+    intent = validate_intent(json.loads(read_project_bytes(project, INTENT_FILENAME, AUTHORING_JSON_LIMIT)))
     canonical = json.dumps(intent, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
     return {
         "ok": True,
@@ -227,7 +249,7 @@ def inspect_assets(project: Path, max_assets: int = MAX_ASSETS_DEFAULT) -> dict[
 def authoring_catalog(project: Path) -> dict[str, Any]:
     documents: list[dict[str, Any]] = []
     for root_name in AUTHORING_ROOTS:
-        root = project / root_name
+        root = project_path(project, root_name)
         if not root.is_dir():
             continue
         for path in sorted(root.glob("*.json")):
@@ -244,13 +266,15 @@ def authoring_catalog(project: Path) -> dict[str, Any]:
             }
             if size <= AUTHORING_JSON_LIMIT:
                 try:
-                    data = _load_object(path, "authoring document")
+                    data = json.loads(read_project_bytes(project, path.relative_to(project).as_posix(), AUTHORING_JSON_LIMIT))
+                    if not isinstance(data, dict):
+                        raise BridgeError("authoring document must be an object")
                     for key in ("id", "version", "title", "purpose"):
                         if key in data and (data[key] is None or isinstance(data[key], (str, int, float, bool))):
                             row[key] = data[key]
                     canonical = json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
                     row["sha256"] = hashlib.sha256(canonical).hexdigest()
-                except (BridgeError, OSError):
+                except (ValueError, OSError):
                     row["parseable"] = False
                 else:
                     row["parseable"] = True
@@ -279,7 +303,7 @@ def read_authoring_document(project: Path, relative_path: Any) -> dict[str, Any]
         raise BridgeError("authoring document path is outside allowed authoring roots")
     if rel.suffix.lower() != ".json":
         raise BridgeError("authoring document must be JSON")
-    path = (project / rel).resolve()
+    path = project_path(project, normalized)
     try:
         path.relative_to(project.resolve())
     except ValueError as exc:
@@ -289,7 +313,9 @@ def read_authoring_document(project: Path, relative_path: Any) -> dict[str, Any]
     size = path.stat().st_size
     if size > AUTHORING_JSON_LIMIT:
         raise BridgeError("authoring document exceeds bridge v1 size limit")
-    data = _load_object(path, "authoring document")
+    data = json.loads(read_project_bytes(project, normalized, AUTHORING_JSON_LIMIT))
+    if not isinstance(data, dict):
+        raise BridgeError("authoring document must be an object")
     canonical = json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
     return {
         "ok": True,
@@ -391,6 +417,16 @@ def handle_request(
     args = request.get("arguments", {})
     if not isinstance(args, dict):
         raise BridgeError("bridge request arguments must be an object")
+    if set(args) & {"operation", "protocol_version"}:
+        raise BridgeError("operation and protocol_version are reserved bridge fields")
+    if operation in STRUCTURED_FIELDS:
+        required, allowed = STRUCTURED_FIELDS[operation]
+        if set(args) - allowed or not required.issubset(args):
+            raise BridgeError(f"invalid arguments for {operation}; required={sorted(required)}, allowed={sorted(allowed)}")
+    if (operation == "discover" and args) or (operation == "project.inspect" and set(args) - {"max_files"}):
+        raise BridgeError(f"unsupported arguments for {operation}")
+    if operation in DIRECT_WRITE_OPERATIONS and not allow_project_write:
+        raise PermissionError("external project write permission is required")
 
     project = _safe_project(project, arcont_root)
     if operation == "discover":
@@ -521,7 +557,7 @@ def handle_request(
             "godot.structured.validate": "validate",
             "godot.script.inspect": "script.inspect",
         }
-        structured_request = {"protocol_version": 1, "operation": mapping[operation], **args}
+        structured_request = {**args, "protocol_version": 1, "operation": mapping[operation]}
         result = structured_execute(project, structured_request)
     elif operation in {
         "godot.script.create", "godot.script.replace", "godot.script.function.replace",
@@ -542,7 +578,7 @@ def handle_request(
             arcont_root,
             "godot.structured.control",
             project,
-            {"protocol_version": 1, "operation": mapping[operation], **args},
+            {**args, "protocol_version": 1, "operation": mapping[operation]},
             allow_project_write,
             900,
         )

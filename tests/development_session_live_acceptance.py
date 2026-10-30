@@ -74,6 +74,12 @@ def direct_child(envelope: dict) -> dict:
     return result
 
 
+def acceptance(description, operation, request_match, expect=None):
+    return {"description": description, "verification_level": "static", "checks": [{
+        "kind": "invoke", "capability": "godot.structured.control", "operation": operation,
+        "request_match": request_match, "expect": expect or [{"pointer": "/result/result/revision", "op": "exists"}]}]}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--arcont", type=Path, required=True)
@@ -140,18 +146,18 @@ def main() -> int:
                         "id": "movement",
                         "goal": "Create WASD input, player movement code and the Player scene node.",
                         "acceptance": [
-                            "All four movement input actions are written through Godot.",
-                            "Player GDScript validates.",
-                            "Player exists in the main scene with the script attached.",
+                            {"description": "All four input actions are configured.", "verification_level": "static", "checks": [acceptance("Input", "input.action.set", {"action": name}, [{"pointer": "/result/result/action", "op": "equals", "value": name}])["checks"][0] for name in ("move_forward", "move_back", "move_left", "move_right")]},
+                            acceptance("Player GDScript validates.", "script.create", {"path": "scripts/player.gd"}, [{"pointer": "/result/result/validation/ok", "op": "equals", "value": True}]),
+                            acceptance("Main scene edit commits.", "scene.edit", {"scene": "scenes/main.tscn"}),
                         ],
                     },
                     {
                         "id": "verification",
                         "goal": "Inspect and refine the generated movement implementation.",
                         "acceptance": [
-                            "Player script inspection reports CharacterBody3D.",
-                            "Main scene inspection succeeds.",
-                            "The movement function can be revision-patched and revalidated.",
+                            acceptance("Script extends CharacterBody3D.", "script.inspect", {"path": "scripts/player.gd"}, [{"pointer": "/result/result/extends", "op": "equals", "value": "CharacterBody3D"}]),
+                            acceptance("Main scene inspection succeeds.", "scene.inspect", {"scene": "scenes/main.tscn"}),
+                            {"description": "Movement function is patched and the script inspected.", "verification_level": "static", "checks": [acceptance("Patch", "script.function.replace", {"path": "scripts/player.gd", "function": "_physics_process"})["checks"][0], acceptance("Inspect", "script.inspect", {"path": "scripts/player.gd"})["checks"][0]]},
                         ],
                     },
                 ],

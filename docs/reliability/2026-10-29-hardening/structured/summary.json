@@ -1,0 +1,64 @@
+{
+  "ok": true,
+  "script": {
+    "create_revision": "da17a0cb679526f138a87ba0d2c198e4d9333b437029603a05d89317ec3d010d",
+    "inspect_revision": "da17a0cb679526f138a87ba0d2c198e4d9333b437029603a05d89317ec3d010d",
+    "patched_revision": "242a7d943fc16d0a1f44737c74c495f8060771cc1f195b5e90512ebc52af541a",
+    "functions": [
+      {
+        "end_line": 8,
+        "name": "_physics_process",
+        "start_line": 5
+      }
+    ]
+  },
+  "resource": {
+    "revision": "d0b6fb079762b5e8a906037300a964ed69947167083e132be99e648368f37465",
+    "size": {
+      "$type": "Vector3",
+      "value": [
+        0.800000011920929,
+        1.79999995231628,
+        0.800000011920929
+      ]
+    }
+  },
+  "scene": {
+    "revision": "6b7de820323779f84ae5b90d0e2b6186448e03ed58f753537756a8c47917ff78",
+    "nodes": [
+      ".",
+      "BootstrapMesh",
+      "Camera3D",
+      "DirectionalLight3D",
+      "Player",
+      "Player/PlayerBody"
+    ]
+  },
+  "runtime": {
+    "after": [
+      0.0,
+      0.0,
+      -0.733333349227905
+    ],
+    "before": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "delta_z": -0.733333349227905,
+    "ok": true
+  },
+  "assertions": {
+    "player_node_created": true,
+    "player_mesh_created": true,
+    "script_attached": true,
+    "resource_size_roundtripped": true,
+    "function_patch_changed_revision": true,
+    "runtime_input_moved_player": true
+  },
+  "limits": [
+    "Headless Linux runtime proves structured gameplay behavior, not Android performance or AAA feel.",
+    "GDScript privileged-API denylist is defense-in-depth, not a complete language sandbox.",
+    "Structured v1 intentionally excludes arbitrary shell, raw arbitrary file writes and network/editor APIs."
+  ]
+}

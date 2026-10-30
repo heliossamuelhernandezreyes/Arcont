@@ -1,6 +1,17 @@
 name: MCP Agent Gateway Acceptance
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "tools/**"
+      - "tests/**"
+      - "integrations/**"
+      - "schemas/**"
+      - "arcont.manifest.json"
+      - "agent.capabilities.json"
+      - "processors.lock.json"
+      - ".github/workflows/**"
   pull_request:
   workflow_dispatch:
 
@@ -58,6 +69,13 @@ jobs:
       - name: Install and verify pinned model processors
         run: python tools/install_processors.py --destination /tmp/arcont-processors
 
+      - name: Audit regressions including native global-class editing
+        env:
+          GODOT_BIN: /tmp/godot-bin/Godot_v4.7.2-stable_linux.x86_64
+        run: |
+          mkdir -p mcp-gateway-evidence/audit
+          python -m unittest tests.test_audit_hardening -v > mcp-gateway-evidence/audit/regressions.log 2>&1
+
       - name: Native reliability regressions
         env:
           GODOT_BIN: /tmp/godot-bin/Godot_v4.7.2-stable_linux.x86_64
@@ -95,4 +113,4 @@ jobs:
           name: arcont-mcp-gateway-${{ github.sha }}
           path: mcp-gateway-evidence/
           include-hidden-files: true
-          retention-days: 30
+          retention-days: 90

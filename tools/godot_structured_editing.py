@@ -544,13 +544,33 @@ def _godot_bin() -> str:
     configured = os.environ.get("GODOT_BIN")
     if configured:
         path = Path(configured)
-        if path.is_file():
+        if path.is_file() and os.access(path, os.X_OK):
             return str(path)
+        raise StructuredError("GODOT_BIN must be an executable regular file")
     for name in ("godot4", "godot"):
         found = shutil.which(name)
         if found:
             return found
     raise StructuredError("Godot executable not found; set GODOT_BIN or install godot4/godot")
+
+
+def _engine_identity() -> dict[str, Any]:
+    binary = Path(_godot_bin()).resolve()
+    try:
+        result = subprocess.run([str(binary), "--version"], capture_output=True, text=True, timeout=10, check=False)
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise StructuredError("Godot identity probe failed") from exc
+    manifest = json.loads((Path(__file__).resolve().parents[1] / "arcont.manifest.json").read_text())
+    expected = manifest["engines"]["godot"]
+    version = result.stdout.strip()
+    if result.returncode or not version.startswith(expected["version"].replace("-", ".") + ".") or expected["commit"][:9] not in version:
+        raise StructuredError("Godot version/commit differs from the canonical engine pin")
+    digest = _sha_file(binary)
+    pinned = expected.get("binary_sha256", {}).get(sys.platform)
+    if pinned is not None and digest != pinned:
+        raise StructuredError("Godot binary SHA-256 differs from the canonical pin")
+    return {"executable": str(binary), "version": version, "sha256": digest,
+            "identity_level": "binary-verified" if pinned else "version-and-commit-only"}
 
 
 def _run_godot_script(project: Path, source: str, request: dict[str, Any], timeout: int = RUNNER_TIMEOUT_SECONDS) -> dict[str, Any]:
@@ -734,7 +754,9 @@ def _commit_script(project: Path, relative: str, source: str, expected: Any) -> 
     temp_relative = temp.relative_to(project.resolve()).as_posix()
     temp.write_bytes(source.encode("utf-8"))
     try:
-        validation = _validate_script_with_godot(project, temp_relative)
+        validation = (_validate_class_candidate(project, relative, source)
+                      if re.search(r"(?m)^class_name\s+", source)
+                      else _validate_script_with_godot(project, temp_relative))
         if not validation["ok"]:
             raise StructuredError("GDScript validation failed; target was not modified")
         after_revision = _publish_staged(project, relative, temp, before_revision)
@@ -751,6 +773,42 @@ def _commit_script(project: Path, relative: str, source: str, expected: Any) -> 
             "validation": validation,
         },
     }
+
+
+def _validate_class_candidate(project: Path, relative: str, source: str) -> dict[str, Any]:
+    # Keep the final resource path and class registry. A second script with the
+    # same class_name in the real project is never loaded for validation.
+    total = 0
+    def copy_file(src, dst):
+        nonlocal total
+        path = Path(src)
+        if path.is_symlink():
+            raise StructuredError("validation snapshot refuses symlinks")
+        total += path.stat().st_size
+        if total > 512 * 1024 * 1024:
+            raise StructuredError("validation snapshot exceeds 512 MiB; use a reviewed project adapter")
+        return shutil.copy2(src, dst)
+    with tempfile.TemporaryDirectory(prefix="arcont-script-validation-") as temporary:
+        snapshot = Path(temporary) / "project"
+        def ignore(directory, names):
+            if any((Path(directory) / name).is_symlink() for name in names):
+                raise StructuredError("validation snapshot refuses symlink entries")
+            return {name for name in names if name in {".git", ".godot", ".arcont", ".mapforge", "node_modules", "__pycache__"}}
+        shutil.copytree(project, snapshot, ignore=ignore, copy_function=copy_file)
+        candidate = snapshot / relative
+        candidate.write_text(source, encoding="utf-8")
+        imported = subprocess.run([_godot_bin(), "--headless", "--path", str(snapshot), "--editor", "--import", "--quit"],
+                                  capture_output=True, text=True, timeout=RUNNER_TIMEOUT_SECONDS, check=False)
+        validation = _validate_script_with_godot(snapshot, relative)
+        evidence = _project_file(project, f".arcont/runs/structured/{uuid.uuid4().hex}")
+        shutil.copytree(snapshot / validation["evidence"], evidence)
+        (evidence / "import.stdout.log").write_text(imported.stdout, encoding="utf-8")
+        (evidence / "import.stderr.log").write_text(imported.stderr, encoding="utf-8")
+        validation["evidence"] = evidence.relative_to(project).as_posix()
+        validation["validation_mode"] = "isolated-final-resource-path"
+        validation["ok"] = validation["ok"] and imported.returncode == 0 and not any(
+            marker in imported.stdout + imported.stderr for marker in ("SCRIPT ERROR", "Parse Error", "Failed to load"))
+        return validation
 
 def _script_function_replace(project: Path, relative: str, function: Any, replacement: Any, expected: Any) -> dict[str, Any]:
     if not isinstance(function, str) or not FUNCTION_NAME.fullmatch(function):
@@ -891,6 +949,9 @@ def execute(project: Path, request: dict[str, Any]) -> dict[str, Any]:
             "write_performed": False,
             "result": {
                 "godot_bin": _godot_bin(),
+                "engine_identity": _engine_identity(),
+                "validation_scope": "engine identity and project configuration fingerprint; project import not executed",
+                "project_import_verified": False,
                 "project_revision": _sha_file(root / "project.godot"),
             },
         }

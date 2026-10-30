@@ -1,6 +1,17 @@
 name: Development Session Acceptance
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "tools/**"
+      - "tests/**"
+      - "integrations/**"
+      - "schemas/**"
+      - "arcont.manifest.json"
+      - "agent.capabilities.json"
+      - "processors.lock.json"
+      - ".github/workflows/**"
   pull_request:
   workflow_dispatch:
 
@@ -57,4 +68,4 @@ jobs:
           name: arcont-development-session-${{ github.sha }}
           path: development-session-evidence/
           include-hidden-files: true
-          retention-days: 30
+          retention-days: 90

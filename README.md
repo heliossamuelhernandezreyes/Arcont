@@ -2,6 +2,11 @@
 
 ARCONT ya no es un videojuego.
 
+**ARCONT 1.2:** la [guía de correcciones y migración](docs/RELIABILITY_1_2.md)
+documenta autorización, cancelación, publicación de mapas, aceptación tipada,
+identidad y validación. Incluye cambios para consumidores de Map Forge y
+sesiones antiguas.
+
 Desde septiembre de 2026, este repositorio funciona como **banco de información y laboratorio técnico para el desarrollo de videojuegos**: investigación, patrones de arquitectura, experimentos, decisiones, errores, aprendizajes y referencias reutilizables.
 
 **ARCONT 1.1:** la [guía de integración y fiabilidad](docs/RELIABILITY_1_1.md)

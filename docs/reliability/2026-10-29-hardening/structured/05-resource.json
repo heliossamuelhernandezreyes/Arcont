@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "operation": "godot.resource.edit",
+  "protocol": "arcont-bridge",
+  "request_id": "godot-resource-edit",
+  "result": {
+    "capability": "godot.structured.control",
+    "exit_code": 0,
+    "ok": true,
+    "operation": "invoke",
+    "permission": "explicit-project-write",
+    "project": "/workspace/scratch/bfbeef95f39f/validation-final/structured-game",
+    "protocol": "arcont-agent-control",
+    "result": {
+      "ok": true,
+      "protocol_version": 1,
+      "result": {
+        "engine": {
+          "evidence": ".arcont/runs/structured/8c3dbe5c1fe149e0b82a3876026d2910",
+          "exit_code": 0,
+          "ok": true,
+          "result": {
+            "class": "BoxMesh",
+            "ok": true
+          },
+          "stderr_tail": "",
+          "stdout_tail": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\n"
+        },
+        "path": "resources/player_mesh.tres",
+        "previous_revision": null,
+        "revision": "d0b6fb079762b5e8a906037300a964ed69947167083e132be99e648368f37465"
+      },
+      "write_performed": true
+    },
+    "schema_version": 1,
+    "status": "completed",
+    "stderr": null
+  },
+  "version": 1
+}

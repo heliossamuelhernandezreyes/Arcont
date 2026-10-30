@@ -127,9 +127,94 @@
                     "type": "array",
                     "maxItems": 16,
                     "items": {
-                      "type": "string",
-                      "minLength": 1,
-                      "maxLength": 500
+                      "oneOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        },
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "description",
+                            "verification_level",
+                            "checks"
+                          ],
+                          "properties": {
+                            "description": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 500
+                            },
+                            "verification_level": {
+                              "enum": [
+                                "static",
+                                "runtime"
+                              ]
+                            },
+                            "checks": {
+                              "type": "array",
+                              "minItems": 1,
+                              "maxItems": 8,
+                              "items": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                  "kind",
+                                  "expect"
+                                ],
+                                "properties": {
+                                  "kind": {
+                                    "enum": [
+                                      "inspect-project",
+                                      "invoke"
+                                    ]
+                                  },
+                                  "capability": {
+                                    "type": "string"
+                                  },
+                                  "operation": {
+                                    "type": "string"
+                                  },
+                                  "request_match": {
+                                    "type": "object"
+                                  },
+                                  "expect": {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "maxItems": 16,
+                                    "items": {
+                                      "type": "object",
+                                      "required": [
+                                        "pointer",
+                                        "op"
+                                      ],
+                                      "properties": {
+                                        "pointer": {
+                                          "type": "string",
+                                          "pattern": "^/"
+                                        },
+                                        "op": {
+                                          "enum": [
+                                            "exists",
+                                            "equals",
+                                            "not-equals",
+                                            "truthy",
+                                            "falsy"
+                                          ]
+                                        },
+                                        "value": {}
+                                      },
+                                      "additionalProperties": false
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
                     }
                   }
                 }

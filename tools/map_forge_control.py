@@ -19,8 +19,12 @@ from pathlib import Path
 
 if __package__:
     from .map_forge_terrain import brush
+    from .project_lock import document_lock
+    from .process_supervisor import run as run_supervised
 else:
     from map_forge_terrain import brush
+    from project_lock import document_lock
+    from process_supervisor import run as run_supervised
 
 OPERATIONS = ("capabilities", "list", "inspect", "create", "replace", "patch", "brush", "edit", "restore", "validate", "analyze", "materialize", "capture")
 MAP_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$")
@@ -187,6 +191,7 @@ class Editor:
         self.map_dir = self.contained(self.config.get("map_directory", "maps"))
         self.physical_dir = self.contained(self.config.get("physical_directory", "maps/physical"))
         self.history_dir = self.contained(".mapforge/history")
+        self.head_dir = self.contained(".mapforge/heads")
 
     def contained(self, relative):
         path = (self.root / relative).resolve()
@@ -201,6 +206,17 @@ class Editor:
 
     def read(self, map_id):
         map_path, physical_path = self.paths(map_id)
+        head = self.head_dir / (map_id + ".json")
+        if head.exists():
+            pointer = decode(head.read_text(encoding="utf-8"))
+            digest = pointer.get("revision")
+            if pointer.get("version") != 2 or not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+                raise ControlError("invalid Map Forge generation pointer")
+            generation = self.contained(str(self.history_dir.relative_to(self.root) / map_id / (digest + ".json")))
+            state = decode(generation.read_text(encoding="utf-8"))
+            if revision(state) != digest:
+                raise ControlError("Map Forge generation hash mismatch")
+            return state
         if not map_path.is_file():
             raise ControlError(f"map does not exist: {map_id}")
         return {"map": decode(map_path.read_text(encoding="utf-8")), "physical": decode(physical_path.read_text(encoding="utf-8")) if physical_path.exists() else None}
@@ -209,7 +225,7 @@ class Editor:
         command = self.config.get("adapter_command")
         if not isinstance(command, list) or not command or not all(isinstance(x, str) for x in command):
             raise ControlError("project requires adapter_command argv")
-        run = subprocess.run(command, cwd=self.root, input=encoded({"operation": operation, "state": state, "options": request.get("options", {})}), text=True, capture_output=True, timeout=int(self.config.get("adapter_timeout_seconds", 180)))
+        run = run_supervised(command, cwd=self.root, input=encoded({"operation": operation, "state": state, "options": request.get("options", {})}), timeout=int(self.config.get("adapter_timeout_seconds", 180)))
         try:
             result = decode(run.stdout)
         except (ValueError, TypeError) as exc:
@@ -231,37 +247,30 @@ class Editor:
         return self.adapter("validate", state, {})
 
     def commit(self, map_id, before, after, expected):
-        paths = self.paths(map_id)
-        lock = self.contained(".mapforge/locks/" + map_id + ".lock")
-        lock.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            descriptor = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-        except FileExistsError as exc:
-            raise ControlError("map is being edited; retry after the current transaction") from exc
-        os.close(descriptor)
-        originals = {path: path.read_bytes() if path.exists() else None for path in paths}
-        try:
-            current = self.read(map_id) if paths[0].exists() else None
+        self.paths(map_id)
+        with document_lock(self.root, "map-forge/" + map_id):
+            current = self.read(map_id) if self.exists(map_id) else None
             if (revision(current) if current else None) != expected:
                 raise ControlError("revision conflict; inspect the latest map before editing")
             if before is not None:
-                atomic_write(self.history_dir / map_id / (revision(before) + ".json"), before)
-            atomic_write(self.history_dir / map_id / (revision(after) + ".json"), after)
-            try:
-                atomic_write(paths[0], after["map"])
-                if after["physical"] is None:
-                    paths[1].unlink(missing_ok=True)
-                else:
-                    atomic_write(paths[1], after["physical"])
-            except Exception:
-                for path, raw in originals.items():
-                    if raw is None:
-                        path.unlink(missing_ok=True)
-                    else:
-                        path.write_bytes(raw)
-                raise
-        finally:
-            lock.unlink(missing_ok=True)
+                self.publish_generation(map_id, before)
+            digest = self.publish_generation(map_id, after)
+            # One namespace publication owns BOTH logical and physical state.
+            atomic_write(self.head_dir / (map_id + ".json"), {"version": 2, "revision": digest})
+
+    def publish_generation(self, map_id, state):
+        digest = revision(state)
+        path = self.contained(str(self.history_dir.relative_to(self.root) / map_id / (digest + ".json")))
+        if path.exists():
+            if revision(decode(path.read_text(encoding="utf-8"))) != digest:
+                raise ControlError("immutable Map Forge generation changed")
+        else:
+            atomic_write(path, state)
+        return digest
+
+    def exists(self, map_id):
+        map_path, _ = self.paths(map_id)
+        return (self.head_dir / (map_id + ".json")).exists() or map_path.exists()
 
     def execute(self, request):
         if not isinstance(request, dict) or request.get("protocol_version") != 1:
@@ -272,14 +281,16 @@ class Editor:
         if op == "capabilities":
             return {"ok": True, "operations": list(OPERATIONS), "all_contract_fields_editable": True, "author_decides_geometry": True, "generative_model_required": False, "stable_id_pointer_example": "/map/routes/@main_lane/width", "revision_required_for_existing_writes": True, "configuration": self.config}
         if op == "list":
-            return {"ok": True, "maps": [{"map_id": p.stem, "revision": revision(self.read(p.stem))} for p in sorted(self.map_dir.glob("*.json"))]}
+            ids = {p.stem for directory in (self.map_dir, self.head_dir) for p in directory.glob("*.json")}
+            return {"ok": True, "maps": [{"map_id": name, "revision": revision(self.read(name))} for name in sorted(ids)]}
         map_id = request.get("map_id")
         map_path, _ = self.paths(map_id)
-        before = self.read(map_id) if map_path.exists() else None
+        before = self.read(map_id) if self.exists(map_id) else None
         if op == "inspect":
             if before is None:
                 raise ControlError("map does not exist")
-            return {"ok": True, "map_id": map_id, "revision": revision(before), "state": before}
+            return {"ok": True, "map_id": map_id, "revision": revision(before), "state": before,
+                    "storage": "atomic-generation-v2" if (self.head_dir / (map_id + ".json")).exists() else "legacy-unverified"}
         if op in ("validate", "analyze", "materialize", "capture"):
             state = request.get("state", before)
             validation = self.validate(state, map_id)
@@ -321,7 +332,8 @@ class Editor:
             raise ControlError("dry_run must be a boolean")
         if not dry_run:
             self.commit(map_id, before, after, expected)
-        return {"ok": True, "map_id": map_id, "committed": not dry_run, "revision": revision(after), "previous_revision": expected, "changed_paths": changes(before, after), "validation": validation, "state": after}
+        return {"ok": True, "map_id": map_id, "committed": not dry_run, "revision": revision(after), "previous_revision": expected, "changed_paths": changes(before, after), "validation": validation, "state": after,
+                "storage": "atomic-generation-v2", "legacy_views_updated": False}
 
 
 def main():

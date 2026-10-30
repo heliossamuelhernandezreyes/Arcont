@@ -1,6 +1,6 @@
 {
   "name": "arcont-mcp-gateway",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Official MCP v2 transport adapter for the ARCONT Universal Agent Bridge.",

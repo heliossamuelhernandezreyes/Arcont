@@ -1,0 +1,156 @@
+{
+  "script": {
+    "ok": true,
+    "operation": "godot.script.inspect",
+    "protocol": "arcont-bridge",
+    "request_id": "godot-script-inspect",
+    "result": {
+      "ok": true,
+      "result": {
+        "bytes": 274,
+        "class_name": null,
+        "extends": "CharacterBody3D",
+        "functions": [
+          {
+            "end_line": 8,
+            "name": "_physics_process",
+            "start_line": 5
+          }
+        ],
+        "lines": 8,
+        "path": "scripts/player.gd",
+        "revision": "da17a0cb679526f138a87ba0d2c198e4d9333b437029603a05d89317ec3d010d",
+        "source": "extends CharacterBody3D\n\n@export var speed: float = 4.0\n\nfunc _physics_process(_delta):\n    var input_vector := Input.get_vector(\"move_left\", \"move_right\", \"move_forward\", \"move_back\")\n    velocity = Vector3(input_vector.x, 0.0, input_vector.y) * speed\n    move_and_slide()\n"
+      },
+      "write_performed": false
+    },
+    "version": 1
+  },
+  "scene": {
+    "ok": true,
+    "operation": "godot.scene.inspect",
+    "protocol": "arcont-bridge",
+    "request_id": "godot-scene-inspect",
+    "result": {
+      "capability": "godot.structured.control",
+      "exit_code": 0,
+      "ok": true,
+      "operation": "invoke",
+      "permission": "explicit-project-write",
+      "project": "/workspace/scratch/bfbeef95f39f/validation-final/structured-game",
+      "protocol": "arcont-agent-control",
+      "result": {
+        "ok": true,
+        "protocol_version": 1,
+        "result": {
+          "engine": {
+            "evidence": ".arcont/runs/structured/40f7e569ddf645439893fae6656b04e1",
+            "exit_code": 0,
+            "ok": true,
+            "result": {
+              "nodes": [
+                {
+                  "name": "Main",
+                  "path": ".",
+                  "script": "",
+                  "type": "Node3D"
+                },
+                {
+                  "name": "DirectionalLight3D",
+                  "path": "DirectionalLight3D",
+                  "script": "",
+                  "type": "DirectionalLight3D"
+                },
+                {
+                  "name": "Camera3D",
+                  "path": "Camera3D",
+                  "script": "",
+                  "type": "Camera3D"
+                },
+                {
+                  "name": "BootstrapMesh",
+                  "path": "BootstrapMesh",
+                  "script": "",
+                  "type": "MeshInstance3D"
+                },
+                {
+                  "name": "Player",
+                  "path": "Player",
+                  "script": "res://scripts/player.gd",
+                  "type": "CharacterBody3D"
+                },
+                {
+                  "name": "PlayerBody",
+                  "path": "Player/PlayerBody",
+                  "script": "",
+                  "type": "MeshInstance3D"
+                }
+              ],
+              "ok": true,
+              "root_name": "Main",
+              "root_type": "Node3D"
+            },
+            "stderr_tail": "",
+            "stdout_tail": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\n"
+          },
+          "revision": "6b7de820323779f84ae5b90d0e2b6186448e03ed58f753537756a8c47917ff78",
+          "scene": "scenes/main.tscn"
+        },
+        "write_performed": false
+      },
+      "schema_version": 1,
+      "status": "completed",
+      "stderr": null
+    },
+    "version": 1
+  },
+  "resource": {
+    "ok": true,
+    "operation": "godot.resource.inspect",
+    "protocol": "arcont-bridge",
+    "request_id": "godot-resource-inspect",
+    "result": {
+      "capability": "godot.structured.control",
+      "exit_code": 0,
+      "ok": true,
+      "operation": "invoke",
+      "permission": "explicit-project-write",
+      "project": "/workspace/scratch/bfbeef95f39f/validation-final/structured-game",
+      "protocol": "arcont-agent-control",
+      "result": {
+        "ok": true,
+        "protocol_version": 1,
+        "result": {
+          "engine": {
+            "evidence": ".arcont/runs/structured/4ad95caf37d14dfa8b1a4c157fbd72d1",
+            "exit_code": 0,
+            "ok": true,
+            "result": {
+              "class": "BoxMesh",
+              "ok": true,
+              "properties": {
+                "size": {
+                  "$type": "Vector3",
+                  "value": [
+                    0.800000011920929,
+                    1.79999995231628,
+                    0.800000011920929
+                  ]
+                }
+              }
+            },
+            "stderr_tail": "",
+            "stdout_tail": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\n"
+          },
+          "resource": "resources/player_mesh.tres",
+          "revision": "d0b6fb079762b5e8a906037300a964ed69947167083e132be99e648368f37465"
+        },
+        "write_performed": false
+      },
+      "schema_version": 1,
+      "status": "completed",
+      "stderr": null
+    },
+    "version": 1
+  }
+}

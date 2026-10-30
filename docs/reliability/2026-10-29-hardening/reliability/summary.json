@@ -1,0 +1,292 @@
+{
+  "ok": true,
+  "godot_version": "4.7.2.stable.official.ed1daf0bf",
+  "godot_sha256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e",
+  "assertions": {
+    "script_same_revision_one_writer": true,
+    "scene_same_revision_one_writer": true,
+    "resource_same_revision_one_writer": true,
+    "input_same_revision_one_writer": true,
+    "function_scope_preserved": true,
+    "complete_gltf_bundle_spec_validated": true,
+    "strip_budget_rejected": true,
+    "pinned_processing_spec_roundtrip": true,
+    "khronos_rejects_invalid_reference": true,
+    "godot_reopens_staged_and_processed_models": true,
+    "godot_confirms_1000_strip_faces": true
+  },
+  "native_face_counts": [
+    1,
+    1000,
+    1
+  ],
+  "races": {
+    "script": [
+      {
+        "protocol_version": 1,
+        "ok": true,
+        "write_performed": true,
+        "result": {
+          "path": "scripts/player.gd",
+          "previous_revision": "9a9afdeb01fb0328508ae41e098ae1ffc1d2bd192dfbc718f5af337841206a12",
+          "revision": "532551a465ec66e35900b0f719e49868ff1f22a512d4d7776a1ebb2697ead696",
+          "validation": {
+            "ok": true,
+            "exit_code": 0,
+            "result": {
+              "class": "GDScript",
+              "ok": true
+            },
+            "evidence": ".arcont/runs/structured/e8748a9580f54c78a74a9eb86a711aad",
+            "stdout_tail": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\n",
+            "stderr_tail": ""
+          }
+        }
+      },
+      {
+        "protocol_version": 1,
+        "ok": false,
+        "write_performed": false,
+        "error": "revision conflict; inspect target before editing"
+      }
+    ],
+    "scene": [
+      {
+        "protocol_version": 1,
+        "ok": true,
+        "write_performed": true,
+        "result": {
+          "path": "scenes/main.tscn",
+          "previous_revision": "960f3e376875186d8b91e5b88b496d091c3ebe408ab27385b49c8c3542aeefcc",
+          "revision": "8a4c81e9a747ee0846be983b41936b409bc2584cf8c6f2e2b5b4b0854d402238",
+          "engine": {
+            "ok": true,
+            "exit_code": 0,
+            "result": {
+              "nodes": [
+                {
+                  "name": "Root1",
+                  "path": ".",
+                  "script": "",
+                  "type": "Node3D"
+                }
+              ],
+              "ok": true
+            },
+            "evidence": ".arcont/runs/structured/7b9a67204da44042b272d14a52ea6553",
+            "stdout_tail": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\n",
+            "stderr_tail": ""
+          }
+        }
+      },
+      {
+        "protocol_version": 1,
+        "ok": false,
+        "write_performed": false,
+        "error": "revision conflict; inspect target before editing"
+      }
+    ],
+    "resource": [
+      {
+        "protocol_version": 1,
+        "ok": true,
+        "write_performed": true,
+        "result": {
+          "path": "resources/material.tres",
+          "previous_revision": "4ecfa1d21e2c01b0be47770066d04a1cb6ba277d25bde11595458db4dc4c6b36",
+          "revision": "3696535e9460f38074897291d516e28786f16186d1f020eab333a834c0927f1a",
+          "engine": {
+            "ok": true,
+            "exit_code": 0,
+            "result": {
+              "class": "StandardMaterial3D",
+              "ok": true
+            },
+            "evidence": ".arcont/runs/structured/79216b818d5e4107817b255e969f8928",
+            "stdout_tail": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\n",
+            "stderr_tail": ""
+          }
+        }
+      },
+      {
+        "protocol_version": 1,
+        "ok": false,
+        "write_performed": false,
+        "error": "revision conflict; inspect target before editing"
+      }
+    ],
+    "input": [
+      {
+        "protocol_version": 1,
+        "ok": true,
+        "write_performed": true,
+        "result": {
+          "action": "move_2",
+          "previous_revision": "a0466a5807d7596bc4b774c71ce03b40d7fa7bb66f7df069a11fc9fb3c7d7edb",
+          "revision": "a468a5c5dffc2e23e57d2d0f4cd574fe73380e5174a653c8e19883e86401909b",
+          "engine": {
+            "ok": true,
+            "exit_code": 0,
+            "result": {
+              "action": "move_2",
+              "deadzone": 0.2,
+              "event_count": 1,
+              "ok": true
+            },
+            "evidence": ".arcont/runs/structured/e1bc6193885e4795b3e5021800cd4ed3",
+            "stdout_tail": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\n",
+            "stderr_tail": ""
+          }
+        }
+      },
+      {
+        "protocol_version": 1,
+        "ok": false,
+        "write_performed": false,
+        "error": "revision conflict; inspect target before editing"
+      }
+    ]
+  },
+  "staging": {
+    "version": 2,
+    "semantic_id": "acceptance.triangle",
+    "file": "asset.gltf",
+    "sha256": "d2eab5a83e61f1a6677791f908f6c87cfc1269999abd730ba26b046cf33dcc27",
+    "source": "incoming/triangle/source.gltf",
+    "inspection": {
+      "path": "asset.gltf",
+      "format": "gltf",
+      "meshes": 1,
+      "primitives": 1,
+      "vertices_referenced": 3,
+      "triangles": 1,
+      "triangles_instanced_all_nodes": 1,
+      "primitive_modes": [
+        4
+      ],
+      "triangle_count_scope": "mesh primitives; strips/fans include degenerate triangles conservatively; all-node instances are separate",
+      "materials": 0,
+      "textures": 0,
+      "images": 0,
+      "nodes": 1,
+      "skins": 0,
+      "animations": 0,
+      "cameras": 0,
+      "extensions_used": [],
+      "extensions_required": [],
+      "generator": null,
+      "gltf_version": "2.0"
+    },
+    "files": {
+      "shared.bin": {
+        "source": "incoming/triangle/shared.bin",
+        "sha256": "d8b87038ed2ace74ed183166f6b0a541eab77f7184d50e65edc4bca5ccb5445a",
+        "size_bytes": 36
+      },
+      "asset.gltf": {
+        "source": "incoming/triangle/source.gltf",
+        "sha256": "d2eab5a83e61f1a6677791f908f6c87cfc1269999abd730ba26b046cf33dcc27",
+        "size_bytes": 426
+      }
+    },
+    "delivery_status": "spec-and-budget-validated",
+    "spec_validation": {
+      "version": 1,
+      "ok": true,
+      "processor": {
+        "name": "gltf_validator",
+        "version": "2.0.0-dev.3.10",
+        "sha256": "5cba1e097935c9efd929d24a49610824259b030f0ae45672273bfbcbb5b87a62",
+        "executable": "/workspace/scratch/bfbeef95f39f/runtime-tools/processors/gltf_validator",
+        "platform": "linux-x86_64",
+        "source_url": "https://github.com/KhronosGroup/glTF-Validator/releases/download/2.0.0-dev.3.10/gltf_validator-2.0.0-dev.3.10-linux64.tar.xz",
+        "lock_sha256": "ecf74829cafbedf6f227eea7e39cdfbb9e5682f7fb422285e103bccfbeff5398"
+      },
+      "files": {
+        "asset.gltf": "d2eab5a83e61f1a6677791f908f6c87cfc1269999abd730ba26b046cf33dcc27",
+        "shared.bin": "d8b87038ed2ace74ed183166f6b0a541eab77f7184d50e65edc4bca5ccb5445a"
+      },
+      "returncode": 0,
+      "errors": 0,
+      "report": {
+        "uri": "../validation-final/reliability-game/assets/staged/acceptance/.candidate-svi8hxmg/asset.gltf",
+        "mimeType": "model/gltf+json",
+        "validatorVersion": "2.0.0-dev.3.10",
+        "issues": {
+          "numErrors": 0,
+          "numWarnings": 0,
+          "numInfos": 0,
+          "numHints": 0,
+          "messages": [],
+          "truncated": false
+        },
+        "info": {
+          "version": "2.0",
+          "resources": [
+            {
+              "pointer": "/buffers/0",
+              "mimeType": "application/gltf-buffer",
+              "storage": "external",
+              "uri": "shared.bin",
+              "byteLength": 36
+            }
+          ],
+          "animationCount": 0,
+          "materialCount": 0,
+          "hasMorphTargets": false,
+          "hasSkins": false,
+          "hasTextures": false,
+          "hasDefaultScene": true,
+          "drawCallCount": 1,
+          "totalVertexCount": 3,
+          "totalTriangleCount": 1,
+          "maxUVs": 0,
+          "maxInfluences": 0,
+          "maxAttributes": 1
+        }
+      }
+    },
+    "profile": {
+      "id": "acceptance",
+      "budgets": {
+        "triangles_max": 100,
+        "materials_max": 10
+      }
+    },
+    "runtime_evidence_required": true,
+    "bundle_directory": "assets/staged/acceptance/triangle"
+  },
+  "processing": {
+    "version": 2,
+    "processor": {
+      "name": "gltfpack",
+      "version": "1.2",
+      "sha256": "7e0dc08489835df804a83ca111c2cac6f8431f5a7b0e5453d94d6749a988b32f",
+      "executable": "/workspace/scratch/bfbeef95f39f/runtime-tools/processors/gltfpack",
+      "platform": "linux-x86_64",
+      "source_url": "https://github.com/zeux/meshoptimizer/releases/download/v1.2/gltfpack-ubuntu.zip",
+      "lock_sha256": "ecf74829cafbedf6f227eea7e39cdfbb9e5682f7fb422285e103bccfbeff5398"
+    },
+    "command": [
+      "-noq",
+      "-i",
+      "/workspace/scratch/bfbeef95f39f/validation-final/reliability-game/incoming/triangle/source.gltf",
+      "-o",
+      "/workspace/scratch/bfbeef95f39f/validation-final/reliability-game/processed/.process-q9kjgr5n/asset.glb",
+      "-kn",
+      "-km"
+    ],
+    "files": {
+      "shared.bin": "d8b87038ed2ace74ed183166f6b0a541eab77f7184d50e65edc4bca5ccb5445a",
+      "source.gltf": "d2eab5a83e61f1a6677791f908f6c87cfc1269999abd730ba26b046cf33dcc27"
+    },
+    "input_sha256": "d2eab5a83e61f1a6677791f908f6c87cfc1269999abd730ba26b046cf33dcc27",
+    "output_sha256": "fc9fcf4423a45580f7276bd90562f24b31400308f6c9696ef73cd58ad218047a",
+    "input_size_bytes": 426,
+    "output_size_bytes": 632,
+    "ratio_requested": 1.0
+  },
+  "limits": [
+    "Linux headless only; no physical Android performance or art-quality claim."
+  ]
+}
