@@ -1,6 +1,17 @@
 name: Project Bootstrap Acceptance
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "tools/**"
+      - "tests/**"
+      - "integrations/**"
+      - "schemas/**"
+      - "arcont.manifest.json"
+      - "agent.capabilities.json"
+      - "processors.lock.json"
+      - ".github/workflows/**"
   pull_request:
   workflow_dispatch:
 
@@ -178,4 +189,4 @@ jobs:
           name: arcont-project-bootstrap-${{ github.sha }}
           path: bootstrap-evidence/
           include-hidden-files: true
-          retention-days: 30
+          retention-days: 90

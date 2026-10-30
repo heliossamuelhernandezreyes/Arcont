@@ -1,0 +1,43 @@
+{
+  "ok": true,
+  "operation": "project.bootstrap",
+  "protocol": "arcont-bridge",
+  "request_id": "project-bootstrap",
+  "result": {
+    "capability": "project.bootstrap.control",
+    "exit_code": 0,
+    "ok": true,
+    "operation": "invoke",
+    "permission": "explicit-project-write",
+    "project": "/workspace/scratch/bfbeef95f39f/validation-final/session-game",
+    "protocol": "arcont-agent-control",
+    "result": {
+      "ok": true,
+      "protocol_version": 1,
+      "result": {
+        "engine": "Godot",
+        "files": {
+          "authoring/README.md": "7f7a112825e1352919b46ff70d69a7677904e4d158feeb1742323f8a27b8229a",
+          "project.godot": "c97437db24ab9623515f88fa63510f37d6cb3bf8ab7cec74c1efd8e5bc31664c",
+          "project.intent.json": "c178cf5f75893a087cce7749e4d889a55cbfc56a6996923df1a1ad61d17373a7",
+          "scenes/main.tscn": "edc6e69b2e119f66db5569564e09379d3400af73531d78be9f06c42cb62d3677"
+        },
+        "intent": "project.intent.json",
+        "main_scene": "scenes/main.tscn",
+        "network_access": false,
+        "production_project_location": "external",
+        "project_id": "development_session_ci",
+        "project_root": "/workspace/scratch/bfbeef95f39f/validation-final/session-game",
+        "protocol": "arcont-project-bootstrap",
+        "receipt": ".arcont/bootstrap.json",
+        "template": "godot-3d-minimal",
+        "version": 1
+      },
+      "write_performed": true
+    },
+    "schema_version": 1,
+    "status": "completed",
+    "stderr": null
+  },
+  "version": 1
+}

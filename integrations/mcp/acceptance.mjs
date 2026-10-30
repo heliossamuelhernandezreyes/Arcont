@@ -98,6 +98,18 @@ async function connectStdio(project, allowWrite, name) {
   return { client, transport };
 }
 
+async function assertReadonlyDispatch(client, project) {
+  for (const operation of ["godot.structured.validate", "godot.script.inspect"]) {
+    const response = await client.callTool({name: "arcont_call", arguments: {
+      operation, arguments: {operation: "script.create", path: "scripts/audit_readonly_bypass.gd",
+        source: "extends Node2D\n", if_revision: null}
+    }});
+    if (response.isError !== true || fs.existsSync(path.join(project, "scripts/audit_readonly_bypass.gd"))) {
+      throw new Error("read-only MCP dispatched a writer through " + operation);
+    }
+  }
+}
+
 async function expectGatewayStartupFailure(project, extraArgs = [], timeoutMs = 10_000) {
   const child = spawn(
     process.execPath,
@@ -377,8 +389,8 @@ async function main() {
                 id: "movement",
                 goal: "Create move_forward input, a Player script and attach Player to the main scene.",
                 acceptance: [
-                  "The move_forward input action is written through Godot.",
-                  "A valid CharacterBody3D Player script is attached to Player in the main scene."
+                  { description: "move_forward is configured.", verification_level: "static", checks: [{kind:"invoke", capability:"godot.structured.control", operation:"input.action.set", request_match:{action:"move_forward"}, expect:[{pointer:"/result/result/action",op:"equals",value:"move_forward"}]}] },
+                  { description: "Player script validates and scene edit commits.", verification_level: "static", checks: [{kind:"invoke",capability:"godot.structured.control",operation:"script.create",request_match:{path:"scripts/player.gd"},expect:[{pointer:"/result/result/validation/ok",op:"equals",value:true}]},{kind:"invoke",capability:"godot.structured.control",operation:"scene.edit",request_match:{scene:"scenes/main.tscn"},expect:[{pointer:"/result/result/revision",op:"exists"}]}] }
                 ]
               }
             ]
@@ -519,6 +531,18 @@ func _physics_process(_delta):
     }
   }
 
+  // Repeat the attack against an initialized project, so a missing Godot file
+  // cannot accidentally make a vulnerable implementation look safe.
+  {
+    const { client } = await connectStdio(args.project, false, "arcont-readonly-dispatch-regression");
+    try {
+      await assertReadonlyDispatch(client, args.project);
+      assertions.readonly_operation_override_refused_stdio = true;
+    } finally {
+      await client.close();
+    }
+  }
+
   // 3. Fail closed before exposing non-loopback HTTP.
   {
     const noToken = await expectHttpStartupFailure(
@@ -594,6 +618,8 @@ func _physics_process(_delta):
         if (client.getProtocolEra() !== "modern") throw new Error("HTTP did not negotiate modern MCP era");
         assertions.http_modern_2026_protocol = true;
         assertions.http_modern_auto_negotiated = true;
+        await assertReadonlyDispatch(client, args.project);
+        assertions.readonly_operation_override_refused_http = true;
 
         const tools = await client.listTools();
         if (!tools.tools.some(tool => tool.name === "arcont_session_inspect")) {

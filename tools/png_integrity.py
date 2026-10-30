@@ -9,7 +9,7 @@ MAX_PIXELS = 16_777_216
 MAX_FILE_BYTES = 80 * 1024 * 1024
 
 
-def decode_frame(path: Path):
+def decode_rgba(path: Path, require_rgba: bool = False):
     if path.stat().st_size > MAX_FILE_BYTES:
         raise ValueError('PNG exceeds file size limit')
     data = path.read_bytes()
@@ -40,6 +40,8 @@ def decode_frame(path: Path):
                 raise ValueError('PNG exceeds decoded pixel limit')
             if bits != 8 or color not in (2, 6) or compression or filtering or interlace:
                 raise ValueError('evidence requires non-interlaced 8-bit RGB/RGBA PNG')
+            if require_rgba and color != 6:
+                raise ValueError('production frames must be 8-bit RGBA PNG')
             header = (width, height, 3 if color == 2 else 4)
         elif kind == b'IDAT':
             if idat_ended:
@@ -71,7 +73,7 @@ def decode_frame(path: Path):
     raw = decoder.decompress(compressed, expected + 1)
     if len(raw) != expected or not decoder.eof or decoder.unused_data or decoder.unconsumed_tail:
         raise ValueError('invalid or oversized PNG compressed stream')
-    digest = hashlib.sha256(struct.pack('>II', width, height))
+    rows = []
     previous = bytearray(stride)
     for y in range(height):
         start = y * (stride + 1)
@@ -99,10 +101,17 @@ def decode_frame(path: Path):
         rgba = bytearray(width * 4)
         rgba[0::4], rgba[1::4], rgba[2::4] = row[0::bpp], row[1::bpp], row[2::bpp]
         rgba[3::4] = row[3::4] if bpp == 4 else b'\xff' * width
-        # Invisible RGB does not make a distinct rendered frame.
-        if bpp == 4:
-            for x in range(width):
-                if rgba[x*4+3] == 0:
-                    rgba[x*4:x*4+3] = b'\0\0\0'
+        rows.append(bytes(rgba))
+    return width, height, rows
+
+
+def decode_frame(path: Path):
+    width, height, rows = decode_rgba(path)
+    digest = hashlib.sha256(struct.pack('>II', width, height))
+    for data in rows:
+        rgba = bytearray(data)
+        for x in range(width):
+            if rgba[x*4+3] == 0:
+                rgba[x*4:x*4+3] = b'\0\0\0'
         digest.update(rgba)
     return width, height, digest.hexdigest()

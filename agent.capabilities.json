@@ -14,6 +14,15 @@
       "doctor": true
     },
     {
+      "id": "knowledge.matrix.validate",
+      "description": "Check local 2D capability/tool/test consistency without inferring remote runtime maturity.",
+      "access": "read-only",
+      "entrypoint": "tools/capability_matrix.py",
+      "argv": [],
+      "output": "json",
+      "doctor": true
+    },
+    {
       "id": "repository.hardening.validate",
       "description": "Validate the ARCONT manifest, evidence contracts, hashes and maturity constraints.",
       "access": "read-only",

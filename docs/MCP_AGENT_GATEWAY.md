@@ -1,5 +1,10 @@
 # ARCONT MCP Agent Gateway v1
 
+Gateway package 0.2.0 / ARCONT 1.2 rejects reserved operation arguments and
+supervises bridge process trees. See the [migration guide](RELIABILITY_1_2.md).
+Read-only operation-override regressions run over stdio and HTTP on initialized
+projects.
+
 ARCONT MCP Agent Gateway exposes the existing Universal Agent Bridge through
 the official Model Context Protocol SDK.
 

@@ -22,9 +22,13 @@ from pathlib import Path
 from typing import Any
 
 try:
+    from tools.project_paths import project_path, read_project_bytes
+    from tools.acceptance_contract import validate_criterion, verify_criterion
     from tools.agent_execution_loop import canonical_sha256, execute_plan, validate_plan
     from tools.arcont_agent import inspect_project, invoke_capability, load_registry
 except ModuleNotFoundError:
+    from project_paths import project_path, read_project_bytes
+    from acceptance_contract import validate_criterion, verify_criterion
     from agent_execution_loop import canonical_sha256, execute_plan, validate_plan
     from arcont_agent import inspect_project, invoke_capability, load_registry
 
@@ -165,11 +169,76 @@ def _toolchain_sha(registry: dict[str, Any], capability_allowlist: list[str]) ->
         if not path.is_file():
             raise SessionError(f"development session core file missing: {relative}")
         core[relative] = _file_sha(path)
+    # Pin the complete reusable Python surface, including imported helpers.
+    # Conservative invalidation is preferable to a silently changed writer.
+    for path in sorted((root / "tools").glob("*.py")):
+        core[path.relative_to(root).as_posix()] = _file_sha(path)
+    for directory in ("schemas", "templates"):
+        for path in sorted((root / directory).rglob("*")):
+            if path.is_file():
+                core[path.relative_to(root).as_posix()] = _file_sha(path)
+    for path in sorted((root / "integrations/mcp").glob("*")):
+        if path.is_file() and path.suffix in {".mjs", ".json"}:
+            core[path.relative_to(root).as_posix()] = _file_sha(path)
+    for relative in ("arcont.manifest.json", "processors.lock.json", "integrations/mcp/package-lock.json"):
+        path = root / relative
+        if not path.is_file():
+            raise SessionError(f"toolchain pin file missing: {relative}")
+        core[relative] = _file_sha(path)
+    host = {"python": sys.version, "python_sha256": _file_sha(Path(sys.executable).resolve())}
+    configured = os.environ.get("GODOT_BIN") or shutil.which("godot4") or shutil.which("godot")
+    host["godot_sha256"] = _file_sha(Path(configured).resolve()) if configured else None
     return _sha({
         "registry_sha256": canonical_sha256(registry),
         "capabilities": capabilities,
         "core": core,
+        "host": host,
     })
+
+
+def _project_execution_sha(project: Path) -> str:
+    files = {}
+    for relative in ("godot-authoring.json", "map-forge.authoring.json"):
+        path = project_path(project, relative)
+        if not path.exists():
+            files[relative] = None
+            continue
+        raw = read_project_bytes(project, relative, 2 * 1024 * 1024)
+        files[relative] = hashlib.sha256(raw).hexdigest()
+        config = json.loads(raw)
+        if not isinstance(config, dict):
+            raise SessionError("adapter configuration must be an object")
+        argv = config.get("adapter_command", [])
+        if not isinstance(argv, list) or not all(isinstance(item, str) for item in argv):
+            raise SessionError("adapter_command must be an argv array")
+        for index, item in enumerate(argv):
+            candidate = Path(item)
+            if index == 0:
+                executable = item if candidate.is_absolute() else shutil.which(item)
+                if executable and Path(executable).is_file():
+                    files[relative + ":executable"] = _file_sha(Path(executable).resolve())
+            elif not candidate.is_absolute() and not item.startswith("-"):
+                candidate = project_path(project, item)
+                if candidate.is_file():
+                    files[item] = hashlib.sha256(read_project_bytes(project, item, 8 * 1024 * 1024)).hexdigest()
+            elif candidate.is_absolute() and candidate.suffix in {".py", ".gd"}:
+                # Absolute project adapters must still be inside the project.
+                try:
+                    rel = candidate.relative_to(project).as_posix()
+                except ValueError as exc:
+                    raise SessionError("adapter script must be project-owned") from exc
+                files[rel] = hashlib.sha256(read_project_bytes(project, rel, 8 * 1024 * 1024)).hexdigest()
+        playtest = config.get("playtest", {})
+        if isinstance(playtest, dict) and isinstance(playtest.get("script"), str):
+            rel = playtest["script"].removeprefix("res://")
+            files[rel] = hashlib.sha256(read_project_bytes(project, rel, 8 * 1024 * 1024)).hexdigest()
+    # Project-side Python helpers used by adapters are part of that contract.
+    tools = project_path(project, "tools")
+    if tools.is_dir():
+        for path in sorted(tools.rglob("*.py")):
+            rel = path.relative_to(project).as_posix()
+            files[rel] = hashlib.sha256(read_project_bytes(project, rel, 8 * 1024 * 1024)).hexdigest()
+    return _sha(files)
 
 
 def _session_root(project: Path, session_id: str) -> Path:
@@ -309,6 +378,8 @@ def _reconcile_completed_pending(project: Path, state: dict[str, Any]) -> dict[s
         if row.get("plan_id") != pending["plan_id"] or row.get("plan_sha256") != pending["plan_sha256"]:
             raise SessionError("pending run plan identity does not match committed history")
         _receipt_path_from_history(project, state["id"], row)
+        if row.get("status") == "indeterminate":
+            return pending
         _pending_path(project, state["id"]).unlink()
         return None
     return pending
@@ -381,9 +452,12 @@ def _milestones(value: Any) -> list[dict[str, Any]]:
         if (
             not isinstance(acceptance, list)
             or len(acceptance) > MAX_ACCEPTANCE
-            or not all(isinstance(item, str) and item.strip() and len(item) <= 500 for item in acceptance)
         ):
             raise SessionError(f"milestones/{index}: invalid acceptance list")
+        try:
+            acceptance = [validate_criterion(item) for item in acceptance]
+        except ValueError as exc:
+            raise SessionError(f"milestones/{index}: {exc}") from exc
         rows.append(
             {
                 "id": milestone_id,
@@ -488,6 +562,16 @@ def create(project: Path, request: dict[str, Any]) -> dict[str, Any]:
     registry, registry_sha, known = _registry()
     capability_allowlist = _session_capabilities(spec.get("capability_allowlist"), known)
     milestones = _milestones(spec.get("milestones"))
+    allowed_operations = {row["id"]: set(row.get("operations", [])) for row in registry["capabilities"]}
+    for milestone in milestones:
+        for criterion in milestone["acceptance"]:
+            if isinstance(criterion, dict):
+                for check in criterion["checks"]:
+                    if check["kind"] == "invoke" and (
+                        check["capability"] not in capability_allowlist
+                        or check["operation"] not in allowed_operations.get(check["capability"], set())
+                    ):
+                        raise SessionError("acceptance selects an unavailable session capability/operation")
     budgets = _budgets(spec.get("budgets"))
     intent_sha = _intent_sha(project)
     toolchain_sha = _toolchain_sha(registry, capability_allowlist)
@@ -504,6 +588,7 @@ def create(project: Path, request: dict[str, Any]) -> dict[str, Any]:
         "project_intent_sha256": intent_sha,
         "registry_sha256": registry_sha,
         "toolchain_sha256": toolchain_sha,
+        "project_execution_sha256": _project_execution_sha(project),
         "permissions": permissions,
         "capability_allowlist": capability_allowlist,
         "budgets": budgets,
@@ -549,6 +634,7 @@ def inspect(project: Path, request: dict[str, Any]) -> dict[str, Any]:
                 "intent_matches": current_intent == state["project_intent_sha256"],
                 "registry_matches": current_registry == state["registry_sha256"],
                 "toolchain_matches": current_toolchain == state["toolchain_sha256"],
+                "project_execution_matches": _project_execution_sha(project) == state.get("project_execution_sha256"),
                 "current_project_intent_sha256": current_intent,
                 "current_registry_sha256": current_registry,
                 "current_toolchain_sha256": current_toolchain,
@@ -570,6 +656,8 @@ def _completion_evidence_spec(
     acceptance = milestone.get("acceptance", [])
     if not acceptance:
         raise SessionError("milestone completion requires explicit acceptance criteria")
+    if any(isinstance(item, str) for item in acceptance):
+        raise SessionError("legacy text acceptance cannot complete milestones; create a session with typed validators")
     if not isinstance(value, list) or len(value) != len(acceptance):
         raise SessionError("completion_evidence must contain exactly one mapping per acceptance criterion")
     plan_steps = {step["id"]: step for step in plan["steps"]}
@@ -624,26 +712,13 @@ def _verify_completion_evidence(
     checked: list[dict[str, Any]] = []
     all_ok = True
     for mapping in mappings:
-        step_results = []
-        mapping_ok = True
-        for step_id in mapping["step_ids"]:
-            step = receipts.get(step_id)
-            ok = isinstance(step, dict) and step.get("ok") is True
-            machine_signal = False
-            if isinstance(step, dict):
-                machine_signal = bool(step.get("write_performed")) or bool(step.get("expectations"))
-            evidence_ok = ok and machine_signal
-            mapping_ok = mapping_ok and evidence_ok
-            step_results.append({
-                "step_id": step_id,
-                "step_ok": ok,
-                "machine_signal": machine_signal,
-                "evidence_ok": evidence_ok,
-            })
+        mapping_ok, step_results = verify_criterion(mapping["criterion"],
+            [receipts.get(step_id) for step_id in mapping["step_ids"]])
         all_ok = all_ok and mapping_ok
         checked.append({
             **mapping,
             "ok": mapping_ok,
+            "verification_level": mapping["criterion"]["verification_level"],
             "steps": step_results,
         })
     return all_ok, checked
@@ -676,6 +751,8 @@ def _execute_one_locked(project: Path, request: dict[str, Any]) -> dict[str, Any
         raise SessionError("ARCONT capability registry changed since session creation; start a new reviewed session")
     if current_toolchain != state["toolchain_sha256"]:
         raise SessionError("ARCONT session toolchain changed since session creation; start a new reviewed session")
+    if _project_execution_sha(project) != state.get("project_execution_sha256"):
+        raise SessionError("project execution configuration changed or is unpinned; start a new reviewed session")
 
     milestone = _active_milestone(state)
     if milestone is None:
@@ -756,6 +833,7 @@ def _execute_one_locked(project: Path, request: dict[str, Any]) -> dict[str, Any
         post_intent == state["project_intent_sha256"]
         and post_registry == state["registry_sha256"]
         and post_toolchain == state["toolchain_sha256"]
+        and _project_execution_sha(project) == state.get("project_execution_sha256")
     )
 
     completion_evidence_ok = True
@@ -834,6 +912,9 @@ def _execute_one_locked(project: Path, request: dict[str, Any]) -> dict[str, Any
         if failed_remaining <= 0:
             state["status"] = "paused"
             state["stop_reason"] = "failed-run-budget-exhausted"
+    if result.get("status") == "indeterminate":
+        state["status"] = "paused"
+        state["stop_reason"] = "process-termination-indeterminate-review-required"
 
     if not environment_stable:
         state["status"] = "paused"
@@ -853,7 +934,7 @@ def _execute_one_locked(project: Path, request: dict[str, Any]) -> dict[str, Any
 
     state["revision"] = _state_revision(state)
     _atomic_json(_state_path(project, state["id"]), state)
-    if pending_path.is_file() and not pending_path.is_symlink():
+    if result.get("status") != "indeterminate" and pending_path.is_file() and not pending_path.is_symlink():
         pending_path.unlink()
 
     return {

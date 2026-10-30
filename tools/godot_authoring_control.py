@@ -19,9 +19,11 @@ import sys
 import uuid
 
 if __package__:
+    from .process_supervisor import run as run_supervised
     from .map_forge_control import ControlError, apply_patch, atomic_write, changes, decode, encoded, revision
     from .playtest_contract import validate as validate_playtest
 else:
+    from process_supervisor import run as run_supervised
     from map_forge_control import ControlError, apply_patch, atomic_write, changes, decode, encoded, revision
     from playtest_contract import validate as validate_playtest
 
@@ -127,16 +129,10 @@ class Authoring:
         payload = {"protocol_version": 1, "operation": operation, "recipe": recipe,
                    "options": options, "output_directory": str(directory)}
         atomic_write(directory / "request.json", payload)
-        process = subprocess.Popen(argv, cwd=self.root, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE, text=True, start_new_session=os.name == "posix")
         try:
-            stdout, stderr = process.communicate(encoded(payload), timeout=int(self.config.get("timeout_seconds", 240)))
+            process = run_supervised(argv, cwd=self.root, input=encoded(payload), timeout=int(self.config.get("timeout_seconds", 240)))
+            stdout, stderr = process.stdout, process.stderr
         except BaseException:
-            if os.name == "posix":
-                os.killpg(process.pid, signal.SIGKILL)
-            else:
-                process.kill()
-            process.communicate()
             atomic_write(directory / "failure.json", {"ok": False, "error": "adapter interrupted or timed out"})
             raise
         (directory / "adapter.stderr.log").write_text(stderr, encoding="utf-8")

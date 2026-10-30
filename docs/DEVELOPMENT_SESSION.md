@@ -1,5 +1,9 @@
 # Development Session v1
 
+ARCONT 1.2 requires typed acceptance checks to complete a milestone. Legacy text
+criteria remain readable but cannot certify completion. See the
+[migration guide](RELIABILITY_1_2.md).
+
 A Development Session is ARCONT's persistent orchestration layer for an external
 AI agent working on a game over multiple bounded iterations.
 
@@ -43,38 +47,97 @@ Example:
 {
   "protocol": "arcont-bridge",
   "version": 1,
-  "request_id": "start-game-session",
+  "request_id": "create-development-session-001",
   "operation": "development.session.create",
   "arguments": {
     "spec": {
       "id": "prototype",
-      "goal": "Build a playable third-person prototype.",
+      "goal": "Build a small playable third-person prototype.",
       "capability_allowlist": [
-        "godot.structured.control",
-        "public-asset.control"
+        "godot.structured.control"
       ],
-      "permissions": {"project_write": true},
+      "permissions": {
+        "project_write": true
+      },
       "budgets": {
-        "max_plan_runs": 8,
-        "max_execution_steps": 64,
-        "max_write_steps": 32,
-        "max_failed_runs": 3
+        "max_plan_runs": 6,
+        "max_execution_steps": 48,
+        "max_write_steps": 24,
+        "max_failed_runs": 2
       },
       "milestones": [
         {
           "id": "movement",
-          "goal": "Create player movement and input.",
+          "goal": "Create input and player movement.",
           "acceptance": [
-            "Player script validates in Godot.",
-            "Player node is present in the main scene."
+            {
+              "description": "Player script validates.",
+              "verification_level": "static",
+              "checks": [
+                {
+                  "kind": "invoke",
+                  "capability": "godot.structured.control",
+                  "operation": "script.create",
+                  "request_match": {
+                    "path": "scripts/player.gd"
+                  },
+                  "expect": [
+                    {
+                      "pointer": "/result/result/validation/ok",
+                      "op": "equals",
+                      "value": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "description": "Main scene edit commits.",
+              "verification_level": "static",
+              "checks": [
+                {
+                  "kind": "invoke",
+                  "capability": "godot.structured.control",
+                  "operation": "scene.edit",
+                  "request_match": {
+                    "scene": "scenes/main.tscn"
+                  },
+                  "expect": [
+                    {
+                      "pointer": "/result/result/revision",
+                      "op": "exists"
+                    }
+                  ]
+                }
+              ]
+            }
           ]
         },
         {
-          "id": "environment",
-          "goal": "Create a small playable environment.",
+          "id": "verification",
+          "goal": "Inspect and refine the movement implementation.",
           "acceptance": [
-            "Environment assets have recorded provenance.",
-            "The main scene loads with the environment."
+            {
+              "description": "Final script has the expected base type.",
+              "verification_level": "static",
+              "checks": [
+                {
+                  "kind": "invoke",
+                  "capability": "godot.structured.control",
+                  "operation": "script.inspect",
+                  "request_match": {
+                    "path": "scripts/player.gd"
+                  },
+                  "expect": [
+                    {
+                      "pointer": "/result/result/extends",
+                      "op": "equals",
+                      "value": "CharacterBody3D"
+                    }
+                  ]
+                }
+              ]
+            }
           ]
         }
       ]
@@ -91,11 +154,12 @@ A session captures:
 
 - SHA-256 of `project.intent.json`;
 - SHA-256 of `agent.capabilities.json`;
-- a toolchain SHA-256 covering each allowlisted capability entrypoint plus the
-  execution/session core;
+- a conservative toolchain SHA-256 covering helpers, schemas, templates, gateway,
+  locks and interpreter/engine binaries;
+- a project adapter configuration/script SHA-256;
 - session capability allowlist;
 - explicit project-write policy;
-- milestone order and acceptance prose;
+- milestone order and typed acceptance predicates;
 - bounded execution budgets.
 
 If project intent, the ARCONT capability registry, or the pinned capability

@@ -27,70 +27,11 @@ def _paeth(a: int, b: int, c: int) -> int:
 
 
 def _decode_rgba_png(path: Path, alpha_threshold: int) -> dict[str, Any]:
-    data = path.read_bytes()
-    if not data.startswith(PNG_SIGNATURE):
-        raise ValueError("invalid PNG signature")
-    pos = len(PNG_SIGNATURE)
-    width = height = bit_depth = color_type = interlace = None
-    idat = bytearray()
-    while pos + 12 <= len(data):
-        length = struct.unpack(">I", data[pos:pos + 4])[0]
-        kind = data[pos + 4:pos + 8]
-        payload = data[pos + 8:pos + 8 + length]
-        if len(payload) != length:
-            raise ValueError("truncated PNG chunk")
-        pos += length + 12
-        if kind == b"IHDR":
-            width, height, bit_depth, color_type, compression, filtering, interlace = struct.unpack(
-                ">IIBBBBB", payload
-            )
-            if compression != 0 or filtering != 0:
-                raise ValueError("unsupported PNG compression/filter method")
-        elif kind == b"IDAT":
-            idat.extend(payload)
-        elif kind == b"IEND":
-            break
-    if None in (width, height, bit_depth, color_type, interlace):
-        raise ValueError("missing IHDR")
-    if bit_depth != 8 or color_type != 6 or interlace != 0:
-        raise ValueError(
-            f"production frames must be non-interlaced 8-bit RGBA PNG "
-            f"(bit_depth={bit_depth}, color_type={color_type}, interlace={interlace})"
-        )
-    assert width is not None and height is not None
-    raw = zlib.decompress(bytes(idat))
-    row_bytes, bpp = width * 4, 4
-    if len(raw) != height * (row_bytes + 1):
-        raise ValueError("unexpected decompressed PNG size")
-
-    rows: list[bytes] = []
-    prev = bytearray(row_bytes)
-    pos = 0
-    for _ in range(height):
-        filt = raw[pos]
-        pos += 1
-        src = raw[pos:pos + row_bytes]
-        pos += row_bytes
-        dst = bytearray(row_bytes)
-        for i, value in enumerate(src):
-            left = dst[i - bpp] if i >= bpp else 0
-            up = prev[i]
-            upper_left = prev[i - bpp] if i >= bpp else 0
-            if filt == 0:
-                out = value
-            elif filt == 1:
-                out = value + left
-            elif filt == 2:
-                out = value + up
-            elif filt == 3:
-                out = value + ((left + up) // 2)
-            elif filt == 4:
-                out = value + _paeth(left, up, upper_left)
-            else:
-                raise ValueError(f"unsupported PNG filter {filt}")
-            dst[i] = out & 0xFF
-        rows.append(bytes(dst))
-        prev = dst
+    try:
+        from tools.png_integrity import decode_rgba
+    except ModuleNotFoundError:
+        from png_integrity import decode_rgba
+    width, height, rows = decode_rgba(path, require_rgba=True)
 
     x0, y0, x1, y1 = width, height, -1, -1
     digest = hashlib.sha256()
@@ -130,7 +71,11 @@ def _frames(value: Any) -> list[dict[str, Any]]:
 
 
 def _resource(root: Path, value: str) -> Path:
-    return root / value.removeprefix("res://") if value.startswith("res://") else root / value
+    try:
+        from tools.project_paths import project_path
+    except ModuleNotFoundError:
+        from project_paths import project_path
+    return project_path(root, value.removeprefix("res://") if value.startswith("res://") else value)
 
 
 def _gate(manifest: dict[str, Any], char: dict[str, Any], key: str, default: float) -> float:
@@ -190,7 +135,11 @@ def audit(manifest_path: Path, project_root: Path) -> tuple[int, dict[str, Any]]
             for index, entry in enumerate(entries):
                 frame_id = f"{char_name}.{state_name}[{index}]"
                 resource_path = entry["path"]
-                path = _resource(project_root, resource_path)
+                try:
+                    path = _resource(project_root, resource_path)
+                except ValueError as exc:
+                    errors.append(f"{frame_id}: {exc}")
+                    continue
                 if not path.is_file():
                     errors.append(f"{frame_id}: missing {path}")
                     continue

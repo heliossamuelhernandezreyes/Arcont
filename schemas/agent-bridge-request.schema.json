@@ -58,7 +58,15 @@
       ]
     },
     "arguments": {
-      "type": "object"
+      "type": "object",
+      "propertyNames": {
+        "not": {
+          "enum": [
+            "operation",
+            "protocol_version"
+          ]
+        }
+      }
     }
   }
 }

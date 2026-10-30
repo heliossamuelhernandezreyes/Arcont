@@ -1,0 +1,23 @@
+{
+  "ok": true,
+  "operation": "godot.structured.validate",
+  "protocol": "arcont-bridge",
+  "request_id": "godot-structured-validate",
+  "result": {
+    "ok": true,
+    "result": {
+      "engine_identity": {
+        "executable": "/workspace/scratch/bfbeef95f39f/runtime-tools/godot",
+        "identity_level": "binary-verified",
+        "sha256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e",
+        "version": "4.7.2.stable.official.ed1daf0bf"
+      },
+      "godot_bin": "/workspace/scratch/bfbeef95f39f/runtime-tools/godot",
+      "project_import_verified": false,
+      "project_revision": "bfb61956f30771edc493683edebe9d40d88137d8ac9584ada4c2720885419a1c",
+      "validation_scope": "engine identity and project configuration fingerprint; project import not executed"
+    },
+    "write_performed": false
+  },
+  "version": 1
+}

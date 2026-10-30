@@ -246,6 +246,7 @@ def execute_plan(
                 "write_performed": write_performed,
                 "duration_ms": round((time.monotonic() - step_started) * 1000, 3),
                 "output": output,
+                "resolved_request": request if step["kind"] == "invoke" else None,
             }
             receipts.append(receipt)
             outputs[step_id] = output
@@ -256,7 +257,7 @@ def execute_plan(
                     "protocol": PLAN_PROTOCOL,
                     "operation": "run-plan",
                     "ok": False,
-                    "status": "stopped",
+                    "status": "indeterminate" if isinstance(output, dict) and output.get("status") == "indeterminate" else "stopped",
                     "failed_step": step_id,
                     "plan_id": plan["id"],
                     "goal": plan["goal"],

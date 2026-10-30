@@ -1,0 +1,86 @@
+{
+  "ok": true,
+  "session": {
+    "id": "prototype",
+    "status": "completed",
+    "revision": "e5dccf84639f373732b8011fe7e57b9f67f10043a3528618cf836c5b5c8bdcc9",
+    "counters": {
+      "execution_steps": 12,
+      "failed_runs": 0,
+      "milestones_completed": 2,
+      "plan_runs": 2,
+      "write_steps": 7
+    },
+    "remaining": {
+      "execution_steps": 12,
+      "failed_runs": 2,
+      "plan_runs": 2,
+      "write_steps": 9
+    },
+    "history": [
+      {
+        "completion_evidence_ok": true,
+        "failed_step": null,
+        "milestone_id": "movement",
+        "ok": true,
+        "plan_id": "movement_core",
+        "plan_sha256": "5a46d962c36ebe234f21c52cf1ba56f879120a9da3f34b790757d07d6bd7a980",
+        "receipt": ".arcont/development-sessions/prototype/runs/run-001-ec797d123899.json",
+        "receipt_sha256": "921c4f9530aeb66e31e784872cd0980208ef9406d95bc8eb5d8895a232ad7198",
+        "run_id": "run-001-ec797d123899",
+        "status": "completed",
+        "steps_completed": 8,
+        "write_steps": 6
+      },
+      {
+        "completion_evidence_ok": true,
+        "failed_step": null,
+        "milestone_id": "verification",
+        "ok": true,
+        "plan_id": "verify_refine",
+        "plan_sha256": "8f0e1c8e9d0a863315d8b72fcc66429245e0b1b0ad4f5dd4b1a8e058361defad",
+        "receipt": ".arcont/development-sessions/prototype/runs/run-002-e01795db1211.json",
+        "receipt_sha256": "947858d886a28a78cc31e0669bca55136c554fab62b74d96d67fd38b85664445",
+        "run_id": "run-002-e01795db1211",
+        "status": "completed",
+        "steps_completed": 4,
+        "write_steps": 1
+      }
+    ],
+    "project_intent_sha256": "53de4aba700e6dcac67fb704451e928e02b8e29e7b6571388ab1bc43f256c38e",
+    "registry_sha256": "28e71a2a3373b99eb7299e15f3d8a0744d3ab17725f613faf11fffdcc490dc3f",
+    "toolchain_sha256": "42f85cb7c19031ede4f13bfe903d723d1ca71fbdaf338c29ac5ed8b7ee6abd1b"
+  },
+  "runtime": {
+    "after": [
+      0.0,
+      0.0,
+      -0.733333349227905
+    ],
+    "before": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "delta_z": -0.733333349227905,
+    "ok": true
+  },
+  "assertions": {
+    "two_bounded_plans_executed": true,
+    "two_milestones_completed": true,
+    "session_completed": true,
+    "session_revision_advanced": true,
+    "receipts_persisted": true,
+    "intent_pin_still_matches": true,
+    "registry_pin_still_matches": true,
+    "toolchain_pin_still_matches": true,
+    "milestone_evidence_persisted": true,
+    "run_evidence_verified": true,
+    "runtime_player_moved": true
+  },
+  "limits": [
+    "The external acceptance harness supplies the two development plans; ARCONT does not call an LLM itself.",
+    "Runtime movement is verified after session completion by the CI harness; Development Session v1 orchestrates existing ARCONT capabilities and does not add a generic playtest primitive.",
+    "Headless Linux evidence does not establish Android performance or subjective game quality."
+  ]
+}

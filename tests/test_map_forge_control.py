@@ -108,7 +108,8 @@ class TransactionTests(unittest.TestCase):
     def test_both_map_and_physical_are_revised(self):
         self.state["physical"] = {"map_id": "arena", "custom": {"river": True}}
         result = self.create()
-        self.assertTrue((self.root / "maps/physical/arena.json").exists())
+        self.assertTrue((self.root / ".mapforge/heads/arena.json").exists())
+        self.assertEqual(self.editor.read("arena")["physical"], self.state["physical"])
         self.assertEqual(result["revision"], revision(self.editor.read("arena")))
 
     def test_revision_ignores_object_key_order(self):

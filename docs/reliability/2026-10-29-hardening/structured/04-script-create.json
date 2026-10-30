@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "operation": "godot.script.create",
+  "protocol": "arcont-bridge",
+  "request_id": "godot-script-create",
+  "result": {
+    "capability": "godot.structured.control",
+    "exit_code": 0,
+    "ok": true,
+    "operation": "invoke",
+    "permission": "explicit-project-write",
+    "project": "/workspace/scratch/bfbeef95f39f/validation-final/structured-game",
+    "protocol": "arcont-agent-control",
+    "result": {
+      "ok": true,
+      "protocol_version": 1,
+      "result": {
+        "path": "scripts/player.gd",
+        "previous_revision": null,
+        "revision": "da17a0cb679526f138a87ba0d2c198e4d9333b437029603a05d89317ec3d010d",
+        "validation": {
+          "evidence": ".arcont/runs/structured/e670ef154c0a485c81afe2fd53a716b6",
+          "exit_code": 0,
+          "ok": true,
+          "result": {
+            "class": "GDScript",
+            "ok": true
+          },
+          "stderr_tail": "",
+          "stdout_tail": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\n"
+        }
+      },
+      "write_performed": true
+    },
+    "schema_version": 1,
+    "status": "completed",
+    "stderr": null
+  },
+  "version": 1
+}

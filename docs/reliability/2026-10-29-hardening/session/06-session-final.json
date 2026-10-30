@@ -1,0 +1,618 @@
+{
+  "ok": true,
+  "operation": "development.session.inspect",
+  "protocol": "arcont-bridge",
+  "request_id": "development-session-inspect",
+  "result": {
+    "ok": true,
+    "result": {
+      "environment": {
+        "current_project_intent_sha256": "53de4aba700e6dcac67fb704451e928e02b8e29e7b6571388ab1bc43f256c38e",
+        "current_registry_sha256": "28e71a2a3373b99eb7299e15f3d8a0744d3ab17725f613faf11fffdcc490dc3f",
+        "current_toolchain_sha256": "42f85cb7c19031ede4f13bfe903d723d1ca71fbdaf338c29ac5ed8b7ee6abd1b",
+        "intent_matches": true,
+        "project_execution_matches": true,
+        "registry_matches": true,
+        "toolchain_matches": true
+      },
+      "next_milestone": null,
+      "pending_run": null,
+      "remaining": {
+        "execution_steps": 12,
+        "failed_runs": 2,
+        "plan_runs": 2,
+        "write_steps": 9
+      },
+      "session": {
+        "budgets": {
+          "max_execution_steps": 24,
+          "max_failed_runs": 2,
+          "max_plan_runs": 4,
+          "max_write_steps": 16
+        },
+        "capability_allowlist": [
+          "godot.structured.control"
+        ],
+        "counters": {
+          "execution_steps": 12,
+          "failed_runs": 0,
+          "milestones_completed": 2,
+          "plan_runs": 2,
+          "write_steps": 7
+        },
+        "goal": "Create a tiny playable third-person movement prototype through bounded milestones.",
+        "history": [
+          {
+            "completion_evidence_ok": true,
+            "failed_step": null,
+            "milestone_id": "movement",
+            "ok": true,
+            "plan_id": "movement_core",
+            "plan_sha256": "5a46d962c36ebe234f21c52cf1ba56f879120a9da3f34b790757d07d6bd7a980",
+            "receipt": ".arcont/development-sessions/prototype/runs/run-001-ec797d123899.json",
+            "receipt_sha256": "921c4f9530aeb66e31e784872cd0980208ef9406d95bc8eb5d8895a232ad7198",
+            "run_id": "run-001-ec797d123899",
+            "status": "completed",
+            "steps_completed": 8,
+            "write_steps": 6
+          },
+          {
+            "completion_evidence_ok": true,
+            "failed_step": null,
+            "milestone_id": "verification",
+            "ok": true,
+            "plan_id": "verify_refine",
+            "plan_sha256": "8f0e1c8e9d0a863315d8b72fcc66429245e0b1b0ad4f5dd4b1a8e058361defad",
+            "receipt": ".arcont/development-sessions/prototype/runs/run-002-e01795db1211.json",
+            "receipt_sha256": "947858d886a28a78cc31e0669bca55136c554fab62b74d96d67fd38b85664445",
+            "run_id": "run-002-e01795db1211",
+            "status": "completed",
+            "steps_completed": 4,
+            "write_steps": 1
+          }
+        ],
+        "id": "prototype",
+        "milestones": [
+          {
+            "acceptance": [
+              {
+                "checks": [
+                  {
+                    "capability": "godot.structured.control",
+                    "expect": [
+                      {
+                        "op": "equals",
+                        "pointer": "/result/result/action",
+                        "value": "move_forward"
+                      }
+                    ],
+                    "kind": "invoke",
+                    "operation": "input.action.set",
+                    "request_match": {
+                      "action": "move_forward"
+                    }
+                  },
+                  {
+                    "capability": "godot.structured.control",
+                    "expect": [
+                      {
+                        "op": "equals",
+                        "pointer": "/result/result/action",
+                        "value": "move_back"
+                      }
+                    ],
+                    "kind": "invoke",
+                    "operation": "input.action.set",
+                    "request_match": {
+                      "action": "move_back"
+                    }
+                  },
+                  {
+                    "capability": "godot.structured.control",
+                    "expect": [
+                      {
+                        "op": "equals",
+                        "pointer": "/result/result/action",
+                        "value": "move_left"
+                      }
+                    ],
+                    "kind": "invoke",
+                    "operation": "input.action.set",
+                    "request_match": {
+                      "action": "move_left"
+                    }
+                  },
+                  {
+                    "capability": "godot.structured.control",
+                    "expect": [
+                      {
+                        "op": "equals",
+                        "pointer": "/result/result/action",
+                        "value": "move_right"
+                      }
+                    ],
+                    "kind": "invoke",
+                    "operation": "input.action.set",
+                    "request_match": {
+                      "action": "move_right"
+                    }
+                  }
+                ],
+                "description": "All four input actions are configured.",
+                "verification_level": "static"
+              },
+              {
+                "checks": [
+                  {
+                    "capability": "godot.structured.control",
+                    "expect": [
+                      {
+                        "op": "equals",
+                        "pointer": "/result/result/validation/ok",
+                        "value": true
+                      }
+                    ],
+                    "kind": "invoke",
+                    "operation": "script.create",
+                    "request_match": {
+                      "path": "scripts/player.gd"
+                    }
+                  }
+                ],
+                "description": "Player GDScript validates.",
+                "verification_level": "static"
+              },
+              {
+                "checks": [
+                  {
+                    "capability": "godot.structured.control",
+                    "expect": [
+                      {
+                        "op": "exists",
+                        "pointer": "/result/result/revision"
+                      }
+                    ],
+                    "kind": "invoke",
+                    "operation": "scene.edit",
+                    "request_match": {
+                      "scene": "scenes/main.tscn"
+                    }
+                  }
+                ],
+                "description": "Main scene edit commits.",
+                "verification_level": "static"
+              }
+            ],
+            "completed_by_run": "run-001-ec797d123899",
+            "completion_evidence": [
+              {
+                "criterion": {
+                  "checks": [
+                    {
+                      "capability": "godot.structured.control",
+                      "expect": [
+                        {
+                          "op": "equals",
+                          "pointer": "/result/result/action",
+                          "value": "move_forward"
+                        }
+                      ],
+                      "kind": "invoke",
+                      "operation": "input.action.set",
+                      "request_match": {
+                        "action": "move_forward"
+                      }
+                    },
+                    {
+                      "capability": "godot.structured.control",
+                      "expect": [
+                        {
+                          "op": "equals",
+                          "pointer": "/result/result/action",
+                          "value": "move_back"
+                        }
+                      ],
+                      "kind": "invoke",
+                      "operation": "input.action.set",
+                      "request_match": {
+                        "action": "move_back"
+                      }
+                    },
+                    {
+                      "capability": "godot.structured.control",
+                      "expect": [
+                        {
+                          "op": "equals",
+                          "pointer": "/result/result/action",
+                          "value": "move_left"
+                        }
+                      ],
+                      "kind": "invoke",
+                      "operation": "input.action.set",
+                      "request_match": {
+                        "action": "move_left"
+                      }
+                    },
+                    {
+                      "capability": "godot.structured.control",
+                      "expect": [
+                        {
+                          "op": "equals",
+                          "pointer": "/result/result/action",
+                          "value": "move_right"
+                        }
+                      ],
+                      "kind": "invoke",
+                      "operation": "input.action.set",
+                      "request_match": {
+                        "action": "move_right"
+                      }
+                    }
+                  ],
+                  "description": "All four input actions are configured.",
+                  "verification_level": "static"
+                },
+                "criterion_index": 0,
+                "ok": true,
+                "step_ids": [
+                  "forward",
+                  "back",
+                  "left",
+                  "right"
+                ],
+                "steps": [
+                  {
+                    "evidence_ok": true,
+                    "matching_checks": [
+                      0
+                    ],
+                    "step_id": "forward"
+                  },
+                  {
+                    "evidence_ok": true,
+                    "matching_checks": [
+                      1
+                    ],
+                    "step_id": "back"
+                  },
+                  {
+                    "evidence_ok": true,
+                    "matching_checks": [
+                      2
+                    ],
+                    "step_id": "left"
+                  },
+                  {
+                    "evidence_ok": true,
+                    "matching_checks": [
+                      3
+                    ],
+                    "step_id": "right"
+                  }
+                ],
+                "verification_level": "static"
+              },
+              {
+                "criterion": {
+                  "checks": [
+                    {
+                      "capability": "godot.structured.control",
+                      "expect": [
+                        {
+                          "op": "equals",
+                          "pointer": "/result/result/validation/ok",
+                          "value": true
+                        }
+                      ],
+                      "kind": "invoke",
+                      "operation": "script.create",
+                      "request_match": {
+                        "path": "scripts/player.gd"
+                      }
+                    }
+                  ],
+                  "description": "Player GDScript validates.",
+                  "verification_level": "static"
+                },
+                "criterion_index": 1,
+                "ok": true,
+                "step_ids": [
+                  "script"
+                ],
+                "steps": [
+                  {
+                    "evidence_ok": true,
+                    "matching_checks": [
+                      0
+                    ],
+                    "step_id": "script"
+                  }
+                ],
+                "verification_level": "static"
+              },
+              {
+                "criterion": {
+                  "checks": [
+                    {
+                      "capability": "godot.structured.control",
+                      "expect": [
+                        {
+                          "op": "exists",
+                          "pointer": "/result/result/revision"
+                        }
+                      ],
+                      "kind": "invoke",
+                      "operation": "scene.edit",
+                      "request_match": {
+                        "scene": "scenes/main.tscn"
+                      }
+                    }
+                  ],
+                  "description": "Main scene edit commits.",
+                  "verification_level": "static"
+                },
+                "criterion_index": 2,
+                "ok": true,
+                "step_ids": [
+                  "scene_edit"
+                ],
+                "steps": [
+                  {
+                    "evidence_ok": true,
+                    "matching_checks": [
+                      0
+                    ],
+                    "step_id": "scene_edit"
+                  }
+                ],
+                "verification_level": "static"
+              }
+            ],
+            "completion_note": "Movement scaffold plan completed with all machine-readable expectations.",
+            "goal": "Create WASD input, player movement code and the Player scene node.",
+            "id": "movement",
+            "status": "completed"
+          },
+          {
+            "acceptance": [
+              {
+                "checks": [
+                  {
+                    "capability": "godot.structured.control",
+                    "expect": [
+                      {
+                        "op": "equals",
+                        "pointer": "/result/result/extends",
+                        "value": "CharacterBody3D"
+                      }
+                    ],
+                    "kind": "invoke",
+                    "operation": "script.inspect",
+                    "request_match": {
+                      "path": "scripts/player.gd"
+                    }
+                  }
+                ],
+                "description": "Script extends CharacterBody3D.",
+                "verification_level": "static"
+              },
+              {
+                "checks": [
+                  {
+                    "capability": "godot.structured.control",
+                    "expect": [
+                      {
+                        "op": "exists",
+                        "pointer": "/result/result/revision"
+                      }
+                    ],
+                    "kind": "invoke",
+                    "operation": "scene.inspect",
+                    "request_match": {
+                      "scene": "scenes/main.tscn"
+                    }
+                  }
+                ],
+                "description": "Main scene inspection succeeds.",
+                "verification_level": "static"
+              },
+              {
+                "checks": [
+                  {
+                    "capability": "godot.structured.control",
+                    "expect": [
+                      {
+                        "op": "exists",
+                        "pointer": "/result/result/revision"
+                      }
+                    ],
+                    "kind": "invoke",
+                    "operation": "script.function.replace",
+                    "request_match": {
+                      "function": "_physics_process",
+                      "path": "scripts/player.gd"
+                    }
+                  },
+                  {
+                    "capability": "godot.structured.control",
+                    "expect": [
+                      {
+                        "op": "exists",
+                        "pointer": "/result/result/revision"
+                      }
+                    ],
+                    "kind": "invoke",
+                    "operation": "script.inspect",
+                    "request_match": {
+                      "path": "scripts/player.gd"
+                    }
+                  }
+                ],
+                "description": "Movement function is patched and the script inspected.",
+                "verification_level": "static"
+              }
+            ],
+            "completed_by_run": "run-002-e01795db1211",
+            "completion_evidence": [
+              {
+                "criterion": {
+                  "checks": [
+                    {
+                      "capability": "godot.structured.control",
+                      "expect": [
+                        {
+                          "op": "equals",
+                          "pointer": "/result/result/extends",
+                          "value": "CharacterBody3D"
+                        }
+                      ],
+                      "kind": "invoke",
+                      "operation": "script.inspect",
+                      "request_match": {
+                        "path": "scripts/player.gd"
+                      }
+                    }
+                  ],
+                  "description": "Script extends CharacterBody3D.",
+                  "verification_level": "static"
+                },
+                "criterion_index": 0,
+                "ok": true,
+                "step_ids": [
+                  "script_before"
+                ],
+                "steps": [
+                  {
+                    "evidence_ok": true,
+                    "matching_checks": [
+                      0
+                    ],
+                    "step_id": "script_before"
+                  }
+                ],
+                "verification_level": "static"
+              },
+              {
+                "criterion": {
+                  "checks": [
+                    {
+                      "capability": "godot.structured.control",
+                      "expect": [
+                        {
+                          "op": "exists",
+                          "pointer": "/result/result/revision"
+                        }
+                      ],
+                      "kind": "invoke",
+                      "operation": "scene.inspect",
+                      "request_match": {
+                        "scene": "scenes/main.tscn"
+                      }
+                    }
+                  ],
+                  "description": "Main scene inspection succeeds.",
+                  "verification_level": "static"
+                },
+                "criterion_index": 1,
+                "ok": true,
+                "step_ids": [
+                  "scene_check"
+                ],
+                "steps": [
+                  {
+                    "evidence_ok": true,
+                    "matching_checks": [
+                      0
+                    ],
+                    "step_id": "scene_check"
+                  }
+                ],
+                "verification_level": "static"
+              },
+              {
+                "criterion": {
+                  "checks": [
+                    {
+                      "capability": "godot.structured.control",
+                      "expect": [
+                        {
+                          "op": "exists",
+                          "pointer": "/result/result/revision"
+                        }
+                      ],
+                      "kind": "invoke",
+                      "operation": "script.function.replace",
+                      "request_match": {
+                        "function": "_physics_process",
+                        "path": "scripts/player.gd"
+                      }
+                    },
+                    {
+                      "capability": "godot.structured.control",
+                      "expect": [
+                        {
+                          "op": "exists",
+                          "pointer": "/result/result/revision"
+                        }
+                      ],
+                      "kind": "invoke",
+                      "operation": "script.inspect",
+                      "request_match": {
+                        "path": "scripts/player.gd"
+                      }
+                    }
+                  ],
+                  "description": "Movement function is patched and the script inspected.",
+                  "verification_level": "static"
+                },
+                "criterion_index": 2,
+                "ok": true,
+                "step_ids": [
+                  "patch_movement",
+                  "script_after"
+                ],
+                "steps": [
+                  {
+                    "evidence_ok": true,
+                    "matching_checks": [
+                      0
+                    ],
+                    "step_id": "patch_movement"
+                  },
+                  {
+                    "evidence_ok": true,
+                    "matching_checks": [
+                      1
+                    ],
+                    "step_id": "script_after"
+                  }
+                ],
+                "verification_level": "static"
+              }
+            ],
+            "completion_note": "Inspection and bounded function patch passed.",
+            "goal": "Inspect and refine the generated movement implementation.",
+            "id": "verification",
+            "status": "completed"
+          }
+        ],
+        "permissions": {
+          "project_write": true
+        },
+        "project_execution_sha256": "168ebf993d18e093bb6ab4361e0723c7430ce6d98b24d4a493161a9236daf488",
+        "project_intent_sha256": "53de4aba700e6dcac67fb704451e928e02b8e29e7b6571388ab1bc43f256c38e",
+        "project_root": "/workspace/scratch/bfbeef95f39f/validation-final/session-game",
+        "protocol": "arcont-development-session",
+        "registry_sha256": "28e71a2a3373b99eb7299e15f3d8a0744d3ab17725f613faf11fffdcc490dc3f",
+        "revision": "e5dccf84639f373732b8011fe7e57b9f67f10043a3528618cf836c5b5c8bdcc9",
+        "sequence": 2,
+        "status": "completed",
+        "stop_reason": "all-milestones-completed",
+        "toolchain_sha256": "42f85cb7c19031ede4f13bfe903d723d1ca71fbdaf338c29ac5ed8b7ee6abd1b",
+        "version": 1
+      }
+    },
+    "write_performed": false
+  },
+  "version": 1
+}

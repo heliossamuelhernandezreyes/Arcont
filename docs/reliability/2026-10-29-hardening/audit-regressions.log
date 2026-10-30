@@ -1,0 +1,23 @@
+test_all_png_consumers_reject_bad_crc_missing_end_and_expansion (tests.test_audit_hardening.AuditHardeningTests.test_all_png_consumers_reject_bad_crc_missing_end_and_expansion) ... ok
+test_empty_and_malformed_model_reports_are_not_approved (tests.test_audit_hardening.AuditHardeningTests.test_empty_and_malformed_model_reports_are_not_approved) ... ok
+test_imported_helper_and_project_adapter_changes_invalidate_pins (tests.test_audit_hardening.AuditHardeningTests.test_imported_helper_and_project_adapter_changes_invalidate_pins) ... ok
+test_indeterminate_process_termination_pauses_and_preserves_pending_review (tests.test_audit_hardening.AuditHardeningTests.test_indeterminate_process_termination_pauses_and_preserves_pending_review) ... ok
+test_intent_and_authoring_refuse_external_symlink_ancestors (tests.test_audit_hardening.AuditHardeningTests.test_intent_and_authoring_refuse_external_symlink_ancestors) ... ok
+test_inventory_cannot_satisfy_playtest_and_wrong_result_does_not_pass (tests.test_audit_hardening.AuditHardeningTests.test_inventory_cannot_satisfy_playtest_and_wrong_result_does_not_pass) ... ok
+test_legacy_text_cannot_complete_a_session (tests.test_audit_hardening.AuditHardeningTests.test_legacy_text_cannot_complete_a_session) ... ok
+test_map_publication_crash_never_exposes_mixed_generations (tests.test_audit_hardening.AuditHardeningTests.test_map_publication_crash_never_exposes_mixed_generations) ... ok
+test_matrix_detects_implemented_feature_reported_missing (tests.test_audit_hardening.AuditHardeningTests.test_matrix_detects_implemented_feature_reported_missing) ... ok
+test_read_aliases_cannot_dispatch_any_writer_before_engine_execution (tests.test_audit_hardening.AuditHardeningTests.test_read_aliases_cannot_dispatch_any_writer_before_engine_execution) ... ok
+test_runtime_criterion_cannot_be_defined_as_inventory (tests.test_audit_hardening.AuditHardeningTests.test_runtime_criterion_cannot_be_defined_as_inventory) ... ok
+test_runtime_without_executor_is_not_available (tests.test_audit_hardening.AuditHardeningTests.test_runtime_without_executor_is_not_available) ... ok
+test_structured_unknown_fields_and_missing_fields_fail_closed (tests.test_audit_hardening.AuditHardeningTests.test_structured_unknown_fields_and_missing_fields_fail_closed) ... ok
+test_supervisor_maps_proc_pids_into_its_own_namespace (tests.test_audit_hardening.AuditHardeningTests.test_supervisor_maps_proc_pids_into_its_own_namespace) ... ok
+test_timeout_cancels_detached_adapter_before_any_late_write (tests.test_audit_hardening.AuditHardeningTests.test_timeout_cancels_detached_adapter_before_any_late_write) ... ok
+test_validate_rejects_non_executable_engine (tests.test_audit_hardening.AuditHardeningTests.test_validate_rejects_non_executable_engine) ... ok
+test_writer_permissions_are_checked_before_dispatch (tests.test_audit_hardening.AuditHardeningTests.test_writer_permissions_are_checked_before_dispatch) ... ok
+test_imported_class_can_be_replaced_and_invalid_edit_preserves_bytes (tests.test_audit_hardening.NativeAuditTests.test_imported_class_can_be_replaced_and_invalid_edit_preserves_bytes) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 15.010s
+
+OK

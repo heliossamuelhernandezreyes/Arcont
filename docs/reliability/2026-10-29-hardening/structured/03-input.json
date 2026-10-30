@@ -1,0 +1,170 @@
+[
+  {
+    "ok": true,
+    "operation": "godot.input.action.set",
+    "protocol": "arcont-bridge",
+    "request_id": "godot-input-action-set",
+    "result": {
+      "capability": "godot.structured.control",
+      "exit_code": 0,
+      "ok": true,
+      "operation": "invoke",
+      "permission": "explicit-project-write",
+      "project": "/workspace/scratch/bfbeef95f39f/validation-final/structured-game",
+      "protocol": "arcont-agent-control",
+      "result": {
+        "ok": true,
+        "protocol_version": 1,
+        "result": {
+          "action": "move_forward",
+          "engine": {
+            "evidence": ".arcont/runs/structured/b34749f40c204b749e58ff76acb65d7a",
+            "exit_code": 0,
+            "ok": true,
+            "result": {
+              "action": "move_forward",
+              "deadzone": 0.2,
+              "event_count": 1,
+              "ok": true
+            },
+            "stderr_tail": "",
+            "stdout_tail": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\n"
+          },
+          "previous_revision": "bfb61956f30771edc493683edebe9d40d88137d8ac9584ada4c2720885419a1c",
+          "revision": "81e59a2efd2db4bf166e0e98604b2e2126eeed63ed8c5d88e2819cc111df306b"
+        },
+        "write_performed": true
+      },
+      "schema_version": 1,
+      "status": "completed",
+      "stderr": null
+    },
+    "version": 1
+  },
+  {
+    "ok": true,
+    "operation": "godot.input.action.set",
+    "protocol": "arcont-bridge",
+    "request_id": "godot-input-action-set",
+    "result": {
+      "capability": "godot.structured.control",
+      "exit_code": 0,
+      "ok": true,
+      "operation": "invoke",
+      "permission": "explicit-project-write",
+      "project": "/workspace/scratch/bfbeef95f39f/validation-final/structured-game",
+      "protocol": "arcont-agent-control",
+      "result": {
+        "ok": true,
+        "protocol_version": 1,
+        "result": {
+          "action": "move_back",
+          "engine": {
+            "evidence": ".arcont/runs/structured/f12f757e5e36444f913145af3a8311f6",
+            "exit_code": 0,
+            "ok": true,
+            "result": {
+              "action": "move_back",
+              "deadzone": 0.2,
+              "event_count": 1,
+              "ok": true
+            },
+            "stderr_tail": "",
+            "stdout_tail": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\n"
+          },
+          "previous_revision": "81e59a2efd2db4bf166e0e98604b2e2126eeed63ed8c5d88e2819cc111df306b",
+          "revision": "fd1725d198051c95430bc6cc86ddd7d5b5c05bbed34961082dbee6bfac3a5994"
+        },
+        "write_performed": true
+      },
+      "schema_version": 1,
+      "status": "completed",
+      "stderr": null
+    },
+    "version": 1
+  },
+  {
+    "ok": true,
+    "operation": "godot.input.action.set",
+    "protocol": "arcont-bridge",
+    "request_id": "godot-input-action-set",
+    "result": {
+      "capability": "godot.structured.control",
+      "exit_code": 0,
+      "ok": true,
+      "operation": "invoke",
+      "permission": "explicit-project-write",
+      "project": "/workspace/scratch/bfbeef95f39f/validation-final/structured-game",
+      "protocol": "arcont-agent-control",
+      "result": {
+        "ok": true,
+        "protocol_version": 1,
+        "result": {
+          "action": "move_left",
+          "engine": {
+            "evidence": ".arcont/runs/structured/e295f437d4f849a4843112588056009a",
+            "exit_code": 0,
+            "ok": true,
+            "result": {
+              "action": "move_left",
+              "deadzone": 0.2,
+              "event_count": 1,
+              "ok": true
+            },
+            "stderr_tail": "",
+            "stdout_tail": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\n"
+          },
+          "previous_revision": "fd1725d198051c95430bc6cc86ddd7d5b5c05bbed34961082dbee6bfac3a5994",
+          "revision": "21edb04901e687fa51b524fbd06cc7efbd25291fa0b5f5ca266a7bb18d201e70"
+        },
+        "write_performed": true
+      },
+      "schema_version": 1,
+      "status": "completed",
+      "stderr": null
+    },
+    "version": 1
+  },
+  {
+    "ok": true,
+    "operation": "godot.input.action.set",
+    "protocol": "arcont-bridge",
+    "request_id": "godot-input-action-set",
+    "result": {
+      "capability": "godot.structured.control",
+      "exit_code": 0,
+      "ok": true,
+      "operation": "invoke",
+      "permission": "explicit-project-write",
+      "project": "/workspace/scratch/bfbeef95f39f/validation-final/structured-game",
+      "protocol": "arcont-agent-control",
+      "result": {
+        "ok": true,
+        "protocol_version": 1,
+        "result": {
+          "action": "move_right",
+          "engine": {
+            "evidence": ".arcont/runs/structured/4661703d6ea24545bd44dbcb9609135b",
+            "exit_code": 0,
+            "ok": true,
+            "result": {
+              "action": "move_right",
+              "deadzone": 0.2,
+              "event_count": 1,
+              "ok": true
+            },
+            "stderr_tail": "",
+            "stdout_tail": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\n"
+          },
+          "previous_revision": "21edb04901e687fa51b524fbd06cc7efbd25291fa0b5f5ca266a7bb18d201e70",
+          "revision": "b4b9cd468f10f692c6a41b3871d52767ea2e8a59a59a2252602bd126f5f4f0f6"
+        },
+        "write_performed": true
+      },
+      "schema_version": 1,
+      "status": "completed",
+      "stderr": null
+    },
+    "version": 1
+  }
+]

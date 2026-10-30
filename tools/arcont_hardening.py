@@ -47,8 +47,8 @@ def validate_manifest(repo: Path) -> list[str]:
     if not path.exists():
         return ["missing arcont.manifest.json"]
     m = load_json(path)
-    if m.get("arcont_version") != "1.1.0":
-        errors.append("manifest: expected arcont_version 1.1.0")
+    if m.get("arcont_version") != "1.2.0":
+        errors.append("manifest: expected arcont_version 1.2.0")
     if m.get("production_game_code_allowed") is not False:
         errors.append("manifest: production_game_code_allowed must be false")
     if m.get("embedded_godot_project_allowed") is not False:

@@ -7,8 +7,12 @@
     "spec": {
       "id": "prototype",
       "goal": "Build a small playable third-person prototype.",
-      "capability_allowlist": ["godot.structured.control"],
-      "permissions": {"project_write": true},
+      "capability_allowlist": [
+        "godot.structured.control"
+      ],
+      "permissions": {
+        "project_write": true
+      },
       "budgets": {
         "max_plan_runs": 6,
         "max_execution_steps": 48,
@@ -19,12 +23,76 @@
         {
           "id": "movement",
           "goal": "Create input and player movement.",
-          "acceptance": ["Player code validates and the Player is in the main scene."]
+          "acceptance": [
+            {
+              "description": "Player script validates.",
+              "verification_level": "static",
+              "checks": [
+                {
+                  "kind": "invoke",
+                  "capability": "godot.structured.control",
+                  "operation": "script.create",
+                  "request_match": {
+                    "path": "scripts/player.gd"
+                  },
+                  "expect": [
+                    {
+                      "pointer": "/result/result/validation/ok",
+                      "op": "equals",
+                      "value": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "description": "Main scene edit commits.",
+              "verification_level": "static",
+              "checks": [
+                {
+                  "kind": "invoke",
+                  "capability": "godot.structured.control",
+                  "operation": "scene.edit",
+                  "request_match": {
+                    "scene": "scenes/main.tscn"
+                  },
+                  "expect": [
+                    {
+                      "pointer": "/result/result/revision",
+                      "op": "exists"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         },
         {
           "id": "verification",
           "goal": "Inspect and refine the movement implementation.",
-          "acceptance": ["Final script and scene expectations pass."]
+          "acceptance": [
+            {
+              "description": "Final script has the expected base type.",
+              "verification_level": "static",
+              "checks": [
+                {
+                  "kind": "invoke",
+                  "capability": "godot.structured.control",
+                  "operation": "script.inspect",
+                  "request_match": {
+                    "path": "scripts/player.gd"
+                  },
+                  "expect": [
+                    {
+                      "pointer": "/result/result/extends",
+                      "op": "equals",
+                      "value": "CharacterBody3D"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     }

@@ -1,4 +1,5 @@
 schema_version: 1
+# Local tool evidence is checked by tools/capability_matrix.py in doctor.
 engine:
   name: Godot
   version: 4.7.2-stable
@@ -64,6 +65,11 @@ capabilities:
       - docs/knowledge/GODOT_2D_SPRITE_PIPELINE.md
       - schemas/sprite-animation-manifest.schema.json
       - tools/sprite_audit.py
+      - tools/png_sprite_normalize.py
+      - tools/png_sprite_audit.py
+      - tools/png_integrity.py
+      - tests/test_png_sprite_normalize.py
+      - tests/test_png_sprite_audit.py
       - external:heliossamuelhernandezreyes/Godot-juegos-2d/Mortofe/art/sprite_manifest.json
       - external_run:37261303991
     validated:
@@ -72,13 +78,13 @@ capabilities:
       - frame_consistency_requirements_defined
       - godot_mobile_import_profile_requirements_defined
       - manifest_schema_implemented
+      - deterministic_normalization_implemented_tested
+      - alpha_bounds_and_baseline_drift_checks_implemented_tested
       - svg_canvas_audit_tool_implemented
       - missing_resource_audit_implemented
       - first_mortofe_player_and_enemy_sprite_ingest
       - cross_repo_sprite_audit_in_consumer_ci
     missing:
-      - normalization_tool
-      - alpha_bounds_and_baseline_drift_checks
       - deterministic_atlas_builder
       - godot_import_adapter
       - multi_frame_animation_ingest
@@ -218,6 +224,6 @@ next_actions:
   - real_android_mortofe_run
   - locomotion_behavior_tests
   - combat_behavior_tests
-  - sprite_normalization_and_animation_tooling
+  - deterministic_atlas_and_animation_tooling
   - tilemaplayer_audit
   - android_touch_probe

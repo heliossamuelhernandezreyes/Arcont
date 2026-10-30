@@ -13,13 +13,21 @@ import * as z from "zod/v4";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ARCONT_ROOT = fs.realpathSync(path.resolve(HERE, "../.."));
-const SERVER_VERSION = "0.1.0";
+const SERVER_VERSION = "0.2.0";
 const MAX_BRIDGE_STDOUT = 32 * 1024 * 1024;
 const MAX_BRIDGE_STDERR = 2 * 1024 * 1024;
 const DEFAULT_TIMEOUT_MS = 900_000;
 const READ_TIMEOUT_MS = 120_000;
 const MAX_BRIDGE_CONCURRENCY = 4;
 let activeBridgeProcesses = 0;
+const bridgeChildren = new Set();
+
+async function cancelActiveBridges() {
+  await Promise.all([...bridgeChildren].map(child => new Promise(resolve => {
+    child.once("close", resolve);
+    child.kill("SIGTERM");
+  })));
+}
 
 function fail(message) {
   throw new Error(message);
@@ -129,7 +137,7 @@ function constantTimeTokenMatch(actual, expected) {
 function boundedAppend(current, chunk, limit, label, child) {
   const next = current + chunk.toString("utf8");
   if (Buffer.byteLength(next, "utf8") > limit) {
-    child.kill("SIGKILL");
+    child.kill("SIGTERM");
     throw new Error(`${label} exceeded output limit`);
   }
   return next;
@@ -151,6 +159,8 @@ function runBridge(config, operation, args = {}, timeoutMs = DEFAULT_TIMEOUT_MS)
       arguments: args
     };
     const commandArgs = [
+      path.join(ARCONT_ROOT, "tools/process_supervisor.py"),
+      "--timeout", String(timeoutMs / 1000), "--", config.python,
       path.join(ARCONT_ROOT, "tools/arcont_bridge.py"),
       "--project",
       config.project,
@@ -170,6 +180,7 @@ function runBridge(config, operation, args = {}, timeoutMs = DEFAULT_TIMEOUT_MS)
         shell: false,
         env: childEnv
       });
+      bridgeChildren.add(child);
     } catch (error) {
       activeBridgeProcesses = Math.max(0, activeBridgeProcesses - 1);
       reject(error);
@@ -178,6 +189,7 @@ function runBridge(config, operation, args = {}, timeoutMs = DEFAULT_TIMEOUT_MS)
     let stdout = "";
     let stderr = "";
     let settled = false;
+    let cancellationError = null;
     const finish = () => {
       if (!settled) {
         settled = true;
@@ -186,20 +198,18 @@ function runBridge(config, operation, args = {}, timeoutMs = DEFAULT_TIMEOUT_MS)
     };
     const timer = setTimeout(() => {
       if (!settled) {
-        child.kill("SIGKILL");
-        finish();
-        reject(new Error(`ARCONT bridge timed out after ${timeoutMs} ms`));
+        cancellationError = new Error("ARCONT supervisor exceeded deadline; cancellation requested");
+        child.kill("SIGTERM");
       }
-    }, timeoutMs);
+    }, timeoutMs + 10_000);
 
     child.stdout.on("data", chunk => {
       if (settled) return;
       try {
         stdout = boundedAppend(stdout, chunk, MAX_BRIDGE_STDOUT, "ARCONT bridge stdout", child);
       } catch (error) {
-        finish();
+        cancellationError = error;
         clearTimeout(timer);
-        reject(error);
       }
     });
     child.stderr.on("data", chunk => {
@@ -207,9 +217,8 @@ function runBridge(config, operation, args = {}, timeoutMs = DEFAULT_TIMEOUT_MS)
       try {
         stderr = boundedAppend(stderr, chunk, MAX_BRIDGE_STDERR, "ARCONT bridge stderr", child);
       } catch (error) {
-        finish();
+        cancellationError = error;
         clearTimeout(timer);
-        reject(error);
       }
     });
     child.on("error", error => {
@@ -219,9 +228,14 @@ function runBridge(config, operation, args = {}, timeoutMs = DEFAULT_TIMEOUT_MS)
       reject(error);
     });
     child.on("close", code => {
+      bridgeChildren.delete(child);
       if (settled) return;
       finish();
       clearTimeout(timer);
+      if (cancellationError) {
+        reject(cancellationError);
+        return;
+      }
       let parsed;
       try {
         parsed = JSON.parse(stdout);
@@ -240,9 +254,9 @@ function runBridge(config, operation, args = {}, timeoutMs = DEFAULT_TIMEOUT_MS)
     });
     child.stdin.on("error", error => {
       if (settled) return;
-      finish();
+      cancellationError = error;
+      child.kill("SIGTERM");
       clearTimeout(timer);
-      reject(error);
     });
     child.stdin.end(JSON.stringify(request));
   });
@@ -532,6 +546,7 @@ async function serveHttp(config) {
   );
 
   const close = async () => {
+    await cancelActiveBridges();
     await handler.close();
     await new Promise(resolve => httpServer.close(resolve));
   };
@@ -542,6 +557,10 @@ async function serveHttp(config) {
 async function main() {
   const config = parseCli(process.argv.slice(2));
   if (config.transport === "stdio") {
+    const close = () => void cancelActiveBridges().finally(() => process.exit(0));
+    process.once("SIGTERM", close);
+    process.once("SIGINT", close);
+    process.stdin.once("end", close);
     process.stderr.write(
       `ARCONT MCP stdio ready (${config.allowProjectWrite ? "read-write" : "read-only"}) for ${config.project}\n`
     );

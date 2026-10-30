@@ -1,0 +1,64 @@
+{
+  "ok": true,
+  "operation": "development.session.capabilities",
+  "protocol": "arcont-bridge",
+  "request_id": "development-session-capabilities",
+  "result": {
+    "ok": true,
+    "result": {
+      "budget_limits": {
+        "max_execution_steps": {
+          "default": 96,
+          "max": 256,
+          "min": 1
+        },
+        "max_failed_runs": {
+          "default": 4,
+          "max": 8,
+          "min": 0
+        },
+        "max_plan_runs": {
+          "default": 12,
+          "max": 32,
+          "min": 1
+        },
+        "max_write_steps": {
+          "default": 48,
+          "max": 96,
+          "min": 0
+        }
+      },
+      "eligible_capabilities": [
+        "asset-intake.control",
+        "godot.authoring.control",
+        "godot.structured.control",
+        "map-forge.editor.control",
+        "model-forge.control",
+        "production.control",
+        "project.bootstrap.control",
+        "public-asset.control"
+      ],
+      "execution_semantics": [
+        "one bounded ARCONT plan per execute request",
+        "no silent retry",
+        "failed plans stop and are recorded",
+        "session writes require exact session revision",
+        "plan capability allowlist must be a subset of session allowlist",
+        "project intent and ARCONT registry hashes are pinned for the session"
+      ],
+      "max_history": 32,
+      "max_milestones": 16,
+      "operations": [
+        "capabilities",
+        "create",
+        "inspect",
+        "execute"
+      ],
+      "protocol": "arcont-development-session",
+      "registry_sha256": "28e71a2a3373b99eb7299e15f3d8a0744d3ab17725f613faf11fffdcc490dc3f",
+      "version": 1
+    },
+    "write_performed": false
+  },
+  "version": 1
+}

@@ -41,12 +41,12 @@ def spec():
             {
                 "id": "movement",
                 "goal": "Create basic movement.",
-                "acceptance": ["Player moves under a validated input action."]
+                "acceptance": [{"description": "The inventory identifies a Godot project.", "verification_level": "static", "checks": [{"kind": "inspect-project", "expect": [{"pointer": "/project/engine", "op": "equals", "value": "godot"}]}]}]
             },
             {
                 "id": "runtime",
                 "goal": "Verify runtime behavior.",
-                "acceptance": ["A runtime check passes."]
+                "acceptance": [{"description": "The inventory identifies a Godot project.", "verification_level": "static", "checks": [{"kind": "inspect-project", "expect": [{"pointer": "/project/engine", "op": "equals", "value": "godot"}]}]}]
             }
         ]
     }
@@ -114,7 +114,8 @@ class DevelopmentSessionTests(unittest.TestCase):
                 "id": "inventory",
                 "ok": True,
                 "write_performed": False,
-                "expectations": [{"ok": True}]
+                "expectations": [{"ok": True}],
+                "kind": "inspect-project", "output": {"ok": True, "project": {"engine": "godot"}}
             }]
         }
         created = create(self.project, {"spec": spec()})
@@ -247,7 +248,8 @@ class DevelopmentSessionTests(unittest.TestCase):
                 "id": "inventory",
                 "ok": True,
                 "write_performed": False,
-                "expectations": [{"ok": True}]
+                "expectations": [{"ok": True}],
+                "kind": "inspect-project", "output": {"ok": True, "project": {"engine": "godot"}}
             }]
         }
         created = create(self.project, {"spec": spec()})
