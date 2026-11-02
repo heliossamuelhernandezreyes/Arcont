@@ -26,6 +26,7 @@
     ],
     "metadata_path": "ofl/googlesans/METADATA.pb",
     "subsets": [
+      "arabic",
       "armenian",
       "bengali",
       "canadian-aboriginal",
@@ -69,7 +70,7 @@
     "version": "1.1"
   },
   "review": {
-    "last_checked": "2026-09-21T15:56:58Z",
+    "last_checked": "2026-11-02T19:37:16Z",
     "license_verified": true,
     "metadata_verified": true,
     "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
@@ -87,6 +88,7 @@
     "variable"
   ],
   "tags": [
+    "arabic",
     "armenian",
     "bengali",
     "canadian-aboriginal",

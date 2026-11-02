@@ -26,6 +26,7 @@
     ],
     "metadata_path": "ofl/yrsa/METADATA.pb",
     "subsets": [
+      "gujarati",
       "latin",
       "latin-ext",
       "menu",
@@ -46,7 +47,7 @@
     "version": "1.1"
   },
   "review": {
-    "last_checked": "2026-09-12T09:45:29Z",
+    "last_checked": "2026-11-02T19:37:20Z",
     "license_verified": true,
     "metadata_verified": true,
     "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
@@ -65,6 +66,7 @@
   ],
   "tags": [
     "font",
+    "gujarati",
     "latin",
     "latin-ext",
     "menu",

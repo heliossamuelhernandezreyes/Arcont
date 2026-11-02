@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-26T16:15:11Z",
-  "record_count": 4656,
+  "generated_at": "2026-11-02T19:39:45Z",
+  "record_count": 4658,
   "records": [
     {
       "archive": {
@@ -75964,6 +75964,7 @@
         ],
         "metadata_path": "ofl/googlesans/METADATA.pb",
         "subsets": [
+          "arabic",
           "armenian",
           "bengali",
           "canadian-aboriginal",
@@ -76007,7 +76008,7 @@
         "version": "1.1"
       },
       "review": {
-        "last_checked": "2026-09-21T15:56:58Z",
+        "last_checked": "2026-11-02T19:37:16Z",
         "license_verified": true,
         "metadata_verified": true,
         "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
@@ -76025,6 +76026,7 @@
         "variable"
       ],
       "tags": [
+        "arabic",
         "armenian",
         "bengali",
         "canadian-aboriginal",
@@ -109322,6 +109324,108 @@
         "SANS_SERIF"
       ],
       "title": "Mada"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "font",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
+      "font_metadata": {
+        "copyright": [
+          "Copyright 2024 The Madhuban Project Authors (https://github.com/magictype/Madhuban)"
+        ],
+        "metadata_path": "ofl/madhuban/METADATA.pb",
+        "subsets": [
+          "devanagari",
+          "latin",
+          "latin-ext",
+          "menu",
+          "vietnamese"
+        ]
+      },
+      "id": "ARC-ASSET-GOOGLEFONTS-284CE84FFE227767",
+      "license": {
+        "ai_training_allowed": null,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://openfontlicense.org/",
+        "modification": true,
+        "name": "OFL-1.1",
+        "notes": "SIL Open Font License. Redistribution/modification must preserve the applicable copyright/license terms; Reserved Font Names may apply per family.",
+        "redistribution_allowed": true,
+        "share_alike": true,
+        "version": "1.1"
+      },
+      "review": {
+        "last_checked": "2026-11-02T19:37:17Z",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-11-02T19:37:17Z",
+        "asset_url": "https://github.com/google/fonts/tree/main/ofl/madhuban",
+        "author": "Jaikishan Patel",
+        "download_url": null,
+        "external_id": "ofl/madhuban",
+        "provider": "Google Fonts"
+      },
+      "styles": [
+        "variable"
+      ],
+      "tags": [
+        "devanagari",
+        "font",
+        "latin",
+        "latin-ext",
+        "menu",
+        "ofl",
+        "typography",
+        "vietnamese"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_files": [
+          "Madhuban[wght].ttf"
+        ],
+        "font_formats": [
+          "ttf"
+        ],
+        "font_variable": true,
+        "formats": [
+          "ttf"
+        ],
+        "lods": null,
+        "pbr": null,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "SANS_SERIF"
+      ],
+      "title": "Madhuban"
     },
     {
       "archive": {
@@ -214116,6 +214220,7 @@
         ],
         "metadata_path": "ofl/yrsa/METADATA.pb",
         "subsets": [
+          "gujarati",
           "latin",
           "latin-ext",
           "menu",
@@ -214136,7 +214241,7 @@
         "version": "1.1"
       },
       "review": {
-        "last_checked": "2026-09-12T09:45:29Z",
+        "last_checked": "2026-11-02T19:37:20Z",
         "license_verified": true,
         "metadata_verified": true,
         "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
@@ -214155,6 +214260,7 @@
       ],
       "tags": [
         "font",
+        "gujarati",
         "latin",
         "latin-ext",
         "menu",
@@ -361963,6 +362069,88 @@
         "3D"
       ],
       "title": "Mini Market"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "model",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "dimensions": [
+        "3d",
+        "2_5d"
+      ],
+      "id": "ARC-ASSET-KENNEY-B9F2B9D108B249A7",
+      "kenney_metadata": {
+        "category": [
+          "3D"
+        ],
+        "features": "🎞️",
+        "file_count": 30,
+        "tile_size": null
+      },
+      "license": {
+        "ai_training_allowed": null,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "modification": true,
+        "name": "CC0-1.0",
+        "notes": "Kenney states game assets on its asset pages are public-domain licensed (CC0); attribution is not required. This adapter additionally requires the individual asset page to contain an explicit Creative Commons CC0 marker before indexing it.",
+        "redistribution_allowed": true,
+        "share_alike": false,
+        "version": "1.0"
+      },
+      "review": {
+        "last_checked": "2026-11-02T19:38:28Z",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Metadata extracted from the individual official Kenney asset page. Record created only when that page explicitly states Creative Commons CC0."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-11-02T19:38:28Z",
+        "asset_url": "https://kenney.nl/assets/mini-shop",
+        "author": "Kenney",
+        "download_url": null,
+        "external_id": "mini-shop",
+        "provider": "Kenney"
+      },
+      "styles": [],
+      "tags": [
+        "kenney",
+        "shop"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "category_raw": "3D",
+        "collision": null,
+        "features_raw": "🎞️",
+        "font_formats": [],
+        "formats": [],
+        "lods": null,
+        "pack_file_count": 30,
+        "pbr": null,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "3D"
+      ],
+      "title": "Mini Shop"
     },
     {
       "archive": {
