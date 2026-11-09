@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-02T19:39:45Z",
-  "record_count": 4658,
+  "generated_at": "2026-11-09T19:58:09Z",
+  "record_count": 4659,
   "records": [
     {
       "archive": {
@@ -72870,6 +72870,106 @@
       ],
       "font_metadata": {
         "copyright": [
+          "Copyright 2026 The Geist Project Authors (https://github.com/vercel/geist-font)"
+        ],
+        "metadata_path": "ofl/geistserif/METADATA.pb",
+        "subsets": [
+          "latin",
+          "latin-ext",
+          "menu",
+          "vietnamese"
+        ]
+      },
+      "id": "ARC-ASSET-GOOGLEFONTS-BD0A305D549BC657",
+      "license": {
+        "ai_training_allowed": null,
+        "attribution_required": false,
+        "commercial_use": true,
+        "license_url": "https://openfontlicense.org/",
+        "modification": true,
+        "name": "OFL-1.1",
+        "notes": "SIL Open Font License. Redistribution/modification must preserve the applicable copyright/license terms; Reserved Font Names may apply per family.",
+        "redistribution_allowed": true,
+        "share_alike": true,
+        "version": "1.1"
+      },
+      "review": {
+        "last_checked": "2026-11-09T19:55:20Z",
+        "license_verified": true,
+        "metadata_verified": true,
+        "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
+      },
+      "schema_version": 1,
+      "source": {
+        "acquired_at": "2026-11-09T19:55:20Z",
+        "asset_url": "https://github.com/google/fonts/tree/main/ofl/geistserif",
+        "author": "Andrés Briganti, Mark Davis, Evil Rabbit, Guillermo Rauch",
+        "download_url": null,
+        "external_id": "ofl/geistserif",
+        "provider": "Google Fonts"
+      },
+      "styles": [
+        "variable"
+      ],
+      "tags": [
+        "font",
+        "latin",
+        "latin-ext",
+        "menu",
+        "ofl",
+        "typography",
+        "vietnamese"
+      ],
+      "technical": {
+        "animated": null,
+        "animation_count": null,
+        "audio_channels": null,
+        "audio_sample_rate": null,
+        "collision": null,
+        "font_files": [
+          "GeistSerif[ELSH].ttf"
+        ],
+        "font_formats": [
+          "ttf"
+        ],
+        "font_variable": true,
+        "formats": [
+          "ttf"
+        ],
+        "lods": null,
+        "pbr": null,
+        "rigged": null,
+        "texture_resolution": null,
+        "triangle_count": null
+      },
+      "themes": [
+        "SERIF"
+      ],
+      "title": "Geist Serif"
+    },
+    {
+      "archive": {
+        "local_path": null,
+        "mirrored_in_arcont": false,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "asset_type": "font",
+      "compatibility": {
+        "android": true,
+        "godot": true,
+        "unity": true,
+        "unreal": true,
+        "web": true
+      },
+      "dimensions": [
+        "shared",
+        "2d",
+        "2_5d",
+        "3d"
+      ],
+      "font_metadata": {
+        "copyright": [
           "Copyright 2022 The Gelasio Project Authors (https://github.com/SorkinType/Gelasio)",
           "Copyright 2022 The Gelasio Project Authors (https://github.com/SorkinType/Gelasio)"
         ],
@@ -113936,7 +114036,6 @@
         ],
         "metadata_path": "ofl/merriweathersans/METADATA.pb",
         "subsets": [
-          "cyrillic-ext",
           "latin",
           "latin-ext",
           "menu",
@@ -113957,7 +114056,7 @@
         "version": "1.1"
       },
       "review": {
-        "last_checked": "2026-09-12T09:45:25Z",
+        "last_checked": "2026-11-09T19:55:21Z",
         "license_verified": true,
         "metadata_verified": true,
         "notes": "Metadata parsed from the official google/fonts METADATA.pb. Family directory license class is preserved; family copyright metadata should be retained for redistribution."
@@ -113975,7 +114074,6 @@
         "variable"
       ],
       "tags": [
-        "cyrillic-ext",
         "font",
         "latin",
         "latin-ext",
@@ -361767,7 +361865,7 @@
           "3D"
         ],
         "features": "🎞️",
-        "file_count": 25,
+        "file_count": 40,
         "tile_size": null
       },
       "license": {
@@ -361783,7 +361881,7 @@
         "version": "1.0"
       },
       "review": {
-        "last_checked": "2026-09-12T10:00:14Z",
+        "last_checked": "2026-11-09T19:56:38Z",
         "license_verified": true,
         "metadata_verified": true,
         "notes": "Metadata extracted from the individual official Kenney asset page. Record created only when that page explicitly states Creative Commons CC0."
@@ -361813,7 +361911,7 @@
         "font_formats": [],
         "formats": [],
         "lods": null,
-        "pack_file_count": 25,
+        "pack_file_count": 40,
         "pbr": null,
         "rigged": null,
         "texture_resolution": null,

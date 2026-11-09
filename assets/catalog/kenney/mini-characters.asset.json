@@ -23,7 +23,7 @@
       "3D"
     ],
     "features": "🎞️",
-    "file_count": 25,
+    "file_count": 40,
     "tile_size": null
   },
   "license": {
@@ -39,7 +39,7 @@
     "version": "1.0"
   },
   "review": {
-    "last_checked": "2026-09-12T10:00:14Z",
+    "last_checked": "2026-11-09T19:56:38Z",
     "license_verified": true,
     "metadata_verified": true,
     "notes": "Metadata extracted from the individual official Kenney asset page. Record created only when that page explicitly states Creative Commons CC0."
@@ -69,7 +69,7 @@
     "font_formats": [],
     "formats": [],
     "lods": null,
-    "pack_file_count": 25,
+    "pack_file_count": 40,
     "pbr": null,
     "rigged": null,
     "texture_resolution": null,
