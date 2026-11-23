@@ -5,7 +5,7 @@
     "sha256": null,
     "size_bytes": null
   },
-  "asset_type": "model",
+  "asset_type": "game_asset_pack",
   "compatibility": {
     "android": true,
     "godot": true,
@@ -14,14 +14,14 @@
     "web": true
   },
   "dimensions": [
-    "3d",
-    "2_5d"
+    "shared",
+    "2d",
+    "2_5d",
+    "3d"
   ],
   "id": "ARC-ASSET-KENNEY-FE4FE27300F07141",
   "kenney_metadata": {
-    "category": [
-      "3D"
-    ],
+    "category": [],
     "features": "🎞️",
     "file_count": 80,
     "tile_size": null
@@ -39,7 +39,7 @@
     "version": "1.0"
   },
   "review": {
-    "last_checked": "2026-09-12T09:59:41Z",
+    "last_checked": "2026-11-23T21:33:43Z",
     "license_verified": true,
     "metadata_verified": true,
     "notes": "Metadata extracted from the individual official Kenney asset page. Record created only when that page explicitly states Creative Commons CC0."
@@ -63,7 +63,7 @@
     "animation_count": null,
     "audio_channels": null,
     "audio_sample_rate": null,
-    "category_raw": "3D",
+    "category_raw": null,
     "collision": null,
     "features_raw": "🎞️",
     "font_formats": [],
@@ -75,8 +75,6 @@
     "texture_resolution": null,
     "triangle_count": null
   },
-  "themes": [
-    "3D"
-  ],
+  "themes": [],
   "title": "Building Kit"
 }

@@ -5,7 +5,7 @@
     "sha256": null,
     "size_bytes": null
   },
-  "asset_type": "texture",
+  "asset_type": "game_asset_pack",
   "compatibility": {
     "android": true,
     "godot": true,
@@ -21,9 +21,7 @@
   ],
   "id": "ARC-ASSET-KENNEY-6BFA08ABFD335AEA",
   "kenney_metadata": {
-    "category": [
-      "Textures"
-    ],
+    "category": [],
     "features": null,
     "file_count": 15,
     "tile_size": null
@@ -41,7 +39,7 @@
     "version": "1.0"
   },
   "review": {
-    "last_checked": "2026-09-12T09:59:48Z",
+    "last_checked": "2026-11-23T21:33:50Z",
     "license_verified": true,
     "metadata_verified": true,
     "notes": "Metadata extracted from the individual official Kenney asset page. Record created only when that page explicitly states Creative Commons CC0."
@@ -65,7 +63,7 @@
     "animation_count": null,
     "audio_channels": null,
     "audio_sample_rate": null,
-    "category_raw": "Textures",
+    "category_raw": null,
     "collision": null,
     "features_raw": null,
     "font_formats": [],
@@ -77,8 +75,6 @@
     "texture_resolution": null,
     "triangle_count": null
   },
-  "themes": [
-    "Textures"
-  ],
+  "themes": [],
   "title": "Development Essentials"
 }

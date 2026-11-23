@@ -5,7 +5,7 @@
     "sha256": null,
     "size_bytes": null
   },
-  "asset_type": "audio",
+  "asset_type": "game_asset_pack",
   "compatibility": {
     "android": true,
     "godot": true,
@@ -21,9 +21,7 @@
   ],
   "id": "ARC-ASSET-KENNEY-5C1774DB0496E097",
   "kenney_metadata": {
-    "category": [
-      "Audio"
-    ],
+    "category": [],
     "features": null,
     "file_count": 50,
     "tile_size": null
@@ -41,7 +39,7 @@
     "version": "1.0"
   },
   "review": {
-    "last_checked": "2026-09-12T10:01:07Z",
+    "last_checked": "2026-11-23T21:35:14Z",
     "license_verified": true,
     "metadata_verified": true,
     "notes": "Metadata extracted from the individual official Kenney asset page. Record created only when that page explicitly states Creative Commons CC0."
@@ -65,7 +63,7 @@
     "animation_count": null,
     "audio_channels": null,
     "audio_sample_rate": null,
-    "category_raw": "Audio",
+    "category_raw": null,
     "collision": null,
     "features_raw": null,
     "font_formats": [],
@@ -77,8 +75,6 @@
     "texture_resolution": null,
     "triangle_count": null
   },
-  "themes": [
-    "Audio"
-  ],
+  "themes": [],
   "title": "UI Audio"
 }

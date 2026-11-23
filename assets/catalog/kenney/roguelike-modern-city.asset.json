@@ -5,7 +5,7 @@
     "sha256": null,
     "size_bytes": null
   },
-  "asset_type": "2d_asset",
+  "asset_type": "game_asset_pack",
   "compatibility": {
     "android": true,
     "godot": true,
@@ -14,14 +14,14 @@
     "web": true
   },
   "dimensions": [
+    "shared",
     "2d",
-    "2_5d"
+    "2_5d",
+    "3d"
   ],
   "id": "ARC-ASSET-KENNEY-EB1231BEF82F22A5",
   "kenney_metadata": {
-    "category": [
-      "2D"
-    ],
+    "category": [],
     "features": null,
     "file_count": 1036,
     "tile_size": null
@@ -39,7 +39,7 @@
     "version": "1.0"
   },
   "review": {
-    "last_checked": "2026-09-12T10:00:46Z",
+    "last_checked": "2026-11-23T21:34:51Z",
     "license_verified": true,
     "metadata_verified": true,
     "notes": "Metadata extracted from the individual official Kenney asset page. Record created only when that page explicitly states Creative Commons CC0."
@@ -63,7 +63,7 @@
     "animation_count": null,
     "audio_channels": null,
     "audio_sample_rate": null,
-    "category_raw": "2D",
+    "category_raw": null,
     "collision": null,
     "features_raw": null,
     "font_formats": [],
@@ -75,8 +75,6 @@
     "texture_resolution": null,
     "triangle_count": null
   },
-  "themes": [
-    "2D"
-  ],
+  "themes": [],
   "title": "Roguelike Modern City"
 }

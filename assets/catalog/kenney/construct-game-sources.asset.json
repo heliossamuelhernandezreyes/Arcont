@@ -21,9 +21,7 @@
   ],
   "id": "ARC-ASSET-KENNEY-8C857909434978B6",
   "kenney_metadata": {
-    "category": [
-      "Other"
-    ],
+    "category": [],
     "features": null,
     "file_count": 6,
     "tile_size": null
@@ -41,7 +39,7 @@
     "version": "1.0"
   },
   "review": {
-    "last_checked": "2026-09-12T09:59:46Z",
+    "last_checked": "2026-11-23T21:33:48Z",
     "license_verified": true,
     "metadata_verified": true,
     "notes": "Metadata extracted from the individual official Kenney asset page. Record created only when that page explicitly states Creative Commons CC0."
@@ -65,7 +63,7 @@
     "animation_count": null,
     "audio_channels": null,
     "audio_sample_rate": null,
-    "category_raw": "Other",
+    "category_raw": null,
     "collision": null,
     "features_raw": null,
     "font_formats": [],
@@ -77,8 +75,6 @@
     "texture_resolution": null,
     "triangle_count": null
   },
-  "themes": [
-    "Other"
-  ],
+  "themes": [],
   "title": "Construct Game Sources"
 }
